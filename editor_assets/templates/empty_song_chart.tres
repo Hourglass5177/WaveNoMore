@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="SongChart" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://src/content/resources/song_chart.gd" id="1_chart"]
+[ext_resource type="Script" path="res://src/content/resources/tempo_event.gd" id="2_tempo"]
+[ext_resource type="Script" path="res://src/content/resources/meter_event.gd" id="3_meter"]
+
+[sub_resource type="Resource" id="TempoEvent_default"]
+script = ExtResource("2_tempo")
+tick = 0
+bpm = 120.0
+
+[sub_resource type="Resource" id="MeterEvent_default"]
+script = ExtResource("3_meter")
+tick = 0
+numerator = 4
+denominator = 4
+
+[resource]
+script = ExtResource("1_chart")
+schema_version = 1
+chart_id = "new_chart"
+difficulty_id = "normal"
+ppq = 480
+end_tick = 7680
+tempo_events = Array[ExtResource("2_tempo")]([SubResource("TempoEvent_default")])
+meter_events = Array[ExtResource("3_meter")]([SubResource("MeterEvent_default")])

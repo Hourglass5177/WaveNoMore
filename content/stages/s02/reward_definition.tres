@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="RewardDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/content/resources/reward_definition.gd" id="1_reward"]
+
+[resource]
+script = ExtResource("1_reward")
+reward_id = "reward_s02_tuning_lab"
+next_stage_id = ""
+fc_grants_base_pet = false
+ap_grants_advanced_pet = false

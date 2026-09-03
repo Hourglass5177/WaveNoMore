@@ -1,0 +1,26 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/tools/art_lab/graybox_asset_placeholder.gd" id="1_script"]
+
+[node name="GrayboxAssetPlaceholder" type="Node2D"]
+script = ExtResource("1_script")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+
+[node name="Anchors" type="Node2D" parent="."]
+
+[node name="wave_origin" type="Marker2D" parent="Anchors"]
+
+[node name="mallet_tip" type="Marker2D" parent="Anchors"]
+
+[node name="body_center" type="Marker2D" parent="Anchors"]
+
+[node name="hit_fx_anchor" type="Marker2D" parent="Anchors"]
+
+[node name="follower_anchor" type="Marker2D" parent="Anchors"]
+
+[node name="hit_anchor" type="Marker2D" parent="Anchors"]
+
+[node name="progress_anchor" type="Marker2D" parent="Anchors"]
+
+[node name="attach_anchor" type="Marker2D" parent="Anchors"]

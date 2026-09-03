@@ -1,0 +1,243 @@
+[gd_resource type="Resource" script_class="SongChart" load_steps=33 format=3]
+
+[ext_resource type="Script" path="res://src/content/resources/song_chart.gd" id="1_chart"]
+[ext_resource type="Script" path="res://src/content/resources/tempo_event.gd" id="2_tempo"]
+[ext_resource type="Script" path="res://src/content/resources/meter_event.gd" id="3_meter"]
+[ext_resource type="Script" path="res://src/content/resources/note_event.gd" id="4_note"]
+[ext_resource type="Script" path="res://src/content/resources/tuning_field_region.gd" id="5_tuning_field"]
+[ext_resource type="Script" path="res://src/content/resources/tuning_slider_event.gd" id="6_tuning_slider"]
+[ext_resource type="Script" path="res://src/content/resources/su_manifestation_event.gd" id="7_su"]
+[ext_resource type="Script" path="res://src/content/resources/rapid_region.gd" id="8_rapid"]
+[ext_resource type="Script" path="res://src/content/resources/section_marker.gd" id="9_section"]
+
+[sub_resource type="Resource" id="Tempo_0"]
+script = ExtResource("2_tempo")
+tick = 0
+bpm = 120.0
+
+[sub_resource type="Resource" id="Meter_0"]
+script = ExtResource("3_meter")
+tick = 0
+numerator = 4
+denominator = 4
+
+[sub_resource type="Resource" id="Note_life_01"]
+script = ExtResource("4_note")
+event_id = "n_life_01"
+damage_group_id = "d_01"
+tick = 960
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"intro"
+
+[sub_resource type="Resource" id="Note_death_01"]
+script = ExtResource("4_note")
+event_id = "n_death_01"
+damage_group_id = "d_02"
+tick = 1440
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"intro"
+
+[sub_resource type="Resource" id="Note_chord_life"]
+script = ExtResource("4_note")
+event_id = "n_chord_life"
+group_id = "g_chord_01"
+damage_group_id = "d_chord_01"
+tick = 1920
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"chord"
+
+[sub_resource type="Resource" id="Note_chord_death"]
+script = ExtResource("4_note")
+event_id = "n_chord_death"
+group_id = "g_chord_01"
+damage_group_id = "d_chord_01"
+tick = 1920
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"chord"
+
+[sub_resource type="Resource" id="Note_life_02"]
+script = ExtResource("4_note")
+event_id = "n_life_02"
+damage_group_id = "d_03"
+tick = 2400
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"default"
+
+[sub_resource type="Resource" id="Note_hold_life"]
+script = ExtResource("4_note")
+event_id = "n_hold_life"
+damage_group_id = "d_hold_life"
+tick = 2880
+duration_ticks = 960
+kind = 1
+affinity = 0
+tail_requires_release = true
+visual_variant = &"hold"
+
+[sub_resource type="Resource" id="Note_death_during_life_hold"]
+script = ExtResource("4_note")
+event_id = "n_death_during_life_hold"
+damage_group_id = "d_hold_cross_01"
+tick = 3360
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"cross_hold"
+
+[sub_resource type="Resource" id="Note_death_02"]
+script = ExtResource("4_note")
+event_id = "n_death_02"
+damage_group_id = "d_04"
+tick = 4080
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"default"
+
+[sub_resource type="Resource" id="Note_hold_death"]
+script = ExtResource("4_note")
+event_id = "n_hold_death"
+damage_group_id = "d_hold_death"
+tick = 4560
+duration_ticks = 960
+kind = 1
+affinity = 1
+tail_requires_release = true
+visual_variant = &"hold"
+
+[sub_resource type="Resource" id="Note_life_during_death_hold"]
+script = ExtResource("4_note")
+event_id = "n_life_during_death_hold"
+damage_group_id = "d_hold_cross_02"
+tick = 5040
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"cross_hold"
+
+[sub_resource type="Resource" id="TuningField_01"]
+script = ExtResource("5_tuning_field")
+event_id = "tuning_field_01"
+tick = 6000
+duration_ticks = 1680
+
+[sub_resource type="Resource" id="TuningSlider_01_life"]
+script = ExtResource("6_tuning_slider")
+event_id = "tuning_01_life"
+field_id = "tuning_field_01"
+group_id = "tuning_01"
+affinity = 0
+tick = 6240
+traversal_ticks = 720
+traversal_count = 2
+start_value = 0.3
+end_value = 0.75
+
+[sub_resource type="Resource" id="TuningSlider_01_death"]
+script = ExtResource("6_tuning_slider")
+event_id = "tuning_01_death"
+field_id = "tuning_field_01"
+group_id = "tuning_01"
+affinity = 1
+tick = 6240
+traversal_ticks = 720
+traversal_count = 2
+start_value = 0.7
+end_value = 0.25
+
+[sub_resource type="Resource" id="SuManifestation_01"]
+script = ExtResource("7_su")
+event_id = "su_manifestation_01"
+group_id = "tuning_01"
+tick = 7680
+count = 2
+spawn_region_normalized = Rect2(0.18, 0.15, 0.64, 0.7)
+visual_variant = &"white_knot"
+
+[sub_resource type="Resource" id="Rapid_01"]
+script = ExtResource("8_rapid")
+event_id = "rapid_01"
+damage_group_id = "d_rapid_01"
+tick = 8160
+duration_ticks = 960
+required_strikes = 10
+debounce_ms = 35
+must_alternate = true
+visual_variant = &"double_bell_tremolo"
+
+[sub_resource type="Resource" id="Note_final_life"]
+script = ExtResource("4_note")
+event_id = "n_final_life"
+group_id = "g_final"
+damage_group_id = "d_final"
+tick = 9600
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"finale"
+
+[sub_resource type="Resource" id="Note_final_death"]
+script = ExtResource("4_note")
+event_id = "n_final_death"
+group_id = "g_final"
+damage_group_id = "d_final"
+tick = 9600
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"finale"
+
+[sub_resource type="Resource" id="Section_intro"]
+script = ExtResource("9_section")
+event_id = "section_intro"
+tick = 0
+label = "听钟"
+tutorial_key = &"tap"
+
+[sub_resource type="Resource" id="Section_hold"]
+script = ExtResource("9_section")
+event_id = "section_hold"
+tick = 2640
+label = "延音"
+tutorial_key = &"hold"
+
+[sub_resource type="Resource" id="Section_tuning"]
+script = ExtResource("9_section")
+event_id = "section_tuning"
+tick = 6000
+label = "相纹调频"
+tutorial_key = &"tuning"
+
+[sub_resource type="Resource" id="Section_rapid"]
+script = ExtResource("9_section")
+event_id = "section_rapid"
+tick = 7920
+label = "双钟疾振"
+tutorial_key = &"rapid"
+
+[resource]
+script = ExtResource("1_chart")
+schema_version = 2
+chart_id = "s01_mvp_all_mechanics"
+difficulty_id = "normal"
+ppq = 480
+chart_offset_ticks = 0
+end_tick = 10560
+tempo_events = [SubResource("Tempo_0")]
+meter_events = [SubResource("Meter_0")]
+note_events = [SubResource("Note_life_01"), SubResource("Note_death_01"), SubResource("Note_chord_life"), SubResource("Note_chord_death"), SubResource("Note_life_02"), SubResource("Note_hold_life"), SubResource("Note_death_during_life_hold"), SubResource("Note_death_02"), SubResource("Note_hold_death"), SubResource("Note_life_during_death_hold"), SubResource("Note_final_life"), SubResource("Note_final_death")]
+tuning_fields = [SubResource("TuningField_01")]
+tuning_sliders = [SubResource("TuningSlider_01_life"), SubResource("TuningSlider_01_death")]
+su_manifestations = [SubResource("SuManifestation_01")]
+rapid_regions = [SubResource("Rapid_01")]
+sections = [SubResource("Section_intro"), SubResource("Section_hold"), SubResource("Section_tuning"), SubResource("Section_rapid")]

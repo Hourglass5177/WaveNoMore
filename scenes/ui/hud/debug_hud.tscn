@@ -1,0 +1,38 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://src/presentation/adapters/debug_hud.gd" id="1_debug"]
+
+[sub_resource type="StyleBoxFlat" id="DebugPanel"]
+bg_color = Color(0.015, 0.02, 0.03, 0.82)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.76, 0.69, 0.56, 0.35)
+
+[node name="StageDebugHud" type="CanvasLayer"]
+script = ExtResource("1_debug")
+
+[node name="Panel" type="PanelContainer" parent="."]
+offset_left = 18.0
+offset_top = 18.0
+offset_right = 650.0
+offset_bottom = 176.0
+theme_override_styles/panel = SubResource("DebugPanel")
+mouse_filter = 2
+
+[node name="Margin" type="MarginContainer" parent="Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 8
+mouse_filter = 2
+
+[node name="Label" type="Label" parent="Panel/Margin"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.82, 0.84, 0.79, 1)
+theme_override_font_sizes/font_size = 14
+text = "runtime debug"
+mouse_filter = 2
+

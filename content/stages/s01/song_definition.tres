@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="SongDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/content/resources/song_definition.gd" id="1_song"]
+
+[resource]
+script = ExtResource("1_song")
+song_id = "s01_graybox_song"
+title = "渡口试音"
+artist = "MVP 灰模节拍"
+first_beat_offset_sec = 2.0
+fallback_duration_sec = 13.25
+preview_start_sec = 0.0
+preview_duration_sec = 10.0

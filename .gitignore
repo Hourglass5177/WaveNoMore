@@ -1,0 +1,10 @@
+# Godot 4+ specific ignores
+.godot/
+/android/
+/build/
+/builds/
+/editor_assets/waveform_cache/
+*.tmp
+*.bak
+*.url
+/AGENTS.md

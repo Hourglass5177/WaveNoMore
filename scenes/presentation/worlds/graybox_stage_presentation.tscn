@@ -1,0 +1,119 @@
+[gd_scene load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://src/presentation/adapters/graybox_stage_presentation.gd" id="1_stage"]
+[ext_resource type="Script" path="res://src/presentation/adapters/graybox_backdrop.gd" id="2_backdrop"]
+[ext_resource type="Script" path="res://src/presentation/adapters/note_visual_host.gd" id="3_host"]
+[ext_resource type="Script" path="res://src/presentation/adapters/graybox_show_cue_host.gd" id="4_show"]
+[ext_resource type="Script" path="res://src/presentation/vfx/wave_field_visual.gd" id="5_wave"]
+[ext_resource type="Script" path="res://src/presentation/vfx/twin_gate_cue_visual.gd" id="6_gate"]
+[ext_resource type="Script" path="res://src/presentation/vfx/tuning_interference_visual.gd" id="7_tuning_wave"]
+[ext_resource type="Script" path="res://src/presentation/vfx/rapid_interference_visual.gd" id="8_rapid_wave"]
+
+[sub_resource type="StyleBoxFlat" id="StyleTutorial"]
+bg_color = Color(0.025, 0.03, 0.043, 0.88)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.77, 0.66, 0.48, 0.55)
+
+[node name="GrayboxStagePresentation" type="Node2D"]
+script = ExtResource("1_stage")
+
+[node name="Backdrop" type="Node2D" parent="."]
+script = ExtResource("2_backdrop")
+
+[node name="WorldPair" type="Node2D" parent="."]
+
+[node name="LifeWorldSlot" type="Node2D" parent="WorldPair"]
+
+[node name="DeathWorldSlot" type="Node2D" parent="WorldPair"]
+position = Vector2(1920, 1080)
+rotation = 3.1415927
+
+[node name="ActorLayer" type="Node2D" parent="."]
+z_index = 2
+
+[node name="LifeActorSlot" type="Node2D" parent="ActorLayer"]
+position = Vector2(270, 235)
+
+[node name="DeathActorSlot" type="Node2D" parent="ActorLayer"]
+position = Vector2(1650, 845)
+rotation = 3.1415927
+
+[node name="BoundarySlot" type="Node2D" parent="."]
+z_index = 3
+
+[node name="WaveLayer" type="Node2D" parent="."]
+z_index = 4
+
+[node name="TuningInterferenceVisual" type="ColorRect" parent="WaveLayer"]
+offset_right = 1920.0
+offset_bottom = 1080.0
+mouse_filter = 2
+script = ExtResource("7_tuning_wave")
+
+[node name="RapidInterferenceVisual" type="ColorRect" parent="WaveLayer"]
+offset_right = 1920.0
+offset_bottom = 1080.0
+mouse_filter = 2
+script = ExtResource("8_rapid_wave")
+
+[node name="WaveFieldVisual" type="Node2D" parent="WaveLayer"]
+script = ExtResource("5_wave")
+
+[node name="GameplayLayer" type="Node2D" parent="."]
+z_index = 5
+
+[node name="NoteVisualHost" type="Node2D" parent="GameplayLayer"]
+script = ExtResource("3_host")
+
+[node name="LifeNoteSlot" type="Node2D" parent="GameplayLayer/NoteVisualHost"]
+
+[node name="DeathNoteSlot" type="Node2D" parent="GameplayLayer/NoteVisualHost"]
+
+[node name="FieldSlot" type="Node2D" parent="GameplayLayer/NoteVisualHost"]
+
+[node name="PoolRoot" type="Node2D" parent="GameplayLayer/NoteVisualHost"]
+visible = false
+
+[node name="GameplayCueLayer" type="Node2D" parent="."]
+z_index = 10
+
+[node name="TwinGateCueVisual" type="Node2D" parent="GameplayCueLayer"]
+script = ExtResource("6_gate")
+
+[node name="LifeGateAnchor" type="Marker2D" parent="GameplayCueLayer/TwinGateCueVisual"]
+position = Vector2(960, 540)
+
+[node name="DeathGateAnchor" type="Marker2D" parent="GameplayCueLayer/TwinGateCueVisual"]
+position = Vector2(960, 540)
+
+[node name="ForegroundArt" type="Node2D" parent="."]
+z_index = 12
+
+[node name="PresentationVfx" type="Node2D" parent="."]
+z_index = 15
+
+[node name="ShowCueHost" type="Node2D" parent="."]
+z_index = 20
+script = ExtResource("4_show")
+
+[node name="TutorialPanel" type="PanelContainer" parent="ShowCueHost"]
+offset_left = 560.0
+offset_top = 86.0
+offset_right = 1360.0
+offset_bottom = 158.0
+theme_override_styles/panel = SubResource("StyleTutorial")
+mouse_filter = 2
+
+[node name="Label" type="Label" parent="ShowCueHost/TutorialPanel"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.91, 0.87, 0.76, 1)
+theme_override_colors/font_outline_color = Color(0.01, 0.015, 0.025, 0.9)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 26
+text = "演出提示"
+horizontal_alignment = 1
+vertical_alignment = 1
+mouse_filter = 2

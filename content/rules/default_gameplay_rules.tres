@@ -1,0 +1,54 @@
+[gd_resource type="Resource" script_class="GameplayRuleSet" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/content/resources/gameplay_rule_set.gd" id="1_rules"]
+
+[resource]
+script = ExtResource("1_rules")
+perfect_window_ms = 45
+good_window_ms = 90
+pass_window_ms = 135
+miss_window_ms = 180
+hold_release_perfect_ms = 60
+hold_release_good_ms = 110
+hold_release_pass_ms = 170
+hold_sustain_grace_ms = 100
+chord_tolerance_ms = 75
+tuning_sample_interval_ticks = 30
+tuning_guide_time_window_ms = 180
+tuning_spatial_margin = 0.08
+tuning_perfect_coverage = 0.9
+tuning_good_coverage = 0.75
+tuning_pass_coverage = 0.6
+tuning_base_frequency_hz = 4.35
+tuning_min_frequency_hz = 1.8
+tuning_max_frequency_hz = 6.9
+tuning_pixels_per_hz = 160.0
+tuning_cursor_speed_px_sec = 720.0
+tuning_stick_deadzone = 0.18
+rapid_perfect_ratio = 1.0
+rapid_good_ratio = 0.85
+rapid_pass_ratio = 0.65
+perfect_score = 1000
+good_score = 700
+pass_score = 400
+miss_score = 0
+max_combo_multiplier = 2.0
+combo_steps_to_max = 100
+max_soul_fire = 100
+miss_damage = 20
+stray_input_breaks_combo = false
+stray_input_damages = false
+approach_duration_sec = 2.25
+preroll_sec = 2.0
+fail_settle_sec = 0.7
+wave_canvas_size = Vector2(1920, 1080)
+life_wave_origin = Vector2(350, 280)
+death_wave_origin = Vector2(1570, 800)
+life_note_spawn = Vector2(2040, 220)
+death_note_spawn = Vector2(-120, 860)
+life_note_cue = Vector2(960, 540)
+death_note_cue = Vector2(960, 540)
+note_curve_outer_bend_px = 220.0
+note_curve_center_handle_px = 360.0
+wave_speed_px_sec = 2400.0
+wave_front_half_width_px = 25.0

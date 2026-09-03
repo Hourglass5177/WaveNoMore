@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="StageDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/content/resources/stage_definition.gd" id="1_stage"]
+
+[resource]
+script = ExtResource("1_stage")
+stage_id = "s02"
+display_name = "相纹调频试验"
+description = "非致死调频试验关：验证单钟载波、双钟独立滑条、折返与动态素音凝现。"
+order_index = 2
+song_title = "相纹调频试验"
+song_artist = "MVP 灰模节拍"
+unlocked_by_default = true
+debug_nonlethal = true
+song_resource_path = "res://content/stages/s02/song_definition.tres"
+chart_resource_path = "res://content/stages/s02/song_chart.tres"
+stage_show_resource_path = "res://content/stages/s02/stage_show.tres"
+visual_theme_resource_path = "res://content/stages/s02/stage_visual_theme.tres"
+reward_resource_path = "res://content/stages/s02/reward_definition.tres"
+rule_set_resource_path = "res://content/rules/default_gameplay_rules.tres"

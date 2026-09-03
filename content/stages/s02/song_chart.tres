@@ -1,0 +1,158 @@
+[gd_resource type="Resource" script_class="SongChart" load_steps=23 format=3]
+
+[ext_resource type="Script" path="res://src/content/resources/song_chart.gd" id="1_chart"]
+[ext_resource type="Script" path="res://src/content/resources/tempo_event.gd" id="2_tempo"]
+[ext_resource type="Script" path="res://src/content/resources/meter_event.gd" id="3_meter"]
+[ext_resource type="Script" path="res://src/content/resources/tuning_field_region.gd" id="4_field"]
+[ext_resource type="Script" path="res://src/content/resources/tuning_slider_event.gd" id="5_slider"]
+[ext_resource type="Script" path="res://src/content/resources/su_manifestation_event.gd" id="6_su"]
+[ext_resource type="Script" path="res://src/content/resources/section_marker.gd" id="7_section"]
+
+[sub_resource type="Resource" id="Tempo_0"]
+script = ExtResource("2_tempo")
+tick = 0
+bpm = 120.0
+
+[sub_resource type="Resource" id="Meter_0"]
+script = ExtResource("3_meter")
+tick = 0
+numerator = 4
+denominator = 4
+
+[sub_resource type="Resource" id="Field_A"]
+script = ExtResource("4_field")
+event_id = "tuning_field_find"
+tick = 2400
+duration_ticks = 3360
+
+[sub_resource type="Resource" id="A_Life_Solo"]
+script = ExtResource("5_slider")
+event_id = "slider_find_life_solo"
+field_id = "tuning_field_find"
+affinity = 0
+tick = 2880
+traversal_ticks = 960
+traversal_count = 1
+start_value = 0.5
+end_value = 0.8
+
+[sub_resource type="Resource" id="A_Life_Pair"]
+script = ExtResource("5_slider")
+event_id = "slider_find_pair_life"
+field_id = "tuning_field_find"
+group_id = "tuning_find_pair"
+affinity = 0
+tick = 4320
+traversal_ticks = 480
+traversal_count = 2
+start_value = 0.4
+end_value = 0.8
+
+[sub_resource type="Resource" id="A_Death_Pair"]
+script = ExtResource("5_slider")
+event_id = "slider_find_pair_death"
+field_id = "tuning_field_find"
+group_id = "tuning_find_pair"
+affinity = 1
+tick = 4320
+traversal_ticks = 480
+traversal_count = 2
+start_value = 0.6
+end_value = 0.2
+
+[sub_resource type="Resource" id="A_Su"]
+script = ExtResource("6_su")
+event_id = "su_find_pair"
+group_id = "tuning_find_pair"
+tick = 5280
+count = 1
+spawn_region_normalized = Rect2(0.28, 0.1, 0.44, 0.7)
+visual_variant = &"white_knot"
+
+[sub_resource type="Resource" id="Field_B"]
+script = ExtResource("4_field")
+event_id = "tuning_field_follow"
+tick = 8160
+duration_ticks = 4320
+
+[sub_resource type="Resource" id="B_Life_Pair"]
+script = ExtResource("5_slider")
+event_id = "slider_follow_pair_life"
+field_id = "tuning_field_follow"
+group_id = "tuning_follow_pair"
+affinity = 0
+tick = 8640
+traversal_ticks = 960
+traversal_count = 2
+start_value = 0.2
+end_value = 0.85
+
+[sub_resource type="Resource" id="B_Death_Pair"]
+script = ExtResource("5_slider")
+event_id = "slider_follow_pair_death"
+field_id = "tuning_field_follow"
+group_id = "tuning_follow_pair"
+affinity = 1
+tick = 8640
+traversal_ticks = 960
+traversal_count = 2
+start_value = 0.8
+end_value = 0.15
+
+[sub_resource type="Resource" id="B_Su"]
+script = ExtResource("6_su")
+event_id = "su_follow_pair"
+group_id = "tuning_follow_pair"
+tick = 10560
+count = 3
+spawn_region_normalized = Rect2(0.28, 0.2, 0.44, 0.6)
+visual_variant = &"white_knot_cluster"
+
+[sub_resource type="Resource" id="B_Death_Solo"]
+script = ExtResource("5_slider")
+event_id = "slider_follow_death_solo"
+field_id = "tuning_field_follow"
+affinity = 1
+tick = 11040
+traversal_ticks = 720
+traversal_count = 2
+start_value = 0.5
+end_value = 0.1
+
+[sub_resource type="Resource" id="Section_intro"]
+script = ExtResource("7_section")
+event_id = "section_tuning_lab_intro"
+tick = 0
+label = "调频试验"
+tutorial_key = &"tuning_intro"
+
+[sub_resource type="Resource" id="Section_find"]
+script = ExtResource("7_section")
+event_id = "section_tuning_lab_find"
+tick = 2400
+label = "单钟与双钟"
+tutorial_key = &"tuning_find"
+
+[sub_resource type="Resource" id="Section_follow"]
+script = ExtResource("7_section")
+event_id = "section_tuning_lab_follow"
+tick = 8160
+label = "往复追随"
+tutorial_key = &"tuning_follow"
+
+[resource]
+script = ExtResource("1_chart")
+schema_version = 2
+chart_id = "s02_tuning_lab"
+difficulty_id = "experiment"
+ppq = 480
+chart_offset_ticks = 0
+end_tick = 14400
+tempo_events = [SubResource("Tempo_0")]
+meter_events = [SubResource("Meter_0")]
+note_events = []
+tuning_fields = [SubResource("Field_A"), SubResource("Field_B")]
+tuning_sliders = [SubResource("A_Life_Solo"), SubResource("A_Life_Pair"), SubResource("A_Death_Pair"), SubResource("B_Life_Pair"), SubResource("B_Death_Pair"), SubResource("B_Death_Solo")]
+su_manifestations = [SubResource("A_Su"), SubResource("B_Su")]
+rapid_regions = []
+sections = [SubResource("Section_intro"), SubResource("Section_find"), SubResource("Section_follow")]

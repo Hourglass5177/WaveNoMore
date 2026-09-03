@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="StageVisualTheme" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/content/resources/stage_visual_theme.gd" id="1_theme"]
+
+[resource]
+script = ExtResource("1_theme")
+theme_id = "s01_graybox_center_symmetry"
+life_color = Color(0.74, 0.12, 0.10, 1)
+death_color = Color(0.06, 0.07, 0.12, 1)
+su_color = Color(0.94, 0.91, 0.80, 1)
+ink_color = Color(0.018, 0.024, 0.043, 1)
+paper_color = Color(0.33, 0.35, 0.42, 1)
+

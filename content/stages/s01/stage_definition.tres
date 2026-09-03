@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="StageDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/content/resources/stage_definition.gd" id="1_stage"]
+
+[resource]
+script = ExtResource("1_stage")
+stage_id = "s01"
+display_name = "渡口试音"
+description = "覆盖生、死、双押、延音、调频素音与双钟疾振的正式数据驱动测试关。"
+order_index = 1
+song_title = "渡口试音"
+song_artist = "MVP 灰模节拍"
+unlocked_by_default = true
+debug_nonlethal = true
+song_resource_path = "res://content/stages/s01/song_definition.tres"
+chart_resource_path = "res://content/stages/s01/song_chart.tres"
+stage_show_resource_path = "res://content/stages/s01/stage_show.tres"
+visual_theme_resource_path = "res://content/stages/s01/stage_visual_theme.tres"
+reward_resource_path = "res://content/stages/s01/reward_definition.tres"
+rule_set_resource_path = "res://content/rules/default_gameplay_rules.tres"
