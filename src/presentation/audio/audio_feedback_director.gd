@@ -22,7 +22,7 @@ const GRAYBOX_AUDIO_FACTORY: GDScript = preload("res://src/presentation/audio/gr
 ## 游标进入有效引导带时的载波音量；配合波纹变亮形成即时正反馈。
 @export_range(-60.0, 0.0, 0.5) var carrier_aligned_volume_db: float = -18.0
 ## 规则中的基准发波频率；载波音高只按它做相对变化。
-var _base_frequency_hz: float = 4.35
+var _base_frequency_hz: float = 3.0
 
 @export_group("Judgment")
 ## Perfect 判定短音；正式素材为空时由程序生成高亮占位音。
@@ -117,6 +117,12 @@ func _on_gameplay_snapshot_changed(snapshot: Dictionary) -> void:
 		float(snapshot.get("life_frequency_hz", _base_frequency_hz)),
 		_side_is_aligned(snapshot, GameplayTypes.Affinity.ZHU)
 	)
+	_update_carrier_player(
+		_death_carrier_player,
+		bool(snapshot.get("death_held", false)),
+		float(snapshot.get("death_frequency_hz", _base_frequency_hz)),
+		_side_is_aligned(snapshot, GameplayTypes.Affinity.XUAN)
+	)
 
 
 func _on_stage_state_changed(_previous: int, current: int, _reason: StringName) -> void:
@@ -130,12 +136,6 @@ func _on_stage_state_changed(_previous: int, current: int, _reason: StringName) 
 		GameplayTypes.StageState.RESULT,
 	]:
 		_stop_carrier_players()
-	_update_carrier_player(
-		_death_carrier_player,
-		bool(snapshot.get("death_held", false)),
-		float(snapshot.get("death_frequency_hz", _base_frequency_hz)),
-		_side_is_aligned(snapshot, GameplayTypes.Affinity.XUAN)
-	)
 
 
 func _play_judgment_grade(grade: int) -> void:
@@ -195,7 +195,9 @@ func _update_carrier_player(
 		if player.playing:
 			player.stop()
 		return
-	player.pitch_scale = clampf(frequency_hz / _base_frequency_hz, 0.55, 1.75)
+	# 1～7 Hz 的新调频范围要能真正听出高低差；只在极限处略作保护，
+	# 不再像旧范围那样过早把音高压在 0.55～1.75 之间。
+	player.pitch_scale = clampf(frequency_hz / _base_frequency_hz, 0.35, 2.35)
 	player.volume_db = carrier_aligned_volume_db if aligned else carrier_idle_volume_db
 	if not player.playing:
 		player.play()

@@ -39,10 +39,8 @@ var _progress: float = 0.0
 var _time_to_hit_sec: float = INF
 # 进度环从出现到卡点的总秒数，用于把剩余时间换算成圆环比例。
 var _approach_duration_sec: float = 1.0
-# sustain_mode 表示 Hold 头已命中；tail_requires_release 决定结尾是否画松键括号。
+# sustain_mode 表示 Hold 头已命中，此后圆环只展示剩余持续进度。
 var _sustain_mode: bool = false
-# Hold 尾部是否需要玩家松键；当前规则关闭时仅作视觉提示，不参与松键判定。
-var _tail_requires_release: bool = false
 # 判定状态控制最终颜色和淡出；radius_offset 用像素错开同时出现的生死 Hold 环。
 var _judged: bool = false
 # 当前目标是否已经 Miss；为 true 时进度环切换失败颜色。
@@ -57,7 +55,6 @@ func prepare(view_model: Dictionary) -> void:
 	event_id = str(view_model.get("event_id", view_model.get("id", view_model.get("unit_id", ""))))
 	affinity = int(view_model.get("affinity", GameplayTypes.Affinity.SU))
 	timing_kind = StringName(view_model.get("_timing_kind", &"note"))
-	_tail_requires_release = bool(view_model.get("tail_requires_release", false))
 	_progress = 0.0
 	_time_to_hit_sec = INF
 	_approach_duration_sec = 1.0
@@ -128,7 +125,6 @@ func reset_for_pool() -> void:
 	_progress = 0.0
 	_time_to_hit_sec = INF
 	_sustain_mode = false
-	_tail_requires_release = false
 	_judged = false
 	_missed = false
 	_radius_offset = 0.0
@@ -170,11 +166,6 @@ func _draw() -> void:
 
 	if _progress >= 0.999:
 		draw_arc(Vector2.ZERO, radius - track_width * 1.35, 0.0, TAU, 72, Color(color.lightened(0.28), 0.62), 2.0, true)
-	if _sustain_mode and _tail_requires_release:
-		# 两个小括号把 Hold 松键提示与外形相近的头部倒计时区分开，不再额外堆文字。
-		var bracket_y: float = radius + 13.0
-		draw_line(Vector2(-15.0, bracket_y), Vector2(-5.0, bracket_y + 7.0), Color(color, 0.88), 3.0, true)
-		draw_line(Vector2(15.0, bracket_y), Vector2(5.0, bracket_y + 7.0), Color(color, 0.88), 3.0, true)
 	if _missed:
 		var cross_extent: float = radius * 0.34
 		draw_line(Vector2(-cross_extent, -cross_extent), Vector2(cross_extent, cross_extent), Color("d3d0c8"), 5.0, true)

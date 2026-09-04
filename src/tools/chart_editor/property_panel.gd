@@ -17,9 +17,9 @@ var _building := false
 
 ## 各轨允许谱师直接修改的字段白名单；未列字段不会出现在属性面板。
 const FIELDS := {
-	"notes": ["event_id", "group_id", "damage_group_id", "tick", "duration_ticks", "kind", "affinity", "tail_requires_release", "visual_variant"],
+	"notes": ["event_id", "group_id", "damage_group_id", "tick", "duration_ticks", "kind", "affinity", "visual_variant"],
 	"tuning_fields": ["event_id", "tick", "duration_ticks"],
-	"tuning_sliders": ["event_id", "field_id", "group_id", "affinity", "tick", "traversal_ticks", "traversal_count", "start_value", "end_value"],
+	"tuning_sliders": ["event_id", "field_id", "group_id", "affinity", "tick", "traversal_ticks", "traversal_count", "start_value", "end_value", "arc_rotation_deg", "visual_offset_px"],
 	"su_manifestations": ["event_id", "group_id", "tick", "count", "spawn_region_normalized", "visual_variant"],
 	"rapid": ["event_id", "damage_group_id", "tick", "duration_ticks", "required_strikes", "debounce_ms", "must_alternate", "visual_variant"],
 	"show": ["event_id", "tick", "duration_ticks", "track", "cue_id", "target_slot", "parameters"],

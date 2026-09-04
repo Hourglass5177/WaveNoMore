@@ -60,19 +60,37 @@ func _run() -> void:
 	var settings_modal := (load("res://scenes/ui/modals/settings_modal.tscn") as PackedScene).instantiate()
 	root.add_child(settings_modal)
 	await process_frame
-	var frequency_slider := settings_modal.find_child("TuningWaveFrequencySlider", true, false) as HSlider
-	_expect(frequency_slider != null, "settings exposes a dedicated tuning-wave frequency slider")
-	if frequency_slider != null:
-		# 设置弹窗既要展示安全范围，也要从 SettingsService 读回持久化值。
+	var intensity_slider := settings_modal.find_child("TuningWaveIntensitySlider", true, false) as HSlider
+	_expect(intensity_slider != null, "settings exposes a dedicated tuning-wave intensity slider")
+	if intensity_slider != null:
+		# 设置弹窗展示可读范围，并从 SettingsService 读回持久化值。
 		var settings_service := root.get_node("SettingsService")
-		_expect_equal(frequency_slider.min_value, 0.35, "frequency slider exposes the safe low-density limit")
-		_expect_equal(frequency_slider.max_value, 1.0, "frequency slider can restore the original visual density")
-		_expect_equal(frequency_slider.step, 0.05, "frequency slider uses readable five-percent steps")
+		_expect_equal(intensity_slider.min_value, 0.35, "intensity slider exposes the readable low-intensity limit")
+		_expect_equal(intensity_slider.max_value, 1.0, "intensity slider can restore full visual strength")
+		_expect_equal(intensity_slider.step, 0.05, "intensity slider uses readable five-percent steps")
 		_expect_near(
-			frequency_slider.value,
-			float(settings_service.get("tuning_wave_frequency_scale")),
+			intensity_slider.value,
+			float(settings_service.get("tuning_wave_intensity")),
 			0.000001,
-			"frequency slider opens at the persisted value"
+			"intensity slider opens at the persisted value"
+		)
+		# 旧字段曾表示“显示多少波圈”，不能把旧的低密度数值误当作新透明度。
+		var legacy_wave_config := ConfigFile.new()
+		legacy_wave_config.set_value("accessibility", "tuning_wave_frequency_scale", 0.40)
+		_expect_near(
+			float(settings_service.call("_read_tuning_wave_intensity", legacy_wave_config)),
+			0.85,
+			0.000001,
+			"legacy wave-density-only settings adopt the new readable intensity default"
+		)
+		var current_wave_config := ConfigFile.new()
+		current_wave_config.set_value("accessibility", "tuning_wave_frequency_scale", 0.40)
+		current_wave_config.set_value("accessibility", "tuning_wave_intensity", 0.70)
+		_expect_near(
+			float(settings_service.call("_read_tuning_wave_intensity", current_wave_config)),
+			0.70,
+			0.000001,
+			"an explicitly saved new intensity remains authoritative over the legacy key"
 		)
 	settings_modal.free()
 

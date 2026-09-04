@@ -5,11 +5,11 @@
 [resource]
 script = ExtResource("1_stage")
 stage_id = "s02"
-display_name = "相纹调频试验"
-description = "非致死调频试验关：验证单钟载波、双钟独立滑条、折返与动态素音凝现。"
+display_name = "02 Tap 音符测试"
+description = "只包含 Tap：从四分交替逐步进入八分、同侧重复、双押和混合节奏。"
 order_index = 2
-song_title = "相纹调频试验"
-song_artist = "MVP 灰模节拍"
+song_title = "Tap 音符测试"
+song_artist = "原型测试节拍"
 unlocked_by_default = true
 debug_nonlethal = true
 song_resource_path = "res://content/stages/s02/song_definition.tres"

@@ -31,8 +31,8 @@ func set_debug_visible(value: bool) -> void:
 
 
 func _on_debug_snapshot(snapshot: Dictionary) -> void:
-	# X/Y 分别是生、死两路摇杆速率；频率值来自玩法快照，二者不要混为共同游标。
-	var tuning_rate: Vector2 = snapshot.get("tuning_rate", Vector2.ZERO)
+	# X/Y 分别是生、死两路最近一次旋转位移，不是摇杆方向或持续速率。
+	var tuning_displacement: Vector2 = snapshot.get("tuning_displacement", Vector2.ZERO)
 	var active_field_id: String = str(snapshot.get("active_tuning_field_id", ""))
 	if active_field_id.is_empty():
 		active_field_id = "-"
@@ -42,8 +42,8 @@ func _on_debug_snapshot(snapshot: Dictionary) -> void:
 		+ "DRIFT %+7.2fms  OUT %+7.2fms  AUDIO %+7.2fms  INPUT %+7.2fms  VIS %+7.2fms\n"
 		+ "OWNER %d  HELD 生:%s 死:%s  QUEUE %d\n"
 		+ "FIELD %s  ACTIVE %s  SLIDERS %d\n"
-		+ "生 VALUE %.3f  FREQ %.3fHz  RATE %+.2f\n"
-		+ "死 VALUE %.3f  FREQ %.3fHz  RATE %+.2f\n"
+		+ "生 VALUE %.3f  FREQ %.3fHz  LAST Δ %+.3f\n"
+		+ "死 VALUE %.3f  FREQ %.3fHz  LAST Δ %+.3f\n"
 		+ "SCORE %d  COMBO %d  SOUL %d  HASH %s"
 	) % [
 		int(snapshot.get("run_id", 0)),
@@ -67,10 +67,10 @@ func _on_debug_snapshot(snapshot: Dictionary) -> void:
 		int(snapshot.get("active_tuning_slider_count", 0)),
 		float(snapshot.get("life_tuning_value", 0.0)),
 		float(snapshot.get("life_frequency_hz", 0.0)),
-		tuning_rate.x,
+		tuning_displacement.x,
 		float(snapshot.get("death_tuning_value", 0.0)),
 		float(snapshot.get("death_frequency_hz", 0.0)),
-		tuning_rate.y,
+		tuning_displacement.y,
 		int(snapshot.get("score", 0)),
 		int(snapshot.get("combo", 0)),
 		int(snapshot.get("soul_fire", 0)),

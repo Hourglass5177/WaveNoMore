@@ -5,6 +5,8 @@ extends SceneTree
 
 
 func _init() -> void:
-	var suite = preload("res://tests/unit/domain/test_domain_core.gd").new()
-	var result: Dictionary = suite.run()
-	quit(0 if bool(result["ok"]) else 1)
+	var core_suite = preload("res://tests/unit/domain/test_domain_core.gd").new()
+	var tuning_arc_suite = preload("res://tests/unit/domain/test_tuning_arc_assist.gd").new()
+	var core_result: Dictionary = core_suite.run()
+	var tuning_arc_result: Dictionary = tuning_arc_suite.run()
+	quit(0 if bool(core_result["ok"]) and bool(tuning_arc_result["ok"]) else 1)

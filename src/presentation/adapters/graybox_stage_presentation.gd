@@ -217,7 +217,7 @@ func _on_settings_changed() -> void:
 
 func _apply_visual_settings() -> void:
 	if is_instance_valid(_tuning_interference_visual) and is_instance_valid(_settings_service):
-		_tuning_interference_visual.set_frequency_scale(float(_settings_service.get("tuning_wave_frequency_scale")))
+		_tuning_interference_visual.set_visual_intensity(float(_settings_service.get("tuning_wave_intensity")))
 
 
 func _apply_palette(visual_theme: StageVisualTheme) -> void:

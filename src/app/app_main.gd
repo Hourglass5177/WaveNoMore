@@ -120,12 +120,18 @@ func _show_stage(stage: StageDefinition) -> void:
 		stage_root.call("set_debug_visible", SettingsService.debug_hud_enabled)
 	_connect_first_signal(stage_root, [&"stage_finished", &"result_ready", &"stage_result"], _on_stage_finished)
 	_connect_first_signal(stage_root, [&"exit_requested", &"quit_requested"], _on_stage_exit_requested)
+	var stage_started := false
 	if stage_root.has_method("configure_stage"):
-		stage_root.call("configure_stage", stage)
+		stage_started = bool(stage_root.call("configure_stage", stage))
 	elif stage_root.has_method("start_stage"):
-		stage_root.call("start_stage", stage)
+		stage_started = bool(stage_root.call("start_stage", stage))
 	else:
 		_show_error("StageRoot 缺少 configure_stage/start_stage 接口。")
+		return
+	# 关卡节点已经挂上树，并不代表编译、音频和会话真的准备成功。
+	# 失败时必须立刻撤下空壳关卡；否则歌曲时间永远停在 0，看起来像程序卡死。
+	if not stage_started:
+		_show_error("关卡载入失败：谱面或运行配置无效。")
 
 
 func _show_result(stage: StageDefinition, result: Dictionary) -> void:

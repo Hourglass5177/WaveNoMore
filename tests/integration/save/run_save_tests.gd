@@ -33,8 +33,14 @@ func _run() -> void:
 	root.add_child(service)
 	_expect(FileAccess.file_exists(_save_path), "first launch creates a validated save")
 
-	var stage := load("res://content/stages/s01/stage_definition.tres") as StageDefinition
-	_expect(stage != null and stage.resolve_dependencies_sync(ResourceLoader.CACHE_MODE_IGNORE), "save fixture stage resolves")
+	var authored_stage := load("res://content/stages/s01/stage_definition.tres") as StageDefinition
+	_expect(authored_stage != null and authored_stage.resolve_dependencies_sync(ResourceLoader.CACHE_MODE_IGNORE), "save fixture stage resolves")
+	# 五张玩法测试关都明确不发随从；存档测试在内存中装配奖励，不能反过来污染测试关内容。
+	var stage := authored_stage.duplicate(true) as StageDefinition
+	stage.reward = authored_stage.reward.duplicate(true) as RewardDefinition
+	stage.reward.pet = load("res://content/pets/pet_horned_soul.tres") as PetDefinition
+	stage.reward.fc_grants_base_pet = true
+	stage.reward.ap_grants_advanced_pet = true
 	service.record_stage_result(stage, {
 		"cleared": true,
 		"full_combo": true,

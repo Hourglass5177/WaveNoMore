@@ -25,15 +25,13 @@ enum JudgmentGrade {
 
 ## 设备无关的语义输入；鼠标、键盘和手柄都先转换成这些事件。
 enum SemanticInputKind {
-	LIFE_PRESSED,
-	LIFE_RELEASED,
-	DEATH_PRESSED,
-	DEATH_RELEASED,
-	## 手柄两根摇杆各自给出的移动速率；数值是方向/力度，不是频率绝对位置。
-	TUNING_RATE_CHANGED,
-	## 触屏或鼠标拖动产生的相对位移；两路分量必须分别钳制，不能按二维长度归一化。
-	TUNING_DISPLACED,
-	FOCUS_CANCELLED,
+	LIFE_PRESSED = 0,
+	LIFE_RELEASED = 1,
+	DEATH_PRESSED = 2,
+	DEATH_RELEASED = 3,
+	## 摇杆旋转、触屏或鼠标拖动产生的相对调频位移。X=生钟，Y=死钟。
+	TUNING_DISPLACED = 4,
+	FOCUS_CANCELLED = 5,
 }
 
 ## 一次输入最终归属的机制；优先级由模拟层规定为疾振、调频、普通音符。

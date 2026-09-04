@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="StageDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/content/resources/stage_definition.gd" id="1_stage"]
+
+[resource]
+script = ExtResource("1_stage")
+stage_id = "s03"
+display_name = "03 Hold 音符测试"
+description = "只包含 Hold：依次测试短延音、长延音、错位重叠、双侧延音和混合长度。"
+order_index = 3
+song_title = "Hold 音符测试"
+song_artist = "原型测试节拍"
+unlocked_by_default = true
+debug_nonlethal = true
+song_resource_path = "res://content/stages/s03/song_definition.tres"
+chart_resource_path = "res://content/stages/s03/song_chart.tres"
+stage_show_resource_path = "res://content/stages/s03/stage_show.tres"
+visual_theme_resource_path = "res://content/stages/s03/stage_visual_theme.tres"
+reward_resource_path = "res://content/stages/s03/reward_definition.tres"
+rule_set_resource_path = "res://content/rules/default_gameplay_rules.tres"

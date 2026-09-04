@@ -59,8 +59,8 @@ static func run_with_frame_steps(
 		cursor_us = mini(cursor_us, int(region["start_us"]))
 	if not samples.is_empty():
 		cursor_us = mini(cursor_us, samples[0].timestamp_us)
-	var latest_judgment_ms: int = maxi(rules.miss_window_ms, rules.hold_release_pass_ms)
-	var settle_us: int = latest_judgment_ms * 1000 + 1
+	# Hold 与调频都在原定尾点完成；只有普通音符还需要 Miss 窗。
+	var settle_us: int = rules.miss_window_ms * 1000 + 1
 	var finish_us: int = compiled.end_time_us + settle_us
 	if not samples.is_empty():
 		finish_us = maxi(finish_us, samples[-1].timestamp_us + settle_us)
@@ -128,7 +128,11 @@ static func build_perfect_replay(
 			"event_type": &"tuning_reset",
 			"priority": -1,
 		})
-	_append_tuning_hold_events(raw_events, compiled.tuning_sliders)
+	_append_tuning_hold_events(
+		raw_events,
+		compiled.tuning_sliders,
+		compiled.su_manifestations
+	)
 	for slider in compiled.tuning_sliders:
 		var life: bool = int(slider["affinity"]) == GameplayTypes.Affinity.ZHU
 		var end_us: int = int(slider["end_us"])
@@ -136,8 +140,13 @@ static func build_perfect_replay(
 		var sample_tick: int = int(slider["tick"])
 		var end_tick: int = int(slider["end_tick"])
 		while sample_tick <= end_tick:
+			# 输入与谱面事件同刻时，模拟器会先处理玩家输入再包含该时刻的场域事件。
+			# 起点位移延后 1 微秒，确保 field_enter 已完成；这个偏移远低于任何判定精度。
+			var target_time_us: int = compiled.tempo_map.tick_to_us(sample_tick)
+			if sample_tick == int(slider["tick"]):
+				target_time_us += 1
 			raw_events.append({
-				"time": compiled.tempo_map.tick_to_us(sample_tick),
+				"time": target_time_us,
 				"event_type": &"tuning_target",
 				"life": life,
 				"target": _slider_guide_value(slider, sample_tick),
@@ -239,15 +248,32 @@ static func _slider_guide_value(slider: Dictionary, sample_tick: int) -> float:
 	return lerpf(float(slider["start_value"]), float(slider["end_value"]), ratio)
 
 
-static func _append_tuning_hold_events(raw_events: Array[Dictionary], sliders: Array[Dictionary]) -> void:
+static func _append_tuning_hold_events(
+		raw_events: Array[Dictionary],
+		sliders: Array[Dictionary],
+		su_manifestations: Array[Dictionary]
+) -> void:
 	# 同侧首尾相接的多条滑条属于连续操作。理想 Replay 只在整段开头按下、最后松开，
 	# 避免前一条的尾部松键在后一条已经开始后把 held 状态意外清掉。
+	var su_time_by_group: Dictionary = {}
+	for manifestation: Dictionary in su_manifestations:
+		var group_id: String = str(manifestation.get("group_id", ""))
+		if group_id.is_empty():
+			continue
+		su_time_by_group[group_id] = maxi(
+			int(su_time_by_group.get(group_id, 0)),
+			int(manifestation.get("time_us", manifestation.get("start_us", 0)))
+		)
 	for affinity: int in [GameplayTypes.Affinity.ZHU, GameplayTypes.Affinity.XUAN]:
 		var intervals: Array[Dictionary] = []
 		for slider: Dictionary in sliders:
 			if int(slider.get("affinity", GameplayTypes.Affinity.SU)) != affinity:
 				continue
-			intervals.append({"start_us": int(slider["start_us"]), "end_us": int(slider["end_us"])})
+			var carrier_end_us: int = int(slider["end_us"])
+			var group_id: String = str(slider.get("group_id", ""))
+			if su_time_by_group.has(group_id):
+				carrier_end_us = maxi(carrier_end_us, int(su_time_by_group[group_id]))
+			intervals.append({"start_us": int(slider["start_us"]), "end_us": carrier_end_us})
 		intervals.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
 			if int(a["start_us"]) != int(b["start_us"]):
 				return int(a["start_us"]) < int(b["start_us"])
@@ -270,6 +296,8 @@ static func _append_tuning_hold_events(raw_events: Array[Dictionary], sliders: A
 				"priority": 0 if life else 1,
 			})
 			raw_events.append({
+				# 若这组随后凝现素音，测试 Replay 只把载波维持到该事件；计分窗口
+				# 仍在滑条原定尾点结束，不会误伤后续另一种音符的按住状态。
 				"time": int(interval["end_us"]) + 1000,
 				"kind": release_kind,
 				"vector": Vector2.ZERO,

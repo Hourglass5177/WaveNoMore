@@ -1,0 +1,46 @@
+[gd_resource type="Resource" script_class="StageShow" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://src/content/resources/stage_show.gd" id="1_show"]
+[ext_resource type="Script" path="res://src/content/resources/show_cue.gd" id="2_cue"]
+
+[sub_resource type="Resource" id="Cue_intro"]
+script = ExtResource("2_cue")
+event_id = "show_s03_intro"
+tick = 0
+track = 5
+cue_id = &"tutorial_hold_intro"
+target_slot = &"hud"
+parameters = {"display_sec": 4.2, "text": "Hold 专项：先在头部闭环时按下，然后持续按住；尾部不要求卡点松键"}
+
+[sub_resource type="Resource" id="Cue_long"]
+script = ExtResource("2_cue")
+event_id = "show_s03_long"
+tick = 11520
+track = 5
+cue_id = &"tutorial_hold_long"
+target_slot = &"hud"
+parameters = {"display_sec": 2.8, "text": "长延音会在按住过程中持续缩短；保持按键即可，不必盯着尾部松手"}
+
+[sub_resource type="Resource" id="Cue_offset"]
+script = ExtResource("2_cue")
+event_id = "show_s03_offset"
+tick = 19200
+track = 5
+cue_id = &"tutorial_hold_offset"
+target_slot = &"hud"
+parameters = {"display_sec": 2.8, "text": "两侧延音可以错位重叠：已经按住的一侧不要松，另一只手照常起音"}
+
+[sub_resource type="Resource" id="Cue_dual"]
+script = ExtResource("2_cue")
+event_id = "show_s03_dual"
+tick = 26880
+track = 5
+cue_id = &"tutorial_hold_dual"
+target_slot = &"hud"
+parameters = {"display_sec": 2.8, "text": "双侧 Hold 同时到达时一起按住；结束后可自然松手，不另做尾判"}
+
+[resource]
+script = ExtResource("1_show")
+schema_version = 1
+show_id = "s03_hold_lab_show"
+cues = [SubResource("Cue_intro"), SubResource("Cue_long"), SubResource("Cue_offset"), SubResource("Cue_dual")]

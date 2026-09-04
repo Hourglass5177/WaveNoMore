@@ -1,103 +1,46 @@
-[gd_resource type="Resource" script_class="StageShow" load_steps=13 format=3]
+[gd_resource type="Resource" script_class="StageShow" load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://src/content/resources/stage_show.gd" id="1_show"]
 [ext_resource type="Script" path="res://src/content/resources/show_cue.gd" id="2_cue"]
 
 [sub_resource type="Resource" id="Cue_intro"]
 script = ExtResource("2_cue")
-event_id = "show_tuning_lab_intro"
+event_id = "show_s02_intro"
 tick = 0
 track = 5
-cue_id = &"tutorial_tuning_lab_intro"
+cue_id = &"tutorial_tap_intro"
 target_slot = &"hud"
-parameters = {"display_sec": 3.2, "text": "按住任意一口钟都会持续发波：左键/F是死钟，右键/J是生钟；普通段频率固定"}
+parameters = {"display_sec": 4.0, "text": "Tap 专项：右上朱音用右键/J/R1，左下玄音用左键/F/L1；进度环在中心闭合时敲"}
 
-[sub_resource type="Resource" id="Cue_find"]
+[sub_resource type="Resource" id="Cue_eighth"]
 script = ExtResource("2_cue")
-event_id = "show_tuning_lab_find"
-tick = 2400
+event_id = "show_s02_eighth"
+tick = 11520
 track = 5
-cue_id = &"tutorial_tuning_find"
+cue_id = &"tutorial_tap_eighth"
 target_slot = &"hud"
-parameters = {"display_sec": 3.2, "text": "调频场亮起后才可改频。先看上方朱轨：按住右键并横向拖动，让游标跟在亮带内"}
+parameters = {"display_sec": 2.8, "text": "接下来是八分短句：先盯住中心落点，再用颜色判断左右手"}
 
-[sub_resource type="Resource" id="Cue_find_rift"]
+[sub_resource type="Resource" id="Cue_chord"]
 script = ExtResource("2_cue")
-event_id = "show_tuning_lab_find_rift"
-tick = 2880
-duration_ticks = 2880
-track = 3
-cue_id = &"open_tuning_rift"
-target_slot = &"boundary"
-parameters = {"intensity": 0.55}
-
-[sub_resource type="Resource" id="Cue_manifestation_a"]
-script = ExtResource("2_cue")
-event_id = "show_tuning_lab_manifestation_a"
-tick = 5280
+event_id = "show_s02_chord"
+tick = 26880
 track = 5
-cue_id = &"tutorial_su_manifestation"
+cue_id = &"tutorial_tap_chord"
 target_slot = &"hud"
-parameters = {"display_sec": 2.4, "text": "素音会在两列波真正相叠的骨白交点凝现；它是调频结果，不是第三条要点击的音符"}
+parameters = {"display_sec": 2.8, "text": "朱、玄同时抵达时双键齐敲；下一拍会有单侧应答"}
 
-[sub_resource type="Resource" id="Cue_rest"]
+[sub_resource type="Resource" id="Cue_mixed"]
 script = ExtResource("2_cue")
-event_id = "show_tuning_lab_rest"
-tick = 6240
+event_id = "show_s02_mixed"
+tick = 34560
 track = 5
-cue_id = &"tutorial_tuning_rest"
+cue_id = &"tutorial_tap_mixed"
 target_slot = &"hud"
-parameters = {"display_sec": 2.4, "text": "滑条结束不判松键；调频场关闭后，新发出的波会自动恢复4.35 Hz基频"}
-
-[sub_resource type="Resource" id="Cue_follow"]
-script = ExtResource("2_cue")
-event_id = "show_tuning_lab_follow"
-tick = 8160
-track = 5
-cue_id = &"tutorial_tuning_follow"
-target_slot = &"hud"
-parameters = {"display_sec": 3.4, "text": "第二段是双侧往返：手柄左摇杆控死、右摇杆控生；到端头看折返箭头，再沿粗轨滑回"}
-
-[sub_resource type="Resource" id="Cue_follow_rift"]
-script = ExtResource("2_cue")
-event_id = "show_tuning_lab_follow_rift"
-tick = 8640
-duration_ticks = 3840
-track = 3
-cue_id = &"open_tuning_rift"
-target_slot = &"boundary"
-parameters = {"intensity": 0.85}
-
-[sub_resource type="Resource" id="Cue_pair_controls"]
-script = ExtResource("2_cue")
-event_id = "show_tuning_lab_pair_controls"
-tick = 4080
-track = 5
-cue_id = &"tutorial_tuning_pair"
-target_slot = &"hud"
-parameters = {"display_sec": 2.6, "text": "双轨同现时两口钟分别跟随；PC双键拖动只是单鼠标简测，完整双路操作请用手柄"}
-
-[sub_resource type="Resource" id="Cue_death_solo"]
-script = ExtResource("2_cue")
-event_id = "show_tuning_lab_death_solo"
-tick = 11040
-track = 5
-cue_id = &"tutorial_tuning_death_solo"
-target_slot = &"hud"
-parameters = {"display_sec": 2.2, "text": "最后只看下方玄轨：按住左键单独拖动死钟；结束时无需刻意松键"}
-
-[sub_resource type="Resource" id="Cue_finale"]
-script = ExtResource("2_cue")
-event_id = "show_tuning_lab_finale"
-tick = 12480
-duration_ticks = 960
-track = 3
-cue_id = &"tuning_lab_finale"
-target_slot = &"boundary"
-parameters = {"intensity": 1.0}
+parameters = {"display_sec": 2.5, "text": "最后把交替、重复和短切分连起来，仍只需要在中心读一个落点"}
 
 [resource]
 script = ExtResource("1_show")
 schema_version = 1
-show_id = "s02_tuning_lab_show"
-cues = [SubResource("Cue_intro"), SubResource("Cue_find"), SubResource("Cue_find_rift"), SubResource("Cue_pair_controls"), SubResource("Cue_manifestation_a"), SubResource("Cue_rest"), SubResource("Cue_follow"), SubResource("Cue_follow_rift"), SubResource("Cue_death_solo"), SubResource("Cue_finale")]
+show_id = "s02_tap_lab_show"
+cues = [SubResource("Cue_intro"), SubResource("Cue_eighth"), SubResource("Cue_chord"), SubResource("Cue_mixed")]

@@ -12,11 +12,11 @@ extends Resource
 @export_range(1, 500, 1) var pass_window_ms: int = 135
 ## 无人命中时自动判 MISS 的晚侧边界，单位毫秒；越大，音符等待越久才过期。
 @export_range(1, 1000, 1) var miss_window_ms: int = 180
-## Hold 尾部获 PERFECT 的最大松键误差，单位毫秒；越大越宽松。
+## 已弃用：仅保留与旧资源的字段兼容，Hold 运行时不再读取。
 @export_range(1, 500, 1) var hold_release_perfect_ms: int = 60
-## Hold 尾部获 GOOD 的最大松键误差，单位毫秒；越大越宽松。
+## 已弃用：仅保留与旧资源的字段兼容，Hold 运行时不再读取。
 @export_range(1, 500, 1) var hold_release_good_ms: int = 110
-## Hold 尾部仍能获 PASS 的最大松键误差，单位毫秒；越大越宽松。
+## 已弃用：仅保留与旧资源的字段兼容，Hold 运行时不再读取。
 @export_range(1, 500, 1) var hold_release_pass_ms: int = 170
 ## Hold 中途断按后允许续按的宽限，单位毫秒；越大越不易因短暂松手 MISS。
 @export_range(1, 500, 1) var hold_sustain_grace_ms: int = 100
@@ -24,31 +24,37 @@ extends Resource
 @export_range(1, 500, 1) var chord_tolerance_ms: int = 75
 
 @export_group("Tuning")
-## 连续跟随的确定性采样间隔，单位 tick；只影响判定采样，不在画面上生成离散点。
+## 理想 Replay 生成调频位移的采样间隔，单位 tick；不参与玩家评分。
 @export_range(1, 240, 1) var tuning_sample_interval_ticks: int = 30
-## 判定引导允许的前后时间余量，单位毫秒；可见引导带必须与此数值使用同一计算。
-@export_range(0, 500, 1) var tuning_guide_time_window_ms: int = 180
-## 除时间余量外再加入的归一化空间余量；0.08 表示频率轴总长的 8%。
-@export_range(0.0, 0.5, 0.001) var tuning_spatial_margin: float = 0.08
-## 连续有效采样占比达到该值时获得 PERFECT。
+## 点状时间引导前后展开的时间余量，单位毫秒；只影响视觉提示。
+@export_range(0, 500, 1) var tuning_guide_time_window_ms: int = 250
+## 视觉引导范围额外加入的归一化空间余量；0.12 表示频率轴总长的 12%。
+@export_range(0.0, 0.5, 0.001) var tuning_spatial_margin: float = 0.12
+## 已弃用：旧连续覆盖率判定阈值，仅为兼容现有规则资源保留。
 @export_range(0.0, 1.0, 0.001) var tuning_perfect_coverage: float = 0.90
-## 连续有效采样占比达到该值时获得 GOOD。
+## 已弃用：旧连续覆盖率判定阈值，仅为兼容现有规则资源保留。
 @export_range(0.0, 1.0, 0.001) var tuning_good_coverage: float = 0.75
-## 连续有效采样占比达到该值时至少获得 PASS；低于它为 MISS。
+## 已弃用：旧连续覆盖率判定阈值，仅为兼容现有规则资源保留。
 @export_range(0.0, 1.0, 0.001) var tuning_pass_coverage: float = 0.60
-## 普通段及每个调频段开始时采用的统一基准频率，单位 Hz。
-@export_range(0.1, 30.0, 0.01) var tuning_base_frequency_hz: float = 4.35
-## 玩家可调到的最低载波频率，单位 Hz。
-@export_range(0.1, 30.0, 0.01) var tuning_min_frequency_hz: float = 1.8
-## 玩家可调到的最高载波频率，单位 Hz。
-@export_range(0.1, 30.0, 0.01) var tuning_max_frequency_hz: float = 6.9
+## 调频滑条端点的空间捕获半径，占单程长度的比例；进入这一区域即视为一次到达尝试。
+@export_range(0.001, 0.25, 0.001) var tuning_endpoint_capture_ratio: float = 0.03
+## 已弃用：调频现为“原定时刻前完成即成功”，仅为兼容旧规则资源保留。
+@export_range(1, 1000, 1) var tuning_endpoint_perfect_ms: int = 150
+## 已弃用：调频现为“原定时刻前完成即成功”，仅为兼容旧规则资源保留。
+@export_range(1, 1500, 1) var tuning_endpoint_good_ms: int = 300
+## 已弃用：调频不再提供尾点后的晚到窗口，仅为兼容旧规则资源保留。
+@export_range(1, 2000, 1) var tuning_endpoint_pass_ms: int = 500
+## 普通段及每个调频段开始时采用的统一基准频率，单位 Hz；3 Hz 能让基础波圈更舒展。
+@export_range(0.1, 30.0, 0.01) var tuning_base_frequency_hz: float = 3.0
+## 玩家可调到的最低载波频率，单位 Hz；低频端用于形成明显稀疏的大间距波纹。
+@export_range(0.1, 30.0, 0.01) var tuning_min_frequency_hz: float = 1.0
+## 玩家可调到的最高载波频率，单位 Hz；与低频端拉开足够差距以突出调频效果。
+@export_range(0.1, 30.0, 0.01) var tuning_max_frequency_hz: float = 7.0
 ## 频率变化 1 Hz 对应的滑条设计长度，单位像素；保证不同滑条使用相同调频粒度。
 @export_range(1.0, 1000.0, 1.0) var tuning_pixels_per_hz: float = 160.0
-## 手柄摇杆满幅时，虚拟游标每秒移动的设计像素数。
-@export_range(1.0, 3000.0, 1.0) var tuning_cursor_speed_px_sec: float = 720.0
-## 左右摇杆用于调频时的死区；小于此幅度的漂移视为回中。
-@export_range(0.0, 0.95, 0.01) var tuning_stick_deadzone: float = 0.18
-
+## 仅用于没有计分滑条时的自由调频：摇杆完整旋转一圈对应多少 Hz。
+## 计分滑条的有限手势由滑条弦长和等效圆共同决定，不读取这个灵敏度。
+@export_range(0.1, 60.0, 0.01) var tuning_hz_per_revolution: float = 32.0
 @export_group("Rapid")
 ## PERFECT 所需“有效次数/目标次数”比例，范围 0～2；越大越难。
 @export_range(0.0, 2.0, 0.01) var rapid_perfect_ratio: float = 1.0

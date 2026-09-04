@@ -4,9 +4,9 @@ extends RefCounted
 ## 确定性 Replay 的数据包。保存语义输入及谱面、规则、歌曲和装备哈希，
 ## 不保存具体键码，因此同一记录可由不同设备映射复现。
 
-## v2 把一条共享调频向量拆成固定的生/死双路速率或位移。
-## v1 无法可靠判断旧向量属于哪口钟，因此加载入口会明确拒绝，不能猜测迁移。
-const CURRENT_SCHEMA_VERSION: int = 2
+## v3 只记录生、死双路的相对位移；旧版持续速率无法无损改写为旋钮轨迹，
+## 因此加载入口会明确拒绝 v1/v2，不能猜测迁移。
+const CURRENT_SCHEMA_VERSION: int = 3
 
 ## 此 Replay 采用的数据结构版本；必须等于 CURRENT_SCHEMA_VERSION 才能直接执行。
 var schema_version: int = CURRENT_SCHEMA_VERSION

@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="StageDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/content/resources/stage_definition.gd" id="1_stage"]
+
+[resource]
+script = ExtResource("1_stage")
+stage_id = "s05"
+display_name = "05 综合机制测试"
+description = "依次组合 Tap、Hold 与旋钮调频；同一侧不会同时争夺按键，便于检查机制切换和整体手感。"
+order_index = 5
+song_title = "综合机制测试"
+song_artist = "原型测试节拍"
+unlocked_by_default = true
+debug_nonlethal = true
+song_resource_path = "res://content/stages/s05/song_definition.tres"
+chart_resource_path = "res://content/stages/s05/song_chart.tres"
+stage_show_resource_path = "res://content/stages/s05/stage_show.tres"
+visual_theme_resource_path = "res://content/stages/s05/stage_visual_theme.tres"
+reward_resource_path = "res://content/stages/s05/reward_definition.tres"
+rule_set_resource_path = "res://content/rules/default_gameplay_rules.tres"

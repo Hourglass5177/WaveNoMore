@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="StageDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/content/resources/stage_definition.gd" id="1_stage"]
+
+[resource]
+script = ExtResource("1_stage")
+stage_id = "s04"
+display_name = "04 旋钮调频测试"
+description = "只测试调频：先用四拍与两拍短弧熟悉单钟，再测试横向、斜向、近纵向、双钟与四拍往返。"
+order_index = 4
+song_title = "旋钮调频测试"
+song_artist = "原型测试节拍"
+unlocked_by_default = true
+debug_nonlethal = true
+song_resource_path = "res://content/stages/s04/song_definition.tres"
+chart_resource_path = "res://content/stages/s04/song_chart.tres"
+stage_show_resource_path = "res://content/stages/s04/stage_show.tres"
+visual_theme_resource_path = "res://content/stages/s04/stage_visual_theme.tres"
+reward_resource_path = "res://content/stages/s04/reward_definition.tres"
+rule_set_resource_path = "res://content/rules/default_gameplay_rules.tres"

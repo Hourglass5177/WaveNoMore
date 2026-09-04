@@ -1,68 +1,28 @@
-[gd_resource type="Resource" script_class="StageShow" load_steps=8 format=3]
+[gd_resource type="Resource" script_class="StageShow" load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://src/content/resources/stage_show.gd" id="1_show"]
 [ext_resource type="Script" path="res://src/content/resources/show_cue.gd" id="2_cue"]
 
 [sub_resource type="Resource" id="Cue_intro"]
 script = ExtResource("2_cue")
-event_id = "show_intro"
+event_id = "show_s01_intro"
 tick = 0
 track = 5
-cue_id = &"tutorial_tap"
+cue_id = &"tutorial_free_carrier"
 target_slot = &"hud"
-parameters = {"text": "右上红音→右键/J；左下黑音→左键/F；圆环在正中闭合时敲"}
+parameters = {"display_sec": 5.0, "text": "空按测试：左键/F/L1按住死钟，右键/J/R1按住生钟；可单独按住，也可双钟齐鸣"}
 
-[sub_resource type="Resource" id="Cue_hold"]
+[sub_resource type="Resource" id="Cue_dual"]
 script = ExtResource("2_cue")
-event_id = "show_hold"
-tick = 2640
+event_id = "show_s01_dual_hold"
+tick = 7680
 track = 5
-cue_id = &"tutorial_hold"
+cue_id = &"tutorial_free_carrier_dual"
 target_slot = &"hud"
-parameters = {"text": "按住来音所属键；另一色圆环仍照常在中心闭合"}
-
-[sub_resource type="Resource" id="Cue_tuning"]
-script = ExtResource("2_cue")
-event_id = "show_tuning"
-tick = 6000
-duration_ticks = 1680
-track = 5
-cue_id = &"tutorial_tuning"
-target_slot = &"boundary"
-parameters = {"text": "双钟齐鸣：分别沿上下粗轨跟随亮带；到箭头处折返，无需尾部松键"}
-
-[sub_resource type="Resource" id="Cue_rift"]
-script = ExtResource("2_cue")
-event_id = "show_rift"
-tick = 6240
-duration_ticks = 1440
-track = 3
-cue_id = &"open_rift"
-target_slot = &"boundary"
-parameters = {"intensity": 0.8}
-
-[sub_resource type="Resource" id="Cue_rapid"]
-script = ExtResource("2_cue")
-event_id = "show_rapid"
-tick = 7920
-duration_ticks = 1200
-track = 5
-cue_id = &"tutorial_rapid"
-target_slot = &"hud"
-parameters = {"text": "左右高速交替，让双钟共振"}
-
-[sub_resource type="Resource" id="Cue_finale"]
-script = ExtResource("2_cue")
-event_id = "show_finale"
-tick = 9600
-duration_ticks = 960
-track = 3
-cue_id = &"finale_bloom"
-target_slot = &"world"
-parameters = {"intensity": 1.0}
+parameters = {"display_sec": 4.0, "text": "现在同时按住两口钟，观察朱、玄波是否持续，以及重叠处的骨白相纹是否稳定"}
 
 [resource]
 script = ExtResource("1_show")
 schema_version = 1
-show_id = "s01_graybox_show"
-cues = [SubResource("Cue_intro"), SubResource("Cue_hold"), SubResource("Cue_tuning"), SubResource("Cue_rift"), SubResource("Cue_rapid"), SubResource("Cue_finale")]
+show_id = "s01_free_carrier_show"
+cues = [SubResource("Cue_intro"), SubResource("Cue_dual")]

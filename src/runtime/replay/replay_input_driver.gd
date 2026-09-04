@@ -52,7 +52,7 @@ func load_replay(data: ReplayData) -> bool:
 	if data == null:
 		last_validation_error = "Replay data is null."
 		return false
-	# v1 的共享调频向量无法推断为生钟或死钟，禁止静默按 v2 播放。
+	# v1/v2 含共享向量或持续速率，无法无损还原为 v3 的旋钮位移，禁止静默迁移。
 	if data.schema_version != ReplayData.CURRENT_SCHEMA_VERSION:
 		last_validation_error = "Unsupported Replay schema."
 		return false

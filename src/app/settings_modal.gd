@@ -15,8 +15,8 @@ var _ui: HSlider
 var _shake: HSlider
 ## 闪光强度系数，0 表示关闭，1 表示完整强度。
 var _flash: HSlider
-## 调频相纹的视觉频率倍率；只改变新波纹的疏密，不参与玩法判定。
-var _tuning_wave_frequency: HSlider
+## 调频相纹的视觉强度；不改变真实波前或玩法判定。
+var _tuning_wave_intensity: HSlider
 ## 是否使用全屏窗口的开关。
 var _fullscreen: CheckButton
 ## 是否在关卡中显示开发调试 HUD 的开关。
@@ -47,9 +47,9 @@ func _ready() -> void:
 	_ui = _add_slider(column, "界面音效", -40.0, 6.0, SettingsService.ui_volume_db)
 	_shake = _add_slider(column, "画面震动", 0.0, 1.0, SettingsService.screen_shake_scale)
 	_flash = _add_slider(column, "闪光强度", 0.0, 1.0, SettingsService.flash_scale)
-	_tuning_wave_frequency = _add_tuning_wave_frequency_slider(column)
+	_tuning_wave_intensity = _add_tuning_wave_intensity_slider(column)
 	var wave_help := Label.new()
-	wave_help.text = "只调整相纹的显示抽样密度；不会改变真实发波频率、传播速度或判定。"
+	wave_help.text = "调整骨白叠加纹的明度与辉光；不会删减波纹，也不会改变频率、波速或判定。"
 	wave_help.custom_minimum_size.x = 700
 	MingheUiStyle.style_body(wave_help, 17)
 	column.add_child(wave_help)
@@ -90,17 +90,17 @@ func _add_slider(parent: VBoxContainer, label_text: String, minimum: float, maxi
 	return slider
 
 
-func _add_tuning_wave_frequency_slider(parent: VBoxContainer) -> HSlider:
+func _add_tuning_wave_intensity_slider(parent: VBoxContainer) -> HSlider:
 	var slider := _add_slider(
 		parent,
-		"相纹显示密度（仅画面）",
-		SettingsService.MIN_TUNING_WAVE_FREQUENCY_SCALE,
-		SettingsService.MAX_TUNING_WAVE_FREQUENCY_SCALE,
-		SettingsService.tuning_wave_frequency_scale
+		"相纹强度（仅画面）",
+		SettingsService.MIN_TUNING_WAVE_INTENSITY,
+		SettingsService.MAX_TUNING_WAVE_INTENSITY,
+		SettingsService.tuning_wave_intensity
 	)
-	slider.name = "TuningWaveFrequencySlider"
+	slider.name = "TuningWaveIntensitySlider"
 	var value_label := Label.new()
-	value_label.name = "TuningWaveFrequencyValue"
+	value_label.name = "TuningWaveIntensityValue"
 	value_label.custom_minimum_size.x = 72
 	value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	MingheUiStyle.style_body(value_label, 19)
@@ -122,7 +122,7 @@ func _save_and_close() -> void:
 	SettingsService.ui_volume_db = _ui.value
 	SettingsService.screen_shake_scale = _shake.value
 	SettingsService.flash_scale = _flash.value
-	SettingsService.tuning_wave_frequency_scale = _tuning_wave_frequency.value
+	SettingsService.tuning_wave_intensity = _tuning_wave_intensity.value
 	SettingsService.fullscreen = _fullscreen.button_pressed
 	SettingsService.debug_hud_enabled = _debug.button_pressed
 	SettingsService.save_settings()

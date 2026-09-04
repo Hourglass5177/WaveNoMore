@@ -2,7 +2,19 @@ class_name GrayboxFieldVisual
 extends Node2D
 
 ## 调频滑条或疾振计数器的灰盒表现。
-## 调频滑条只显示玩家真正需要看的信息；判定仍由领域层负责。
+## 调频滑条只显示宽轨、填充、时间点列和旋向；判定仍由领域层负责。
+
+const TUNING_ARC_GEOMETRY: GDScript = preload("res://src/domain/tuning/tuning_arc_geometry.gd")
+
+# 曲线先高密度采样，再按弧长重采样。这样玩家走过相同的画面距离，
+# 始终代表相同的调频量，不会在弯曲处忽快忽慢。
+const CURVE_SAMPLE_COUNT: int = 49
+const CURVE_DENSE_SAMPLE_COUNT: int = 193
+# 本项目谱面固定使用 PPQ 480；这里只用它计算点状引导的轻微拍点呼吸。
+const TICKS_PER_BEAT: float = 480.0
+const GUIDE_DOT_SPACING_PX: float = 28.0
+# 两侧滑条的最内沿各离开画面中线 32 像素，中央因此留出完整的 64 像素呼吸区。
+const CENTER_GUTTER_PX: float = 32.0
 
 ## 0 为调频滑条，1 为疾振计数器。
 @export_enum("Tuning", "Rapid") var field_kind: int = 0
@@ -10,22 +22,27 @@ extends Node2D
 @export var extent: Vector2 = Vector2(720.0, 300.0)
 
 @export_group("Tuning Slider")
-## 滑条主体的默认宽度。72 px 足够让引导带和玩家游标同时保持清楚。
-@export_range(48.0, 112.0, 1.0) var tuning_rail_width: float = 72.0
-## 生滑条相对画面中心的插槽；死滑条自动取相反数，始终保持中心对称。
-@export var life_slot_offset: Vector2 = Vector2(-205.0, -188.0)
+## 滑条主体宽度；两端会自动绘制成同直径的圆帽。
+@export_range(72.0, 144.0, 1.0) var tuning_rail_width: float = 104.0
+## 主体外侧骨白描边厚度，不参与频率长度计算。
+@export_range(2.0, 16.0, 1.0) var tuning_outline_width: float = 8.0
+## 生滑条的纵向插槽；横向位置会按轨道实际宽度自动计算。死滑条取其中心反演。
+@export var life_slot_offset: Vector2 = Vector2(0.0, -188.0)
 ## 用于安全摆放滑条的设计画布尺寸；只平移插槽，绝不缩短轨道。
 @export var canvas_size: Vector2 = Vector2(1920.0, 1080.0)
 ## 滑条端点尽量与画布边缘保留的距离；轨道长于画布时会居中溢出而不会缩放。
 @export_range(0.0, 180.0, 1.0) var slider_edge_margin_px: float = 72.0
-## 每 1 Hz 对应的轨道长度，保证相同位移始终代表相同调频量。
+## 每 1 Hz 对应的端点弦长；圆弧可以变弯，但同样频差的两端距离保持一致。
 @export_range(40.0, 260.0, 1.0) var pixels_per_hz: float = 160.0
 ## 归一化频率轴两端对应的物理频率，仅用于把频率跨度换算成画面长度。
-@export_range(0.1, 20.0, 0.1) var min_frequency_hz: float = 1.8
-@export_range(0.1, 20.0, 0.1) var max_frequency_hz: float = 6.9
-## 连续跟随判定的额外空间余量。视觉引导带与领域判定使用同一默认值。
+@export_range(0.1, 20.0, 0.1) var min_frequency_hz: float = 1.0
+@export_range(0.1, 20.0, 0.1) var max_frequency_hz: float = 7.0
+## 已弃用：自由调频仍使用“每圈多少 Hz”，计分滑条的形状改由等效圆几何决定。
+## 暂时保留字段，避免旧场景资源失去属性。
+@export_range(0.1, 60.0, 0.1) var rotary_hz_per_revolution: float = 32.0
+## 点状时间引导的额外空间余量；只用于即时亮度反馈，不参与评分。
 @export_range(0.0, 0.25, 0.005) var guide_space_margin: float = 0.08
-## 时间宽容度，单位秒；会换算成当前滑条上的可见引导范围。
+## 时间提示余量，单位秒；会换算成当前滑条上的视觉引导范围。
 @export_range(0.0, 0.5, 0.005) var guide_time_margin_sec: float = 0.18
 
 @export_group("Tuning Palette")
@@ -33,7 +50,7 @@ extends Node2D
 @export var life_color: Color = Color("c23b31")
 ## 死钟滑条主色。刻意比死界背景更亮，避免玄色信息消失。
 @export var death_color: Color = Color("414a60")
-## 滑条描边、引导带和贴合反馈使用的骨白色。
+## 滑条描边、点状引导和贴合反馈使用的骨白色。
 @export var bone_color: Color = Color("f2e6c9")
 ## 滑条最底层颜色，用于从复杂场景中托出交互区域。
 @export var backing_color: Color = Color("080a10", 0.94)
@@ -72,34 +89,68 @@ var _traversal_count: int = 1
 # 整条事件的总时长和单程时长，供时间宽容度换算成空间带宽。
 var _duration_sec: float = 1.0
 var _traversal_duration_sec: float = 1.0
-# 由频率跨度换算出的真实轨道长度。
+# 频率跨度先确定屏幕弦长，再由等效圆得到圆心角、半径和真实弧长。
+var _slider_chord_px: float = 384.0
 var _slider_length_px: float = 384.0
-# 玩家游标与时间引导在轨道上的空间位置，均为 0～1。
+var _slider_sweep_rad: float = deg_to_rad(45.0)
+var _slider_radius_px: float = 0.0
+var _slider_center_distance_px: float = 0.0
+# 谱面可把整段等效圆弧旋转到横向、斜向或近纵向；起手扇区使用同一角度。
+var _arc_rotation_rad: float = 0.0
+# 谱师相对默认安全锚点设置的构图偏移；从预读到激活始终保持不变。
+var _visual_offset_px: Vector2 = Vector2.ZERO
+# 玩家填充前沿与时间引导在轨道上的空间位置，均为 0～1。
 var _player_progress: float = 0.0
 var _guide_progress: float = 0.0
-# 当前可接受的内嵌引导带边界。若领域快照提供权威值，会覆盖本地预览计算。
+# 当前点状引导带边界。若领域快照提供权威值，会覆盖本地预览计算。
 var _guide_min_progress: float = 0.0
 var _guide_max_progress: float = 0.0
 var _has_authoritative_guide_range: bool = false
-# 当前滑条有效采样覆盖率，用于轻量反馈和调试快照。
-var _coverage: float = 0.0
+# 1 为顺时针，-1 为逆时针，0 表示当前无需继续旋转。
+var _required_rotation_sign: int = 0
+var _has_authoritative_rotation_sign: bool = false
+# 当前单程端点的权威判定状态。它只改变端点提示颜色，不参与实际评分。
+var _endpoint_has_state: bool = false
+var _endpoint_target_progress: float = 1.0
+var _endpoint_inside: bool = false
+var _endpoint_captured: bool = false
+var _endpoint_window_active: bool = false
+var _endpoint_grade: int = GameplayTypes.JudgmentGrade.MISS
+var _endpoint_best_error_us: int = 0
+# 贴合状态只做很短的亮度缓动，不改变玩家填充的位置。
+var _alignment_strength: float = 0.0
 # 调频时间场是否已开启；普通段即使按住钟也不显示可操作态。
 var _field_active: bool = false
+# PREVIEW 只显示缩圈和起手提示；到权威起点后才进入可操作态。
+var _interaction_open: bool = false
+var _authoritative_traversal_index: int = 0
+var _turnaround_pending: bool = false
 # 调频区域接近事件起点的收束进度。
 var _approach_progress: float = 0.0
+# Host 按可见分组分配的小序号与预读层级；同组生死滑条共享序号。
+var _preview_order_number: int = 0
+var _preview_phase: int = 1
+var _preview_alpha: float = 0.45
 # 疾振要求次数和交替规则只参与疾振 HUD。
 var _required_strikes: int = 1
 var _must_alternate: bool = true
+# 由频率低端指向高端的等弧长曲线，以及按事件起终点重排后的曲线。
+var _frequency_curve_points: PackedVector2Array = PackedVector2Array()
+var _event_curve_points: PackedVector2Array = PackedVector2Array()
+# 当前圆弧相对插槽中心的包围盒，用来避开中线与屏幕边缘。
+var _curve_min_relative: Vector2 = Vector2.ZERO
+var _curve_max_relative: Vector2 = Vector2.ZERO
 
 
 func configure_from_rules(rules: GameplayRuleSet) -> void:
-	## 滑条的空间尺度与判定宽容必须直接读取关卡规则，避免画面提示和领域判定不一致。
+	## 滑条的空间尺度与视觉提示直接读取关卡规则，避免预览和实机关卡表现不一致。
 	if rules == null:
 		return
 	canvas_size = rules.wave_canvas_size
 	pixels_per_hz = rules.tuning_pixels_per_hz
 	min_frequency_hz = rules.tuning_min_frequency_hz
 	max_frequency_hz = rules.tuning_max_frequency_hz
+	rotary_hz_per_revolution = rules.tuning_hz_per_revolution
 	guide_space_margin = rules.tuning_spatial_margin
 	guide_time_margin_sec = float(rules.tuning_guide_time_window_ms) / 1000.0
 	_recalculate_slider_length()
@@ -119,11 +170,22 @@ func prepare(view_model: Dictionary) -> void:
 	missed = false
 	tuning_active = false
 	_field_active = false
-	_coverage = 0.0
+	_interaction_open = false
+	_authoritative_traversal_index = 0
+	_turnaround_pending = false
+	_required_rotation_sign = 0
+	_has_authoritative_rotation_sign = false
+	_clear_endpoint_state()
+	_alignment_strength = 0.0
 	_approach_progress = 0.0
+	_preview_order_number = 0
+	_preview_phase = 1
+	_preview_alpha = 0.45
 
 	_start_value = clampf(float(view_model.get("start_value", 0.0)), 0.0, 1.0)
 	_end_value = clampf(float(view_model.get("end_value", 1.0)), 0.0, 1.0)
+	_arc_rotation_rad = deg_to_rad(float(view_model.get("arc_rotation_deg", 0.0)))
+	_visual_offset_px = view_model.get("visual_offset_px", Vector2.ZERO)
 	_traversal_count = maxi(1, int(view_model.get("traversal_count", 1)))
 	_traversal_ticks = maxi(1, int(view_model.get(
 		"traversal_ticks",
@@ -151,6 +213,18 @@ func prepare(view_model: Dictionary) -> void:
 	queue_redraw()
 
 
+func _process(delta: float) -> void:
+	## 贴合反馈只缓动亮度；填充前沿始终直接使用领域层位置，绝不产生操作拖尾。
+	if field_kind != 0 or not visible:
+		return
+	var target: float = 1.0 if tuning_active and _player_inside_guide() else 0.0
+	var duration_sec: float = 0.06 if target > _alignment_strength else 0.10
+	var previous: float = _alignment_strength
+	_alignment_strength = move_toward(_alignment_strength, target, delta / duration_sec)
+	if not is_equal_approx(previous, _alignment_strength):
+		queue_redraw()
+
+
 func set_region_progress(value: float) -> void:
 	region_progress = clampf(value, 0.0, 1.0)
 	if not _has_authoritative_guide_range:
@@ -168,6 +242,14 @@ func set_approach_timing(time_to_start_sec: float, approach_duration_sec: float)
 	queue_redraw()
 
 
+func set_preview_presentation(order_number: int, phase: int, alpha: float) -> void:
+	## phase 由 Host 统一计算：0 为当前、1 为未来、2 为已经结束的收尾。
+	_preview_order_number = maxi(order_number, 0)
+	_preview_phase = clampi(phase, 0, 2)
+	_preview_alpha = clampf(alpha, 0.0, 1.0)
+	queue_redraw()
+
+
 func set_gameplay_snapshot(snapshot: Dictionary) -> void:
 	## 新系统入口：一份快照可同时携带两条独立滑条，本实例只读取与 event_id 相符的一条。
 	var slider_state: Dictionary = _find_slider_state(snapshot.get("active_tuning_sliders", []))
@@ -182,11 +264,14 @@ func set_gameplay_snapshot(snapshot: Dictionary) -> void:
 		and belongs_to_active_field
 	)
 	var side_key: String = "life_held" if affinity == GameplayTypes.Affinity.ZHU else "death_held"
-	tuning_active = _field_active and bool(snapshot.get(side_key, false))
+	tuning_active = _field_active and _interaction_open and bool(snapshot.get(side_key, false))
 
 	if not slider_state.is_empty():
 		set_slider_state(slider_state)
 	else:
+		_interaction_open = false
+		_turnaround_pending = false
+		_has_authoritative_rotation_sign = false
 		# 滑条会在正式起点前生成。此时用本钟的权威全局频率预定位，
 		# 玩家在调频场空档移动后能立即看见真实位置，不会到开头才突然跳动。
 		var value_key: String = (
@@ -204,6 +289,15 @@ func set_gameplay_snapshot(snapshot: Dictionary) -> void:
 
 func set_slider_state(state: Dictionary) -> void:
 	## 供预览器或 StageSession 直接推送单条滑条状态。
+	_interaction_open = bool(state.get("interaction_open", true))
+	_authoritative_traversal_index = maxi(0, int(state.get(
+		"current_traversal_index",
+		state.get("current_endpoint_index", 0)
+	)))
+	_turnaround_pending = bool(state.get(
+		"turnaround_pending",
+		_authoritative_traversal_index < _traversal_count - 1
+	))
 	if state.has("player_progress"):
 		# 玩家可能尚在滑条范围外；保留超出 0～1 的真实位置，才能看见应往哪边预定位。
 		_player_progress = float(state["player_progress"])
@@ -211,10 +305,26 @@ func set_slider_state(state: Dictionary) -> void:
 		_player_progress = _progress_from_frequency_value(float(state["player_value"]))
 	if state.has("guide_progress"):
 		_guide_progress = clampf(float(state["guide_progress"]), 0.0, 1.0)
-	if state.has("coverage"):
-		_coverage = clampf(float(state["coverage"]), 0.0, 1.0)
+	if not _interaction_open:
+		# 表现层也守住 PREVIEW 边界：即使上游热重载带来旧频率值，
+		# 缩圈结束前仍只显示空槽，不让玩家误以为提前旋转有效。
+		_player_progress = 0.0
+		_guide_progress = 0.0
 	if state.has("held"):
-		tuning_active = _field_active and bool(state["held"])
+		tuning_active = _field_active and _interaction_open and bool(state["held"])
+	_has_authoritative_rotation_sign = state.has("required_rotation_sign")
+	if _has_authoritative_rotation_sign:
+		_required_rotation_sign = clampi(int(state["required_rotation_sign"]), -1, 1)
+	_endpoint_has_state = state.has("endpoint_target_progress")
+	if _endpoint_has_state:
+		_endpoint_target_progress = clampf(float(state["endpoint_target_progress"]), 0.0, 1.0)
+		_endpoint_inside = bool(state.get("endpoint_inside", false))
+		_endpoint_captured = bool(state.get("endpoint_captured", false))
+		_endpoint_window_active = bool(state.get("endpoint_window_active", false))
+		_endpoint_grade = int(state.get("endpoint_grade", GameplayTypes.JudgmentGrade.MISS))
+		_endpoint_best_error_us = int(state.get("endpoint_best_error_us", 0))
+	else:
+		_clear_endpoint_state()
 
 	var guide_min_key: String = "guide_min_progress" if state.has("guide_min_progress") else "guide_band_min"
 	var guide_max_key: String = "guide_max_progress" if state.has("guide_max_progress") else "guide_band_max"
@@ -233,6 +343,7 @@ func set_slider_state(state: Dictionary) -> void:
 
 func set_tuning_active(active: bool) -> void:
 	_field_active = active
+	_interaction_open = active
 	tuning_active = active
 	queue_redraw()
 
@@ -259,38 +370,77 @@ func reset_for_pool() -> void:
 	scale = Vector2.ONE
 	_approach_progress = 0.0
 	_has_authoritative_guide_range = false
+	_required_rotation_sign = 0
+	_has_authoritative_rotation_sign = false
+	_clear_endpoint_state()
+	_alignment_strength = 0.0
+	_interaction_open = false
+	_authoritative_traversal_index = 0
+	_turnaround_pending = false
+	_preview_order_number = 0
+	_preview_phase = 1
+	_preview_alpha = 0.45
 
 
 func visual_state_snapshot() -> Dictionary:
 	var start_point: Vector2 = _slider_start_point()
 	var end_point: Vector2 = _slider_end_point()
+	var cue_angles: Vector2 = _rotation_cue_angles()
+	var arc_sweep: float = _gesture_sweep_rad()
 	return {
 		"event_id": event_id,
 		"field_id": field_id,
 		"group_id": group_id,
 		"affinity": affinity,
 		"field_active": _field_active,
+		"interaction_open": _interaction_open,
 		"tuning_active": tuning_active,
 		"start_value": _start_value,
 		"end_value": _end_value,
 		"traversal_count": _traversal_count,
+		"slider_chord_px": _slider_chord_px,
 		"slider_length_px": _slider_length_px,
+		"curve_length_px": _polyline_length(_event_curve_points),
+		"curve_sample_count": _event_curve_points.size(),
+		"curve_points": _event_curve_points,
 		"player_progress": _player_progress,
+		"fill_progress": clampf(_player_progress, 0.0, 1.0),
 		"guide_progress": _guide_progress,
+		"guide_dot_count": _guide_dot_count(),
 		"guide_min_progress": _guide_min_progress,
 		"guide_max_progress": _guide_max_progress,
-		"coverage": _coverage,
 		"inside_guide": _player_inside_guide(),
 		"region_progress": region_progress,
 		"approach_progress": _approach_progress,
+		"start_cue_visible": _start_cue_visible(),
+		"start_cue_radius_px": _start_cue_radius_px(),
+		"start_cue_progress_stroke_px": 8.0,
+		"preview_order_number": _preview_order_number,
+		"preview_phase": _preview_phase,
+		"preview_alpha": _preview_alpha,
+		"arc_rotation_deg": rad_to_deg(_arc_rotation_rad),
+		"visual_offset_px": _visual_offset_px,
+		"current_traversal_index": _authoritative_traversal_index,
+		"turnaround_pending": _turnaround_pending,
 		"slider_start_point": start_point,
 		"slider_end_point": end_point,
 		"current_cursor_point": _point_on_slider(_player_progress),
+		"required_rotation_sign": _effective_rotation_sign(),
+		"rotation_cue_sweep_rad": absf(cue_angles.y - cue_angles.x),
+		"rotation_cue_start_direction": Vector2.from_angle(cue_angles.x),
+		"rotation_cue_end_direction": Vector2.from_angle(cue_angles.y),
+		"endpoint_target_progress": _endpoint_target_progress,
+		"endpoint_inside": _endpoint_inside,
+		"endpoint_captured": _endpoint_captured,
+		"endpoint_window_active": _endpoint_window_active,
+		"endpoint_grade": _endpoint_grade,
+		"endpoint_best_error_us": _endpoint_best_error_us,
 		# 显式为 0，便于测试确认新滑条没有沿途判定点。
 		"target_count": 0,
 		"duration_sec": _duration_sec,
-		"arc_span_rad": 0.0,
-		"rail_radius": 0.0,
+		"arc_span_rad": arc_sweep,
+		"rail_radius": _slider_radius_px,
+		"equivalent_center_distance_px": _slider_center_distance_px,
 		"rapid_ratio": rapid_ratio,
 		"rapid_required_strikes": _required_strikes,
 		"rapid_valid_strikes": mini(_required_strikes, roundi(rapid_ratio * float(_required_strikes))),
@@ -310,104 +460,253 @@ func _draw_tuning_slider() -> void:
 	var side_color: Color = life_color if affinity == GameplayTypes.Affinity.ZHU else death_color
 	if missed:
 		side_color = Color("666a72")
-	var start_point: Vector2 = _slider_start_point()
-	var end_point: Vector2 = _slider_end_point()
-	var active_strength: float = 1.0 if tuning_active else 0.62
-	var aligned: bool = tuning_active and _player_inside_guide()
+	if _event_curve_points.is_empty():
+		return
+	var presentation_alpha: float = _preview_content_alpha()
 
-	# 一条粗轨道承担全部空间关系；黑底和骨白描边让它在两种世界背景上都可读。
-	draw_line(start_point, end_point, backing_color, tuning_rail_width + 14.0, true)
-	draw_circle(start_point, (tuning_rail_width + 14.0) * 0.5, backing_color)
-	draw_circle(end_point, (tuning_rail_width + 14.0) * 0.5, backing_color)
-	draw_line(start_point, end_point, Color(side_color, 0.42 * active_strength), tuning_rail_width, true)
-	draw_circle(start_point, tuning_rail_width * 0.5, Color(side_color, 0.42 * active_strength))
-	draw_circle(end_point, tuning_rail_width * 0.5, Color(side_color, 0.42 * active_strength))
-	draw_line(start_point, end_point, Color(bone_color, 0.58), 3.0, true)
+	# 粗轨道只有描边、底色和一层玩家填充；点状时间引导不会干预玩家位置。
+	var outline_color := Color(bone_color, 0.72 if not missed else 0.38)
+	outline_color.a *= presentation_alpha
+	var rail_color := side_color.darkened(0.58)
+	rail_color.a = 0.82 if _field_active else 0.66
+	rail_color.a *= presentation_alpha
+	_draw_round_polyline(
+		_event_curve_points,
+		outline_color,
+		tuning_rail_width + tuning_outline_width * 2.0
+	)
+	_draw_round_polyline(_event_curve_points, rail_color, tuning_rail_width)
 
-	# 可接受区间直接画在轨道内部。玩家无需猜测隐藏的时间窗或空间阈值。
-	var guide_from: Vector2 = _point_on_slider(_guide_min_progress)
-	var guide_to: Vector2 = _point_on_slider(_guide_max_progress)
-	var guide_color: Color = Color(bone_color, 0.64 if aligned else 0.36)
-	var guide_width: float = tuning_rail_width * (0.48 if aligned else 0.38)
-	draw_line(guide_from, guide_to, guide_color, guide_width, true)
-	draw_circle(guide_from, guide_width * 0.5, guide_color)
-	draw_circle(guide_to, guide_width * 0.5, guide_color)
+	var fill_progress: float = clampf(_player_progress, 0.0, 1.0)
+	if _interaction_open and fill_progress > 0.0001:
+		var fill_color := side_color.lightened(0.16 + 0.08 * _alignment_strength)
+		fill_color.a = lerpf(0.80, 0.98, _alignment_strength)
+		_draw_round_polyline(_partial_event_curve(fill_progress), fill_color, tuning_rail_width)
 
-	# 已走轨迹只覆盖当前一趟，不把上一次往返留下的线堆在轨道上。
-	var leg_start_progress: float = 0.0 if _current_traversal_index() % 2 == 0 else 1.0
-	var leg_start: Vector2 = _point_on_slider(leg_start_progress)
-	var player_point: Vector2 = _point_on_slider(_player_progress)
-	var walked_point: Vector2 = _point_on_slider(clampf(_player_progress, 0.0, 1.0))
-	draw_line(leg_start, walked_point, Color(side_color, 0.88 * active_strength), 10.0, true)
-
-	_draw_slider_head_and_destination(start_point, end_point, side_color, aligned)
-	_draw_player_cursor(player_point, side_color, aligned)
-	_draw_start_progress_ring(start_point)
+	if _interaction_open:
+		_draw_guide_dots()
+	_draw_rotation_cue()
+	_draw_turnaround_hint()
+	_draw_start_progress_ring(_slider_start_point())
+	_draw_order_number(_slider_start_point())
 
 
-func _draw_slider_head_and_destination(
-	start_point: Vector2,
-	end_point: Vector2,
-	side_color: Color,
-	aligned: bool
-) -> void:
-	var destination_progress: float = 1.0 if _current_traversal_index() % 2 == 0 else 0.0
-	var destination: Vector2 = end_point if destination_progress > 0.5 else start_point
-
-	# 头尾仅用两个大端点表示，避免重新引入刻度和文字。
-	draw_circle(start_point, tuning_rail_width * 0.34, Color(backing_color, 0.98))
-	draw_circle(start_point, tuning_rail_width * 0.24, Color(side_color, 0.92))
-	draw_circle(end_point, tuning_rail_width * 0.34, Color(backing_color, 0.98))
-	draw_circle(end_point, tuning_rail_width * 0.24, Color(side_color, 0.70))
-	draw_arc(
-		destination,
-		tuning_rail_width * 0.34,
-		0.0,
-		TAU,
-		32,
-		Color(bone_color, 0.96 if aligned else 0.74),
-		4.0,
-		true
+func _draw_order_number(start_point: Vector2) -> void:
+	if _preview_order_number <= 0:
+		return
+	var label: String = str(_preview_order_number)
+	var font: Font = ThemeDB.fallback_font
+	var font_size: int = 24
+	var text_size: Vector2 = font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
+	var baseline := start_point + Vector2(-text_size.x * 0.5, text_size.y * 0.34)
+	# 序号压在起点圆帽中央，仅帮助读取先后，不再增加一层独立徽章。
+	var cue_alpha: float = _start_cue_alpha() if not _interaction_open else 1.0
+	draw_string(
+		font,
+		baseline + Vector2(2.0, 2.0),
+		label,
+		HORIZONTAL_ALIGNMENT_LEFT,
+		-1.0,
+		font_size,
+		Color(backing_color, 0.94 * cue_alpha)
+	)
+	draw_string(
+		font,
+		baseline,
+		label,
+		HORIZONTAL_ALIGNMENT_LEFT,
+		-1.0,
+		font_size,
+		Color(bone_color, 0.98 * cue_alpha)
 	)
 
-	# 还有下一趟时，目的端内部出现一个朝返回方向的简洁折返箭头。
-	if _current_traversal_index() >= _traversal_count - 1:
+
+func _draw_guide_dots() -> void:
+	var dot_count: int = _guide_dot_count()
+	if dot_count <= 0:
 		return
-	var back_direction: Vector2 = (_point_on_slider(1.0 - destination_progress) - destination).normalized()
-	var normal := Vector2(-back_direction.y, back_direction.x)
-	var tip: Vector2 = destination + back_direction * 12.0
-	var rear: Vector2 = destination - back_direction * 9.0
-	var arrow := PackedVector2Array([
-		tip,
-		rear + normal * 9.0,
-		rear - normal * 9.0,
-	])
-	draw_colored_polygon(arrow, Color(bone_color, 0.92))
+	var total_ticks: float = float(_traversal_ticks * _traversal_count)
+	var elapsed_beats: float = region_progress * total_ticks / TICKS_PER_BEAT
+	var beat_fraction: float = elapsed_beats - floorf(elapsed_beats)
+	var distance_to_beat: float = minf(beat_fraction, 1.0 - beat_fraction)
+	# 亮度峰值落在整数拍，而不是落在拍后四分之一处；每四拍再加一次克制的强拍强调。
+	var beat_pulse: float = 1.0 - smoothstep(0.0, 0.22, distance_to_beat)
+	var beat_index: int = floori(elapsed_beats + 0.0001)
+	var measure_accent: float = 1.0 if posmod(beat_index, 4) == 0 else 0.0
+	var dot_color := Color(
+		bone_color,
+		0.68 + beat_pulse * (0.18 + measure_accent * 0.10) + 0.04 * _alignment_strength
+	)
+	var dot_radius: float = 4.6 + beat_pulse * (0.8 + measure_accent * 0.4)
+	var guide_distance: float = clampf(_guide_progress, 0.0, 1.0) * _slider_length_px
+	for index: int in range(dot_count):
+		var distance: float = minf(float(index) * GUIDE_DOT_SPACING_PX, guide_distance)
+		var progress: float = distance / maxf(_slider_length_px, 0.001)
+		var point: Vector2 = _point_on_slider(progress)
+		# 深色托底保证虚线经过明亮场景时仍然清楚，白点本身仍保持单层、简洁。
+		draw_circle(point, dot_radius + 2.5, Color(backing_color, 0.72))
+		draw_circle(point, dot_radius, dot_color)
 
 
-func _draw_player_cursor(point: Vector2, side_color: Color, aligned: bool) -> void:
-	var pulse: float = 1.0 + (0.10 if aligned else 0.0)
-	draw_circle(point, 24.0 * pulse, Color(backing_color, 0.98))
-	draw_circle(point, 18.0 * pulse, Color(side_color, 0.98))
-	draw_arc(point, 20.0 * pulse, 0.0, TAU, 28, Color(bone_color, 0.98 if aligned else 0.70), 4.0, true)
-	draw_circle(point, 5.0, Color(bone_color, 0.96 if aligned else 0.64))
+func _draw_rotation_cue() -> void:
+	var rotation_sign: int = _effective_rotation_sign()
+	if rotation_sign == 0:
+		return
+	var destination_progress: float = (
+		_endpoint_target_progress
+		if _endpoint_has_state
+		else (1.0 if _current_traversal_index() % 2 == 0 else 0.0)
+	)
+	# 预备阶段先在起点旁直接说明如何起手；正式操作后，提示才移动到当前目的端。
+	var center: Vector2 = (
+		_slider_start_point()
+		if not _interaction_open
+		else _point_on_slider(destination_progress)
+	)
+	var turnaround_pulse: float = _turnaround_pulse()
+	var radius: float = tuning_rail_width * (0.66 + turnaround_pulse * 0.035)
+	var cue_angles: Vector2 = _rotation_cue_angles()
+	var start_angle: float = cue_angles.x
+	var sweep: float = cue_angles.y - cue_angles.x
+	var points := PackedVector2Array()
+	for index: int in range(19):
+		var ratio: float = float(index) / 18.0
+		var angle: float = start_angle + sweep * ratio
+		points.append(center + Vector2(cos(angle), sin(angle)) * radius)
+	# 如果玩家很早便顶住端点且没有退回重进，就用灰色克制地提示“这里尚未卡拍”。
+	# 玩家退离端点后提示恢复骨白，提醒其在窗口内重新进入；不额外弹文字打断视线。
+	var waiting_for_reentry: bool = (
+		_endpoint_has_state
+		and _endpoint_inside
+		and _endpoint_captured
+		and _endpoint_grade == GameplayTypes.JudgmentGrade.MISS
+	)
+	var cue_color := (
+		Color("8b8e94", 0.76)
+		if waiting_for_reentry
+		else Color(bone_color, lerpf(0.72, 0.98, _alignment_strength))
+	)
+	if not _interaction_open:
+		cue_color.a *= _start_cue_alpha()
+	draw_polyline(points, cue_color, 7.0, true)
+	# 小圆点标起手端，箭头标落手端；不要求玩家精确瞄准，只传达自然手势方向。
+	draw_circle(points[0], 4.5, cue_color)
+
+	# 箭头沿圆弧切线收尾；正号在 Godot 的屏幕坐标中就是视觉顺时针。
+	var end_angle: float = start_angle + sweep
+	var tip: Vector2 = points[-1]
+	var tangent := Vector2(-sin(end_angle), cos(end_angle)) * float(rotation_sign)
+	var normal := Vector2(-tangent.y, tangent.x)
+	draw_colored_polygon(
+		PackedVector2Array([
+			tip + tangent * 2.0,
+			tip - tangent * 18.0 + normal * 10.0,
+			tip - tangent * 18.0 - normal * 10.0,
+		]),
+		cue_color
+	)
+
+
+
+func _draw_turnaround_hint() -> void:
+	## 往返只在折返点显示一枚“转回来”的弧形箭头，不重新播放起手缩圈。
+	if not _interaction_open or _traversal_count <= 1:
+		return
+	var turnaround_pulse: float = _turnaround_pulse()
+	var leg_index: int = _current_traversal_index()
+	var traversal_position: float = region_progress * float(_traversal_count)
+	var local_progress: float = clampf(traversal_position - float(leg_index), 0.0, 1.0)
+	var approaching_turn: bool = _turnaround_pending and local_progress >= 0.45
+	if not approaching_turn and turnaround_pulse <= 0.001:
+		return
+
+	var boundary_index: int
+	if turnaround_pulse > 0.001:
+		boundary_index = clampi(roundi(traversal_position), 1, _traversal_count - 1)
+	else:
+		boundary_index = leg_index + 1
+	var boundary_progress: float = 1.0 if boundary_index % 2 == 1 else 0.0
+	var center: Vector2 = _point_on_slider(boundary_progress)
+	var alpha: float = maxf(
+		smoothstep(0.45, 0.88, local_progress) if approaching_turn else 0.0,
+		turnaround_pulse
+	)
+	# 抵达前画当前旋向的反向；越过强拍后，权威旋向已经翻转，直接沿新方向画。
+	var return_sign: int = (
+		_effective_rotation_sign()
+		if turnaround_pulse > 0.001 and leg_index >= boundary_index
+		else -_effective_rotation_sign()
+	)
+	if return_sign == 0:
+		return
+	var middle_angle: float = TUNING_ARC_GEOMETRY.center_angle_rad(
+		affinity,
+		_arc_rotation_rad
+	)
+	var sweep: float = deg_to_rad(58.0) * float(return_sign)
+	var start_angle: float = middle_angle - sweep * 0.5
+	var radius: float = tuning_rail_width * 0.90
+	var points := PackedVector2Array()
+	for index: int in range(17):
+		var ratio: float = float(index) / 16.0
+		points.append(center + Vector2.from_angle(start_angle + sweep * ratio) * radius)
+	var color := Color(bone_color, 0.30 + 0.64 * alpha)
+	draw_polyline(points, color, 6.0, true)
+	var tip: Vector2 = points[-1]
+	var end_angle: float = start_angle + sweep
+	var tangent := Vector2(-sin(end_angle), cos(end_angle)) * float(return_sign)
+	var normal := Vector2(-tangent.y, tangent.x)
+	draw_colored_polygon(
+		PackedVector2Array([
+			tip + tangent * 2.0,
+			tip - tangent * 16.0 + normal * 9.0,
+			tip - tangent * 16.0 - normal * 9.0,
+		]),
+		color
+	)
 
 
 func _draw_start_progress_ring(start_point: Vector2) -> void:
-	if region_progress > 0.0001 or judgment_grade >= 0:
+	# 一条往返滑槽只有事件开始前出现一次缩圈；折返点只使用回转箭头。
+	if not _start_cue_visible():
 		return
-	var cue_radius: float = lerpf(54.0, tuning_rail_width * 0.37, _approach_progress)
-	draw_arc(start_point, cue_radius, 0.0, TAU, 40, Color(backing_color, 0.90), 9.0, true)
+	var cue_radius: float = _start_cue_radius_px()
+	var cue_alpha: float = _start_cue_alpha()
+	# 深色托底、完整骨白圈和计时亮弧共享同一半径。圈从轨道外明显收进端帽，
+	# 即使场景很亮或滑条还处在第二预读层，也能一眼看出何时开始。
+	draw_arc(start_point, cue_radius, 0.0, TAU, 48, Color(backing_color, 0.94 * cue_alpha), 14.0, true)
+	draw_arc(start_point, cue_radius, 0.0, TAU, 48, Color(bone_color, 0.52 * cue_alpha), 8.0, true)
 	draw_arc(
 		start_point,
 		cue_radius,
 		-PI * 0.5,
 		-PI * 0.5 + TAU * _approach_progress,
-		40,
-		Color(bone_color, 0.96),
-		4.0,
+		48,
+		Color(bone_color, 0.99 * cue_alpha),
+		8.0,
 		true
 	)
+
+
+func _preview_content_alpha() -> float:
+	## 当前条完全显示；未来与收尾条只压暗轨道，不连带压暗起手提示。
+	if _interaction_open or _preview_phase == 0:
+		return 1.0
+	return _preview_alpha
+
+
+func _start_cue_visible() -> bool:
+	return not _interaction_open and judgment_grade < 0
+
+
+func _start_cue_radius_px() -> float:
+	# 104px 宽轨道的端帽半径为52px；终点缩到其内部，收束动作会比旧24px幅度明显得多。
+	return lerpf(106.0, 38.0, smoothstep(0.0, 1.0, _approach_progress))
+
+
+func _start_cue_alpha() -> float:
+	# 最近未来条约0.95，更远条约0.70；轨道仍保持Host给出的0.70/0.45层级。
+	return clampf(_preview_alpha + 0.25, 0.62, 1.0)
 
 
 func _find_slider_state(value: Variant) -> Dictionary:
@@ -435,13 +734,34 @@ func _progress_from_frequency_value(value: float) -> float:
 
 
 func _recalculate_slider_length() -> void:
-	var frequency_span_hz: float = (
-		absf(_end_value - _start_value)
-		* maxf(max_frequency_hz - min_frequency_hz, 0.0)
+	# 屏幕端点距离仍严格服从“频率跨度 × pixels_per_hz”。圆弧只向弦的
+	# 中垂线方向鼓起，因此改变曲率不会偷偷改变玩家理解的调频跨度。
+	_slider_chord_px = TUNING_ARC_GEOMETRY.chord_length_px(
+		_start_value,
+		_end_value,
+		min_frequency_hz,
+		max_frequency_hz,
+		pixels_per_hz
 	)
-	# 语义长度严格等于 Hz 跨度乘统一像素比例。即使很短或超出画布，也不能偷偷缩放，
-	# 否则相同手部位移会在不同滑条上代表不同频率变化。
-	_slider_length_px = frequency_span_hz * pixels_per_hz
+	var requested_center_distance_px: float = TUNING_ARC_GEOMETRY.equivalent_center_distance_px(
+		canvas_size.x
+	)
+	_slider_sweep_rad = TUNING_ARC_GEOMETRY.equivalent_sweep_from_chord_rad(
+		_slider_chord_px,
+		requested_center_distance_px
+	)
+	_slider_radius_px = TUNING_ARC_GEOMETRY.equivalent_radius_from_chord_px(
+		_slider_chord_px,
+		_slider_sweep_rad
+	)
+	# 极短或极长滑条会触发角度上下限；调试值应报告钳制后真实圆的弦心距。
+	_slider_center_distance_px = (
+		_slider_radius_px * cos(_slider_sweep_rad * 0.5)
+		if _slider_radius_px > 0.0
+		else 0.0
+	)
+	_slider_length_px = _slider_radius_px * _slider_sweep_rad
+	_rebuild_slider_curves()
 
 
 func _guide_at_time_progress(time_progress: float) -> float:
@@ -471,6 +791,8 @@ func _update_local_guide_range() -> void:
 
 
 func _current_traversal_index() -> int:
+	if _interaction_open:
+		return clampi(_authoritative_traversal_index, 0, _traversal_count - 1)
 	if region_progress >= 1.0:
 		return _traversal_count - 1
 	return mini(floori(region_progress * float(_traversal_count)), _traversal_count - 1)
@@ -481,40 +803,245 @@ func _player_inside_guide() -> bool:
 
 
 func _slider_center() -> Vector2:
-	var desired: Vector2 = life_slot_offset if affinity == GameplayTypes.Affinity.ZHU else -life_slot_offset
-	# 只移动中心来尽量保住头尾；长度仍严格对应真实频率跨度。
-	var maximum_center_x: float = maxf(
-		canvas_size.x * 0.5 - slider_edge_margin_px - _slider_length_px * 0.5,
-		0.0
+	# 滑条跟随“操控手”而不是钟的位置：右手控制的生钟在右上，左手控制的死钟在左下。
+	# 横向偏移和屏幕边界都按旋转后的真实包围盒计算，近纵向滑条也不会被错误摆出画面。
+	var outer_radius: float = tuning_rail_width * 0.5 + tuning_outline_width
+	var half_canvas: Vector2 = canvas_size * 0.5
+	var minimum_center_x: float = (
+		-half_canvas.x + slider_edge_margin_px + outer_radius - _curve_min_relative.x
 	)
-	desired.x = clampf(desired.x, -maximum_center_x, maximum_center_x)
-	var maximum_center_y: float = maxf(
-		canvas_size.y * 0.5 - slider_edge_margin_px - tuning_rail_width * 0.5,
-		0.0
+	var maximum_center_x: float = (
+		half_canvas.x - slider_edge_margin_px - outer_radius - _curve_max_relative.x
 	)
-	desired.y = clampf(desired.y, -maximum_center_y, maximum_center_y)
+	var preferred_x: float
+	if affinity == GameplayTypes.Affinity.ZHU:
+		preferred_x = CENTER_GUTTER_PX + outer_radius - _curve_min_relative.x
+	else:
+		preferred_x = -CENTER_GUTTER_PX - outer_radius - _curve_max_relative.x
+	if minimum_center_x > maximum_center_x:
+		preferred_x = (minimum_center_x + maximum_center_x) * 0.5
+	else:
+		preferred_x = clampf(preferred_x, minimum_center_x, maximum_center_x)
+
+	var minimum_center_y: float = (
+		-half_canvas.y + slider_edge_margin_px + outer_radius - _curve_min_relative.y
+	)
+	var maximum_center_y: float = (
+		half_canvas.y - slider_edge_margin_px - outer_radius - _curve_max_relative.y
+	)
+	var side_sign: float = 1.0 if affinity == GameplayTypes.Affinity.ZHU else -1.0
+	var preferred_y: float = life_slot_offset.y * side_sign
+	if minimum_center_y > maximum_center_y:
+		preferred_y = (minimum_center_y + maximum_center_y) * 0.5
+	else:
+		preferred_y = clampf(preferred_y, minimum_center_y, maximum_center_y)
+	var desired := Vector2(preferred_x, preferred_y) + _visual_offset_px
+	# 偏移是美术构图参数，但最终仍守住同一安全边界；这样预览期间无需动态换位。
+	desired.x = clampf(desired.x, minimum_center_x, maximum_center_x) if minimum_center_x <= maximum_center_x else desired.x
+	desired.y = clampf(desired.y, minimum_center_y, maximum_center_y) if minimum_center_y <= maximum_center_y else desired.y
 	return desired
 
 
-func _frequency_axis() -> Vector2:
-	# 两条轨道都采用“向右提高频率”，保证摇杆或手指向右时游标也向右。
-	# 槽位中心仍保持中心对称；方向不镜像是为了避免操作反馈与手势相反。
-	return Vector2.RIGHT
-
-
 func _slider_start_point() -> Vector2:
-	var direction_sign: float = 1.0 if _end_value >= _start_value else -1.0
-	return _slider_center() - _frequency_axis() * (_slider_length_px * 0.5 * direction_sign)
+	if _event_curve_points.is_empty():
+		return _slider_center()
+	return _event_curve_points[0]
 
 
 func _slider_end_point() -> Vector2:
-	var direction_sign: float = 1.0 if _end_value >= _start_value else -1.0
-	return _slider_center() + _frequency_axis() * (_slider_length_px * 0.5 * direction_sign)
+	if _event_curve_points.is_empty():
+		return _slider_center()
+	return _event_curve_points[-1]
 
 
 func _point_on_slider(progress: float) -> Vector2:
-	# 玩家游标允许沿同一频率轴跑到滑条外；轨道和引导带自身仍只占 0～1。
-	return _slider_start_point().lerp(_slider_end_point(), progress)
+	# 调试快照允许玩家位置落在 0～1 之外；此时沿端点切线延长，
+	# 轨道和填充本身仍严格限制在曲线范围内。
+	if _event_curve_points.size() < 2:
+		return _slider_center()
+	if progress <= 0.0:
+		var start_tangent: Vector2 = (_event_curve_points[1] - _event_curve_points[0]).normalized()
+		return _event_curve_points[0] + start_tangent * (_slider_length_px * progress)
+	if progress >= 1.0:
+		var end_index: int = _event_curve_points.size() - 1
+		var end_tangent: Vector2 = (_event_curve_points[end_index] - _event_curve_points[end_index - 1]).normalized()
+		return _event_curve_points[end_index] + end_tangent * (_slider_length_px * (progress - 1.0))
+	var scaled_index: float = progress * float(_event_curve_points.size() - 1)
+	var lower_index: int = floori(scaled_index)
+	var upper_index: int = mini(lower_index + 1, _event_curve_points.size() - 1)
+	return _event_curve_points[lower_index].lerp(
+		_event_curve_points[upper_index],
+		scaled_index - float(lower_index)
+	)
+
+
+func _rebuild_slider_curves() -> void:
+	## 先构造“左低右高”的标准圆弧，再根据谱面升降频方向决定事件采样顺序。
+	## 弦长表示频率跨度；圆心角来自同一份等效圆规格，也就是摇杆的完整手势行程。
+	var dense_relative := PackedVector2Array()
+	for index: int in range(CURVE_DENSE_SAMPLE_COUNT):
+		var t: float = float(index) / float(CURVE_DENSE_SAMPLE_COUNT - 1)
+		dense_relative.append(
+			(_normalized_curve_point(t) * _slider_chord_px).rotated(_arc_rotation_rad)
+		)
+
+	# 死界曲线取生界曲线的中心反演并反转采样，因此画面整体中心对称，
+	# 但标准曲线的采样方向仍然从画面左侧低频指向右侧高频。
+	var frequency_relative := PackedVector2Array()
+	for index: int in range(dense_relative.size()):
+		var relative: Vector2 = dense_relative[index]
+		if affinity == GameplayTypes.Affinity.XUAN:
+			relative = -dense_relative[dense_relative.size() - 1 - index]
+		frequency_relative.append(relative)
+	_update_curve_bounds(frequency_relative)
+
+	var dense_world := PackedVector2Array()
+	var center: Vector2 = _slider_center()
+	for relative: Vector2 in frequency_relative:
+		dense_world.append(center + relative)
+	_frequency_curve_points = _resample_polyline(dense_world, CURVE_SAMPLE_COUNT)
+
+	_event_curve_points = PackedVector2Array()
+	var increasing: bool = _end_value >= _start_value
+	for index: int in range(_frequency_curve_points.size()):
+		var source_index: int = index if increasing else _frequency_curve_points.size() - 1 - index
+		_event_curve_points.append(_frequency_curve_points[source_index])
+
+
+func _update_curve_bounds(points: PackedVector2Array) -> void:
+	## 使用旋转后真实采样点的包围盒，不能再拿弧长或水平半宽估算。
+	if points.is_empty():
+		_curve_min_relative = Vector2.ZERO
+		_curve_max_relative = Vector2.ZERO
+		return
+	_curve_min_relative = points[0]
+	_curve_max_relative = points[0]
+	for point: Vector2 in points:
+		_curve_min_relative.x = minf(_curve_min_relative.x, point.x)
+		_curve_min_relative.y = minf(_curve_min_relative.y, point.y)
+		_curve_max_relative.x = maxf(_curve_max_relative.x, point.x)
+		_curve_max_relative.y = maxf(_curve_max_relative.y, point.y)
+
+
+func _normalized_curve_point(t: float) -> Vector2:
+	return TUNING_ARC_GEOMETRY.normalized_chord_arc_point(t, _gesture_sweep_rad())
+
+
+func _resample_polyline(source: PackedVector2Array, target_count: int) -> PackedVector2Array:
+	if source.is_empty() or target_count <= 0:
+		return PackedVector2Array()
+	if source.size() == 1 or target_count == 1:
+		return PackedVector2Array([source[0]])
+	var cumulative := PackedFloat32Array([0.0])
+	for index: int in range(1, source.size()):
+		cumulative.append(cumulative[-1] + source[index - 1].distance_to(source[index]))
+	var total_length: float = cumulative[-1]
+	if total_length <= 0.0001:
+		return PackedVector2Array([source[0], source[-1]])
+
+	var result := PackedVector2Array()
+	var source_index: int = 1
+	for index: int in range(target_count):
+		var target_distance: float = total_length * float(index) / float(target_count - 1)
+		while source_index < cumulative.size() - 1 and cumulative[source_index] < target_distance:
+			source_index += 1
+		var segment_start: float = cumulative[source_index - 1]
+		var segment_length: float = maxf(cumulative[source_index] - segment_start, 0.0001)
+		var ratio: float = (target_distance - segment_start) / segment_length
+		result.append(source[source_index - 1].lerp(source[source_index], ratio))
+	return result
+
+
+func _partial_event_curve(progress: float) -> PackedVector2Array:
+	var clamped_progress: float = clampf(progress, 0.0, 1.0)
+	if _event_curve_points.size() < 2 or clamped_progress <= 0.0:
+		return PackedVector2Array()
+	var scaled_index: float = clamped_progress * float(_event_curve_points.size() - 1)
+	var last_whole_index: int = floori(scaled_index)
+	var result := PackedVector2Array()
+	for index: int in range(last_whole_index + 1):
+		result.append(_event_curve_points[index])
+	if last_whole_index < _event_curve_points.size() - 1 and not is_equal_approx(scaled_index, float(last_whole_index)):
+		result.append(_event_curve_points[last_whole_index].lerp(
+			_event_curve_points[last_whole_index + 1],
+			scaled_index - float(last_whole_index)
+		))
+	return result
+
+
+func _draw_round_polyline(points: PackedVector2Array, color: Color, width: float) -> void:
+	if points.is_empty() or width <= 0.0:
+		return
+	if points.size() > 1:
+		draw_polyline(points, color, width, true)
+	draw_circle(points[0], width * 0.5, color)
+	draw_circle(points[-1], width * 0.5, color)
+
+
+func _polyline_length(points: PackedVector2Array) -> float:
+	var result: float = 0.0
+	for index: int in range(1, points.size()):
+		result += points[index - 1].distance_to(points[index])
+	return result
+
+
+func _guide_dot_count() -> int:
+	var guide_distance: float = clampf(_guide_progress, 0.0, 1.0) * _slider_length_px
+	if guide_distance <= 0.001:
+		return 0
+	return maxi(1, floori(guide_distance / GUIDE_DOT_SPACING_PX) + 1)
+
+
+func _effective_rotation_sign() -> int:
+	if _has_authoritative_rotation_sign:
+		return _required_rotation_sign
+	if region_progress >= 1.0 or is_equal_approx(_start_value, _end_value):
+		return 0
+	var frequency_sign: int = 1 if _end_value > _start_value else -1
+	var visual_mirror: int = -1 if affinity == GameplayTypes.Affinity.XUAN else 1
+	var gesture_sign: int = frequency_sign * visual_mirror
+	return gesture_sign if _current_traversal_index() % 2 == 0 else -gesture_sign
+
+
+func _rotation_cue_angles() -> Vector2:
+	var rotation_sign: int = _effective_rotation_sign()
+	# 生槽位于上半屏，推荐手势沿摇杆上半弧；死槽位于下半屏，则沿下半弧。
+	# 正号按 Godot 屏幕坐标从右向左经过下方（视觉顺时针），正好覆盖用户最直觉的
+	# “下弧右端 -> 左端”动作；负号沿同一条弧反向返回。
+	return TUNING_ARC_GEOMETRY.symmetric_directed_angles(
+		affinity,
+		rotation_sign,
+		_gesture_sweep_rad(),
+		_arc_rotation_rad
+	)
+
+
+func _gesture_sweep_rad() -> float:
+	return _slider_sweep_rad
+
+
+func _clear_endpoint_state() -> void:
+	_endpoint_has_state = false
+	_endpoint_target_progress = 1.0
+	_endpoint_inside = false
+	_endpoint_captured = false
+	_endpoint_window_active = false
+	_endpoint_grade = GameplayTypes.JudgmentGrade.MISS
+	_endpoint_best_error_us = 0
+
+
+func _turnaround_pulse() -> float:
+	if _traversal_count <= 1 or _traversal_duration_sec <= 0.0:
+		return 0.0
+	var traversal_position: float = region_progress * float(_traversal_count)
+	var nearest_boundary: int = roundi(traversal_position)
+	if nearest_boundary <= 0 or nearest_boundary >= _traversal_count:
+		return 0.0
+	var distance_sec: float = (
+		absf(traversal_position - float(nearest_boundary))
+		* _traversal_duration_sec
+	)
+	return 1.0 - smoothstep(0.0, 0.12, distance_sec)
 
 
 func _draw_rapid_field() -> void:

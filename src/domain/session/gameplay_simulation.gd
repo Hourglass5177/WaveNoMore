@@ -10,7 +10,7 @@ var compiled: CompiledChart
 var rules: GameplayRuleSet
 ## Tap/Hold 的头、持续、尾与乱按绑定判定器。
 var note_engine := NoteJudgeEngine.new()
-## 调频开放段、两侧滑条覆盖率及成组结算判定器。
+## 调频开放段、每程端点卡拍及双侧成组结算判定器。
 var tuning_engine := TuningEngine.new()
 ## 双钟疾振的计数、防抖和交替判定器。
 var rapid_engine := RapidEngine.new()
@@ -183,8 +183,8 @@ func accept_input(sample: SemanticInputSample) -> int:
 func force_finish() -> void:
 	if compiled == null:
 		return
-	var latest_judgment_ms: int = maxi(rules.miss_window_ms, rules.hold_release_pass_ms)
-	var settle_us: int = latest_judgment_ms * 1000 + 1
+	# Hold 与调频都在谱面尾点完成；只有普通音符还需等待 Miss 窗。
+	var settle_us: int = rules.miss_window_ms * 1000 + 1
 	advance_to(compiled.end_time_us + settle_us, true)
 	wave_engine.force_finish()
 	_collect_wave_events()

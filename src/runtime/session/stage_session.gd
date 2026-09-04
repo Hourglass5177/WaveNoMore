@@ -551,6 +551,11 @@ func _complete_result(success: bool, aborted: bool = false) -> void:
 
 
 func _emit_snapshot_changes(snapshot: Dictionary) -> void:
+	# 输入窗口与画面都读取同一份权威滑条快照：滑条圆心角变化时，摇杆的
+	# 有效角区会在同一逻辑帧更新，不再只依赖“上半圆/下半圆”的粗略限制。
+	if is_instance_valid(input_router):
+		input_router.set_tuning_gesture_windows(snapshot.get("active_tuning_sliders", []))
+
 	var current_health: int = int(snapshot.get("soul_fire", snapshot.get("health", 0)))
 	var max_health: int = int(snapshot.get("max_soul_fire", rule_set.max_soul_fire if rule_set != null else 0))
 	if current_health != _last_health:
@@ -698,8 +703,8 @@ func _build_debug_snapshot(clock_sample: ClockSample, gameplay_snapshot: Diction
 		"input_owner": gameplay_coordinator.get_input_owner(),
 		"life_held": input_router.life_held,
 		"death_held": input_router.death_held,
-		# 这里是两根摇杆的瞬时移动速率，不是旧版共同调频游标。
-		"tuning_rate": input_router.tune_vector,
+		# 最近一次实际产生的调频位移；只供调试，领域层不会把它当作持续速率。
+		"tuning_displacement": input_router.last_tuning_displacement,
 		"tuning_field_active": gameplay_snapshot.get("tuning_field_active", false),
 		"active_tuning_field_id": gameplay_snapshot.get("active_tuning_field_id", ""),
 		"life_tuning_value": gameplay_snapshot.get("life_tuning_value", 0.0),
@@ -718,16 +723,22 @@ func _build_debug_snapshot(clock_sample: ClockSample, gameplay_snapshot: Diction
 
 
 func _calculate_end_song_time_sec() -> float:
-	# 取谱面尾、最后一枚音符飞到钟的时刻和音频尾三者中的最大值，
-	# 避免音乐或仍在飞行的实体被结算页提前截断。
+	# 取谱面尾、普通音符物理收尾、调频原定尾点和音频尾中的最大值。
+	# 调频允许提前完成，但只在原定尾点结算，也不再把关卡额外拖长 500ms。
 	var compiled_end_sec: float = float(_read_compiled_member(&"end_time_us", 0)) / 1_000_000.0
 	var physical_note_end_sec: float = 0.0
+	var tuning_judgment_end_sec: float = 0.0
 	if compiled_chart != null:
 		for note: Dictionary in compiled_chart.notes:
 			physical_note_end_sec = maxf(
 				physical_note_end_sec,
 				float(note.get("start_us", 0)) / 1_000_000.0
 					+ _post_cue_travel_sec(int(note.get("affinity", GameplayTypes.Affinity.ZHU)))
+			)
+		for slider: Dictionary in compiled_chart.tuning_sliders:
+			tuning_judgment_end_sec = maxf(
+				tuning_judgment_end_sec,
+				float(slider.get("end_us", 0)) / 1_000_000.0
 			)
 	var audio_length_sec: float = 0.0
 	if stage_definition.song.audio_stream != null:
@@ -738,7 +749,10 @@ func _calculate_end_song_time_sec() -> float:
 		audio_length_sec - stage_definition.song.first_beat_offset_sec,
 		0.0
 	)
-	return maxf(maxf(compiled_end_sec, physical_note_end_sec), audio_end_song_time)
+	return maxf(
+		maxf(compiled_end_sec, physical_note_end_sec),
+		maxf(tuning_judgment_end_sec, audio_end_song_time)
+	)
 
 
 func _maximum_post_cue_travel_sec() -> float:

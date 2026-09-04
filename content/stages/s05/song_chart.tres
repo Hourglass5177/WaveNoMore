@@ -1,0 +1,943 @@
+[gd_resource type="Resource" script_class="SongChart" load_steps=101 format=3]
+
+[ext_resource type="Script" path="res://src/content/resources/song_chart.gd" id="1_chart"]
+[ext_resource type="Script" path="res://src/content/resources/tempo_event.gd" id="2_tempo"]
+[ext_resource type="Script" path="res://src/content/resources/meter_event.gd" id="3_meter"]
+[ext_resource type="Script" path="res://src/content/resources/note_event.gd" id="4_note"]
+[ext_resource type="Script" path="res://src/content/resources/tuning_field_region.gd" id="5_field"]
+[ext_resource type="Script" path="res://src/content/resources/tuning_slider_event.gd" id="6_slider"]
+[ext_resource type="Script" path="res://src/content/resources/su_manifestation_event.gd" id="7_su"]
+[ext_resource type="Script" path="res://src/content/resources/section_marker.gd" id="8_section"]
+
+[sub_resource type="Resource" id="Tempo_0"]
+script = ExtResource("2_tempo")
+tick = 0
+bpm = 120.0
+
+[sub_resource type="Resource" id="Meter_0"]
+script = ExtResource("3_meter")
+tick = 0
+numerator = 4
+denominator = 4
+
+[sub_resource type="Resource" id="Note_s05_note_001"]
+script = ExtResource("4_note")
+event_id = "s05_note_001"
+damage_group_id = "s05_note_001"
+tick = 3840
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"tap"
+
+[sub_resource type="Resource" id="Note_s05_note_002"]
+script = ExtResource("4_note")
+event_id = "s05_note_002"
+damage_group_id = "s05_note_002"
+tick = 4320
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"tap"
+
+[sub_resource type="Resource" id="Note_s05_note_003"]
+script = ExtResource("4_note")
+event_id = "s05_note_003"
+damage_group_id = "s05_note_003"
+tick = 4800
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"tap"
+
+[sub_resource type="Resource" id="Note_s05_note_004"]
+script = ExtResource("4_note")
+event_id = "s05_note_004"
+damage_group_id = "s05_note_004"
+tick = 5280
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"tap"
+
+[sub_resource type="Resource" id="Note_s05_note_005"]
+script = ExtResource("4_note")
+event_id = "s05_note_005"
+damage_group_id = "s05_note_005"
+tick = 5760
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"tap"
+
+[sub_resource type="Resource" id="Note_s05_note_006"]
+script = ExtResource("4_note")
+event_id = "s05_note_006"
+damage_group_id = "s05_note_006"
+tick = 6240
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"tap"
+
+[sub_resource type="Resource" id="Note_s05_note_007"]
+script = ExtResource("4_note")
+event_id = "s05_note_007"
+damage_group_id = "s05_note_007"
+tick = 6720
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"tap"
+
+[sub_resource type="Resource" id="Note_s05_note_008"]
+script = ExtResource("4_note")
+event_id = "s05_note_008"
+damage_group_id = "s05_note_008"
+tick = 7200
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"tap"
+
+[sub_resource type="Resource" id="Note_s05_note_009"]
+script = ExtResource("4_note")
+event_id = "s05_note_009"
+damage_group_id = "s05_note_009"
+tick = 7680
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"same_side"
+
+[sub_resource type="Resource" id="Note_s05_note_010"]
+script = ExtResource("4_note")
+event_id = "s05_note_010"
+damage_group_id = "s05_note_010"
+tick = 8160
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"same_side"
+
+[sub_resource type="Resource" id="Note_s05_note_011"]
+script = ExtResource("4_note")
+event_id = "s05_note_011"
+damage_group_id = "s05_note_011"
+tick = 8640
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"same_side"
+
+[sub_resource type="Resource" id="Note_s05_note_012"]
+script = ExtResource("4_note")
+event_id = "s05_note_012"
+damage_group_id = "s05_note_012"
+tick = 9120
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"same_side"
+
+[sub_resource type="Resource" id="Note_s05_note_013"]
+script = ExtResource("4_note")
+event_id = "s05_note_013"
+group_id = "s05_chord_intro_1"
+damage_group_id = "s05_chord_intro_1"
+tick = 9600
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"chord"
+
+[sub_resource type="Resource" id="Note_s05_note_014"]
+script = ExtResource("4_note")
+event_id = "s05_note_014"
+group_id = "s05_chord_intro_1"
+damage_group_id = "s05_chord_intro_1"
+tick = 9600
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"chord"
+
+[sub_resource type="Resource" id="Note_s05_note_015"]
+script = ExtResource("4_note")
+event_id = "s05_note_015"
+group_id = "s05_chord_intro_2"
+damage_group_id = "s05_chord_intro_2"
+tick = 10560
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"chord"
+
+[sub_resource type="Resource" id="Note_s05_note_016"]
+script = ExtResource("4_note")
+event_id = "s05_note_016"
+group_id = "s05_chord_intro_2"
+damage_group_id = "s05_chord_intro_2"
+tick = 10560
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"chord"
+
+[sub_resource type="Resource" id="Note_s05_note_017"]
+script = ExtResource("4_note")
+event_id = "s05_note_017"
+damage_group_id = "s05_note_017"
+tick = 11520
+duration_ticks = 960
+kind = 1
+affinity = 0
+tail_requires_release = false
+visual_variant = &"hold"
+
+[sub_resource type="Resource" id="Note_s05_note_018"]
+script = ExtResource("4_note")
+event_id = "s05_note_018"
+damage_group_id = "s05_note_018"
+tick = 12480
+duration_ticks = 480
+kind = 1
+affinity = 1
+tail_requires_release = false
+visual_variant = &"hold"
+
+[sub_resource type="Resource" id="Note_s05_note_019"]
+script = ExtResource("4_note")
+event_id = "s05_note_019"
+damage_group_id = "s05_note_019"
+tick = 13440
+duration_ticks = 960
+kind = 1
+affinity = 1
+tail_requires_release = false
+visual_variant = &"hold"
+
+[sub_resource type="Resource" id="Note_s05_note_020"]
+script = ExtResource("4_note")
+event_id = "s05_note_020"
+damage_group_id = "s05_note_020"
+tick = 14400
+duration_ticks = 480
+kind = 1
+affinity = 0
+tail_requires_release = false
+visual_variant = &"hold"
+
+[sub_resource type="Resource" id="Note_s05_note_021"]
+script = ExtResource("4_note")
+event_id = "s05_note_021"
+group_id = "s05_hold_pair"
+damage_group_id = "s05_hold_pair"
+tick = 15360
+duration_ticks = 960
+kind = 1
+affinity = 0
+tail_requires_release = false
+visual_variant = &"dual_hold"
+
+[sub_resource type="Resource" id="Note_s05_note_022"]
+script = ExtResource("4_note")
+event_id = "s05_note_022"
+group_id = "s05_hold_pair"
+damage_group_id = "s05_hold_pair"
+tick = 15360
+duration_ticks = 960
+kind = 1
+affinity = 1
+tail_requires_release = false
+visual_variant = &"dual_hold"
+
+[sub_resource type="Resource" id="Note_s05_note_023"]
+script = ExtResource("4_note")
+event_id = "s05_note_023"
+damage_group_id = "s05_note_023"
+tick = 17280
+duration_ticks = 1440
+kind = 1
+affinity = 0
+tail_requires_release = false
+visual_variant = &"long_hold"
+
+[sub_resource type="Resource" id="Note_s05_note_024"]
+script = ExtResource("4_note")
+event_id = "s05_note_024"
+damage_group_id = "s05_note_024"
+tick = 17760
+duration_ticks = 960
+kind = 1
+affinity = 1
+tail_requires_release = false
+visual_variant = &"offset_hold"
+
+[sub_resource type="Resource" id="Note_s05_note_025"]
+script = ExtResource("4_note")
+event_id = "s05_note_025"
+damage_group_id = "s05_note_025"
+tick = 19680
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"counter_tap"
+
+[sub_resource type="Resource" id="Note_s05_note_026"]
+script = ExtResource("4_note")
+event_id = "s05_note_026"
+damage_group_id = "s05_note_026"
+tick = 20640
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"counter_tap"
+
+[sub_resource type="Resource" id="Note_s05_note_027"]
+script = ExtResource("4_note")
+event_id = "s05_note_027"
+damage_group_id = "s05_note_027"
+tick = 21600
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"counter_tap"
+
+[sub_resource type="Resource" id="Note_s05_note_028"]
+script = ExtResource("4_note")
+event_id = "s05_note_028"
+damage_group_id = "s05_note_028"
+tick = 22560
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"counter_tap"
+
+[sub_resource type="Resource" id="Note_s05_note_029"]
+script = ExtResource("4_note")
+event_id = "s05_note_029"
+damage_group_id = "s05_note_029"
+tick = 23520
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"counter_tap"
+
+[sub_resource type="Resource" id="Note_s05_note_030"]
+script = ExtResource("4_note")
+event_id = "s05_note_030"
+damage_group_id = "s05_note_030"
+tick = 24480
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"counter_tap"
+
+[sub_resource type="Resource" id="Note_s05_note_031"]
+script = ExtResource("4_note")
+event_id = "s05_note_031"
+damage_group_id = "s05_note_031"
+tick = 25440
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"counter_tap"
+
+[sub_resource type="Resource" id="Note_s05_note_032"]
+script = ExtResource("4_note")
+event_id = "s05_note_032"
+damage_group_id = "s05_note_032"
+tick = 26400
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"counter_tap"
+
+[sub_resource type="Resource" id="Note_s05_note_033"]
+script = ExtResource("4_note")
+event_id = "s05_note_033"
+damage_group_id = "s05_note_033"
+tick = 27360
+duration_ticks = 960
+kind = 1
+affinity = 0
+tail_requires_release = false
+visual_variant = &"counter_hold"
+
+[sub_resource type="Resource" id="Note_s05_note_034"]
+script = ExtResource("4_note")
+event_id = "s05_note_034"
+damage_group_id = "s05_note_034"
+tick = 29280
+duration_ticks = 960
+kind = 1
+affinity = 0
+tail_requires_release = false
+visual_variant = &"counter_hold"
+
+[sub_resource type="Resource" id="Note_s05_note_035"]
+script = ExtResource("4_note")
+event_id = "s05_note_035"
+damage_group_id = "s05_note_035"
+tick = 31200
+duration_ticks = 960
+kind = 1
+affinity = 0
+tail_requires_release = false
+visual_variant = &"counter_hold"
+
+[sub_resource type="Resource" id="Note_s05_note_036"]
+script = ExtResource("4_note")
+event_id = "s05_note_036"
+damage_group_id = "s05_note_036"
+tick = 33120
+duration_ticks = 960
+kind = 1
+affinity = 0
+tail_requires_release = false
+visual_variant = &"counter_hold"
+
+[sub_resource type="Resource" id="Note_s05_note_037"]
+script = ExtResource("4_note")
+event_id = "s05_note_037"
+damage_group_id = "s05_note_037"
+tick = 50400
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"switch_tap"
+
+[sub_resource type="Resource" id="Note_s05_note_038"]
+script = ExtResource("4_note")
+event_id = "s05_note_038"
+damage_group_id = "s05_note_038"
+tick = 51360
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"switch_tap"
+
+[sub_resource type="Resource" id="Note_s05_note_039"]
+script = ExtResource("4_note")
+event_id = "s05_note_039"
+damage_group_id = "s05_note_039"
+tick = 52320
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"switch_tap"
+
+[sub_resource type="Resource" id="Note_s05_note_040"]
+script = ExtResource("4_note")
+event_id = "s05_note_040"
+damage_group_id = "s05_note_040"
+tick = 53280
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"switch_tap"
+
+[sub_resource type="Resource" id="Note_s05_note_041"]
+script = ExtResource("4_note")
+event_id = "s05_note_041"
+damage_group_id = "s05_note_041"
+tick = 54240
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"switch_tap"
+
+[sub_resource type="Resource" id="Note_s05_note_042"]
+script = ExtResource("4_note")
+event_id = "s05_note_042"
+damage_group_id = "s05_note_042"
+tick = 55200
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"switch_tap"
+
+[sub_resource type="Resource" id="Note_s05_note_043"]
+script = ExtResource("4_note")
+event_id = "s05_note_043"
+damage_group_id = "s05_note_043"
+tick = 56160
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"switch_tap"
+
+[sub_resource type="Resource" id="Note_s05_note_044"]
+script = ExtResource("4_note")
+event_id = "s05_note_044"
+damage_group_id = "s05_note_044"
+tick = 57120
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"switch_tap"
+
+[sub_resource type="Resource" id="Note_s05_note_045"]
+script = ExtResource("4_note")
+event_id = "s05_note_045"
+damage_group_id = "s05_note_045"
+tick = 58080
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"switch_tap"
+
+[sub_resource type="Resource" id="Note_s05_note_046"]
+script = ExtResource("4_note")
+event_id = "s05_note_046"
+damage_group_id = "s05_note_046"
+tick = 59040
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"switch_tap"
+
+[sub_resource type="Resource" id="Note_s05_note_047"]
+script = ExtResource("4_note")
+event_id = "s05_note_047"
+damage_group_id = "s05_note_047"
+tick = 60000
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"switch_tap"
+
+[sub_resource type="Resource" id="Note_s05_note_048"]
+script = ExtResource("4_note")
+event_id = "s05_note_048"
+damage_group_id = "s05_note_048"
+tick = 60960
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"switch_tap"
+
+[sub_resource type="Resource" id="Note_s05_note_049"]
+script = ExtResource("4_note")
+event_id = "s05_note_049"
+damage_group_id = "s05_note_049"
+tick = 61920
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"switch_tap"
+
+[sub_resource type="Resource" id="Note_s05_note_050"]
+script = ExtResource("4_note")
+event_id = "s05_note_050"
+damage_group_id = "s05_note_050"
+tick = 62880
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"switch_tap"
+
+[sub_resource type="Resource" id="Note_s05_note_051"]
+script = ExtResource("4_note")
+event_id = "s05_note_051"
+damage_group_id = "s05_note_051"
+tick = 63840
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"switch_tap"
+
+[sub_resource type="Resource" id="Note_s05_note_052"]
+script = ExtResource("4_note")
+event_id = "s05_note_052"
+damage_group_id = "s05_note_052"
+tick = 64800
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"switch_tap"
+
+[sub_resource type="Resource" id="Note_s05_note_053"]
+script = ExtResource("4_note")
+event_id = "s05_note_053"
+group_id = "s05_pressure_open"
+damage_group_id = "s05_pressure_open"
+tick = 66240
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"chord"
+
+[sub_resource type="Resource" id="Note_s05_note_054"]
+script = ExtResource("4_note")
+event_id = "s05_note_054"
+group_id = "s05_pressure_open"
+damage_group_id = "s05_pressure_open"
+tick = 66240
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"chord"
+
+[sub_resource type="Resource" id="Note_s05_note_055"]
+script = ExtResource("4_note")
+event_id = "s05_note_055"
+group_id = "s05_pressure_close"
+damage_group_id = "s05_pressure_close"
+tick = 72000
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"chord"
+
+[sub_resource type="Resource" id="Note_s05_note_056"]
+script = ExtResource("4_note")
+event_id = "s05_note_056"
+group_id = "s05_pressure_close"
+damage_group_id = "s05_pressure_close"
+tick = 72000
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"chord"
+
+[sub_resource type="Resource" id="Field_life_counter"]
+script = ExtResource("5_field")
+event_id = "field_s05_life_counter"
+tick = 19200
+duration_ticks = 7680
+
+[sub_resource type="Resource" id="Field_death_counter"]
+script = ExtResource("5_field")
+event_id = "field_s05_death_counter"
+tick = 26880
+duration_ticks = 7680
+
+[sub_resource type="Resource" id="Field_paired_long"]
+script = ExtResource("5_field")
+event_id = "field_s05_paired_long"
+tick = 34560
+duration_ticks = 15360
+
+[sub_resource type="Resource" id="Field_switch_life"]
+script = ExtResource("5_field")
+event_id = "field_s05_switch_life"
+tick = 49920
+duration_ticks = 7680
+
+[sub_resource type="Resource" id="Field_switch_death"]
+script = ExtResource("5_field")
+event_id = "field_s05_switch_death"
+tick = 57600
+duration_ticks = 7680
+
+[sub_resource type="Resource" id="Field_pressure"]
+script = ExtResource("5_field")
+event_id = "field_s05_pressure"
+tick = 65280
+duration_ticks = 7680
+
+[sub_resource type="Resource" id="Slider_life_counter"]
+script = ExtResource("6_slider")
+event_id = "s05_slider_life_counter"
+field_id = "field_s05_life_counter"
+affinity = 0
+tick = 19200
+traversal_ticks = 1920
+traversal_count = 2
+start_value = 0.333333
+end_value = 0.666667
+
+[sub_resource type="Resource" id="Slider_life_counter_tail"]
+script = ExtResource("6_slider")
+event_id = "s05_slider_life_counter_tail"
+field_id = "field_s05_life_counter"
+affinity = 0
+tick = 24960
+traversal_ticks = 1920
+traversal_count = 1
+start_value = 0.333333
+end_value = 0.0
+
+[sub_resource type="Resource" id="Slider_death_counter"]
+script = ExtResource("6_slider")
+event_id = "s05_slider_death_counter"
+field_id = "field_s05_death_counter"
+affinity = 1
+tick = 26880
+traversal_ticks = 1920
+traversal_count = 1
+start_value = 0.333333
+end_value = 0.0
+
+[sub_resource type="Resource" id="Slider_death_counter_return"]
+script = ExtResource("6_slider")
+event_id = "s05_slider_death_counter_return"
+field_id = "field_s05_death_counter"
+affinity = 1
+tick = 30720
+traversal_ticks = 1920
+traversal_count = 1
+start_value = 0.0
+end_value = 0.333333
+
+[sub_resource type="Resource" id="Slider_paired_a_life"]
+script = ExtResource("6_slider")
+event_id = "s05_slider_paired_a_life"
+field_id = "field_s05_paired_long"
+group_id = "s05_group_paired_a"
+affinity = 0
+tick = 34560
+traversal_ticks = 1920
+traversal_count = 1
+start_value = 0.333333
+end_value = 0.666667
+
+[sub_resource type="Resource" id="Slider_paired_a_death"]
+script = ExtResource("6_slider")
+event_id = "s05_slider_paired_a_death"
+field_id = "field_s05_paired_long"
+group_id = "s05_group_paired_a"
+affinity = 1
+tick = 34560
+traversal_ticks = 1920
+traversal_count = 1
+start_value = 0.333333
+end_value = 0.0
+
+[sub_resource type="Resource" id="Slider_paired_b_life"]
+script = ExtResource("6_slider")
+event_id = "s05_slider_paired_b_life"
+field_id = "field_s05_paired_long"
+group_id = "s05_group_paired_b"
+affinity = 0
+tick = 38400
+traversal_ticks = 1920
+traversal_count = 1
+start_value = 0.666667
+end_value = 0.333333
+
+[sub_resource type="Resource" id="Slider_paired_b_death"]
+script = ExtResource("6_slider")
+event_id = "s05_slider_paired_b_death"
+field_id = "field_s05_paired_long"
+group_id = "s05_group_paired_b"
+affinity = 1
+tick = 38400
+traversal_ticks = 1920
+traversal_count = 1
+start_value = 0.0
+end_value = 0.333333
+
+[sub_resource type="Resource" id="Slider_paired_c_life"]
+script = ExtResource("6_slider")
+event_id = "s05_slider_paired_c_life"
+field_id = "field_s05_paired_long"
+group_id = "s05_group_paired_c"
+affinity = 0
+tick = 42240
+traversal_ticks = 1920
+traversal_count = 1
+start_value = 0.333333
+end_value = 0.0
+
+[sub_resource type="Resource" id="Slider_paired_c_death"]
+script = ExtResource("6_slider")
+event_id = "s05_slider_paired_c_death"
+field_id = "field_s05_paired_long"
+group_id = "s05_group_paired_c"
+affinity = 1
+tick = 42240
+traversal_ticks = 1920
+traversal_count = 1
+start_value = 0.333333
+end_value = 0.666667
+
+[sub_resource type="Resource" id="Slider_paired_d_life"]
+script = ExtResource("6_slider")
+event_id = "s05_slider_paired_d_life"
+field_id = "field_s05_paired_long"
+group_id = "s05_group_paired_d"
+affinity = 0
+tick = 46080
+traversal_ticks = 1920
+traversal_count = 1
+start_value = 0.0
+end_value = 0.333333
+
+[sub_resource type="Resource" id="Slider_paired_d_death"]
+script = ExtResource("6_slider")
+event_id = "s05_slider_paired_d_death"
+field_id = "field_s05_paired_long"
+group_id = "s05_group_paired_d"
+affinity = 1
+tick = 46080
+traversal_ticks = 1920
+traversal_count = 1
+start_value = 0.666667
+end_value = 0.333333
+
+[sub_resource type="Resource" id="Slider_switch_life"]
+script = ExtResource("6_slider")
+event_id = "s05_slider_switch_life"
+field_id = "field_s05_switch_life"
+affinity = 0
+tick = 51840
+traversal_ticks = 1920
+traversal_count = 1
+start_value = 0.333333
+end_value = 0.0
+
+[sub_resource type="Resource" id="Slider_switch_life_return"]
+script = ExtResource("6_slider")
+event_id = "s05_slider_switch_life_return"
+field_id = "field_s05_switch_life"
+affinity = 0
+tick = 55680
+traversal_ticks = 1920
+traversal_count = 1
+start_value = 0.0
+end_value = 0.333333
+
+[sub_resource type="Resource" id="Slider_switch_death"]
+script = ExtResource("6_slider")
+event_id = "s05_slider_switch_death"
+field_id = "field_s05_switch_death"
+affinity = 1
+tick = 57600
+traversal_ticks = 1920
+traversal_count = 2
+start_value = 0.333333
+end_value = 0.666667
+
+[sub_resource type="Resource" id="Slider_switch_death_tail"]
+script = ExtResource("6_slider")
+event_id = "s05_slider_switch_death_tail"
+field_id = "field_s05_switch_death"
+affinity = 1
+tick = 63360
+traversal_ticks = 1920
+traversal_count = 1
+start_value = 0.333333
+end_value = 0.666667
+
+[sub_resource type="Resource" id="Slider_pressure_life"]
+script = ExtResource("6_slider")
+event_id = "s05_slider_pressure_life"
+field_id = "field_s05_pressure"
+group_id = "s05_group_pressure"
+affinity = 0
+tick = 67200
+traversal_ticks = 3840
+traversal_count = 1
+start_value = 0.333333
+end_value = 1.0
+
+[sub_resource type="Resource" id="Slider_pressure_death"]
+script = ExtResource("6_slider")
+event_id = "s05_slider_pressure_death"
+field_id = "field_s05_pressure"
+group_id = "s05_group_pressure"
+affinity = 1
+tick = 67200
+traversal_ticks = 3840
+traversal_count = 1
+start_value = 0.333333
+end_value = 1.0
+
+[sub_resource type="Resource" id="Su_pressure"]
+script = ExtResource("7_su")
+event_id = "s05_su_pressure"
+group_id = "s05_group_pressure"
+tick = 71520
+count = 2
+spawn_region_normalized = Rect2(0.24, 0.16, 0.52, 0.68)
+visual_variant = &"white_knot_pair"
+
+[sub_resource type="Resource" id="Section_prepare"]
+script = ExtResource("8_section")
+event_id = "section_s05_prepare"
+tick = 0
+label = "准备"
+tutorial_key = &"combined_intro"
+
+[sub_resource type="Resource" id="Section_tap"]
+script = ExtResource("8_section")
+event_id = "section_s05_tap"
+tick = 3840
+label = "Tap"
+tutorial_key = &"combined_tap"
+
+[sub_resource type="Resource" id="Section_hold"]
+script = ExtResource("8_section")
+event_id = "section_s05_hold"
+tick = 11520
+label = "Hold"
+tutorial_key = &"combined_hold"
+
+[sub_resource type="Resource" id="Section_life_counter"]
+script = ExtResource("8_section")
+event_id = "section_s05_life_counter"
+tick = 19200
+label = "生钟调频与玄音"
+tutorial_key = &"combined_life_tuning"
+
+[sub_resource type="Resource" id="Section_death_counter"]
+script = ExtResource("8_section")
+event_id = "section_s05_death_counter"
+tick = 26880
+label = "死钟调频与朱音"
+tutorial_key = &"combined_death_tuning"
+
+[sub_resource type="Resource" id="Section_paired"]
+script = ExtResource("8_section")
+event_id = "section_s05_paired"
+tick = 34560
+label = "双钟连续调频"
+tutorial_key = &"combined_paired"
+
+[sub_resource type="Resource" id="Section_switch_life"]
+script = ExtResource("8_section")
+event_id = "section_s05_switch_life"
+tick = 49920
+label = "机制切换：生"
+tutorial_key = &"combined_switch_life"
+
+[sub_resource type="Resource" id="Section_switch_death"]
+script = ExtResource("8_section")
+event_id = "section_s05_switch_death"
+tick = 57600
+label = "机制切换：死"
+tutorial_key = &"combined_switch_death"
+
+[sub_resource type="Resource" id="Section_pressure"]
+script = ExtResource("8_section")
+event_id = "section_s05_pressure"
+tick = 65280
+label = "综合压力"
+tutorial_key = &"combined_pressure"
+
+[sub_resource type="Resource" id="Section_outro"]
+script = ExtResource("8_section")
+event_id = "section_s05_outro"
+tick = 72960
+label = "收尾"
+tutorial_key = &"combined_outro"
+
+[resource]
+script = ExtResource("1_chart")
+schema_version = 2
+chart_id = "s05_combined_lab"
+difficulty_id = "experiment"
+ppq = 480
+chart_offset_ticks = 0
+end_tick = 76800
+tempo_events = [SubResource("Tempo_0")]
+meter_events = [SubResource("Meter_0")]
+note_events = [SubResource("Note_s05_note_001"), SubResource("Note_s05_note_002"), SubResource("Note_s05_note_003"), SubResource("Note_s05_note_004"), SubResource("Note_s05_note_005"), SubResource("Note_s05_note_006"), SubResource("Note_s05_note_007"), SubResource("Note_s05_note_008"), SubResource("Note_s05_note_009"), SubResource("Note_s05_note_010"), SubResource("Note_s05_note_011"), SubResource("Note_s05_note_012"), SubResource("Note_s05_note_013"), SubResource("Note_s05_note_014"), SubResource("Note_s05_note_015"), SubResource("Note_s05_note_016"), SubResource("Note_s05_note_017"), SubResource("Note_s05_note_018"), SubResource("Note_s05_note_019"), SubResource("Note_s05_note_020"), SubResource("Note_s05_note_021"), SubResource("Note_s05_note_022"), SubResource("Note_s05_note_023"), SubResource("Note_s05_note_024"), SubResource("Note_s05_note_025"), SubResource("Note_s05_note_026"), SubResource("Note_s05_note_027"), SubResource("Note_s05_note_028"), SubResource("Note_s05_note_029"), SubResource("Note_s05_note_030"), SubResource("Note_s05_note_031"), SubResource("Note_s05_note_032"), SubResource("Note_s05_note_033"), SubResource("Note_s05_note_034"), SubResource("Note_s05_note_035"), SubResource("Note_s05_note_036"), SubResource("Note_s05_note_037"), SubResource("Note_s05_note_038"), SubResource("Note_s05_note_039"), SubResource("Note_s05_note_040"), SubResource("Note_s05_note_041"), SubResource("Note_s05_note_042"), SubResource("Note_s05_note_043"), SubResource("Note_s05_note_044"), SubResource("Note_s05_note_045"), SubResource("Note_s05_note_046"), SubResource("Note_s05_note_047"), SubResource("Note_s05_note_048"), SubResource("Note_s05_note_049"), SubResource("Note_s05_note_050"), SubResource("Note_s05_note_051"), SubResource("Note_s05_note_052"), SubResource("Note_s05_note_053"), SubResource("Note_s05_note_054"), SubResource("Note_s05_note_055"), SubResource("Note_s05_note_056")]
+tuning_fields = [SubResource("Field_life_counter"), SubResource("Field_death_counter"), SubResource("Field_paired_long"), SubResource("Field_switch_life"), SubResource("Field_switch_death"), SubResource("Field_pressure")]
+tuning_sliders = [SubResource("Slider_life_counter"), SubResource("Slider_life_counter_tail"), SubResource("Slider_death_counter"), SubResource("Slider_death_counter_return"), SubResource("Slider_paired_a_life"), SubResource("Slider_paired_a_death"), SubResource("Slider_paired_b_life"), SubResource("Slider_paired_b_death"), SubResource("Slider_paired_c_life"), SubResource("Slider_paired_c_death"), SubResource("Slider_paired_d_life"), SubResource("Slider_paired_d_death"), SubResource("Slider_switch_life"), SubResource("Slider_switch_life_return"), SubResource("Slider_switch_death"), SubResource("Slider_switch_death_tail"), SubResource("Slider_pressure_life"), SubResource("Slider_pressure_death")]
+su_manifestations = [SubResource("Su_pressure")]
+rapid_regions = []
+sections = [SubResource("Section_prepare"), SubResource("Section_tap"), SubResource("Section_hold"), SubResource("Section_life_counter"), SubResource("Section_death_counter"), SubResource("Section_paired"), SubResource("Section_switch_life"), SubResource("Section_switch_death"), SubResource("Section_pressure"), SubResource("Section_outro")]

@@ -1,10 +1,10 @@
 class_name NoteJudgeEngine
 extends RefCounted
 
-## Tap 与 Hold 的确定性判定器。它只决定输入是否匹配、各分量等级和 Hold 状态，
+## Tap 与 Hold 的确定性判定器。Hold 只判头部和持续过程，到达尾点自动完成；
 ## 不生成画面；命中的普通音符会把稳定绑定信息交给物理波纹层。
 
-## 本局判定规则；读取头尾时间窗、断持宽限和双押容差。
+## 本局判定规则；读取头部时间窗与 Hold 断持宽限。
 var _rules: GameplayRuleSet
 ## 每个编译音符的运行时状态，按 start_us、类型和稳定 ID 排序。
 var _states: Array[Dictionary] = []
@@ -58,25 +58,25 @@ func advance_to(time_us: int, inclusive: bool = true) -> void:
 				)
 				_finalize_state(state, [component], head_deadline + 1)
 		elif state["status"] == &"holding":
-			if int(state["gap_started_us"]) >= 0 and time_us - int(state["gap_started_us"]) > _rules.hold_sustain_grace_ms * 1000:
+			var end_us: int = int(note["end_us"])
+			var reaches_end: bool = end_us < time_us or (inclusive and end_us == time_us)
+			var gap_started_us: int = int(state["gap_started_us"])
+			var gap_deadline_us: int = gap_started_us + _rules.hold_sustain_grace_ms * 1000
+			# 大帧步可能同时越过尾点和断持期限。比较两者的绝对时间：尾点仍在
+			# 宽限内就先成功；宽限先耗尽则在第一个超时微秒失败，结果不依赖帧率。
+			var gap_expires_before_end: bool = gap_started_us >= 0 and gap_deadline_us < end_us
+			if gap_expires_before_end and time_us > gap_deadline_us:
+				var failure_us: int = gap_deadline_us + 1
 				var gap_component := JudgmentComponentRecord.timing(
-					&"sustain", int(note["tick"]), int(note["start_us"]), time_us,
+					&"sustain", int(note["tick"]), int(note["start_us"]), failure_us,
 					GameplayTypes.JudgmentGrade.MISS
 				)
 				var failed_components: Array[JudgmentComponentRecord] = state["components"].duplicate()
 				failed_components.append(gap_component)
-				_finalize_state(state, failed_components, time_us)
+				_finalize_state(state, failed_components, failure_us)
 				continue
-			if not bool(note["tail_requires_release"]):
-				var should_finish: bool = int(note["end_us"]) < time_us or (inclusive and int(note["end_us"]) == time_us)
-				if should_finish:
-					var auto_tail := JudgmentComponentRecord.timing(&"tail", int(note["end_tick"]), int(note["end_us"]), int(note["end_us"]), GameplayTypes.JudgmentGrade.PERFECT)
-					_finish_hold(state, auto_tail, int(note["end_us"]))
-			else:
-				var tail_deadline: int = int(note["end_us"]) + _rules.hold_release_pass_ms * 1000
-				if time_us > tail_deadline:
-					var missed_tail := JudgmentComponentRecord.timing(&"tail", int(note["end_tick"]), int(note["end_us"]), tail_deadline + 1, GameplayTypes.JudgmentGrade.MISS)
-					_finish_hold(state, missed_tail, tail_deadline + 1)
+			if reaches_end:
+				_finish_hold(state, end_us)
 
 
 func handle_press(sample: SemanticInputSample) -> bool:
@@ -149,18 +149,15 @@ func handle_release(sample: SemanticInputSample) -> bool:
 		var note: Dictionary = state["note"]
 		if int(note["affinity"]) != affinity:
 			continue
-		state["held"] = false
-		var error_us: int = sample.timestamp_us - int(note["end_us"])
-		var pass_us: int = _rules.hold_release_pass_ms * 1000
-		if error_us < -pass_us:
-			# 过早松开先进入短暂宽限期，不立即结算；宽限内重新按下可继续，
-			# 但持续表现已经不完美，最终等级至少会降到 PASS。
-			if int(state["gap_started_us"]) < 0:
-				state["gap_started_us"] = sample.timestamp_us
+		# 尾点不再判松键。恰好在尾点收到 RELEASE 时，advance_to(..., false)
+		# 尚未包含该端点，因此在这里仍按“已持续到尾点”自动完成。
+		if sample.timestamp_us >= int(note["end_us"]):
+			_finish_hold(state, int(note["end_us"]))
 			return true
-		var grade: int = _grade_hold_tail_error(absi(error_us))
-		var tail := JudgmentComponentRecord.timing(&"tail", int(note["end_tick"]), int(note["end_us"]), sample.timestamp_us, grade)
-		_finish_hold(state, tail, sample.timestamp_us)
+		state["held"] = false
+		# 任何尾点前的松开都只开启持续宽限；不再把“接近尾点”误作一次松键判定。
+		if int(state["gap_started_us"]) < 0:
+			state["gap_started_us"] = sample.timestamp_us
 		return true
 	return false
 
@@ -230,12 +227,11 @@ func drain_judgments() -> Array[JudgmentRecord]:
 	return result
 
 
-func _finish_hold(state: Dictionary, tail: JudgmentComponentRecord, finalized_at_us: int) -> void:
+func _finish_hold(state: Dictionary, finalized_at_us: int) -> void:
 	var components: Array[JudgmentComponentRecord] = state["components"].duplicate()
 	var sustain_grade: int = GameplayTypes.JudgmentGrade.PASS if bool(state["sustain_degraded"]) else GameplayTypes.JudgmentGrade.PERFECT
 	var note: Dictionary = state["note"]
 	components.append(JudgmentComponentRecord.value_error(&"sustain", int(note["tick"]), int(note["start_us"]), 0.0, sustain_grade))
-	components.append(tail)
 	_finalize_state(state, components, finalized_at_us)
 
 
@@ -265,15 +261,5 @@ func _grade_tap_error(absolute_error_us: int) -> int:
 	if absolute_error_us <= _rules.good_window_ms * 1000:
 		return GameplayTypes.JudgmentGrade.GOOD
 	if absolute_error_us <= _rules.pass_window_ms * 1000:
-		return GameplayTypes.JudgmentGrade.PASS
-	return GameplayTypes.JudgmentGrade.MISS
-
-
-func _grade_hold_tail_error(absolute_error_us: int) -> int:
-	if absolute_error_us <= _rules.hold_release_perfect_ms * 1000:
-		return GameplayTypes.JudgmentGrade.PERFECT
-	if absolute_error_us <= _rules.hold_release_good_ms * 1000:
-		return GameplayTypes.JudgmentGrade.GOOD
-	if absolute_error_us <= _rules.hold_release_pass_ms * 1000:
 		return GameplayTypes.JudgmentGrade.PASS
 	return GameplayTypes.JudgmentGrade.MISS

@@ -9,7 +9,7 @@ extends RefCounted
 
 const NEVER_TIME_US: int = -9_000_000_000_000_000
 const USEC_PER_SEC: float = 1_000_000.0
-const DEFAULT_BASE_FREQUENCY_HZ: float = 4.35
+const DEFAULT_BASE_FREQUENCY_HZ: float = 3.0
 const DEFAULT_WAVE_SPEED_PX_SEC: float = 2400.0
 const DEFAULT_CANVAS_SIZE: Vector2 = Vector2(1920.0, 1080.0)
 const DEFAULT_LIFE_ORIGIN: Vector2 = Vector2(350.0, 280.0)

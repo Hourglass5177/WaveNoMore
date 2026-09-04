@@ -30,7 +30,7 @@ uniform float life_emission_times[MAX_WAVEFRONTS];
 // 每条死波前的绝对发射秒数；与生侧数组独立。
 uniform float death_emission_times[MAX_WAVEFRONTS];
 // 单条波带半宽，单位为像素；增大后完整波带更厚，也更容易与另一侧重叠。
-uniform float band_half_width_px : hint_range(2.0, 80.0, 0.5) = 22.0;
+uniform float band_half_width_px : hint_range(2.0, 80.0, 0.5) = 30.0;
 // 两侧游标是否正处于自己的有效引导带；只增强显示，不参与领域判定。
 uniform float life_guide_aligned : hint_range(0.0, 1.0, 1.0) = 0.0;
 uniform float death_guide_aligned : hint_range(0.0, 1.0, 1.0) = 0.0;
@@ -47,11 +47,11 @@ uniform vec4 overlap_color : source_color = vec4(0.98, 0.94, 0.82, 1.0);
 // 最终颜色和透明度倍率，0 不可见，超过 1 会增强亮度。
 uniform float field_strength : hint_range(0.0, 1.5, 0.001) = 1.02;
 // 显示骨白重叠纹的最低强度；增大后白色区域缩小。
-uniform float overlap_threshold : hint_range(0.0, 1.0, 0.001) = 0.10;
+uniform float overlap_threshold : hint_range(0.0, 1.0, 0.001) = 0.055;
 // 骨白网点单元边长，单位为像素；增大后颗粒更粗、更疏。
 uniform float stipple_cell_px : hint_range(3.0, 20.0, 0.5) = 7.0;
 // 重叠区域外围光晕倍率，0 关闭光晕，增大后边缘更亮。
-uniform float glow_strength : hint_range(0.0, 2.0, 0.01) = 0.85;
+uniform float glow_strength : hint_range(0.0, 2.0, 0.01) = 1.20;
 
 // 把像素到波前中心线的距离换成 0～1 能量，并留出抗锯齿过渡。
 float front_energy(float distance_to_front_px, float half_width_px) {
@@ -124,23 +124,26 @@ void fragment() {
 
 	// 第二阶段：只有生、死两条波带的可见范围真正重叠，才生成骨白相纹。
 	float overlap = life_sample.x * death_sample.x;
-	float overlap_gate = smoothstep(overlap_threshold, overlap_threshold + 0.16, overlap);
+	float overlap_gate = smoothstep(overlap_threshold, overlap_threshold + 0.10, overlap);
 	float stipple = dot_lattice(pixel, overlap);
-	float white_core = overlap_gate * stipple;
-	float white_glow = overlap_gate * overlap * 0.24 * glow_strength;
+	// 网点只负责纹理变化，不能把网点间的真实叠加区挖空。
+	float dual_alignment = min(life_guide_aligned, death_guide_aligned);
+	float overlap_emphasis = mix(1.0, 1.25, dual_alignment);
+	float white_core = overlap_gate * mix(0.52, 1.0, stipple) * overlap_emphasis;
+	float white_glow = overlap_gate * overlap * 0.34 * glow_strength * overlap_emphasis;
 
 	// 第三阶段：保留各自的窄亮前沿，并在骨白区域压低红黑，避免三色糊在一起。
 	float life_emphasis = mix(1.0, aligned_brightness_scale, life_guide_aligned);
 	float death_emphasis = mix(1.0, aligned_brightness_scale, death_guide_aligned);
-	float life_only = (life_sample.y * 0.92 + life_sample.x * 0.08) * (1.0 - overlap_gate * 0.78) * life_emphasis;
-	float death_only = (death_sample.y * 0.92 + death_sample.x * 0.08) * (1.0 - overlap_gate * 0.78) * death_emphasis;
+	float life_only = (life_sample.y * 0.92 + life_sample.x * 0.08) * (1.0 - overlap_gate * 0.84) * life_emphasis;
+	float death_only = (death_sample.y * 0.92 + death_sample.x * 0.08) * (1.0 - overlap_gate * 0.84) * death_emphasis;
 	vec3 color = life_color.rgb * life_only * 0.72;
 	color += death_color.rgb * death_only * 0.72;
 	color += overlap_color.rgb * (white_core + white_glow);
 
-	// 最后合并透明度；field_enabled 为 0 时整张全屏效果不可见。
+	// 最后合并透明度；场强只在最终透明度乘一次，避免颜色与透明度同时缩放造成平方衰减。
 	float alpha = max(life_only * 0.72, death_only * 0.72);
 	alpha = max(alpha, white_core * 0.92 + white_glow);
 	alpha = clamp(alpha * field_strength * field_enabled, 0.0, 1.0);
-	COLOR = vec4(color * field_strength, alpha);
+	COLOR = vec4(color, alpha);
 }

@@ -5,11 +5,11 @@
 [resource]
 script = ExtResource("1_stage")
 stage_id = "s01"
-display_name = "渡口试音"
-description = "覆盖生、死、双押、延音、调频素音与双钟疾振的正式数据驱动测试关。"
+display_name = "01 空按与持续发波"
+description = "没有音符。用于检查单钟、双钟持续按住，以及载波和相纹是否稳定。"
 order_index = 1
-song_title = "渡口试音"
-song_artist = "MVP 灰模节拍"
+song_title = "空按与持续发波"
+song_artist = "原型测试节拍"
 unlocked_by_default = true
 debug_nonlethal = true
 song_resource_path = "res://content/stages/s01/song_definition.tres"

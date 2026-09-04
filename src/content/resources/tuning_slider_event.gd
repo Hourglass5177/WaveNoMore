@@ -29,3 +29,11 @@ extends Resource
 @export_range(0.0, 1.0, 0.001) var start_value: float = 0.0
 ## 第一程终点在统一频率轴上的归一化位置，范围 0～1；偶数程最终会回到 start_value。
 @export_range(0.0, 1.0, 0.001) var end_value: float = 1.0
+
+@export_group("Presentation")
+## 将默认圆弧绕自身中心旋转的角度。0°保持原来的近横向上/下弧；
+## 正值按屏幕坐标顺时针旋转，可用来制作斜向或近纵向滑条。
+@export_range(-180.0, 180.0, 1.0) var arc_rotation_deg: float = 0.0
+## 相对于本阵营默认安全锚点的画面偏移，单位为设计像素。
+## 它只用于给连续滑条编排构图，不参与频率、判定或 Replay。
+@export var visual_offset_px: Vector2 = Vector2.ZERO

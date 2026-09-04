@@ -185,30 +185,35 @@ func _test_mouse_tuning_projection() -> void:
 func _test_gamepad_tuning_projection() -> void:
 	var router := InputRouter.new()
 	root.add_child(router)
+	var samples: Array[SemanticInputSample] = []
+	router.semantic_input_emitted.connect(func(sample: SemanticInputSample) -> void: samples.append(sample))
 	router.set_tuning_capture_active(true)
+	router.set_tuning_gesture_windows([
+		{"event_id": "life_window", "affinity": GameplayTypes.Affinity.ZHU, "start_value": 0.333333, "end_value": 0.666667},
+		{"event_id": "death_window", "affinity": GameplayTypes.Affinity.XUAN, "start_value": 0.333333, "end_value": 0.0},
+	])
 	var l1 := _joy_button_event(JOY_BUTTON_LEFT_SHOULDER, true)
 	l1.device = 0
 	router.call("_handle_bell_event", l1)
-	var left_axis := InputEventJoypadMotion.new()
-	left_axis.device = 0
-	left_axis.axis = JOY_AXIS_LEFT_X
-	left_axis.axis_value = 1.0
-	router.call("_handle_tune_event", left_axis)
-	_expect_near(router.tune_vector.x, 0.0, 0.00001, "left stick never changes the life rate")
-	_expect_near(router.tune_vector.y, 1.0, 0.00001, "L1 plus left stick drives death at full rate")
-
 	var r1 := _joy_button_event(JOY_BUTTON_RIGHT_SHOULDER, true)
 	r1.device = 0
 	router.call("_handle_bell_event", r1)
-	var right_axis := InputEventJoypadMotion.new()
-	right_axis.device = 0
-	right_axis.axis = JOY_AXIS_RIGHT_X
-	right_axis.axis_value = 1.0
-	router.call("_handle_tune_event", right_axis)
-	_expect_equal(router.tune_vector, Vector2.ONE, "two full sticks remain (1, 1), never normalized to 0.707")
-	left_axis.axis_value = 0.0
-	router.call("_handle_tune_event", left_axis)
-	_expect_equal(router.tune_vector, Vector2(1.0, 0.0), "centering left stick stops only death tuning")
+	var windows: Dictionary = router.tuning_gesture_window_snapshot()
+	var life_window: Dictionary = windows["life"]
+	var death_window: Dictionary = windows["death"]
+	var life_upper_left := Vector2.from_angle(float(life_window["start_angle_rad"]))
+	var life_upper_right := Vector2.from_angle(float(life_window["end_angle_rad"]))
+	var death_lower_right := Vector2.from_angle(float(death_window["start_angle_rad"]))
+	var death_lower_left := Vector2.from_angle(float(death_window["end_angle_rad"]))
+	router.call("_process_rotary_sticks", 0, life_upper_left, 0, death_lower_right)
+	var anchored_count: int = samples.size()
+	router.call("_process_rotary_sticks", 0, life_upper_right, 0, death_lower_left)
+	_expect_equal(samples.size(), anchored_count + 1, "two complete stick vectors produce one combined rotary sample")
+	_expect(samples[-1].tune_vector.x > 0.0 and samples[-1].tune_vector.y < 0.0, "clockwise upper-left/right and lower-right/left gestures follow the mirrored frequency axes")
+	_expect_near(samples[-1].tune_vector.x, -samples[-1].tune_vector.y, 0.00001, "equal simultaneous rotations keep full mirrored magnitudes")
+	var held_count: int = samples.size()
+	router.call("_process_rotary_sticks", 0, life_upper_right, 0, death_lower_left)
+	_expect_equal(samples.size(), held_count, "holding a pushed stick still produces no displacement")
 	router.cancel_all(InputRouter.CancelReason.SESSION_END, false)
 	router.queue_free()
 
@@ -318,9 +323,10 @@ func _test_coordinator_rearm_bridge() -> void:
 	_expect(not capture_states.is_empty() and not capture_states[-1], "pause rearm releases mouse tuning capture")
 	coordinator.apply_resume_rearm({"life_held": true, "death_held": true})
 	_expect(not capture_states.is_empty() and capture_states[-1], "resume rearm restores field capture without requiring new bell presses")
-	coordinator.advance_to(int(compiled.tuning_fields[0]["end_us"]), true)
-	_expect(not bool(coordinator.snapshot().get("tuning_field_active", true)), "leaving the authored field closes tuning capture")
-	_expect(not capture_states.is_empty() and not capture_states[-1], "coordinator broadcasts capture release at the field tail")
+	var tuning_end_us: int = int(compiled.tuning_fields[0]["end_us"])
+	coordinator.advance_to(tuning_end_us, true)
+	_expect(not bool(coordinator.snapshot().get("tuning_field_active", true)), "capture closes at the authored final endpoint")
+	_expect(not capture_states.is_empty() and not capture_states[-1], "coordinator broadcasts capture release after endpoint judgment")
 	coordinator.queue_free()
 
 
@@ -348,7 +354,7 @@ func _test_tuning_auto_finish_runtime_cutoff() -> void:
 		float(session.call("_calculate_end_song_time_sec")),
 		1.0,
 		0.000001,
-		"StageSession ends at the authored tuning endpoint; no late release window remains"
+		"StageSession ends tuning at its authored endpoint without an extra late window"
 	)
 	clock.free()
 	session.free()
@@ -515,6 +521,25 @@ func _test_presentation_timing_cues() -> void:
 		"end_value": 0.70,
 	})
 	life_slider.set_region_progress(0.5)
+	# 缩圈属于未来滑条的独立起手提示：轨道可以退后，但提示本身必须始终清楚。
+	life_slider.set_preview_presentation(1, 1, 0.70)
+	life_slider.set_approach_timing(2.25, 2.25)
+	var cue_early: Dictionary = life_slider.visual_state_snapshot()
+	life_slider.set_approach_timing(1.125, 2.25)
+	var cue_middle: Dictionary = life_slider.visual_state_snapshot()
+	life_slider.set_approach_timing(0.225, 2.25)
+	var cue_late: Dictionary = life_slider.visual_state_snapshot()
+	_expect(bool(cue_early["start_cue_visible"]), "future slider exposes its start cue during preview")
+	_expect(
+		float(cue_early["start_cue_radius_px"]) > float(cue_middle["start_cue_radius_px"])
+		and float(cue_middle["start_cue_radius_px"]) > float(cue_late["start_cue_radius_px"]),
+		"start cue closes monotonically as the hit time approaches"
+	)
+	_expect(
+		float(cue_early["start_cue_radius_px"]) - float(cue_late["start_cue_radius_px"]) >= 60.0,
+		"start cue travels far enough to remain obvious on a 104px rail"
+	)
+	_expect(float(cue_early["start_cue_progress_stroke_px"]) >= 8.0, "start cue keeps a readable high-contrast stroke")
 	life_slider.set_approach_timing(1.125, 2.25)
 	life_slider.set_gameplay_snapshot({
 		"tuning_field_active": true,
@@ -526,17 +551,51 @@ func _test_presentation_timing_cues() -> void:
 			"guide_progress": 0.55,
 			"guide_band_min": 0.43,
 			"guide_band_max": 0.67,
-			"coverage": 0.82,
 			"held": true,
+			"required_rotation_sign": 1,
+			"endpoint_target_progress": 1.0,
+			"endpoint_inside": false,
+			"endpoint_captured": false,
+			"endpoint_window_active": true,
+			"endpoint_grade": GameplayTypes.JudgmentGrade.MISS,
+			"endpoint_best_error_us": 0,
 		}],
 	})
 	var life_state: Dictionary = life_slider.visual_state_snapshot()
-	_expect(float(life_slider.tuning_rail_width) >= 72.0, "tuning uses one broad readable rail instead of a thin ruler")
-	_expect_near(float(life_state["slider_length_px"]), 408.0, 0.001, "slider length comes from Hz span times the shared pixels-per-Hz scale")
-	_expect_near(float(life_state["guide_min_progress"]), 0.43, 0.00001, "visible guide band reads the authoritative lower judgment edge")
-	_expect_near(float(life_state["guide_max_progress"]), 0.67, 0.00001, "visible guide band reads the authoritative upper judgment edge")
-	_expect_near(float(life_state["player_progress"]), 0.52, 0.00001, "player cursor reads this slider's independent accumulated displacement")
-	_expect_near(float(life_state["coverage"]), 0.82, 0.00001, "slider exposes its continuous coverage without drawing sample points")
+	_expect(not bool(life_state["start_cue_visible"]), "start cue disappears once the slider becomes interactive")
+	var expected_chord_px: float = 3.0 * 160.0
+	var expected_center_distance_px: float = TuningArcGeometry.equivalent_center_distance_px(1920.0)
+	var expected_sweep_rad: float = TuningArcGeometry.equivalent_sweep_from_chord_rad(
+		expected_chord_px,
+		expected_center_distance_px
+	)
+	var expected_radius_px: float = TuningArcGeometry.equivalent_radius_from_chord_px(
+		expected_chord_px,
+		expected_sweep_rad
+	)
+	var expected_arc_length_px: float = expected_radius_px * expected_sweep_rad
+	_expect_near(float(life_slider.tuning_rail_width), 104.0, 0.001, "tuning uses the wide osu-style rail")
+	_expect_near(float(life_slider.tuning_outline_width), 8.0, 0.001, "tuning keeps one restrained outer outline")
+	_expect_near(float(life_state["slider_chord_px"]), expected_chord_px, 0.001, "Hz span fixes the visible endpoint distance")
+	_expect_near(float(life_state["slider_length_px"]), expected_arc_length_px, 0.01, "the equivalent circle derives the real rail length from its chord")
+	_expect_near(float(life_state["curve_length_px"]), expected_arc_length_px, 0.08, "the rendered rail follows the shared equivalent circle")
+	_expect_equal(int(life_state["curve_sample_count"]), 49, "equivalent-circle curve uses one stable sample budget")
+	_expect_near(float(life_state["arc_span_rad"]), expected_sweep_rad, 0.0001, "the visible rail and stick gesture share one expanded central angle")
+	_expect_near(float(life_state["rail_radius"]), expected_radius_px, 0.1, "arc radius reconstructs the authored chord")
+	_expect_near(float(life_state["equivalent_center_distance_px"]), expected_center_distance_px, 0.1, "the rail uses the shared equivalent-circle centre distance")
+	_expect_near(float(life_state["guide_min_progress"]), 0.43, 0.00001, "visual guide range reads the authoritative lower edge")
+	_expect_near(float(life_state["guide_max_progress"]), 0.67, 0.00001, "visual guide range reads the authoritative upper edge")
+	_expect_near(float(life_state["player_progress"]), 0.52, 0.00001, "player fill reads this slider's independent accumulated displacement")
+	_expect_near(float(life_state["fill_progress"]), 0.52, 0.00001, "the filled portion ends exactly at player progress")
+	_expect(int(life_state["guide_dot_count"]) > 1, "time guidance grows as a sparse dotted trail instead of a solid band")
+	_expect_equal(int(life_state["required_rotation_sign"]), 1, "visual consumes the domain-provided clockwise cue")
+	var life_cue_start: Vector2 = life_state["rotation_cue_start_direction"]
+	var life_cue_end: Vector2 = life_state["rotation_cue_end_direction"]
+	_expect(life_cue_start.x < 0.0 and life_cue_start.y < 0.0, "Life clockwise cue starts at the upper-left stick direction")
+	_expect(life_cue_end.x > 0.0 and life_cue_end.y < 0.0, "Life clockwise cue ends at the upper-right stick direction")
+	_expect_near(float(life_state["rotation_cue_sweep_rad"]), expected_sweep_rad, 0.0001, "rotation cue sweep equals the expanded finite gesture")
+	_expect(not life_state.has("coverage"), "slider presentation no longer carries obsolete continuous coverage")
+	_expect(bool(life_state["endpoint_window_active"]), "slider presentation exposes the current endpoint timing window")
 	_expect(bool(life_state["inside_guide"]) and bool(life_state["tuning_active"]), "held cursor inside the visible band receives immediate alignment feedback")
 	_expect_equal(int(life_state["target_count"]), 0, "coarse slider contains no hidden Su checkpoints or along-track ticks")
 	_expect_near(float(life_state["approach_progress"]), 0.5, 0.00001, "slider head cue closes from absolute time-to-start")
@@ -544,7 +603,11 @@ func _test_presentation_timing_cues() -> void:
 	var cursor_before_time_advance: Vector2 = active_cursor_point
 	life_slider.set_region_progress(0.8)
 	var cursor_after_time_advance: Vector2 = life_slider.visual_state_snapshot()["current_cursor_point"]
-	_expect_near(cursor_before_time_advance.distance_to(cursor_after_time_advance), 0.0, 0.00001, "song time moves only the guide; it never drags the player's cursor")
+	_expect_near(cursor_before_time_advance.distance_to(cursor_after_time_advance), 0.0, 0.00001, "song time moves only the guide; it never drags the player's fill")
+	life_slider.set_slider_state({"player_progress": 0.24, "required_rotation_sign": -1})
+	var rolled_back_state: Dictionary = life_slider.visual_state_snapshot()
+	_expect_near(float(rolled_back_state["fill_progress"]), 0.24, 0.00001, "reverse rotation removes fill immediately instead of leaving a travelled trail")
+	_expect_equal(int(rolled_back_state["required_rotation_sign"]), -1, "rotation cue flips without the presentation guessing direction")
 
 	var death_slider := tuning_scene.instantiate() as GrayboxFieldVisual
 	root.add_child(death_slider)
@@ -571,17 +634,54 @@ func _test_presentation_timing_cues() -> void:
 			"guide_progress": 1.0,
 			"guide_band_min": 0.88,
 			"guide_band_max": 1.0,
-			"coverage": 0.31,
 			"held": false,
+			"required_rotation_sign": -1,
 		}],
 	})
 	var death_state: Dictionary = death_slider.visual_state_snapshot()
 	var life_center: Vector2 = ((life_state["slider_start_point"] as Vector2) + (life_state["slider_end_point"] as Vector2)) * 0.5
 	var death_center: Vector2 = ((death_state["slider_start_point"] as Vector2) + (death_state["slider_end_point"] as Vector2)) * 0.5
-	_expect(life_center.distance_to(-death_center) <= 0.001, "life and death rails occupy fixed center-symmetric peripheral slots")
+	_expect(life_center.distance_to(-death_center) <= 0.001, "life and death rails occupy center-symmetric operation-side slots")
+	_expect(life_center.x > 0.0 and life_center.y < 0.0, "right-stick Life rail appears in the upper-right operation area")
+	_expect(death_center.x < 0.0 and death_center.y > 0.0, "left-stick Death rail appears in the lower-left operation area")
+	var outer_radius: float = life_slider.tuning_rail_width * 0.5 + life_slider.tuning_outline_width
+	var life_min_x: float = INF
+	var life_max_x: float = -INF
+	var death_min_x: float = INF
+	var death_max_x: float = -INF
+	for point: Vector2 in life_state["curve_points"]:
+		life_min_x = minf(life_min_x, point.x)
+		life_max_x = maxf(life_max_x, point.x)
+	for point: Vector2 in death_state["curve_points"]:
+		death_min_x = minf(death_min_x, point.x)
+		death_max_x = maxf(death_max_x, point.x)
+	_expect_near(life_min_x - outer_radius, 32.0, 0.1, "Life rail outline begins exactly beyond the central gutter")
+	_expect_near(death_max_x + outer_radius, -32.0, 0.1, "Death rail outline ends exactly before the central gutter")
+	var safe_edge_x: float = life_slider.canvas_size.x * 0.5 - life_slider.slider_edge_margin_px
+	_expect(life_max_x + outer_radius <= safe_edge_x + 0.1, "Life rail keeps the 72px screen-edge margin")
+	_expect(death_min_x - outer_radius >= -safe_edge_x - 0.1, "Death rail keeps the 72px screen-edge margin")
 	_expect(not bool(death_state["tuning_active"]), "one side may be inactive while the opposite slider remains held and aligned")
 	_expect_near(float(death_state["player_progress"]), 0.18, 0.00001, "death cursor keeps its own state instead of copying the life cursor")
 	_expect_equal(int(death_state["traversal_count"]), 2, "round-trip slider retains one explicit reversal without adding intermediate targets")
+	_expect_near(float(death_slider.call("_turnaround_pulse")), 1.0, 0.00001, "round-trip endpoint emits one restrained turnaround pulse")
+	var death_rising_start: Vector2 = death_state["rotation_cue_start_direction"]
+	var death_rising_end: Vector2 = death_state["rotation_cue_end_direction"]
+	_expect(death_rising_start.x < 0.0 and death_rising_start.y > 0.0, "Death counter-clockwise cue starts at the lower-left stick direction")
+	_expect(death_rising_end.x > 0.0 and death_rising_end.y > 0.0, "Death counter-clockwise cue ends at the lower-right stick direction")
+	death_slider.set_slider_state({"required_rotation_sign": 1})
+	var death_falling_state: Dictionary = death_slider.visual_state_snapshot()
+	var death_falling_start: Vector2 = death_falling_state["rotation_cue_start_direction"]
+	var death_falling_end: Vector2 = death_falling_state["rotation_cue_end_direction"]
+	_expect(death_falling_start.x > 0.0 and death_falling_start.y > 0.0, "Death clockwise cue starts at the lower-right stick direction")
+	_expect(death_falling_end.x < 0.0 and death_falling_end.y > 0.0, "Death clockwise cue ends at the lower-left stick direction")
+	var life_curve: PackedVector2Array = life_state["curve_points"]
+	var death_curve: PackedVector2Array = death_state["curve_points"]
+	var curves_are_center_symmetric: bool = life_curve.size() == death_curve.size()
+	for index: int in range(life_curve.size()):
+		if life_curve[index].distance_to(-death_curve[death_curve.size() - 1 - index]) > 0.001:
+			curves_are_center_symmetric = false
+			break
+	_expect(curves_are_center_symmetric, "life and death curves are center-symmetric while both frequency axes still run left-to-right")
 
 	var full_span_slider := tuning_scene.instantiate() as GrayboxFieldVisual
 	root.add_child(full_span_slider)
@@ -620,10 +720,10 @@ func _test_presentation_timing_cues() -> void:
 	})
 	exact_scale_slider.configure_from_rules(custom_rules)
 	_expect_near(
-		float(exact_scale_slider.visual_state_snapshot()["slider_length_px"]),
+		float(exact_scale_slider.visual_state_snapshot()["slider_chord_px"]),
 		absf(0.51 - 0.49) * (8.0 - 2.0) * 123.0,
 		0.0001,
-		"even a tiny slider span keeps the exact shared pixels-per-Hz scale without minimum clamping"
+		"even a tiny slider keeps the exact shared pixels-per-Hz chord before angular clamping"
 	)
 
 	# 滑条提前出现时还没有 active slider state；此时仍要显示本钟真实全局频率，
@@ -820,20 +920,20 @@ func _test_stage_root_contract() -> void:
 		"active_tuning_sliders": [
 			{
 				"event_id": "tuning_host_life",
+				"interaction_open": true,
 				"player_progress": 0.62,
 				"guide_progress": 0.60,
 				"guide_band_min": 0.48,
 				"guide_band_max": 0.72,
-				"coverage": 0.91,
 				"held": true,
 			},
 			{
 				"event_id": "tuning_host_death",
+				"interaction_open": true,
 				"player_progress": 0.14,
 				"guide_progress": 0.40,
 				"guide_band_min": 0.28,
 				"guide_band_max": 0.52,
-				"coverage": 0.44,
 				"held": false,
 			},
 		],
@@ -853,7 +953,57 @@ func _test_stage_root_contract() -> void:
 	var tuning_life_center: Vector2 = ((tuning_life_state["slider_start_point"] as Vector2) + (tuning_life_state["slider_end_point"] as Vector2)) * 0.5
 	var tuning_death_center: Vector2 = ((tuning_death_state["slider_start_point"] as Vector2) + (tuning_death_state["slider_end_point"] as Vector2)) * 0.5
 	_expect(tuning_life_center.distance_to(-tuning_death_center) <= 0.001, "NoteVisualHost keeps the two rails in center-symmetric slots")
+
+	# 同侧未来滑条进入预读窗后立即生成，各自保留绝对缩圈和固定美术锚点。
+	var tuning_life_late: Dictionary = tuning_life_data.duplicate(true)
+	tuning_life_late["event_id"] = "tuning_host_life_late"
+	tuning_life_late["group_id"] = "tuning_host_late"
+	tuning_life_late["start_us"] = 3_000_000
+	tuning_life_late["end_us"] = 3_300_000
+	tuning_life_late["visual_offset_px"] = Vector2(0.0, 150.0)
+	var tuning_life_next: Dictionary = tuning_life_late.duplicate(true)
+	tuning_life_next["event_id"] = "tuning_host_life_next"
+	tuning_life_next["group_id"] = "tuning_host_next"
+	tuning_life_next["start_us"] = 2_500_000
+	tuning_life_next["end_us"] = 2_800_000
+	tuning_life_next["visual_offset_px"] = Vector2(0.0, -150.0)
+	host.call("_on_visual_spawn_requested", ChartScheduler.KIND_TUNING, tuning_life_late)
+	host.call("_on_visual_spawn_requested", ChartScheduler.KIND_TUNING, tuning_life_next)
+	host.call("_on_visual_spawn_requested", ChartScheduler.KIND_TUNING, tuning_life_next)
+	host.set_visual_time(0.75)
+	var tuning_active_visuals: Dictionary = host.get("_active")
+	_expect_equal(tuning_active_visuals.size(), 4, "current rail and two same-side future rails coexist while duplicate IDs are ignored")
+	_expect(tuning_active_visuals.has("tuning_host_life_next") and tuning_active_visuals.has("tuning_host_life_late"), "every preview event owns an independent visual immediately")
+	var next_visual := tuning_active_visuals["tuning_host_life_next"]["node"] as GrayboxFieldVisual
+	var late_visual := tuning_active_visuals["tuning_host_life_late"]["node"] as GrayboxFieldVisual
+	var next_state: Dictionary = next_visual.visual_state_snapshot()
+	var late_state: Dictionary = late_visual.visual_state_snapshot()
+	_expect_equal(int(tuning_life_visual.visual_state_snapshot()["preview_order_number"]), 1, "current tuning group receives the first visible order number")
+	_expect_equal(int(tuning_death_visual.visual_state_snapshot()["preview_order_number"]), 1, "paired life and death rails share one order number")
+	_expect_equal(int(next_state["preview_order_number"]), 2, "nearest future group receives the next order number")
+	_expect_equal(int(late_state["preview_order_number"]), 3, "farther future group remains readable as the third step")
+	_expect_near(next_visual.modulate.a, 1.0, 0.00001, "managed tuning visual keeps node alpha intact so its cue is not dimmed twice")
+	_expect_near(late_visual.modulate.a, 1.0, 0.00001, "farther tuning cue also owns its alpha internally")
+	_expect(
+		float(tuning_life_visual.visual_state_snapshot()["preview_alpha"]) > float(next_state["preview_alpha"])
+		and float(next_state["preview_alpha"]) > float(late_state["preview_alpha"]),
+		"current, nearest future and farther future rails retain a strict visual hierarchy"
+	)
+	_expect(next_visual.z_index > late_visual.z_index and tuning_life_visual.z_index > next_visual.z_index, "current and future rails have stable foreground ordering")
+	_expect(not bool(next_state["interaction_open"]) and float(next_state["fill_progress"]) == 0.0 and int(next_state["guide_dot_count"]) == 0, "future preview shows no player fill or active guide dots")
+	_expect(bool(next_state["start_cue_visible"]) and bool(late_state["start_cue_visible"]), "every independent future slider keeps its own visible start cue")
+	_expect((next_state["visual_offset_px"] as Vector2) == Vector2(0.0, -150.0), "authored preview offset reaches the visual unchanged")
+	_expect((next_state["slider_start_point"] as Vector2).distance_to(late_state["slider_start_point"] as Vector2) > 200.0, "authored offsets keep simultaneous same-side previews spatially distinct")
+	_expect(float(next_state["approach_progress"]) > float(late_state["approach_progress"]), "each independent preview keeps its own absolute shrink-ring progress")
+
+	host.call("_on_visual_despawn_requested", ChartScheduler.KIND_TUNING, "tuning_host_life")
+	_expect(host.get("_active").has("tuning_host_life_next") and host.get("_active").has("tuning_host_life_late"), "releasing the current rail does not recreate or disturb existing previews")
+	host.call("_on_visual_despawn_requested", ChartScheduler.KIND_TUNING, "tuning_host_life_next")
+	_expect(host.get("_active").has("tuning_host_life_late"), "each preview can be released independently by event ID")
+	_expect_near(float(late_visual.visual_state_snapshot()["preview_alpha"]), 0.70, 0.00001, "farther preview is promoted internally when the nearer event leaves")
+	_expect_equal(int(late_visual.visual_state_snapshot()["preview_order_number"]), 2, "visible order numbers close their gap after a preview leaves")
 	host.clear()
+	_expect(host.get("_active").is_empty() and host.get("_known_tuning_ids").is_empty(), "clear removes all preview instances and duplicate guards")
 	var rapid_hud_data := {
 		"id": "rapid_hud_anchor",
 		"event_id": "rapid_hud_anchor",
@@ -908,12 +1058,12 @@ func _test_stage_root_contract() -> void:
 	var settings_service := root.get_node_or_null("SettingsService")
 	_expect(settings_service != null, "settings service is available to the stage presentation")
 	if settings_service != null:
-		var persisted_display_density: float = float(settings_service.get("tuning_wave_frequency_scale"))
+		var persisted_visual_intensity: float = float(settings_service.get("tuning_wave_intensity"))
 		_expect_near(
-			float(tuning_wave_field.debug_snapshot()["display_density"]),
-			persisted_display_density,
+			float(tuning_wave_field.debug_snapshot()["visual_intensity"]),
+			persisted_visual_intensity,
 			0.00001,
-			"stage presentation applies the persisted interference display density"
+			"stage presentation applies the persisted interference visual intensity"
 		)
 	_test_authoritative_tuning_wavefront_history(tuning_wave_field)
 	var life_wave := {
@@ -1033,16 +1183,14 @@ func _test_stage_root_contract() -> void:
 	formal_stage.rule_set.tuning_min_frequency_hz = 2.0
 	formal_stage.rule_set.tuning_max_frequency_hz = 7.0
 	formal_stage.rule_set.tuning_pixels_per_hz = 100.0
-	formal_stage.rule_set.tuning_cursor_speed_px_sec = 515.0
-	formal_stage.rule_set.tuning_stick_deadzone = 0.27
+	formal_stage.rule_set.tuning_hz_per_revolution = 2.5
 	formal_stage.visual_theme.boundary_scene = _packed_placeholder("FormalBoundary")
 	formal_stage.visual_theme.life_actor_scene = _packed_placeholder("FormalLifeActor")
 	formal_stage.visual_theme.death_actor_scene = _packed_placeholder("FormalDeathActor")
 	_expect(stage_root.load_stage(formal_stage, false), "formal-audio stage prepares")
 	_expect_near(host.approach_duration_sec, 1.37, 0.00001, "visual timing guide shares the stage rule-set lookahead")
 	_expect_near(stage_root.input_router.pointer_displacement_per_pixel, 1.0 / 500.0, 0.000001, "prepared stage injects rule-derived pointer tuning scale")
-	_expect_near(stage_root.input_router.tuning_cursor_speed_px_sec, 515.0, 0.00001, "prepared stage injects tuning cursor speed into the input contract")
-	_expect_near(stage_root.input_router.tune_deadzone, 0.27, 0.00001, "prepared stage injects the authored stick deadzone")
+	_expect_near(stage_root.input_router.rotary_displacement_per_radian, 2.5 / (TAU * 5.0), 0.000001, "prepared stage injects the rule-derived rotary tuning scale")
 	_expect(stage_root.song_player.stream == formal_stream, "formal song audio is never replaced")
 	_expect(not stage_root.stage_session.uses_generated_graybox_audio, "formal stage is not marked graybox audio")
 	_expect(not backdrop.draw_placeholder_boundary, "formal boundary scene suppresses duplicate graybox boundary")
@@ -1200,7 +1348,10 @@ func _test_authoritative_tuning_wavefront_history(field: TuningInterferenceVisua
 
 	field.clear()
 	field.configure_from_rules(rules)
-	field.set_display_density(1.0)
+	field.set_visual_intensity(1.0)
+	_expect_near(field.band_half_width_px, 30.0, 0.00001, "carrier rings use the wider readable visual band")
+	_expect_near(field.overlap_threshold, 0.055, 0.00001, "bone-white overlap opens at the strengthened threshold")
+	_expect_near(field.glow_strength, 1.20, 0.00001, "bone-white overlap uses the strengthened glow")
 	var carrier_clock := ClockSample.new()
 	carrier_clock.generation = 10
 	carrier_clock.visual_time_sec = 0.25
@@ -1271,17 +1422,49 @@ func _test_authoritative_tuning_wavefront_history(field: TuningInterferenceVisua
 	_expect(absf(float(dual_source["life_frequency_hz"]) - float(dual_source["death_frequency_hz"])) > 0.1, "two bells retain independent frequencies inside one field")
 	_expect(bool(dual_source["life_guide_aligned"]), "a held life cursor inside its visible guide band strengthens only the life carrier")
 	_expect(not bool(dual_source["death_guide_aligned"]), "a held death cursor outside its guide band receives no false carrier emphasis")
+	field.call("_process", 0.03)
+	var half_aligned: Dictionary = field.debug_snapshot()
+	_expect_near(float(half_aligned["life_alignment_strength"]), 0.5, 0.001, "carrier alignment fades in instead of switching the full-screen shader instantly")
+	_expect_near(float(half_aligned["death_alignment_strength"]), 0.0, 0.001, "unaligned death carrier receives no false fade-in")
+	field.call("_process", 0.03)
+	_expect_near(float(field.debug_snapshot()["life_alignment_strength"]), 1.0, 0.001, "carrier alignment reaches full emphasis after sixty milliseconds")
 	_expect(not field.resolve_su_candidate_points(Rect2(Vector2.ZERO, Vector2.ONE), 1, 0.0).is_empty(), "visual white-knot candidates come from the same authoritative circle intersections")
+	_expect(
+		not bool(field.call("_side_is_guide_aligned", {
+			"active_tuning_sliders": [{
+				"affinity": GameplayTypes.Affinity.ZHU,
+				"held": true,
+				"player_progress": -0.10,
+				"guide_band_min": 0.0,
+				"guide_band_max": 0.12,
+			}],
+		}, GameplayTypes.Affinity.ZHU)),
+		"progress beyond a slider endpoint cannot be clamped back into visual alignment"
+	)
 
-	# “相纹显示密度”只能减少送给 Shader 的圈数，绝不能修改领域历史或物理半径。
-	var physical_before_density: Array = dual_source["life_wavefronts"]
-	var physical_count_before_density: int = int(dual_source["life_wavefront_count"])
-	var displayed_before_density: int = int(dual_source["life_display_wavefront_count"])
-	field.set_display_density(0.35)
-	var sparse_display: Dictionary = field.debug_snapshot()
-	_expect_equal(int(sparse_display["life_wavefront_count"]), physical_count_before_density, "display density does not delete physical carrier fronts")
-	_expect_equal(sparse_display["life_wavefronts"], physical_before_density, "display density does not alter launch times or radii")
-	_expect(int(sparse_display["life_display_wavefront_count"]) < displayed_before_density, "lower display density visibly samples fewer rings")
+	# 相纹强度只能改变着色强弱；所有权威波前仍要完整上传，避免双钟持续按住时成段断流。
+	var physical_before_intensity: Array = dual_source["life_wavefronts"]
+	var physical_count_before_intensity: int = int(dual_source["life_wavefront_count"])
+	var displayed_before_intensity: int = int(dual_source["life_display_wavefront_count"])
+	field.set_visual_intensity(0.35)
+	var dimmed_display: Dictionary = field.debug_snapshot()
+	_expect_equal(int(dimmed_display["life_wavefront_count"]), physical_count_before_intensity, "visual intensity does not delete physical carrier fronts")
+	_expect_equal(dimmed_display["life_wavefronts"], physical_before_intensity, "visual intensity does not alter launch times or radii")
+	_expect_equal(int(dimmed_display["life_display_wavefront_count"]), displayed_before_intensity, "visual intensity keeps every authoritative ring visible")
+	_expect_near(float(dimmed_display["visual_intensity"]), 0.35, 0.00001, "visual intensity remains an appearance-only setting")
+	var interference_material := field.material as ShaderMaterial
+	_expect_near(
+		float(interference_material.get_shader_parameter(&"field_strength")),
+		field.field_strength * 0.35,
+		0.00001,
+		"visual intensity is applied once to the final carrier field strength"
+	)
+	_expect_near(
+		float(interference_material.get_shader_parameter(&"glow_strength")),
+		field.glow_strength,
+		0.00001,
+		"overlap glow is not attenuated by visual intensity a second time"
+	)
 
 	# 素音位置由领域结果直接进入覆盖层；表现层不再预放固定靶点。
 	var su_points: Array[Vector2] = [constructive_points[0]]
@@ -1314,7 +1497,7 @@ func _test_authoritative_tuning_wavefront_history(field: TuningInterferenceVisua
 	_expect_equal(int(after_seek["life_wavefront_count"]), 0, "seek generation clears authoritative life-wave history")
 	_expect_equal(int(after_seek["death_wavefront_count"]), 0, "seek generation clears authoritative death-wave history")
 	_expect(not field.visible, "seek immediately removes stale full-screen interference and Su overlays")
-	field.set_display_density(1.0)
+	field.set_visual_intensity(1.0)
 	field.clear()
 
 

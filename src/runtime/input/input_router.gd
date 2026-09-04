@@ -2,12 +2,14 @@ class_name InputRouter
 extends Node
 
 ## 把键鼠、手柄和触屏事件转换为带判定时间的 SemanticInputSample。
-## 这里不读取谱面，也不累计调频游标；领域层负责按权威歌曲时间积分摇杆速率。
+## 这里不读取谱面，也不保存调频位置；只把真实旋转/拖动换算成相对位移。
 
 signal semantic_input_emitted(sample: SemanticInputSample)
 signal held_state_changed(life_held: bool, death_held: bool)
 signal cancelled(reason: int)
 signal pause_requested
+
+const TUNING_ARC_GEOMETRY: GDScript = preload("res://src/domain/tuning/tuning_arc_geometry.gd")
 
 enum InputMode {
 	DISABLED,
@@ -29,33 +31,30 @@ const ACTION_LIFE: StringName = &"bell_life"
 const ACTION_DEATH: StringName = &"bell_death"
 const ACTION_PAUSE: StringName = &"pause_game"
 
-## 左摇杆横轴控制死钟，右摇杆横轴控制生钟。动作名按“钟的归属”命名，
-## 而不是按屏幕方向命名，之后即使视觉布局改变也不必改领域语义。
+## 这些动作保留给项目设置和改键界面识别两根摇杆的横轴；旋钮计算会直接读取
+## 每根摇杆完整的 X/Y，不能再把横轴动作当成持续速度。
 const ACTION_DEATH_TUNE_LEFT: StringName = &"tune_death_left"
 const ACTION_DEATH_TUNE_RIGHT: StringName = &"tune_death_right"
 const ACTION_LIFE_TUNE_LEFT: StringName = &"tune_life_left"
 const ACTION_LIFE_TUNE_RIGHT: StringName = &"tune_life_right"
 
+# 两条滑槽在画面中中心对称：生槽位于上弧，死槽位于下弧。因此相同的视觉
+# 顺时针手势在两侧应产生相反的频率变化，玩家才能沿屏幕上的弧线自然转动。
+const LIFE_ROTARY_FREQUENCY_SIGN: float = 1.0
+const DEATH_ROTARY_FREQUENCY_SIGN: float = -1.0
 ## 鼠标或触屏每横移一个设计像素，对应多少归一化频率轴位移。
 ## 它由“频率范围 × 每 Hz 像素数”推导，不能在设备层另设一套手感参数。
 var pointer_displacement_per_pixel: float = 0.0
-## 左右摇杆横轴的中心死区，始终取自当前关卡 GameplayRuleSet。
-var tune_deadzone: float = 0.0
-## 当前规则声明的满幅游标速度。InputRouter只发送 -1～1 的速率意图，
-## 真正按歌曲时间积分仍由 TuningEngine 完成；这里保留数值用于检查设备合同。
-var tuning_cursor_speed_px_sec: float = 0.0
-
-@export_group("Gamepad Tuning")
-## 摇杆速率相比上一样本至少变化多少才上报，用于过滤硬件抖动。
-@export_range(0.0001, 0.1, 0.0001) var tune_change_epsilon: float = 0.002
+## 自由调频时，摇杆旋转一弧度对应多少归一化频率轴位移。
+## 计分滑条改用自身等效圆弧，不读取这个全局倍率。
+var rotary_displacement_per_radian: float = 0.0
+## 最近一次实际发出的双路调频位移，仅供调试 HUD 查看，不代表持续速度。
+var last_tuning_displacement: Vector2 = Vector2.ZERO
 
 var mode: InputMode = InputMode.DISABLED
 ## 两个布尔值代表所有物理来源合并后的按住状态，而不是某一颗具体按键。
 var life_held: bool = false
 var death_held: bool = false
-## 当前手柄速率意图；X=生钟，Y=死钟。指针位移是瞬时样本，不保存在这里。
-var tune_vector: Vector2 = Vector2.ZERO
-
 var _clock: SongClock
 ## 当前关卡唯一的调频规则来源；未装载关卡时使用 GameplayRuleSet 的标准默认值。
 var _tuning_rules: GameplayRuleSet
@@ -72,6 +71,27 @@ var _mouse_life_held: bool = false
 var _mouse_death_held: bool = false
 var _gamepad_life_devices: Dictionary = {}
 var _gamepad_death_devices: Dictionary = {}
+var _life_rotary_device: int = -1
+var _death_rotary_device: int = -1
+var _life_rotary_tracker := RotaryStickTracker.new()
+var _death_rotary_tracker := RotaryStickTracker.new()
+## 生、死两侧当前可操作滑条的精确圆心角。未来预读条只显示，不进入这里。
+## 没有计分滑条时退回各自半圆，供自由调频。
+var _life_rotary_window_sweep_rad: float = PI
+var _death_rotary_window_sweep_rad: float = PI
+## 用事件 ID 识别滑条切换；新条出现时重新定锚，不能继承上一条最后一帧的角度。
+var _life_rotary_window_event_id: String = ""
+var _death_rotary_window_event_id: String = ""
+## 非空时表示当前是计分滑条；字典中的起终值负责把 progress 增量还原成频率轴位移。
+var _life_rotary_slider: Dictionary = {}
+var _death_rotary_slider: Dictionary = {}
+## PREVIEW 阶段已经知道滑条几何，但直到权威起点才允许产生位移。
+var _life_rotary_input_open: bool = true
+var _death_rotary_input_open: bool = true
+## 未来滑条只负责画面预读，不会交给摇杆 Tracker；但其预备期仍需阻止鼠标、
+## 触屏和自由旋转提前改变这一侧的起始频率。
+var _life_tuning_preview_blocked: bool = false
+var _death_tuning_preview_blocked: bool = false
 
 var _mouse_captured_by_router: bool = false
 var _previous_mouse_mode: Input.MouseMode = Input.MOUSE_MODE_VISIBLE
@@ -85,16 +105,13 @@ func _ready() -> void:
 
 
 func _process(_delta: float) -> void:
-	if mode != InputMode.GAMEPLAY or not _tuning_capture_requested:
+	if mode not in [InputMode.GAMEPLAY, InputMode.RESUME_REARM]:
 		return
-	# JoypadMotion 通常只在轴数值变化时到达。每帧补读一次当前值，才能让玩家在
-	# 调频段开始前预先按住肩键和推住摇杆，并在开门后自然接入，而不用故意晃一下摇杆。
-	var next_rate: Vector2 = tune_vector
-	if not _gamepad_life_devices.is_empty():
-		next_rate.x = _strongest_held_axis(_gamepad_life_devices, JOY_AXIS_RIGHT_X)
-	if not _gamepad_death_devices.is_empty():
-		next_rate.y = _strongest_held_axis(_gamepad_death_devices, JOY_AXIS_LEFT_X)
-	_set_tuning_rate(next_rate)
+	# 物理事件偶尔会在失焦、鼠标捕获切换或 UI 抢占时丢失；InputMap 的聚合状态
+	# 只负责补齐按住/松开，不会重复触发一次敲击。
+	_reconcile_mapped_holds()
+	if mode == InputMode.GAMEPLAY and _tuning_capture_requested:
+		_poll_gamepad_rotation()
 
 
 func _exit_tree() -> void:
@@ -113,19 +130,31 @@ func bind_clock(clock: SongClock) -> void:
 
 
 func configure_from_rules(rules: GameplayRuleSet) -> void:
-	## 设备层与判定层共用同一份规则。摇杆输出仍是无量纲速率，
-	## 指针位移则在这里按完整频率轴的设计像素长度换算。
+	## 设备层与判定层共用同一份频率尺度，最终都输出完整频率轴上的归一化位移。
 	if rules == null:
 		return
 	_tuning_rules = rules
-	tune_deadzone = clampf(rules.tuning_stick_deadzone, 0.0, 0.999999)
-	tuning_cursor_speed_px_sec = maxf(rules.tuning_cursor_speed_px_sec, 0.001)
 	var frequency_range_hz: float = maxf(
 		rules.tuning_max_frequency_hz - rules.tuning_min_frequency_hz,
 		0.001
 	)
 	var frequency_axis_length_px: float = frequency_range_hz * maxf(rules.tuning_pixels_per_hz, 0.001)
 	pointer_displacement_per_pixel = 1.0 / frequency_axis_length_px
+	rotary_displacement_per_radian = maxf(rules.tuning_hz_per_revolution, 0.001) / (TAU * frequency_range_hz)
+	# 规则热重载可能改变同一事件对应的圆心角，强制下一帧按新窗口重新定锚。
+	_life_rotary_window_event_id = ""
+	_death_rotary_window_event_id = ""
+	_life_rotary_window_sweep_rad = PI
+	_death_rotary_window_sweep_rad = PI
+	_life_rotary_slider.clear()
+	_death_rotary_slider.clear()
+	_life_rotary_input_open = true
+	_death_rotary_input_open = true
+	_life_tuning_preview_blocked = false
+	_death_tuning_preview_blocked = false
+	_life_rotary_tracker.disable_finite_arc()
+	_death_rotary_tracker.disable_finite_arc()
+	_reset_rotary_trackers()
 
 
 func set_mode(next_mode: InputMode) -> void:
@@ -134,22 +163,129 @@ func set_mode(next_mode: InputMode) -> void:
 	mode = next_mode
 	if mode == InputMode.DISABLED or mode == InputMode.REPLAY:
 		cancel_all(CancelReason.MODAL_OPENED, false)
-	set_process_unhandled_input(mode != InputMode.REPLAY)
+	# 暂停菜单出现时必须把鼠标还给 UI；恢复玩法后，如果仍处于调频场，再重新捕获。
+	# RESUME_REARM 期间的按住状态由 _process() 对账，不需要抢走按钮的点击事件。
+	_update_mouse_capture()
+	set_process_input(mode != InputMode.REPLAY)
 
 
 func set_tuning_capture_active(active: bool, _initial_value: Vector2 = Vector2.ZERO) -> void:
+	if _tuning_capture_requested == active:
+		return
 	_tuning_capture_requested = active
-	# 新调频段一律从静止速率开始。游标位置由领域层保管，不能把它塞进速度样本。
-	if not tune_vector.is_zero_approx():
-		tune_vector = Vector2.ZERO
+	# 新调频段不继承门外旋转；首帧只记录当前杆向，必须继续转动才会产生位移。
+	_reset_rotary_trackers()
+	if active:
+		# 场域可能在本帧输入轮询之后开启。立即用当前杆向定锚，避免下一帧才接合
+		# 而吞掉玩家刚开始转动的第一小段弧。
+		_prime_rotary_trackers()
+	last_tuning_displacement = Vector2.ZERO
 	_update_mouse_capture()
+
+
+func set_tuning_gesture_windows(raw_sliders: Variant) -> void:
+	## 每侧只把当前可操作事件交给摇杆 Tracker。未来事件可以同时在画面预读，
+	## 但绝不能抢走当前事件的手势会话，也不能提前吸收玩家输入。
+	var life_slider: Dictionary = {}
+	var death_slider: Dictionary = {}
+	var life_preview_blocked: bool = false
+	var death_preview_blocked: bool = false
+	if raw_sliders is Array:
+		for raw_state: Variant in raw_sliders:
+			if not raw_state is Dictionary:
+				continue
+			var state: Dictionary = raw_state
+			var affinity: int = int(state.get("affinity", GameplayTypes.Affinity.ZHU))
+			var is_life: bool = affinity == GameplayTypes.Affinity.ZHU
+			if not bool(state.get("interaction_open", true)):
+				if is_life:
+					life_preview_blocked = true
+				else:
+					death_preview_blocked = true
+				continue
+			if (is_life and not life_slider.is_empty()) or (not is_life and not death_slider.is_empty()):
+				continue
+			var event_id: String = str(state.get("event_id", state.get("id", "")))
+			if event_id.is_empty():
+				continue
+			var slider: Dictionary = state.duplicate(true)
+			slider["event_id"] = event_id
+			slider["gesture_sweep_rad"] = TUNING_ARC_GEOMETRY.equivalent_sweep_rad(
+				float(state.get("start_value", 0.0)),
+				float(state.get("end_value", 1.0)),
+				_tuning_rules.tuning_min_frequency_hz,
+				_tuning_rules.tuning_max_frequency_hz,
+				_tuning_rules.tuning_pixels_per_hz,
+				_tuning_rules.wave_canvas_size.x
+			)
+			if is_life:
+				life_slider = slider
+			else:
+				death_slider = slider
+	_set_rotary_gesture_window(true, life_slider)
+	_set_rotary_gesture_window(false, death_slider)
+	_life_tuning_preview_blocked = life_preview_blocked
+	_death_tuning_preview_blocked = death_preview_blocked
+
+
+func tuning_gesture_window_snapshot() -> Dictionary:
+	## 仅供调试 HUD 和自动测试检查“画出来的弧”与“实际手势弧”是否一致。
+	## capture_start/end 按操作方向排列：前者是起点前的容错边，后者是轨道内的容错边。
+	return {
+		"life": _rotary_gesture_debug_snapshot(
+			GameplayTypes.Affinity.ZHU,
+			_life_rotary_window_event_id,
+			_life_rotary_window_sweep_rad,
+			_life_rotary_slider
+		),
+		"death": _rotary_gesture_debug_snapshot(
+			GameplayTypes.Affinity.XUAN,
+			_death_rotary_window_event_id,
+			_death_rotary_window_sweep_rad,
+			_death_rotary_slider
+		),
+	}
+
+
+func _rotary_gesture_debug_snapshot(
+		affinity: int,
+		event_id: String,
+		sweep_rad: float,
+		slider: Dictionary
+) -> Dictionary:
+	var rotation_sign: int = int(slider.get("base_rotation_sign", 0))
+	var rotation_offset_rad: float = deg_to_rad(float(slider.get("arc_rotation_deg", 0.0)))
+	var directed_angles: Vector2 = TUNING_ARC_GEOMETRY.symmetric_directed_angles(
+		affinity,
+		rotation_sign,
+		sweep_rad,
+		rotation_offset_rad
+	)
+	var capture_angles: Vector2 = TUNING_ARC_GEOMETRY.start_window_angles(
+		affinity,
+		rotation_sign,
+		sweep_rad,
+		TUNING_ARC_GEOMETRY.DEFAULT_START_WINDOW_EARLY_RAD,
+		TUNING_ARC_GEOMETRY.DEFAULT_START_WINDOW_LATE_RAD,
+		rotation_offset_rad
+	)
+	return {
+		"event_id": event_id,
+		"center_angle_rad": TUNING_ARC_GEOMETRY.center_angle_rad(affinity, rotation_offset_rad),
+		"arc_sweep_rad": sweep_rad,
+		"rotation_sign": rotation_sign,
+		"start_angle_rad": directed_angles.x,
+		"end_angle_rad": directed_angles.y,
+		"capture_start_angle_rad": capture_angles.x,
+		"capture_end_angle_rad": capture_angles.y,
+	}
 
 
 func get_held_snapshot() -> Dictionary:
 	return {
 		"life_held": life_held,
 		"death_held": death_held,
-		"tuning_rate": tune_vector,
+		"last_tuning_displacement": last_tuning_displacement,
 	}
 
 
@@ -158,8 +294,12 @@ func reset_for_run() -> void:
 	_sequence = 0
 
 
-func cancel_all(reason: CancelReason, emit_semantic_cancel: bool = true) -> void:
-	var had_state: bool = life_held or death_held or not tune_vector.is_zero_approx()
+func cancel_all(
+		reason: CancelReason,
+		emit_semantic_cancel: bool = true,
+		clear_tuning_capture: bool = true
+) -> void:
+	var had_state: bool = life_held or death_held or not last_tuning_displacement.is_zero_approx()
 	_life_sources.clear()
 	_death_sources.clear()
 	_touch_affinity_by_index.clear()
@@ -169,9 +309,27 @@ func cancel_all(reason: CancelReason, emit_semantic_cancel: bool = true) -> void
 	_mouse_death_held = false
 	life_held = false
 	death_held = false
-	tune_vector = Vector2.ZERO
-	_tuning_capture_requested = false
-	_restore_mouse_mode()
+	last_tuning_displacement = Vector2.ZERO
+	_reset_rotary_trackers()
+	if clear_tuning_capture:
+		_tuning_capture_requested = false
+		_life_rotary_window_event_id = ""
+		_death_rotary_window_event_id = ""
+		_life_rotary_window_sweep_rad = PI
+		_death_rotary_window_sweep_rad = PI
+		_life_rotary_slider.clear()
+		_death_rotary_slider.clear()
+		_life_rotary_input_open = true
+		_death_rotary_input_open = true
+		_life_tuning_preview_blocked = false
+		_death_tuning_preview_blocked = false
+		_life_rotary_tracker.disable_finite_arc()
+		_death_rotary_tracker.disable_finite_arc()
+		_restore_mouse_mode()
+	else:
+		# 手柄断连只清设备状态，谱面当前开放的调频场仍然有效；
+		# 玩家可立即改用键鼠，或在手柄重连后继续本段调频。
+		_update_mouse_capture()
 	held_state_changed.emit(false, false)
 
 	if emit_semantic_cancel and mode != InputMode.REPLAY and (_clock != null or had_state):
@@ -186,12 +344,21 @@ func inject_replay_input(sample: SemanticInputSample) -> void:
 	semantic_input_emitted.emit(sample)
 
 
-func _unhandled_input(event: InputEvent) -> void:
+func _input(event: InputEvent) -> void:
 	if mode == InputMode.DISABLED or mode == InputMode.REPLAY:
 		return
 
 	if event.is_action_pressed(ACTION_PAUSE) and not event.is_echo():
 		pause_requested.emit()
+		get_viewport().set_input_as_handled()
+		return
+	if mode == InputMode.RESUME_REARM:
+		# 暂停层位于 gameplay 之上。鼠标点击必须继续传给 Control/Button，
+		# 不能被左右钟的玩法映射提前标记为 handled。
+		return
+	if _is_cancelled_pointer_event(event):
+		# 系统取消不是玩家主动松键，统一走取消语义，避免误判 Hold 尾部。
+		cancel_all(CancelReason.FOCUS_LOST)
 		get_viewport().set_input_as_handled()
 		return
 
@@ -211,24 +378,22 @@ func _handle_bell_event(event: InputEvent) -> bool:
 		return false
 
 	if event.is_action_pressed(ACTION_LIFE):
+		_set_bell_source(true, "mapped:life", true)
+		# 先建立按住语义，再捕获已经处于起点窗内的摇杆；这样首帧位移不会因
+		# 领域层尚未收到 LIFE_PRESSED 而丢失。
 		_track_device_hold(event, true, true)
-		_set_bell_source(true, _bell_source_key(event, true), true)
-		_sync_gamepad_rate_after_shoulder(event, true)
 		return true
 	if event.is_action_released(ACTION_LIFE):
 		_track_device_hold(event, true, false)
-		_set_bell_source(true, _bell_source_key(event, true), false)
-		_stop_released_gamepad_rate(event, true)
+		_set_bell_source(true, "mapped:life", Input.is_action_pressed(ACTION_LIFE))
 		return true
 	if event.is_action_pressed(ACTION_DEATH):
+		_set_bell_source(false, "mapped:death", true)
 		_track_device_hold(event, false, true)
-		_set_bell_source(false, _bell_source_key(event, false), true)
-		_sync_gamepad_rate_after_shoulder(event, false)
 		return true
 	if event.is_action_released(ACTION_DEATH):
 		_track_device_hold(event, false, false)
-		_set_bell_source(false, _bell_source_key(event, false), false)
-		_stop_released_gamepad_rate(event, false)
+		_set_bell_source(false, "mapped:death", Input.is_action_pressed(ACTION_DEATH))
 		return true
 	return false
 
@@ -278,70 +443,28 @@ func _handle_tune_event(event: InputEvent) -> bool:
 
 	if event is InputEventJoypadMotion:
 		var joy_motion := event as InputEventJoypadMotion
-		if joy_motion.axis == JOY_AXIS_LEFT_X:
-			if not _gamepad_death_devices.has(joy_motion.device):
-				return false
-			var death_rate: float = _apply_axis_deadzone(joy_motion.axis_value)
-			return _set_tuning_rate(Vector2(tune_vector.x, death_rate))
-		if joy_motion.axis == JOY_AXIS_RIGHT_X:
-			if not _gamepad_life_devices.has(joy_motion.device):
-				return false
-			var life_rate: float = _apply_axis_deadzone(joy_motion.axis_value)
-			return _set_tuning_rate(Vector2(life_rate, tune_vector.y))
-
-	# InputEventAction 分支供自动测试和之后的改键系统使用；真实手柄仍走上面的原始轴事件，
-	# 这样左右两根摇杆不会被 Input.get_vector() 合并或单位圆归一化。
-	if event.is_action(ACTION_DEATH_TUNE_LEFT) or event.is_action(ACTION_DEATH_TUNE_RIGHT):
-		if not death_held:
-			return false
-		var death_axis: float = Input.get_axis(ACTION_DEATH_TUNE_LEFT, ACTION_DEATH_TUNE_RIGHT)
-		return _set_tuning_rate(Vector2(tune_vector.x, _apply_axis_deadzone(death_axis)))
-	if event.is_action(ACTION_LIFE_TUNE_LEFT) or event.is_action(ACTION_LIFE_TUNE_RIGHT):
-		if not life_held:
-			return false
-		var life_axis: float = Input.get_axis(ACTION_LIFE_TUNE_LEFT, ACTION_LIFE_TUNE_RIGHT)
-		return _set_tuning_rate(Vector2(_apply_axis_deadzone(life_axis), tune_vector.y))
+		var death_axis: bool = joy_motion.axis in [JOY_AXIS_LEFT_X, JOY_AXIS_LEFT_Y]
+		var life_axis: bool = joy_motion.axis in [JOY_AXIS_RIGHT_X, JOY_AXIS_RIGHT_Y]
+		# 真正的角度计算在 _process() 中一次读取完整二维向量；单独的轴事件只需截住，
+		# 否则先到达的 X 或 Y 会制造不存在的四分之一圈跳变。
+		return (
+			(death_axis and _gamepad_death_devices.has(joy_motion.device))
+			or (life_axis and _gamepad_life_devices.has(joy_motion.device))
+		)
 	return false
 
 
 func _emit_pointer_displacement(amount: float, move_life: bool, move_death: bool) -> bool:
 	if is_zero_approx(amount):
 		return true
-	var displacement := Vector2(amount if move_life else 0.0, amount if move_death else 0.0)
-	_emit_semantic_input(GameplayTypes.SemanticInputKind.TUNING_DISPLACED, displacement)
-	return true
-
-
-func _set_tuning_rate(next_rate: Vector2) -> bool:
-	# 每个分量独立钳制；(1, 1) 表示双摇杆同时满幅，是合法状态。
-	var clamped := Vector2(
-		clampf(next_rate.x, -1.0, 1.0),
-		clampf(next_rate.y, -1.0, 1.0)
-	)
-	if (
-		absf(clamped.x - tune_vector.x) < tune_change_epsilon
-		and absf(clamped.y - tune_vector.y) < tune_change_epsilon
-	):
+	# 缩圈预备期可以显示滑条和起手方向，但不能用鼠标/触屏提前填充。
+	move_life = move_life and _side_tuning_input_allowed(true)
+	move_death = move_death and _side_tuning_input_allowed(false)
+	if not move_life and not move_death:
 		return true
-	tune_vector = clamped
-	_emit_semantic_input(GameplayTypes.SemanticInputKind.TUNING_RATE_CHANGED, tune_vector)
+	var displacement := Vector2(amount if move_life else 0.0, amount if move_death else 0.0)
+	_emit_tuning_displacement(displacement)
 	return true
-
-
-func _apply_axis_deadzone(raw_axis: float) -> float:
-	var clamped: float = clampf(raw_axis, -1.0, 1.0)
-	if absf(clamped) <= tune_deadzone:
-		return 0.0
-	return signf(clamped) * inverse_lerp(tune_deadzone, 1.0, absf(clamped))
-
-
-func _strongest_held_axis(devices: Dictionary, axis: JoyAxis) -> float:
-	var strongest: float = 0.0
-	for raw_device: Variant in devices.keys():
-		var candidate: float = _apply_axis_deadzone(Input.get_joy_axis(int(raw_device), axis))
-		if absf(candidate) > absf(strongest):
-			strongest = candidate
-	return strongest
 
 
 func _set_bell_source(is_life: bool, source_key: String, pressed: bool) -> void:
@@ -368,21 +491,6 @@ func _set_bell_source(is_life: bool, source_key: String, pressed: bool) -> void:
 	_update_mouse_capture()
 
 
-func _bell_source_key(event: InputEvent, is_life: bool) -> String:
-	if event is InputEventMouseButton:
-		return "mouse:%d" % (event as InputEventMouseButton).button_index
-	if event is InputEventKey:
-		var key_event := event as InputEventKey
-		var code: int = int(key_event.physical_keycode if key_event.physical_keycode != KEY_NONE else key_event.keycode)
-		return "key:%d" % code
-	if event is InputEventJoypadButton:
-		var joy_event := event as InputEventJoypadButton
-		return "joy:%d:%d" % [joy_event.device, joy_event.button_index]
-	if event is InputEventAction:
-		return "action:%s" % String((event as InputEventAction).action)
-	return "semantic:%s" % ("life" if is_life else "death")
-
-
 func _track_device_hold(event: InputEvent, is_life: bool, pressed: bool) -> void:
 	if event is InputEventMouseButton:
 		if is_life:
@@ -390,36 +498,298 @@ func _track_device_hold(event: InputEvent, is_life: bool, pressed: bool) -> void
 		else:
 			_mouse_death_held = pressed
 	elif event is InputEventJoypadButton:
-		var device: int = (event as InputEventJoypadButton).device
+		var joy_button := event as InputEventJoypadButton
+		# L3/R3 只是对应钟的备用敲击键；旋钮所有权仍只由 L1/R1 获得。
+		# 否则点击摇杆会在下一帧对账时被肩键状态撤销，反而打断正在进行的旋转。
+		var rotary_button: JoyButton = (
+			JOY_BUTTON_RIGHT_SHOULDER if is_life else JOY_BUTTON_LEFT_SHOULDER
+		)
+		if joy_button.button_index != rotary_button:
+			return
+		var device: int = joy_button.device
 		var devices: Dictionary = _gamepad_life_devices if is_life else _gamepad_death_devices
+		var was_present: bool = devices.has(device)
 		if pressed:
 			devices[device] = true
 		else:
 			devices.erase(device)
+		# 只在这个设备的持有状态真的改变时切换旋钮所有者。重复按键事件或
+		# 非当前手柄的释放不能把正在使用的摇杆重置掉。
+		if was_present != pressed:
+			_refresh_rotary_owner(is_life)
 
 
-func _sync_gamepad_rate_after_shoulder(event: InputEvent, is_life: bool) -> void:
-	if not _tuning_capture_requested or not event is InputEventJoypadButton:
+func _reconcile_mapped_holds() -> void:
+	_reconcile_gamepad_devices(_gamepad_life_devices, JOY_BUTTON_RIGHT_SHOULDER, true)
+	_reconcile_gamepad_devices(_gamepad_death_devices, JOY_BUTTON_LEFT_SHOULDER, false)
+	if _mouse_life_held and not Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT):
+		_mouse_life_held = false
+	if _mouse_death_held and not Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
+		_mouse_death_held = false
+	_set_bell_source(true, "mapped:life", Input.is_action_pressed(ACTION_LIFE))
+	_set_bell_source(false, "mapped:death", Input.is_action_pressed(ACTION_DEATH))
+
+
+func _reconcile_gamepad_devices(devices: Dictionary, shoulder: JoyButton, is_life: bool) -> void:
+	# 暂停、失焦或进入关卡前就已按住肩键时，不一定还能收到新的按下事件。
+	# 每帧从已连接设备补回真实持有者，下一次摇杆采样先重新定锚，不补算旧旋转。
+	for device: int in Input.get_connected_joypads():
+		if Input.is_joy_button_pressed(device, shoulder):
+			devices[device] = true
+	var removed_current_device: bool = false
+	for raw_device: Variant in devices.keys():
+		var device: int = int(raw_device)
+		if Input.is_joy_button_pressed(device, shoulder):
+			continue
+		devices.erase(raw_device)
+		removed_current_device = removed_current_device or device == (
+			_life_rotary_device if is_life else _death_rotary_device
+		)
+	if removed_current_device:
+		if is_life:
+			_life_rotary_tracker.reset()
+			_life_rotary_device = -1
+		else:
+			_death_rotary_tracker.reset()
+			_death_rotary_device = -1
+
+
+func _poll_gamepad_rotation() -> void:
+	var life_device: int = _first_held_device(_gamepad_life_devices)
+	var death_device: int = _first_held_device(_gamepad_death_devices)
+	_process_rotary_sticks(
+		life_device,
+		_read_stick(life_device, false),
+		death_device,
+		_read_stick(death_device, true)
+	)
+
+
+func _process_rotary_sticks(
+		life_device: int,
+		life_stick: Vector2,
+		death_device: int,
+		death_stick: Vector2
+) -> void:
+	# _update_rotary_side() 已经把计分弧或自由旋转统一换算成频率轴位移。
+	# 两路直接组装，不能再做向量归一化或重复乘一次旋转倍率。
+	var displacement := Vector2(
+		_update_rotary_side(true, life_device, life_stick),
+		_update_rotary_side(false, death_device, death_stick)
+	)
+	if not displacement.is_zero_approx():
+		_emit_tuning_displacement(displacement)
+
+
+func _update_rotary_side(is_life: bool, device: int, stick: Vector2) -> float:
+	var previous_device: int = _life_rotary_device if is_life else _death_rotary_device
+	var tracker: RotaryStickTracker = _life_rotary_tracker if is_life else _death_rotary_tracker
+	if device < 0:
+		tracker.reset()
+		if is_life:
+			_life_rotary_device = -1
+		else:
+			_death_rotary_device = -1
+		return 0.0
+	if previous_device != device:
+		tracker.reset()
+		if is_life:
+			_life_rotary_device = device
+		else:
+			_death_rotary_device = device
+	if not _side_tuning_input_allowed(is_life):
+		# 未来预览只占用这一侧的起始频率，不建立自由旋转或计分手势。
+		tracker.reset()
+		return 0.0
+	var slider: Dictionary = _life_rotary_slider if is_life else _death_rotary_slider
+	if not slider.is_empty() and tracker.has_finite_arc():
+		var progress_delta: float = tracker.update_finite_arc(stick)
+		return progress_delta * (
+			float(slider.get("end_value", 1.0))
+			- float(slider.get("start_value", 0.0))
+		)
+	# 自由调频没有可见滑条，仍按每圈 Hz 数换算；两侧的视觉旋向互为镜像。
+	var angle_delta: float = tracker.update(stick)
+	var frequency_sign: float = LIFE_ROTARY_FREQUENCY_SIGN if is_life else DEATH_ROTARY_FREQUENCY_SIGN
+	return angle_delta * rotary_displacement_per_radian * frequency_sign
+
+
+func _set_rotary_gesture_window(is_life: bool, slider: Dictionary) -> void:
+	var event_id: String = str(slider.get("event_id", ""))
+	var sweep_rad: float = float(slider.get("gesture_sweep_rad", PI))
+	var previous_event_id: String = (
+		_life_rotary_window_event_id
+		if is_life
+		else _death_rotary_window_event_id
+	)
+	var resolved_sweep: float = clampf(sweep_rad, 0.0, PI)
+	var tracker: RotaryStickTracker = _life_rotary_tracker if is_life else _death_rotary_tracker
+	if event_id.is_empty():
+		if previous_event_id.is_empty():
+			return
+		if is_life:
+			_life_rotary_window_event_id = ""
+			_life_rotary_window_sweep_rad = PI
+			_life_rotary_slider.clear()
+			_life_rotary_input_open = true
+		else:
+			_death_rotary_window_event_id = ""
+			_death_rotary_window_sweep_rad = PI
+			_death_rotary_slider.clear()
+			_death_rotary_input_open = true
+		tracker.disable_finite_arc()
 		return
-	var device: int = (event as InputEventJoypadButton).device
-	var axis: JoyAxis = JOY_AXIS_RIGHT_X if is_life else JOY_AXIS_LEFT_X
-	var rate: float = _apply_axis_deadzone(Input.get_joy_axis(device, axis))
+
+	var start_value: float = float(slider.get("start_value", 0.0))
+	var end_value: float = float(slider.get("end_value", 1.0))
+	var frequency_sign: int = 1 if end_value > start_value else -1
+	var visual_mirror: int = 1 if is_life else -1
+	var base_rotation_sign: int = frequency_sign * visual_mirror
+	var input_open: bool = bool(slider.get("interaction_open", true))
+	var rotation_offset_rad: float = deg_to_rad(float(slider.get("arc_rotation_deg", 0.0)))
+	var current_leg_index: int = maxi(0, int(slider.get(
+		"current_traversal_index",
+		slider.get("current_endpoint_index", 0)
+	)))
+	var player_progress: float = float(slider.get(
+		"raw_player_progress",
+		slider.get("player_progress", 0.0)
+	))
+	slider["base_rotation_sign"] = base_rotation_sign
+
+	var previous_slider: Dictionary = _life_rotary_slider if is_life else _death_rotary_slider
+	var same_geometry: bool = (
+		previous_event_id == event_id
+		and is_equal_approx(float(previous_slider.get("start_value", start_value)), start_value)
+		and is_equal_approx(float(previous_slider.get("end_value", end_value)), end_value)
+		and is_equal_approx(
+			float(previous_slider.get("gesture_sweep_rad", resolved_sweep)),
+			resolved_sweep
+		)
+		and int(previous_slider.get("base_rotation_sign", base_rotation_sign)) == base_rotation_sign
+		and is_equal_approx(
+			float(previous_slider.get("arc_rotation_deg", 0.0)),
+			float(slider.get("arc_rotation_deg", 0.0))
+		)
+	)
+	# 同一个往返事件只同步权威进度。required_rotation_sign 在折返点会翻转，
+	# 但固定弧的起终点不能随之重建，否则摇杆会在半途突然丢失接合。
+	if same_geometry:
+		var was_input_open: bool = _life_rotary_input_open if is_life else _death_rotary_input_open
+		if is_life:
+			_life_rotary_slider = slider
+			_life_rotary_input_open = input_open
+		else:
+			_death_rotary_slider = slider
+			_death_rotary_input_open = input_open
+		tracker.sync_authoritative_progress(player_progress)
+		tracker.set_leg_index(current_leg_index)
+		if was_input_open != input_open:
+			tracker.reset()
+			if input_open and _tuning_capture_requested:
+				_prime_rotary_side(is_life)
+		return
+
+	var affinity: int = GameplayTypes.Affinity.ZHU if is_life else GameplayTypes.Affinity.XUAN
 	if is_life:
-		_set_tuning_rate(Vector2(rate, tune_vector.y))
+		_life_rotary_window_event_id = event_id
+		_life_rotary_window_sweep_rad = resolved_sweep
+		_life_rotary_slider = slider
+		_life_rotary_input_open = input_open
 	else:
-		_set_tuning_rate(Vector2(tune_vector.x, rate))
+		_death_rotary_window_event_id = event_id
+		_death_rotary_window_sweep_rad = resolved_sweep
+		_death_rotary_slider = slider
+		_death_rotary_input_open = input_open
+	tracker.configure_finite_arc(
+		affinity,
+		base_rotation_sign,
+		resolved_sweep,
+		player_progress,
+		rotation_offset_rad
+	)
+	tracker.set_leg_index(current_leg_index)
+	# 肩键已按住时立即尝试首次捕获；只有起点窗口内的杆向会成功。
+	if _tuning_capture_requested and input_open:
+		_prime_rotary_side(is_life)
 
 
-func _stop_released_gamepad_rate(event: InputEvent, is_life: bool) -> void:
-	if not _tuning_capture_requested or not event is InputEventJoypadButton:
+func _side_tuning_input_allowed(is_life: bool) -> bool:
+	var slider: Dictionary = _life_rotary_slider if is_life else _death_rotary_slider
+	if slider.is_empty():
+		return not (_life_tuning_preview_blocked if is_life else _death_tuning_preview_blocked)
+	return _life_rotary_input_open if is_life else _death_rotary_input_open
+
+
+func _read_stick(device: int, death_stick: bool) -> Vector2:
+	if device < 0:
+		return Vector2.ZERO
+	var axis_x: JoyAxis = JOY_AXIS_LEFT_X if death_stick else JOY_AXIS_RIGHT_X
+	var axis_y: JoyAxis = JOY_AXIS_LEFT_Y if death_stick else JOY_AXIS_RIGHT_Y
+	return Vector2(Input.get_joy_axis(device, axis_x), Input.get_joy_axis(device, axis_y))
+
+
+func _first_held_device(devices: Dictionary) -> int:
+	if devices.is_empty():
+		return -1
+	var ids: Array = devices.keys()
+	ids.sort()
+	return int(ids[0])
+
+
+func _reset_rotary_trackers() -> void:
+	_life_rotary_tracker.reset()
+	_death_rotary_tracker.reset()
+	_life_rotary_device = -1
+	_death_rotary_device = -1
+
+
+func _prime_rotary_trackers() -> void:
+	_prime_rotary_side(true)
+	_prime_rotary_side(false)
+
+
+func _prime_rotary_side(is_life: bool) -> void:
+	var devices: Dictionary = _gamepad_life_devices if is_life else _gamepad_death_devices
+	var device: int = _first_held_device(devices)
+	if device < 0:
 		return
-	if is_life and not is_zero_approx(tune_vector.x):
-		_set_tuning_rate(Vector2(0.0, tune_vector.y))
-	elif not is_life and not is_zero_approx(tune_vector.y):
-		_set_tuning_rate(Vector2(tune_vector.x, 0.0))
+	var displacement: float = _update_rotary_side(
+		is_life,
+		device,
+		_read_stick(device, not is_life)
+	)
+	if not is_zero_approx(displacement):
+		_emit_tuning_displacement(
+			Vector2(displacement, 0.0) if is_life else Vector2(0.0, displacement)
+		)
 
 
-func _emit_semantic_input(kind: int, value: Vector2) -> void:
+func _refresh_rotary_owner(is_life: bool) -> void:
+	var devices: Dictionary = _gamepad_life_devices if is_life else _gamepad_death_devices
+	var next_device: int = _first_held_device(devices)
+	var current_device: int = _life_rotary_device if is_life else _death_rotary_device
+	if current_device == next_device:
+		return
+	if is_life:
+		_life_rotary_tracker.reset()
+		_life_rotary_device = -1
+	else:
+		_death_rotary_tracker.reset()
+		_death_rotary_device = -1
+	if _tuning_capture_requested and next_device >= 0:
+		_prime_rotary_side(is_life)
+
+
+func _emit_tuning_displacement(displacement: Vector2) -> void:
+	var sample: SemanticInputSample = _emit_semantic_input(
+		GameplayTypes.SemanticInputKind.TUNING_DISPLACED,
+		displacement
+	)
+	last_tuning_displacement = sample.tune_vector
+
+
+func _emit_semantic_input(kind: int, value: Vector2) -> SemanticInputSample:
 	var capture_usec: int = Time.get_ticks_usec()
 	var timestamp_us: int = capture_usec
 	if is_instance_valid(_clock):
@@ -428,10 +798,12 @@ func _emit_semantic_input(kind: int, value: Vector2) -> void:
 	var sample := SemanticInputSample.create(timestamp_us, _sequence, kind, value)
 	_sequence += 1
 	semantic_input_emitted.emit(sample)
+	return sample
 
 
 func _update_mouse_capture() -> void:
-	var should_capture: bool = _tuning_capture_requested and (_mouse_life_held or _mouse_death_held)
+	# 只有实际游玩时才捕获鼠标。调频场仍在但暂停菜单打开时，光标必须可见且可点击。
+	var should_capture: bool = _tuning_capture_requested and mode == InputMode.GAMEPLAY
 	if should_capture and not _mouse_captured_by_router:
 		_previous_mouse_mode = Input.mouse_mode
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -450,5 +822,27 @@ func _restore_mouse_mode() -> void:
 func _on_joy_connection_changed(device: int, connected: bool) -> void:
 	if connected:
 		return
-	if _gamepad_life_devices.has(device) or _gamepad_death_devices.has(device):
-		cancel_all(CancelReason.DEVICE_DISCONNECTED)
+	var affected_life: bool = _gamepad_life_devices.erase(device)
+	var affected_death: bool = _gamepad_death_devices.erase(device)
+	if not affected_life and not affected_death:
+		return
+
+	# 断开的设备只失去自己的所有权。另一只手柄、键鼠或触屏若仍按住，
+	# 就继续维持这口钟，不能把正在进行的 Hold 和载波一并取消。
+	if device == _life_rotary_device:
+		_life_rotary_tracker.reset()
+		_life_rotary_device = -1
+	if device == _death_rotary_device:
+		_death_rotary_tracker.reset()
+		_death_rotary_device = -1
+	_set_bell_source(true, "mapped:life", Input.is_action_pressed(ACTION_LIFE))
+	_set_bell_source(false, "mapped:death", Input.is_action_pressed(ACTION_DEATH))
+	cancelled.emit(int(CancelReason.DEVICE_DISCONNECTED))
+
+
+func _is_cancelled_pointer_event(event: InputEvent) -> bool:
+	if event is InputEventMouseButton:
+		return (event as InputEventMouseButton).canceled
+	if event is InputEventScreenTouch:
+		return (event as InputEventScreenTouch).canceled
+	return false

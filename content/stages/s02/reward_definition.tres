@@ -4,7 +4,7 @@
 
 [resource]
 script = ExtResource("1_reward")
-reward_id = "reward_s02_tuning_lab"
+reward_id = "reward_s02_test_only"
 next_stage_id = ""
 fc_grants_base_pet = false
 ap_grants_advanced_pet = false

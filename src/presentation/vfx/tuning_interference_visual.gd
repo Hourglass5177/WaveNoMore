@@ -9,9 +9,11 @@ const FIELD_SHADER: Shader = preload("res://shaders/fields/interference_ink.gdsh
 const SU_OVERLAY_SCRIPT: Script = preload("res://src/presentation/vfx/su_manifestation_overlay.gd")
 # 必须与 interference_ink.gdshader 中的固定数组长度一致。
 const MAX_SHADER_WAVEFRONTS := 16
-# 领域历史上限高于 Shader 上限：显示密度可以抽样，但素音候选仍读取完整物理历史。
+# 领域历史上限高于 Shader 上限；素音候选始终读取完整物理历史。
 const MAX_PHYSICAL_WAVEFRONTS := 64
 const PHASE_EPSILON := 0.0000001
+# 与调频领域层一致，只吸收浮点换算误差，不把越过滑条端点的进度钳回合法范围。
+const TRACKING_EPSILON := 0.001
 
 @export_group("Field Geometry")
 ## 全屏相纹画布尺寸。
@@ -24,23 +26,23 @@ const PHASE_EPSILON := 0.0000001
 
 @export_group("Source Frequency")
 ## 普通段按住钟时使用的统一基准频率。
-@export_range(0.1, 20.0, 0.05) var base_frequency_hz: float = 4.35
+@export_range(0.1, 20.0, 0.05) var base_frequency_hz: float = 3.0
 ## 调频段两端对应的频率范围。
-@export_range(0.1, 20.0, 0.1) var min_frequency_hz: float = 1.8
-@export_range(0.1, 20.0, 0.1) var max_frequency_hz: float = 6.9
-## 兼容旧设置名。现在只控制显示抽样密度，不再改变真实发波频率。
-@export_range(0.35, 1.0, 0.05) var frequency_scale: float = 0.60
+@export_range(0.1, 20.0, 0.1) var min_frequency_hz: float = 1.0
+@export_range(0.1, 20.0, 0.1) var max_frequency_hz: float = 7.0
+## 相纹视觉强度。只调节明度和辉光，绝不能通过丢弃整圈波前来降密度。
+@export_range(0.35, 1.0, 0.05) var visual_intensity: float = 0.85
 ## 单条可见波带的半宽。
-@export_range(2.0, 80.0, 0.5) var band_half_width_px: float = 26.0
+@export_range(2.0, 80.0, 0.5) var band_half_width_px: float = 30.0
 
 @export_group("Appearance")
 @export var life_color: Color = Color("bd3328")
 @export var death_color: Color = Color("677087")
 @export var overlap_color: Color = Color("fff1d1")
 @export_range(0.0, 1.5, 0.001) var field_strength: float = 1.02
-@export_range(0.0, 1.0, 0.001) var overlap_threshold: float = 0.10
+@export_range(0.0, 1.0, 0.001) var overlap_threshold: float = 0.055
 @export_range(3.0, 20.0, 0.5) var stipple_cell_px: float = 7.0
-@export_range(0.0, 2.0, 0.01) var glow_strength: float = 0.85
+@export_range(0.0, 2.0, 0.01) var glow_strength: float = 1.20
 ## 游标处于有效引导带时，对应钟波带的宽度倍率；只增强表现，不改变物理接触范围。
 @export_range(1.0, 1.8, 0.01) var aligned_band_scale: float = 1.22
 ## 游标处于有效引导带时，对应钟波前的亮度倍率。
@@ -70,13 +72,16 @@ var _active_field_id: String = ""
 # 两口钟各自的按住、频率和归一化调频位置。
 var _life_emitting: bool = false
 var _death_emitting: bool = false
-var _life_frequency_hz: float = 4.35
-var _death_frequency_hz: float = 4.35
+var _life_frequency_hz: float = 3.0
+var _death_frequency_hz: float = 3.0
 var _life_tuning_value: float = 0.5
 var _death_tuning_value: float = 0.5
 # 当前两侧游标是否贴合各自可见引导带；只驱动画面强调。
 var _life_guide_aligned: bool = false
 var _death_guide_aligned: bool = false
+# 相纹的贴合强调使用与滑条一致的短缓动，避免判定带边缘让整屏波纹瞬间闪烁。
+var _life_alignment_strength: float = 0.0
+var _death_alignment_strength: float = 0.0
 
 # 每侧独立保存相位推进时刻与未满一周期的余量。
 var _life_phase_time_sec: float = 0.0
@@ -112,6 +117,26 @@ func _ready() -> void:
 	clear()
 
 
+func _process(delta: float) -> void:
+	var previous_life: float = _life_alignment_strength
+	var previous_death: float = _death_alignment_strength
+	_life_alignment_strength = _approach_alignment_strength(
+		_life_alignment_strength,
+		1.0 if _life_guide_aligned else 0.0,
+		delta
+	)
+	_death_alignment_strength = _approach_alignment_strength(
+		_death_alignment_strength,
+		1.0 if _death_guide_aligned else 0.0,
+		delta
+	)
+	if (
+		not is_equal_approx(previous_life, _life_alignment_strength)
+		or not is_equal_approx(previous_death, _death_alignment_strength)
+	):
+		_push_runtime_state()
+
+
 func configure_from_rules(rules: GameplayRuleSet) -> void:
 	if rules == null:
 		return
@@ -139,14 +164,9 @@ func configure_palette(p_life_color: Color, p_death_color: Color, p_overlap_colo
 	_push_configuration()
 
 
-func set_frequency_scale(value: float) -> void:
-	## 兼容设置服务的旧方法名：现在表示“相纹显示密度”，不会改变领域发射序列。
-	frequency_scale = clampf(value, 0.35, 1.0)
-	_push_runtime_state()
-
-
-func set_display_density(value: float) -> void:
-	set_frequency_scale(value)
+func set_visual_intensity(value: float) -> void:
+	visual_intensity = clampf(value, 0.35, 1.0)
+	_push_configuration()
 
 
 func set_visual_time(value: float) -> void:
@@ -219,6 +239,8 @@ func clear() -> void:
 	_death_frequency_hz = base_frequency_hz
 	_life_guide_aligned = false
 	_death_guide_aligned = false
+	_life_alignment_strength = 0.0
+	_death_alignment_strength = 0.0
 	_presented_su_ids.clear()
 	_reset_emission()
 	if is_instance_valid(_su_overlay):
@@ -332,14 +354,8 @@ func remove_su_manifestation(event_id: String) -> void:
 
 
 func debug_snapshot() -> Dictionary:
-	var life_display_times: Array[float] = _display_wavefront_times(
-		_life_wavefront_times,
-		_life_wavefront_serials
-	)
-	var death_display_times: Array[float] = _display_wavefront_times(
-		_death_wavefront_times,
-		_death_wavefront_serials
-	)
+	var life_display_times: Array[float] = _display_wavefront_times(_life_wavefront_times)
+	var death_display_times: Array[float] = _display_wavefront_times(_death_wavefront_times)
 	return {
 		"field_enabled": _has_visible_wavefronts(),
 		"visible": visible,
@@ -353,12 +369,13 @@ func debug_snapshot() -> Dictionary:
 		"emission_duration_sec": _combined_emission_duration_sec(),
 		"life_tuning_value": _life_tuning_value,
 		"death_tuning_value": _death_tuning_value,
-		"frequency_scale": frequency_scale,
-		"display_density": frequency_scale,
+		"visual_intensity": visual_intensity,
 		"life_frequency_hz": _life_frequency_hz,
 		"death_frequency_hz": _death_frequency_hz,
 		"life_guide_aligned": _life_guide_aligned,
 		"death_guide_aligned": _death_guide_aligned,
+		"life_alignment_strength": _life_alignment_strength,
+		"death_alignment_strength": _death_alignment_strength,
 		"life_wavelength_px": wave_speed_px_sec / maxf(_life_frequency_hz, 0.001),
 		"death_wavelength_px": wave_speed_px_sec / maxf(_death_frequency_hz, 0.001),
 		"wave_speed_px_sec": wave_speed_px_sec,
@@ -413,10 +430,13 @@ func _side_is_guide_aligned(snapshot: Dictionary, affinity: int) -> bool:
 			continue
 		if not bool(state.get("held", false)):
 			continue
-		var player_progress: float = clampf(float(state.get("player_progress", 0.0)), 0.0, 1.0)
+		var player_progress: float = float(state.get("player_progress", 0.0))
 		var band_min: float = clampf(float(state.get("guide_band_min", 0.0)), 0.0, 1.0)
 		var band_max: float = clampf(float(state.get("guide_band_max", 0.0)), 0.0, 1.0)
-		if player_progress >= minf(band_min, band_max) and player_progress <= maxf(band_min, band_max):
+		if (
+			player_progress >= minf(band_min, band_max) - TRACKING_EPSILON
+			and player_progress <= maxf(band_min, band_max) + TRACKING_EPSILON
+		):
 			return true
 	return false
 
@@ -654,15 +674,10 @@ func _has_visible_wavefronts() -> bool:
 	return not _life_wavefront_times.is_empty() or not _death_wavefront_times.is_empty()
 
 
-func _display_wavefront_times(times: Array[float], serials: Array[int]) -> Array[float]:
-	var result: Array[float] = []
-	var density: float = clampf(frequency_scale, 0.01, 1.0)
-	for index: int in range(mini(times.size(), serials.size())):
-		var serial: int = serials[index]
-		# 规则抽样比随机丢圈更稳定；同一 Replay 在任何帧率下都会保留相同序号。
-		var keep: bool = serial == 0 or floori(float(serial + 1) * density) > floori(float(serial) * density)
-		if keep:
-			result.append(times[index])
+func _display_wavefront_times(times: Array[float]) -> Array[float]:
+	# 当前规则下每侧同时可见的波前少于 Shader 容量。即使以后超过容量，也只截取
+	# 最近的固定上限，绝不能再依据生死共用序号成段抽掉某一侧的波。
+	var result: Array[float] = times.duplicate()
 	while result.size() > MAX_SHADER_WAVEFRONTS:
 		result.pop_front()
 	return result
@@ -856,9 +871,10 @@ func _push_configuration() -> void:
 	_shader_material.set_shader_parameter(&"life_color", life_color)
 	_shader_material.set_shader_parameter(&"death_color", death_color)
 	_shader_material.set_shader_parameter(&"overlap_color", overlap_color)
-	_shader_material.set_shader_parameter(&"field_strength", field_strength)
+	_shader_material.set_shader_parameter(&"field_strength", field_strength * visual_intensity)
 	_shader_material.set_shader_parameter(&"overlap_threshold", overlap_threshold)
 	_shader_material.set_shader_parameter(&"stipple_cell_px", stipple_cell_px)
+	# visual_intensity 已在最终场强中乘过一次；辉光不能再次相乘，否则低强度会平方衰减。
 	_shader_material.set_shader_parameter(&"glow_strength", glow_strength)
 	_shader_material.set_shader_parameter(&"aligned_band_scale", aligned_band_scale)
 	_shader_material.set_shader_parameter(&"aligned_brightness_scale", aligned_brightness_scale)
@@ -868,14 +884,8 @@ func _push_runtime_state() -> void:
 	if not is_inside_tree():
 		return
 	_ensure_material()
-	var life_display_times: Array[float] = _display_wavefront_times(
-		_life_wavefront_times,
-		_life_wavefront_serials
-	)
-	var death_display_times: Array[float] = _display_wavefront_times(
-		_death_wavefront_times,
-		_death_wavefront_serials
-	)
+	var life_display_times: Array[float] = _display_wavefront_times(_life_wavefront_times)
+	var death_display_times: Array[float] = _display_wavefront_times(_death_wavefront_times)
 	var field_enabled: bool = not life_display_times.is_empty() or not death_display_times.is_empty()
 	var overlay_active: bool = (
 		is_instance_valid(_su_overlay)
@@ -887,8 +897,8 @@ func _push_runtime_state() -> void:
 	_shader_material.set_shader_parameter(&"visual_time_sec", _visual_time_sec)
 	_shader_material.set_shader_parameter(&"life_wavefront_count", life_display_times.size())
 	_shader_material.set_shader_parameter(&"death_wavefront_count", death_display_times.size())
-	_shader_material.set_shader_parameter(&"life_guide_aligned", 1.0 if _life_guide_aligned else 0.0)
-	_shader_material.set_shader_parameter(&"death_guide_aligned", 1.0 if _death_guide_aligned else 0.0)
+	_shader_material.set_shader_parameter(&"life_guide_aligned", _life_alignment_strength)
+	_shader_material.set_shader_parameter(&"death_guide_aligned", _death_alignment_strength)
 	_shader_material.set_shader_parameter(&"life_emission_times", _padded_wavefront_times(life_display_times))
 	_shader_material.set_shader_parameter(&"death_emission_times", _padded_wavefront_times(death_display_times))
 
@@ -899,3 +909,8 @@ func _padded_wavefront_times(wavefront_times: Array[float]) -> PackedFloat32Arra
 	for index: int in range(mini(wavefront_times.size(), MAX_SHADER_WAVEFRONTS)):
 		result[index] = wavefront_times[index]
 	return result
+
+
+func _approach_alignment_strength(current: float, target: float, delta: float) -> float:
+	var duration_sec: float = 0.06 if target > current else 0.10
+	return move_toward(current, target, maxf(delta, 0.0) / duration_sec)

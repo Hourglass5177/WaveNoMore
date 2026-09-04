@@ -1,0 +1,420 @@
+[gd_resource type="Resource" script_class="SongChart" load_steps=42 format=3]
+
+[ext_resource type="Script" path="res://src/content/resources/song_chart.gd" id="1_chart"]
+[ext_resource type="Script" path="res://src/content/resources/tempo_event.gd" id="2_tempo"]
+[ext_resource type="Script" path="res://src/content/resources/meter_event.gd" id="3_meter"]
+[ext_resource type="Script" path="res://src/content/resources/tuning_field_region.gd" id="4_field"]
+[ext_resource type="Script" path="res://src/content/resources/tuning_slider_event.gd" id="5_slider"]
+[ext_resource type="Script" path="res://src/content/resources/su_manifestation_event.gd" id="6_su"]
+[ext_resource type="Script" path="res://src/content/resources/section_marker.gd" id="7_section"]
+
+[sub_resource type="Resource" id="Tempo_0"]
+script = ExtResource("2_tempo")
+tick = 0
+bpm = 120.0
+
+[sub_resource type="Resource" id="Meter_0"]
+script = ExtResource("3_meter")
+tick = 0
+numerator = 4
+denominator = 4
+
+[sub_resource type="Resource" id="Field_singles"]
+script = ExtResource("4_field")
+event_id = "field_s04_singles"
+tick = 7680
+duration_ticks = 21120
+
+[sub_resource type="Resource" id="Field_dual"]
+script = ExtResource("4_field")
+event_id = "field_s04_dual"
+tick = 30720
+duration_ticks = 26880
+
+[sub_resource type="Resource" id="Slider_life_horizontal"]
+script = ExtResource("5_slider")
+event_id = "s04_life_horizontal"
+field_id = "field_s04_singles"
+affinity = 0
+tick = 7680
+traversal_ticks = 1920
+traversal_count = 1
+start_value = 0.333333
+end_value = 0.666667
+arc_rotation_deg = 0.0
+visual_offset_px = Vector2(-64, -20)
+
+[sub_resource type="Resource" id="Slider_life_link_a"]
+script = ExtResource("5_slider")
+event_id = "s04_life_link_a"
+field_id = "field_s04_singles"
+affinity = 0
+tick = 9600
+traversal_ticks = 960
+traversal_count = 1
+start_value = 0.666667
+end_value = 0.5
+arc_rotation_deg = 7.0
+visual_offset_px = Vector2(97, -30)
+
+[sub_resource type="Resource" id="Slider_life_link_b"]
+script = ExtResource("5_slider")
+event_id = "s04_life_link_b"
+field_id = "field_s04_singles"
+affinity = 0
+tick = 10560
+traversal_ticks = 960
+traversal_count = 1
+start_value = 0.5
+end_value = 0.333333
+arc_rotation_deg = -21.0
+visual_offset_px = Vector2(-52, -11)
+
+[sub_resource type="Resource" id="Slider_death_horizontal"]
+script = ExtResource("5_slider")
+event_id = "s04_death_horizontal"
+field_id = "field_s04_singles"
+affinity = 1
+tick = 11520
+traversal_ticks = 1920
+traversal_count = 1
+start_value = 0.333333
+end_value = 0.0
+arc_rotation_deg = 0.0
+visual_offset_px = Vector2(64, 20)
+
+[sub_resource type="Resource" id="Slider_life_diagonal"]
+script = ExtResource("5_slider")
+event_id = "s04_life_diagonal"
+field_id = "field_s04_singles"
+affinity = 0
+tick = 15360
+traversal_ticks = 1920
+traversal_count = 1
+start_value = 0.333333
+end_value = 0.666667
+arc_rotation_deg = 35.0
+visual_offset_px = Vector2(80, -24)
+
+[sub_resource type="Resource" id="Slider_death_diagonal"]
+script = ExtResource("5_slider")
+event_id = "s04_death_diagonal"
+field_id = "field_s04_singles"
+affinity = 1
+tick = 19200
+traversal_ticks = 1920
+traversal_count = 1
+start_value = 0.0
+end_value = 0.333333
+arc_rotation_deg = -35.0
+visual_offset_px = Vector2(-80, 24)
+
+[sub_resource type="Resource" id="Slider_life_vertical"]
+script = ExtResource("5_slider")
+event_id = "s04_life_vertical"
+field_id = "field_s04_singles"
+affinity = 0
+tick = 23040
+traversal_ticks = 1920
+traversal_count = 1
+start_value = 0.666667
+end_value = 0.333333
+arc_rotation_deg = 75.0
+visual_offset_px = Vector2(-32, 20)
+
+[sub_resource type="Resource" id="Slider_death_vertical"]
+script = ExtResource("5_slider")
+event_id = "s04_death_vertical"
+field_id = "field_s04_singles"
+affinity = 1
+tick = 26880
+traversal_ticks = 1920
+traversal_count = 1
+start_value = 0.333333
+end_value = 0.666667
+arc_rotation_deg = -75.0
+visual_offset_px = Vector2(32, -20)
+
+[sub_resource type="Resource" id="Slider_dual_horizontal_life"]
+script = ExtResource("5_slider")
+event_id = "s04_dual_horizontal_life"
+field_id = "field_s04_dual"
+group_id = "s04_group_dual_horizontal"
+affinity = 0
+tick = 30720
+traversal_ticks = 1920
+traversal_count = 1
+start_value = 0.333333
+end_value = 0.666667
+arc_rotation_deg = 0.0
+visual_offset_px = Vector2(-90, -40)
+
+[sub_resource type="Resource" id="Slider_dual_horizontal_death"]
+script = ExtResource("5_slider")
+event_id = "s04_dual_horizontal_death"
+field_id = "field_s04_dual"
+group_id = "s04_group_dual_horizontal"
+affinity = 1
+tick = 30720
+traversal_ticks = 1920
+traversal_count = 1
+start_value = 0.333333
+end_value = 0.0
+arc_rotation_deg = 0.0
+visual_offset_px = Vector2(90, 40)
+
+[sub_resource type="Resource" id="Slider_dual_diagonal_life"]
+script = ExtResource("5_slider")
+event_id = "s04_dual_diagonal_life"
+field_id = "field_s04_dual"
+group_id = "s04_group_dual_diagonal"
+affinity = 0
+tick = 34560
+traversal_ticks = 1920
+traversal_count = 1
+start_value = 0.666667
+end_value = 0.333333
+arc_rotation_deg = 35.0
+visual_offset_px = Vector2(70, -42)
+
+[sub_resource type="Resource" id="Slider_dual_diagonal_death"]
+script = ExtResource("5_slider")
+event_id = "s04_dual_diagonal_death"
+field_id = "field_s04_dual"
+group_id = "s04_group_dual_diagonal"
+affinity = 1
+tick = 34560
+traversal_ticks = 1920
+traversal_count = 1
+start_value = 0.0
+end_value = 0.333333
+arc_rotation_deg = 35.0
+visual_offset_px = Vector2(-70, 42)
+
+[sub_resource type="Resource" id="Slider_dual_vertical_life"]
+script = ExtResource("5_slider")
+event_id = "s04_dual_vertical_life"
+field_id = "field_s04_dual"
+group_id = "s04_group_dual_vertical"
+affinity = 0
+tick = 38400
+traversal_ticks = 1920
+traversal_count = 1
+start_value = 0.333333
+end_value = 0.0
+arc_rotation_deg = 75.0
+visual_offset_px = Vector2(100, 12)
+
+[sub_resource type="Resource" id="Slider_dual_vertical_death"]
+script = ExtResource("5_slider")
+event_id = "s04_dual_vertical_death"
+field_id = "field_s04_dual"
+group_id = "s04_group_dual_vertical"
+affinity = 1
+tick = 38400
+traversal_ticks = 1920
+traversal_count = 1
+start_value = 0.333333
+end_value = 0.666667
+arc_rotation_deg = 75.0
+visual_offset_px = Vector2(-100, -12)
+
+[sub_resource type="Resource" id="Slider_dual_long_life"]
+script = ExtResource("5_slider")
+event_id = "s04_dual_long_life"
+field_id = "field_s04_dual"
+group_id = "s04_group_dual_long"
+affinity = 0
+tick = 42240
+traversal_ticks = 3840
+traversal_count = 1
+start_value = 0.0
+end_value = 0.666667
+arc_rotation_deg = 20.0
+visual_offset_px = Vector2(-50, 48)
+
+[sub_resource type="Resource" id="Slider_dual_long_death"]
+script = ExtResource("5_slider")
+event_id = "s04_dual_long_death"
+field_id = "field_s04_dual"
+group_id = "s04_group_dual_long"
+affinity = 1
+tick = 42240
+traversal_ticks = 3840
+traversal_count = 1
+start_value = 0.666667
+end_value = 0.0
+arc_rotation_deg = 20.0
+visual_offset_px = Vector2(50, -48)
+
+[sub_resource type="Resource" id="Slider_dual_round_life"]
+script = ExtResource("5_slider")
+event_id = "s04_dual_round_life"
+field_id = "field_s04_dual"
+group_id = "s04_group_dual_round"
+affinity = 0
+tick = 49920
+traversal_ticks = 1920
+traversal_count = 2
+start_value = 0.666667
+end_value = 0.333333
+arc_rotation_deg = -25.0
+visual_offset_px = Vector2(0, -50)
+
+[sub_resource type="Resource" id="Slider_dual_round_death"]
+script = ExtResource("5_slider")
+event_id = "s04_dual_round_death"
+field_id = "field_s04_dual"
+group_id = "s04_group_dual_round"
+affinity = 1
+tick = 49920
+traversal_ticks = 1920
+traversal_count = 2
+start_value = 0.0
+end_value = 0.333333
+arc_rotation_deg = -25.0
+visual_offset_px = Vector2(0, 50)
+
+[sub_resource type="Resource" id="Slider_death_link_a"]
+script = ExtResource("5_slider")
+event_id = "s04_death_link_a"
+field_id = "field_s04_dual"
+affinity = 1
+tick = 54720
+traversal_ticks = 960
+traversal_count = 1
+start_value = 0.0
+end_value = 0.166667
+arc_rotation_deg = 0.0
+visual_offset_px = Vector2(-448, 112)
+
+[sub_resource type="Resource" id="Slider_death_link_b"]
+script = ExtResource("5_slider")
+event_id = "s04_death_link_b"
+field_id = "field_s04_dual"
+affinity = 1
+tick = 55680
+traversal_ticks = 960
+traversal_count = 1
+start_value = 0.166667
+end_value = 0.333333
+arc_rotation_deg = -28.0
+visual_offset_px = Vector2(-307, 74)
+
+[sub_resource type="Resource" id="Slider_death_link_c"]
+script = ExtResource("5_slider")
+event_id = "s04_death_link_c"
+field_id = "field_s04_dual"
+affinity = 1
+tick = 56640
+traversal_ticks = 960
+traversal_count = 1
+start_value = 0.333333
+end_value = 0.5
+arc_rotation_deg = -56.0
+visual_offset_px = Vector2(-217, -29)
+
+[sub_resource type="Resource" id="Su_dual_long"]
+script = ExtResource("6_su")
+event_id = "s04_su_dual_long"
+group_id = "s04_group_dual_long"
+tick = 46080
+count = 3
+spawn_region_normalized = Rect2(0.20, 0.14, 0.60, 0.72)
+visual_variant = &"white_knot_cluster"
+
+[sub_resource type="Resource" id="Su_dual_round"]
+script = ExtResource("6_su")
+event_id = "s04_su_dual_round"
+group_id = "s04_group_dual_round"
+tick = 53760
+count = 3
+spawn_region_normalized = Rect2(0.18, 0.12, 0.64, 0.76)
+visual_variant = &"white_knot_cluster"
+
+[sub_resource type="Resource" id="Section_free"]
+script = ExtResource("7_section")
+event_id = "section_s04_free"
+tick = 0
+label = "自由载波"
+tutorial_key = &"tuning_free"
+
+[sub_resource type="Resource" id="Section_horizontal"]
+script = ExtResource("7_section")
+event_id = "section_s04_horizontal"
+tick = 7680
+label = "横向单钟"
+tutorial_key = &"tuning_horizontal"
+
+[sub_resource type="Resource" id="Section_diagonal"]
+script = ExtResource("7_section")
+event_id = "section_s04_diagonal"
+tick = 15360
+label = "斜向单钟"
+tutorial_key = &"tuning_diagonal"
+
+[sub_resource type="Resource" id="Section_vertical"]
+script = ExtResource("7_section")
+event_id = "section_s04_vertical"
+tick = 23040
+label = "纵向单钟"
+tutorial_key = &"tuning_vertical"
+
+[sub_resource type="Resource" id="Section_rest"]
+script = ExtResource("7_section")
+event_id = "section_s04_rest"
+tick = 28800
+label = "换手缓冲"
+tutorial_key = &"tuning_rest"
+
+[sub_resource type="Resource" id="Section_dual"]
+script = ExtResource("7_section")
+event_id = "section_s04_dual"
+tick = 30720
+label = "双钟同调"
+tutorial_key = &"tuning_dual"
+
+[sub_resource type="Resource" id="Section_long"]
+script = ExtResource("7_section")
+event_id = "section_s04_long"
+tick = 42240
+label = "长弧对照"
+tutorial_key = &"tuning_long"
+
+[sub_resource type="Resource" id="Section_round"]
+script = ExtResource("7_section")
+event_id = "section_s04_round"
+tick = 49920
+label = "一次往返"
+tutorial_key = &"tuning_roundtrip"
+
+[sub_resource type="Resource" id="Section_outro"]
+script = ExtResource("7_section")
+event_id = "section_s04_outro"
+tick = 57600
+label = "自由观察"
+tutorial_key = &"tuning_outro"
+
+[sub_resource type="Resource" id="Section_chain"]
+script = ExtResource("7_section")
+event_id = "section_s04_chain"
+tick = 53760
+label = "连续短弧"
+tutorial_key = &"tuning_chain"
+
+[resource]
+script = ExtResource("1_chart")
+schema_version = 2
+chart_id = "s04_rotary_tuning_lab"
+difficulty_id = "experiment"
+ppq = 480
+chart_offset_ticks = 0
+end_tick = 61440
+tempo_events = [SubResource("Tempo_0")]
+meter_events = [SubResource("Meter_0")]
+note_events = []
+tuning_fields = [SubResource("Field_singles"), SubResource("Field_dual")]
+tuning_sliders = [SubResource("Slider_life_horizontal"), SubResource("Slider_life_link_a"), SubResource("Slider_life_link_b"), SubResource("Slider_death_horizontal"), SubResource("Slider_life_diagonal"), SubResource("Slider_death_diagonal"), SubResource("Slider_life_vertical"), SubResource("Slider_death_vertical"), SubResource("Slider_dual_horizontal_life"), SubResource("Slider_dual_horizontal_death"), SubResource("Slider_dual_diagonal_life"), SubResource("Slider_dual_diagonal_death"), SubResource("Slider_dual_vertical_life"), SubResource("Slider_dual_vertical_death"), SubResource("Slider_dual_long_life"), SubResource("Slider_dual_long_death"), SubResource("Slider_dual_round_life"), SubResource("Slider_dual_round_death"), SubResource("Slider_death_link_a"), SubResource("Slider_death_link_b"), SubResource("Slider_death_link_c")]
+su_manifestations = [SubResource("Su_dual_long"), SubResource("Su_dual_round")]
+rapid_regions = []
+sections = [SubResource("Section_free"), SubResource("Section_horizontal"), SubResource("Section_diagonal"), SubResource("Section_vertical"), SubResource("Section_rest"), SubResource("Section_dual"), SubResource("Section_long"), SubResource("Section_round"), SubResource("Section_chain"), SubResource("Section_outro")]

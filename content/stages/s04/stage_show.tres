@@ -1,0 +1,80 @@
+[gd_resource type="Resource" script_class="StageShow" load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://src/content/resources/stage_show.gd" id="1_show"]
+[ext_resource type="Script" path="res://src/content/resources/show_cue.gd" id="2_cue"]
+
+[sub_resource type="Resource" id="Cue_free"]
+script = ExtResource("2_cue")
+event_id = "show_s04_free"
+tick = 0
+track = 5
+cue_id = &"tutorial_rotary_free"
+target_slot = &"hud"
+parameters = {"display_sec": 5.0, "text": "先按住两口钟观察载波。摇杆要沿圆弧转动；只推住不转不会调频。"}
+
+[sub_resource type="Resource" id="Cue_horizontal"]
+script = ExtResource("2_cue")
+event_id = "show_s04_horizontal"
+tick = 7680
+track = 5
+cue_id = &"tutorial_rotary_horizontal"
+target_slot = &"hud"
+parameters = {"display_sec": 5.5, "text": "先走完四拍长弧，再接两段两拍短弧。看各自缩圈，沿箭头连续转。"}
+
+[sub_resource type="Resource" id="Cue_orientation"]
+script = ExtResource("2_cue")
+event_id = "show_s04_orientation"
+tick = 15360
+track = 5
+cue_id = &"tutorial_rotary_orientation"
+target_slot = &"hud"
+parameters = {"display_sec": 5.0, "text": "接下来各做一条斜弧和纵弧。只看当前最亮的滑条，较暗的是下一条预告。"}
+
+[sub_resource type="Resource" id="Cue_dual"]
+script = ExtResource("2_cue")
+event_id = "show_s04_dual"
+tick = 30720
+track = 5
+cue_id = &"tutorial_rotary_dual"
+target_slot = &"hud"
+parameters = {"display_sec": 4.5, "text": "双钟阶段：两条滑槽同拍开始、同拍结束。先横向，再斜向、纵向。"}
+
+[sub_resource type="Resource" id="Cue_long"]
+script = ExtResource("2_cue")
+event_id = "show_s04_long"
+tick = 42240
+track = 5
+cue_id = &"tutorial_rotary_long"
+target_slot = &"hud"
+parameters = {"display_sec": 4.5, "text": "这一条更长，但给足八拍。可以在虚线到达前完成，系统会等到尾拍再结算。"}
+
+[sub_resource type="Resource" id="Cue_round"]
+script = ExtResource("2_cue")
+event_id = "show_s04_round"
+tick = 49920
+track = 5
+cue_id = &"tutorial_rotary_roundtrip"
+target_slot = &"hud"
+parameters = {"display_sec": 5.0, "text": "最后一次往返：抵达端点后跟随反向箭头，沿同一条圆弧转回，不必松开肩键。"}
+
+[sub_resource type="Resource" id="Cue_outro"]
+script = ExtResource("2_cue")
+event_id = "show_s04_outro"
+tick = 57600
+track = 5
+cue_id = &"tutorial_rotary_outro"
+target_slot = &"hud"
+parameters = {"display_sec": 4.0, "text": "测试完成。继续按住双钟，观察频率变化留下的相纹。"}
+
+[sub_resource type="Resource" id="Cue_chain"]
+script = ExtResource("2_cue")
+event_id = "show_s04_chain"
+tick = 53760
+track = 5
+cue_id = &"tutorial_rotary_chain"
+target_slot = &"hud"
+parameters = {"display_sec": 5.5, "text": "休两拍后，用死钟连续完成三段短弧。后一条会提前缩圈，每段仍有自己的起手。"}
+
+[resource]
+script = ExtResource("1_show")
+cues = [SubResource("Cue_free"), SubResource("Cue_horizontal"), SubResource("Cue_orientation"), SubResource("Cue_dual"), SubResource("Cue_long"), SubResource("Cue_round"), SubResource("Cue_chain"), SubResource("Cue_outro")]

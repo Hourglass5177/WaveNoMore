@@ -18,12 +18,12 @@ extends Resource
 @export var duration_ticks: int = 0
 
 @export_group("Semantics")
-## 音符类型：Tap 只判头，Hold 还会判持续和尾部。
+## 音符类型：Tap 只判头，Hold 判头部与持续过程，到达尾点后自动完成。
 @export_enum("Tap", "Hold") var kind: int = GameplayTypes.NoteKind.TAP
 ## 所属阵营：Zhu 使用生钟输入，Xuan 使用死钟输入。
 @export_enum("Zhu", "Xuan") var affinity: int = GameplayTypes.Affinity.ZHU
-## Hold 是否要求尾点附近松键；关闭后只检查按住过程。
-@export var tail_requires_release: bool = true
+## 已弃用：仅为旧谱资源保留序列化兼容，运行时不再读取，Hold 尾点也不要求松键。
+@export var tail_requires_release: bool = false
 
 @export_group("Presentation")
 ## 美术变体键；仅改变外观，不得改变判定含义。

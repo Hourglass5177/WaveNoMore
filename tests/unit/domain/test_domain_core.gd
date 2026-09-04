@@ -15,13 +15,15 @@ func run() -> Dictionary:
 	_test_validation_and_compilation()
 	_test_tap_boundaries_and_pass_contract()
 	_test_chord_damage_group()
-	_test_hold_worst_grade()
+	_test_hold_head_and_sustain_contract()
+	_test_hold_gap_event_ordering()
 	_test_hold_presentation_state_contract()
 	_test_tuning_prehold_and_tail_free()
-	_test_tuning_fixed_sampling()
-	_test_tuning_exact_endpoint_sampling()
+	_test_tuning_endpoint_components()
+	_test_tuning_short_endpoint_windows()
 	_test_adjacent_tuning_fields_reset_base()
-	_test_tuning_slider_start_reachability()
+	_test_adjacent_tuning_sliders_validate()
+	_test_rotary_tuning_displacement_contract()
 	_test_tuning_single_and_grouped_results()
 	_test_tuning_ignores_input_outside_field()
 	_test_tuning_frame_partition_determinism()
@@ -33,7 +35,7 @@ func run() -> Dictionary:
 	_test_replay_hash_guard()
 	_test_focus_cancel()
 	_test_pause_rearm()
-	_test_authored_s01_perfect_replay()
+	_test_authored_s05_perfect_replay()
 	var passed: bool = _failures.is_empty()
 	if passed:
 		print("DOMAIN TESTS: %d checks passed." % _checks)
@@ -126,29 +128,83 @@ func _test_chord_damage_group() -> void:
 	_expect_equal(simulation.health_engine.soul_fire, rules.max_soul_fire - rules.miss_damage, "chord damage group deducts soul fire once")
 
 
-func _test_hold_worst_grade() -> void:
+func _test_hold_head_and_sustain_contract() -> void:
+	var rules := DomainFixtureFactory.rules()
+	var chart := DomainFixtureFactory.hold_only_chart()
+	_expect(not chart.note_events[0].tail_requires_release, "new Hold resources default to no release judgment")
+	var compiled: CompiledChart = ChartCompiler.compile(chart, rules)["compiled"]
+	var hold: Dictionary = compiled.notes[0]
+
+	# 一直按住即可在尾点自动完成；最终记录只含头部和持续，不再含松键分量。
+	var held_through_tail := GameplaySimulation.new()
+	held_through_tail.configure(compiled, rules)
+	held_through_tail.advance_to(int(hold["start_us"]), false)
+	held_through_tail.accept_input(SemanticInputSample.create(int(hold["start_us"]), 0, GameplayTypes.SemanticInputKind.LIFE_PRESSED))
+	held_through_tail.advance_to(int(hold["end_us"]), true)
+	_expect_equal(held_through_tail.judgments.size(), 1, "Hold auto-completes at its tail without a release input")
+	_expect_equal(held_through_tail.judgments[0].grade, GameplayTypes.JudgmentGrade.PERFECT, "holding through the tail preserves Perfect")
+	_expect(not _has_component(held_through_tail.judgments[0], &"tail"), "Hold result contains no release-timing component")
+	_expect(held_through_tail.result_summary().full_combo and held_through_tail.result_summary().all_perfect, "no-release Hold preserves FC and AP")
+
+	# 尾点之后再松键只负责停止载波，不会改写已经完成的 Hold，也不会成为乱按。
+	var late_release_us: int = int(hold["end_us"]) + 500_000
+	held_through_tail.accept_input(SemanticInputSample.create(late_release_us, 1, GameplayTypes.SemanticInputKind.LIFE_RELEASED))
+	_expect_equal(held_through_tail.judgments.size(), 1, "late release cannot create or downgrade a second Hold result")
+	_expect_equal(held_through_tail.strays.size(), 0, "late Hold release is not a stray press")
+
+	# 旧谱即使仍序列化 true，也必须使用同一套新运行时语义。
+	var legacy_chart := DomainFixtureFactory.hold_only_chart()
+	legacy_chart.note_events[0].tail_requires_release = true
+	var legacy_compiled: CompiledChart = ChartCompiler.compile(legacy_chart, rules)["compiled"]
+	_expect(bool(legacy_compiled.notes[0]["tail_requires_release"]), "legacy release flag remains serialized through compilation")
+	var legacy_run := GameplaySimulation.new()
+	legacy_run.configure(legacy_compiled, rules)
+	legacy_run.advance_to(int(legacy_compiled.notes[0]["start_us"]), false)
+	legacy_run.accept_input(SemanticInputSample.create(int(legacy_compiled.notes[0]["start_us"]), 0, GameplayTypes.SemanticInputKind.LIFE_PRESSED))
+	legacy_run.advance_to(int(legacy_compiled.notes[0]["end_us"]), true)
+	_expect_equal(legacy_run.judgments[0].grade, GameplayTypes.JudgmentGrade.PERFECT, "legacy tail_requires_release=true is ignored by runtime")
+
+
+func _test_hold_gap_event_ordering() -> void:
 	var rules := DomainFixtureFactory.rules()
 	var compiled: CompiledChart = ChartCompiler.compile(DomainFixtureFactory.hold_only_chart(), rules)["compiled"]
 	var hold: Dictionary = compiled.notes[0]
-	var simulation := GameplaySimulation.new()
-	simulation.configure(compiled, rules)
-	simulation.advance_to(int(hold["start_us"]), false)
-	simulation.accept_input(SemanticInputSample.create(int(hold["start_us"]), 0, GameplayTypes.SemanticInputKind.LIFE_PRESSED))
-	var pass_tail_us: int = int(hold["end_us"]) + rules.hold_release_pass_ms * 1000
-	simulation.advance_to(pass_tail_us, false)
-	simulation.accept_input(SemanticInputSample.create(pass_tail_us, 1, GameplayTypes.SemanticInputKind.LIFE_RELEASED))
-	simulation.advance_to(pass_tail_us, true)
-	_expect_equal(simulation.judgments[0].grade, GameplayTypes.JudgmentGrade.PASS, "Hold overall grade is worst of head/sustain/tail")
+	var start_us: int = int(hold["start_us"])
+	var end_us: int = int(hold["end_us"])
 
-	var outside := GameplaySimulation.new()
-	outside.configure(compiled, rules)
-	outside.advance_to(int(hold["start_us"]), false)
-	outside.accept_input(SemanticInputSample.create(int(hold["start_us"]), 0, GameplayTypes.SemanticInputKind.LIFE_PRESSED))
-	var outside_tail_us: int = int(hold["end_us"]) + rules.hold_release_pass_ms * 1000 + 1
-	outside.advance_to(outside_tail_us, false)
-	outside.accept_input(SemanticInputSample.create(outside_tail_us, 1, GameplayTypes.SemanticInputKind.LIFE_RELEASED))
-	outside.advance_to(outside_tail_us, true)
-	_expect_equal(outside.judgments[0].grade, GameplayTypes.JudgmentGrade.MISS, "wider tuning tail does not loosen ordinary Hold release")
+	# 松键后的 100ms 宽限如果覆盖尾点，即使下一帧很晚才到，仍应按尾点先发生而成功。
+	var tail_wins := GameplaySimulation.new()
+	tail_wins.configure(compiled, rules)
+	tail_wins.advance_to(start_us, false)
+	tail_wins.accept_input(SemanticInputSample.create(start_us, 0, GameplayTypes.SemanticInputKind.LIFE_PRESSED))
+	var near_tail_release_us: int = end_us - 50_000
+	tail_wins.accept_input(SemanticInputSample.create(near_tail_release_us, 1, GameplayTypes.SemanticInputKind.LIFE_RELEASED))
+	tail_wins.advance_to(end_us + 500_000, true)
+	_expect_equal(tail_wins.judgments[0].grade, GameplayTypes.JudgmentGrade.PERFECT, "tail reached inside sustain grace succeeds even across one large frame")
+	_expect_equal(tail_wins.judgments[0].finalized_at_us, end_us, "successful large-step Hold finalizes at authored tail time")
+
+	# 宽限内重新按下可续持；保留原有轻微断持降为 PASS 的规则。
+	var repressed := GameplaySimulation.new()
+	repressed.configure(compiled, rules)
+	repressed.advance_to(start_us, false)
+	repressed.accept_input(SemanticInputSample.create(start_us, 0, GameplayTypes.SemanticInputKind.LIFE_PRESSED))
+	var short_gap_us: int = start_us + 100_000
+	repressed.accept_input(SemanticInputSample.create(short_gap_us, 1, GameplayTypes.SemanticInputKind.LIFE_RELEASED))
+	repressed.accept_input(SemanticInputSample.create(short_gap_us + 50_000, 2, GameplayTypes.SemanticInputKind.LIFE_PRESSED))
+	repressed.advance_to(end_us, true)
+	_expect_equal(repressed.judgments[0].grade, GameplayTypes.JudgmentGrade.PASS, "re-press inside sustain grace resumes Hold without a Miss")
+
+	# 宽限比尾点先耗尽时，即使一帧跨过两者，也应按真实超时微秒判持续失败。
+	var gap_loses := GameplaySimulation.new()
+	gap_loses.configure(compiled, rules)
+	gap_loses.advance_to(start_us, false)
+	gap_loses.accept_input(SemanticInputSample.create(start_us, 0, GameplayTypes.SemanticInputKind.LIFE_PRESSED))
+	var early_release_us: int = start_us + 100_000
+	gap_loses.accept_input(SemanticInputSample.create(early_release_us, 1, GameplayTypes.SemanticInputKind.LIFE_RELEASED))
+	gap_loses.advance_to(end_us + 500_000, true)
+	var expected_failure_us: int = early_release_us + rules.hold_sustain_grace_ms * 1000 + 1
+	_expect_equal(gap_loses.judgments[0].grade, GameplayTypes.JudgmentGrade.MISS, "release beyond sustain grace still misses")
+	_expect_equal(gap_loses.judgments[0].finalized_at_us, expected_failure_us, "large-step sustain failure uses the real grace-expiry time")
 
 
 func _test_hold_presentation_state_contract() -> void:
@@ -188,10 +244,12 @@ func _test_tuning_prehold_and_tail_free() -> void:
 	if record == null:
 		return
 	_expect_equal(record.grade, GameplayTypes.JudgmentGrade.PERFECT, "bells held before the field join the slider without another head press")
-	_expect(not _has_component(record, &"head") and not _has_component(record, &"tail"), "tuning grade contains only continuous coverage, never head/tail timing")
+	_expect(not _has_component(record, &"head") and not _has_component(record, &"tail"), "tuning grade uses traversal endpoints, never press or release timing")
+	_expect_equal(_count_components(record, &"life_endpoint"), 2, "pre-held life bell grades both traversal endpoints")
+	_expect_equal(_count_components(record, &"death_endpoint"), 2, "pre-held death bell grades both traversal endpoints")
 
 
-func _test_tuning_fixed_sampling() -> void:
+func _test_tuning_endpoint_components() -> void:
 	var rules := DomainFixtureFactory.rules()
 	var compiled: CompiledChart = ChartCompiler.compile(DomainFixtureFactory.tuning_only_chart(), rules)["compiled"]
 	var run_result: Dictionary = ReplayRunner.run(compiled, rules, ReplayRunner.build_perfect_replay(compiled, rules), 16_667)
@@ -200,38 +258,26 @@ func _test_tuning_fixed_sampling() -> void:
 	if record == null:
 		return
 
-	# 首尾都采样，所以 480 tick 的滑条在 30 tick 步长下共有 17 个样本。
-	var slider: Dictionary = compiled.tuning_sliders[0]
-	var expected_count: int = (int(slider["end_tick"]) - int(slider["tick"])) / rules.tuning_sample_interval_ticks + 1
-	var life_coverage := _find_component(record, &"life_coverage")
-	var death_coverage := _find_component(record, &"death_coverage")
-	_expect(life_coverage != null and death_coverage != null, "dual slider keeps independent life/death coverage diagnostics")
-	if life_coverage != null and death_coverage != null:
-		_expect_equal(int(life_coverage.metadata["total_samples"]), expected_count, "life slider samples every 30 tick including both endpoints")
-		_expect_equal(int(death_coverage.metadata["total_samples"]), expected_count, "death slider uses the same deterministic 30-tick cadence")
-		_expect_equal(int(life_coverage.metadata["valid_samples"]), expected_count, "perfect life tracking covers every hidden sample")
-		_expect_equal(int(death_coverage.metadata["valid_samples"]), expected_count, "perfect death tracking covers every hidden sample")
+	_expect_equal(_count_components(record, &"life_endpoint"), 2, "life round trip exposes one timing component per traversal")
+	_expect_equal(_count_components(record, &"death_endpoint"), 2, "death round trip exposes one timing component per traversal")
+	_expect(not record.metadata["sides"]["life"].has("coverage"), "obsolete continuous coverage is absent from life metadata")
+	_expect(not record.metadata["sides"]["death"].has("coverage"), "obsolete continuous coverage is absent from death metadata")
 
 
-func _test_tuning_exact_endpoint_sampling() -> void:
+func _test_tuning_short_endpoint_windows() -> void:
 	var rules := DomainFixtureFactory.rules()
-	# 31 tick 不是 30 的整数倍：应采 0、30、31，而不是漏掉真实尾点。
+	# 很短且不是旧采样间隔整数倍的滑条，也只按真实谱面尾点结算。
 	var uneven_record := _run_unheld_short_tuning(31, rules)
-	var uneven_life := _find_component(uneven_record, &"life_coverage")
-	var uneven_death := _find_component(uneven_record, &"death_coverage")
-	_expect(uneven_life != null and uneven_death != null, "non-divisible slider still finalizes both grouped sides")
-	if uneven_life != null and uneven_death != null:
-		_expect_equal(int(uneven_life.metadata["total_samples"]), 3, "31-tick slider samples start, tick 30, and exact tick 31 tail")
-		_expect_equal(int(uneven_death.metadata["total_samples"]), 3, "paired 31-tick slider uses the same exact endpoint schedule")
+	_expect(uneven_record != null, "non-divisible slider finalizes at its authored endpoint")
+	if uneven_record != null:
+		_expect_equal(_count_components(uneven_record, &"life_endpoint"), 1, "31-tick life slider has one traversal endpoint")
+		_expect_equal(_count_components(uneven_record, &"death_endpoint"), 1, "31-tick death slider has one traversal endpoint")
 
-	# 短于一个采样步长也不能只看起手；起点和尾点都是必要样本。
+	# 短于旧采样步长也不会丢失尾点或无法生成成组判定。
 	var short_record := _run_unheld_short_tuning(17, rules)
-	var short_life := _find_component(short_record, &"life_coverage")
-	var short_death := _find_component(short_record, &"death_coverage")
-	_expect(short_life != null and short_death != null, "sub-step slider still produces a grouped judgment")
-	if short_life != null and short_death != null:
-		_expect_equal(int(short_life.metadata["total_samples"]), 2, "17-tick slider samples both start and exact tail")
-		_expect_equal(int(short_death.metadata["total_samples"]), 2, "paired short slider never collapses to one start sample")
+	_expect(short_record != null, "sub-step slider still produces a grouped endpoint judgment")
+	if short_record != null:
+		_expect_equal(short_record.grade, GameplayTypes.JudgmentGrade.MISS, "unplayed short slider misses normally")
 
 
 func _run_unheld_short_tuning(duration_ticks: int, rules: GameplayRuleSet) -> JudgmentRecord:
@@ -251,7 +297,12 @@ func _run_unheld_short_tuning(duration_ticks: int, rules: GameplayRuleSet) -> Ju
 	var compiled := compile_result["compiled"] as CompiledChart
 	var engine := TuningEngine.new()
 	engine.configure(compiled, rules)
-	engine.advance_to(int(compiled.tuning_sliders[0]["end_us"]), true, false, false)
+	engine.advance_to(
+		int(compiled.tuning_sliders[0]["end_us"]),
+		true,
+		false,
+		false
+	)
 	var records: Array[JudgmentRecord] = engine.drain_judgments()
 	return records[0] if not records.is_empty() else null
 
@@ -297,81 +348,78 @@ func _test_adjacent_tuning_fields_reset_base() -> void:
 	_expect_near(engine.death_tuning_value(), base_value, 0.000001, "adjacent field resets death frequency to base on its exact first tick")
 
 
-func _test_tuning_slider_start_reachability() -> void:
-	var rules := DomainFixtureFactory.rules()
-	# 同样是 240 tick 准备时间，TempoMap 的实际 BPM 会决定可用秒数。
-	var slow_chart := _make_reachability_chart("reachable_slow", 60.0, 240, 0.90)
-	var slow_report := ChartValidator.validate(slow_chart, rules)
-	_expect(not _report_has_code(slow_report, &"tuning_slider.unreachable_start"), "60 BPM provides enough real time to reach the first slider start")
-	var fast_chart := _make_reachability_chart("unreachable_fast", 120.0, 240, 0.90)
-	var fast_report := ChartValidator.validate(fast_chart, rules)
-	_expect(_report_has_code(fast_report, &"tuning_slider.unreachable_start"), "120 BPM rejects the same tick gap when 720 px/s cannot cover it")
-
-	# 后续滑条从上一条的真实终点出发，不会错误地再次从基频估算。
-	var chained := DomainFixtureFactory.base_chart("unreachable_after_slider", 1440)
+func _test_adjacent_tuning_sliders_validate() -> void:
+	# 连续滑条链允许上一条尾点与下一条起点处于同一个 tick；两者没有正长度交叠。
+	var chart := DomainFixtureFactory.base_chart("adjacent_tuning_sliders", 960)
 	var field := TuningFieldRegion.new()
-	field.event_id = "chain_field"
-	field.tick = 0
-	field.duration_ticks = 1440
-	chained.tuning_fields = [field]
-	var first := TuningSliderEvent.new()
-	first.event_id = "chain_first"
-	first.field_id = field.event_id
-	first.affinity = GameplayTypes.Affinity.ZHU
-	first.tick = 480
-	first.traversal_ticks = 240
-	first.traversal_count = 1
-	first.start_value = 0.50
-	first.end_value = 0.80
-	var next := TuningSliderEvent.new()
-	next.event_id = "chain_next"
-	next.field_id = field.event_id
-	next.affinity = GameplayTypes.Affinity.ZHU
-	next.tick = 750
-	next.traversal_ticks = 240
-	next.traversal_count = 1
-	next.start_value = 0.40
-	next.end_value = 0.65
-	chained.tuning_sliders = [first, next]
-	_expect(
-		_report_has_code(ChartValidator.validate(chained, rules), &"tuning_slider.unreachable_start"),
-		"short gap after a slider is measured from that slider's terminal frequency"
-	)
-
-	# 偶数趟会回到 start_value；首尾相接时应以该真实终点判断，而不是 end_value。
-	first.traversal_count = 2
-	next.tick = 960
-	next.start_value = first.start_value
-	var returned_report := ChartValidator.validate(chained, rules)
-	_expect(not _report_has_code(returned_report, &"tuning_slider.unreachable_start"), "round-trip slider correctly leaves the cursor back at its start value")
-
-
-func _make_reachability_chart(chart_id: String, bpm: float, slider_tick: int, start_value: float) -> SongChart:
-	var chart := DomainFixtureFactory.base_chart(chart_id, 960)
-	chart.tempo_events[0].bpm = bpm
-	var field := TuningFieldRegion.new()
-	field.event_id = chart_id + "_field"
+	field.event_id = "adjacent_slider_field"
 	field.tick = 0
 	field.duration_ticks = 960
-	var slider := TuningSliderEvent.new()
-	slider.event_id = chart_id + "_slider"
-	slider.field_id = field.event_id
-	slider.affinity = GameplayTypes.Affinity.ZHU
-	slider.tick = slider_tick
-	slider.traversal_ticks = 240
-	slider.traversal_count = 1
-	slider.start_value = start_value
-	slider.end_value = 0.70
 	chart.tuning_fields = [field]
-	chart.tuning_sliders = [slider]
-	return chart
+
+	var first := TuningSliderEvent.new()
+	first.event_id = "adjacent_slider_first"
+	first.field_id = field.event_id
+	first.affinity = GameplayTypes.Affinity.ZHU
+	first.tick = 0
+	first.traversal_ticks = 480
+	first.start_value = 0.5
+	first.end_value = 0.8
+
+	var second := TuningSliderEvent.new()
+	second.event_id = "adjacent_slider_second"
+	second.field_id = field.event_id
+	second.affinity = GameplayTypes.Affinity.ZHU
+	second.tick = 480
+	second.traversal_ticks = 480
+	second.start_value = 0.8
+	second.end_value = 0.4
+	chart.tuning_sliders = [first, second]
+
+	var compile_result: Dictionary = ChartCompiler.compile(chart, DomainFixtureFactory.rules())
+	_expect(bool(compile_result.get("ok", false)), "touching tuning sliders compile as adjacent half-open intervals")
+
+
+func _test_rotary_tuning_displacement_contract() -> void:
+	var rules := DomainFixtureFactory.rules()
+	var compiled: CompiledChart = ChartCompiler.compile(DomainFixtureFactory.tuning_only_chart(), rules)["compiled"]
+	var engine := TuningEngine.new()
+	engine.configure(compiled, rules)
+	var field_start_us: int = int(compiled.tuning_fields[0]["start_us"])
+	engine.advance_to(field_start_us, true, true, true)
+	var base_value: float = engine.life_tuning_value()
+
+	# 固定推杆不再以 delta 积分；只推进歌曲时间时，两口钟必须保持原频率。
+	engine.advance_to(field_start_us + 100_000, true, true, true)
+	_expect_near(engine.life_tuning_value(), base_value, 0.000001, "time passing without rotary displacement never moves the life frequency")
+	_expect_near(engine.death_tuning_value(), base_value, 0.000001, "time passing without rotary displacement never moves the death frequency")
+
+	engine.handle_input(SemanticInputSample.create(
+		field_start_us + 100_000,
+		0,
+		GameplayTypes.SemanticInputKind.TUNING_DISPLACED,
+		Vector2(0.10, -0.04)
+	), true, true)
+	_expect_near(engine.life_tuning_value(), base_value + 0.10, 0.0001, "clockwise life displacement raises only by the submitted amount")
+	_expect_near(engine.death_tuning_value(), base_value - 0.04, 0.0001, "death displacement is applied one-to-one without catch-up gain")
+	engine.advance_to(field_start_us + 200_000, true, true, true)
+	_expect_near(engine.life_tuning_value(), base_value + 0.10, 0.0001, "submitted displacement is instantaneous rather than a persistent rate")
+
+	var opening_snapshots: Array[Dictionary] = engine.active_slider_snapshots()
+	_expect_equal(int(opening_snapshots[0]["required_rotation_sign"]), 1, "ascending life traversal requests clockwise rotation")
+	_expect_equal(int(opening_snapshots[1]["required_rotation_sign"]), 1, "descending death traversal follows the lower arc clockwise")
+	var reversal_us: int = compiled.tempo_map.tick_to_us(int(compiled.tuning_sliders[0]["tick"]) + int(compiled.tuning_sliders[0]["traversal_ticks"]))
+	engine.advance_to(reversal_us, true, true, true)
+	var reversal_snapshots: Array[Dictionary] = engine.active_slider_snapshots()
+	_expect_equal(int(reversal_snapshots[0]["required_rotation_sign"]), -1, "life round trip reverses its requested rotation at the endpoint")
+	_expect_equal(int(reversal_snapshots[1]["required_rotation_sign"]), -1, "death round trip reverses along the same lower arc at the endpoint")
 
 
 func _test_tuning_single_and_grouped_results() -> void:
 	var rules := DomainFixtureFactory.rules()
 	var paired: CompiledChart = ChartCompiler.compile(DomainFixtureFactory.tuning_only_chart(), rules)["compiled"]
 
-	# 同组两侧即使分别统计覆盖率，也只能形成一条结算记录。
+	# 同组两侧分别记录端点，但只形成一条结算记录。
 	var missing_death := ReplayRunner.build_perfect_replay(paired, rules)
 	var life_only_inputs: Array[SemanticInputSample] = []
 	for sample: SemanticInputSample in missing_death.inputs:
@@ -383,8 +431,8 @@ func _test_tuning_single_and_grouped_results() -> void:
 	_expect_equal(_count_tuning_records(paired_result), 1, "grouped life/death sliders settle as one record")
 	_expect_equal(paired.theoretical_unit_count, 1, "grouped life/death sliders count as one theoretical unit")
 	if paired_record != null:
-		var life_component := _find_component(paired_record, &"life_coverage")
-		var death_component := _find_component(paired_record, &"death_coverage")
+		var life_component := _find_component(paired_record, &"life_endpoint")
+		var death_component := _find_component(paired_record, &"death_endpoint")
 		_expect(life_component != null and life_component.grade == GameplayTypes.JudgmentGrade.PERFECT, "life side may remain Perfect independently")
 		_expect(death_component != null and death_component.grade == GameplayTypes.JudgmentGrade.MISS, "unheld death side records its own Miss")
 		_expect_equal(paired_record.grade, GameplayTypes.JudgmentGrade.MISS, "group grade takes the worse side")
@@ -408,7 +456,7 @@ func _test_tuning_single_and_grouped_results() -> void:
 	_expect_equal(single.theoretical_unit_count, 1, "single-side slider contributes one theoretical unit")
 	if single_record != null:
 		_expect_equal(single_record.grade, GameplayTypes.JudgmentGrade.PERFECT, "single-side perfect tracking is graded normally")
-		_expect_equal(single_record.components.size(), 1, "single-side record contains only its own coverage component")
+		_expect_equal(single_record.components.size(), 2, "single-side round trip contains its two endpoint components")
 
 
 func _test_tuning_ignores_input_outside_field() -> void:
@@ -425,15 +473,9 @@ func _test_tuning_ignores_input_outside_field() -> void:
 		GameplayTypes.SemanticInputKind.TUNING_DISPLACED,
 		Vector2(1.0, -1.0)
 	), true, true)
-	var rate_changed: bool = engine.handle_input(SemanticInputSample.create(
-		before_field_us,
-		1,
-		GameplayTypes.SemanticInputKind.TUNING_RATE_CHANGED,
-		Vector2(1.0, -1.0)
-	), true, true)
 	engine.advance_to(int(compiled.tuning_fields[0]["start_us"]) - 1, true, true, true)
 
-	_expect(not displaced and not rate_changed, "tuning inputs are not consumed outside a TuningFieldRegion")
+	_expect(not displaced, "tuning displacement is not consumed outside a TuningFieldRegion")
 	_expect_equal(
 		Vector2(engine.life_tuning_value(), engine.death_tuning_value()),
 		base_values,
@@ -472,7 +514,7 @@ func _build_preheld_tail_free_tuning_replay(compiled: CompiledChart, rules: Game
 		SemanticInputSample.create(start_us - 100_000, 1, GameplayTypes.SemanticInputKind.DEATH_PRESSED),
 	]
 	for sample: SemanticInputSample in replay.inputs:
-		if sample.kind == GameplayTypes.SemanticInputKind.TUNING_DISPLACED or sample.kind == GameplayTypes.SemanticInputKind.TUNING_RATE_CHANGED:
+		if sample.kind == GameplayTypes.SemanticInputKind.TUNING_DISPLACED:
 			retained.append(sample)
 	replay.inputs = retained
 	return replay
@@ -502,6 +544,16 @@ func _find_component(record: JudgmentRecord, kind: StringName) -> JudgmentCompon
 		if component.kind == kind:
 			return component
 	return null
+
+
+func _count_components(record: JudgmentRecord, kind: StringName) -> int:
+	if record == null:
+		return 0
+	var count: int = 0
+	for component: JudgmentComponentRecord in record.components:
+		if component.kind == kind:
+			count += 1
+	return count
 
 
 func _has_component(record: JudgmentRecord, kind: StringName) -> bool:
@@ -669,24 +721,24 @@ func _test_pause_rearm() -> void:
 	_expect_equal(simulation.judgments[0].grade, GameplayTypes.JudgmentGrade.PERFECT, "pause rearm preserves Hold without a second head judgment")
 
 
-func _test_authored_s01_perfect_replay() -> void:
-	var stage := load("res://content/stages/s01/stage_definition.tres") as StageDefinition
-	_expect(stage != null, "authored s01 StageDefinition loads")
+func _test_authored_s05_perfect_replay() -> void:
+	var stage := load("res://content/stages/s05/stage_definition.tres") as StageDefinition
+	_expect(stage != null, "authored s05 StageDefinition loads")
 	if stage == null:
 		return
-	_expect(stage.resolve_dependencies_sync(ResourceLoader.CACHE_MODE_IGNORE), "authored s01 lazy composition resolves")
+	_expect(stage.resolve_dependencies_sync(ResourceLoader.CACHE_MODE_IGNORE), "authored s05 lazy composition resolves")
 	if not stage.dependencies_resolved():
 		return
 	var authored_duration_us := maxi(0, int(round((stage.song.fallback_duration_sec - stage.song.first_beat_offset_sec) * 1_000_000.0)))
 	var compile_result: Dictionary = ChartCompiler.compile(stage.chart, stage.rule_set, authored_duration_us)
-	_expect(bool(compile_result["ok"]), "authored s01 passes shared compiler/validator")
+	_expect(bool(compile_result["ok"]), "authored s05 passes shared compiler/validator")
 	if not compile_result["ok"]:
 		return
 	var compiled: CompiledChart = compile_result["compiled"]
 	var replay := ReplayRunner.build_perfect_replay(compiled, stage.rule_set)
 	var run_result: Dictionary = ReplayRunner.run_with_frame_steps(compiled, stage.rule_set, replay, PackedInt64Array([7_000, 11_000, 23_000]))
-	_expect(bool(run_result["ok"]), "authored s01 Perfect Replay executes")
-	_expect(run_result["summary"].all_perfect, "authored s01 can obtain AP through real state machines")
+	_expect(bool(run_result["ok"]), "authored s05 Perfect Replay executes")
+	_expect(run_result["summary"].all_perfect, "authored s05 can obtain AP through real state machines")
 
 
 func _expect(condition: bool, message: String) -> void:

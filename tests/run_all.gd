@@ -11,9 +11,10 @@ const SUITES: PackedStringArray = [
 	"res://tests/integration/content/run_content_tests.gd",
 	"res://tests/integration/art/run_art_tests.gd",
 	"res://tests/integration/save/run_save_tests.gd",
-	"res://tests/integration/input/run_input_replay_v2_tests.gd",
+	"res://tests/integration/input/run_input_replay_v3_tests.gd",
 	"res://tests/integration/stage/run_stage_runtime_tests.gd",
 	"res://tests/integration/app_flow/run_app_flow_smoke.gd",
+	"res://tests/integration/app_flow/run_all_stage_entry_smoke.gd",
 	"res://tests/editor/run_chart_editor_tests.gd",
 ]
 

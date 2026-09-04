@@ -73,6 +73,8 @@ var _field_slot: Node2D
 var _pool_root: Node2D
 # 活动表按事件 ID 保存节点、类型和谱面数据；对象池按素材类型保存可复用节点。
 var _active: Dictionary[String, Dictionary] = {}
+# 从本次调度开始已经见过的调频 ID；直到 Seek、重试或换关清场前都拦截重复生成。
+var _known_tuning_ids: Dictionary[String, bool] = {}
 # 各类型可复用节点的对象池；键是场景类型，值是当前闲置实例数组。
 var _pools: Dictionary[StringName, Array] = {}
 # 调度器发出生成、判定、波接触和回收事件，是本 Host 唯一的音符事件来源。
@@ -150,12 +152,28 @@ func clear() -> void:
 	ids.assign(_active.keys())
 	for event_id: String in ids:
 		_release_visual(event_id)
+	_known_tuning_ids.clear()
 
 
 func _on_visual_spawn_requested(kind: StringName, event_data: Dictionary) -> void:
 	var event_id: String = str(event_data.get("event_id", event_data.get("id", event_data.get("unit_id", ""))))
-	if event_id.is_empty() or _active.has(event_id):
+	if event_id.is_empty():
 		return
+	if kind == ChartScheduler.KIND_TUNING:
+		# 调度器进入预读窗的每条滑条都立即拥有独立实例。是否可操作由
+		# interaction_open 决定，不能再让前一条的视觉寿命阻塞后一条预告。
+		if _known_tuning_ids.has(event_id) or _active.has(event_id):
+			return
+		_known_tuning_ids[event_id] = true
+		_spawn_visual_now(kind, event_id, event_data)
+		return
+	if _active.has(event_id):
+		return
+	_spawn_visual_now(kind, event_id, event_data)
+
+
+func _spawn_visual_now(kind: StringName, event_id: String, event_data: Dictionary) -> void:
+	## 真正创建节点的唯一入口。每个调频 event_id 都有自己的完整视觉生命周期。
 
 	var pool_key: StringName = _pool_key(kind, event_data)
 	var scene: PackedScene = _scene_for(kind, event_data)
@@ -163,6 +181,8 @@ func _on_visual_spawn_requested(kind: StringName, event_data: Dictionary) -> voi
 	var parent_slot: Node2D = _slot_for(kind, event_data)
 	if visual.get_parent() != parent_slot:
 		visual.reparent(parent_slot)
+	visual.modulate = Color.WHITE
+	visual.z_index = 0
 	visual.visible = true
 	if kind == ChartScheduler.KIND_TUNING and visual.has_method("configure_from_rules"):
 		visual.call("configure_from_rules", gameplay_rules)
@@ -191,10 +211,16 @@ func _on_visual_spawn_requested(kind: StringName, event_data: Dictionary) -> voi
 		"hold_visual_progress": 0.0,
 		"timing_confirmed": false,
 	}
+	if kind == ChartScheduler.KIND_TUNING:
+		_update_tuning_preview_presentation()
 	_update_visual(event_id, _active[event_id])
 
 
-func _on_visual_despawn_requested(_kind: StringName, event_id: String) -> void:
+func _on_visual_despawn_requested(kind: StringName, event_id: String) -> void:
+	if kind == ChartScheduler.KIND_TUNING or _known_tuning_ids.has(event_id):
+		_release_visual(event_id)
+		_update_tuning_preview_presentation()
+		return
 	_release_visual(event_id)
 
 
@@ -255,8 +281,84 @@ func _on_visual_note_arrived(event_id: String, arrival: Dictionary) -> void:
 
 
 func _update_active_visuals() -> void:
+	_update_tuning_preview_presentation()
 	for event_id: String in _active.keys():
 		_update_visual(event_id, _active[event_id])
+
+
+func _update_tuning_preview_presentation() -> void:
+	## 当前条与未来条可以同时存在；这里只分配层级、亮度和共享顺序号，
+	## 不改变任何事件的位置、时序或判定状态。
+	var groups: Dictionary[String, Dictionary] = {}
+	for event_id: String in _active.keys():
+		var entry: Dictionary = _active[event_id]
+		if StringName(entry.get("kind", &"")) != ChartScheduler.KIND_TUNING:
+			continue
+		var data: Dictionary = entry["data"]
+		var state: Dictionary = _active_tuning_slider_state(event_id)
+		var start_us: int = _start_usec(data)
+		var group_key: String = str(data.get("group_id", ""))
+		if group_key.is_empty():
+			group_key = event_id
+		var phase: int = 2 # 0：当前；1：未来；2：已结束但仍在播放收尾。
+		if bool(state.get("interaction_open", false)):
+			phase = 0
+		elif start_us > roundi(visual_time_sec * 1_000_000.0):
+			phase = 1
+		if not groups.has(group_key):
+			groups[group_key] = {
+				"key": group_key,
+				"start_us": start_us,
+				"phase": phase,
+				"event_ids": PackedStringArray(),
+			}
+		var group: Dictionary = groups[group_key]
+		group["start_us"] = mini(int(group["start_us"]), start_us)
+		group["phase"] = mini(int(group["phase"]), phase)
+		var group_event_ids: PackedStringArray = group["event_ids"]
+		group_event_ids.append(event_id)
+		group["event_ids"] = group_event_ids
+
+	var ordered_groups: Array[Dictionary] = []
+	for group_value: Variant in groups.values():
+		ordered_groups.append(group_value as Dictionary)
+	ordered_groups.sort_custom(func(left: Dictionary, right: Dictionary) -> bool:
+		if int(left["phase"]) != int(right["phase"]):
+			return int(left["phase"]) < int(right["phase"])
+		if int(left["start_us"]) != int(right["start_us"]):
+			return int(left["start_us"]) < int(right["start_us"])
+		return str(left["key"]) < str(right["key"])
+	)
+
+	var readable_order: int = 0
+	var future_rank: int = 0
+	for group: Dictionary in ordered_groups:
+		var phase: int = int(group["phase"])
+		var alpha: float = 0.24
+		var layer: int = 0
+		var order_number: int = 0
+		if phase <= 1:
+			readable_order += 1
+			order_number = readable_order
+		if phase == 0:
+			alpha = 1.0
+			layer = 30
+		elif phase == 1:
+			alpha = 0.70 if future_rank == 0 else 0.45
+			layer = maxi(10, 20 - future_rank)
+			future_rank += 1
+		for event_id: String in group["event_ids"]:
+			if not _active.has(event_id):
+				continue
+			var visual: Node2D = _active[event_id]["node"]
+			visual.z_index = layer
+			if visual.has_method("set_preview_presentation"):
+				# 调频滑条需要把“退后的轨道”和“醒目的起手缩圈”分层绘制。
+				# 因此不再把整个节点一并压暗，而是只把层级透明度交给滑条自身。
+				visual.modulate = Color.WHITE
+				visual.call("set_preview_presentation", order_number, phase, alpha)
+			else:
+				visual.modulate = Color(1.0, 1.0, 1.0, alpha)
 
 
 func _update_visual(event_id: String, active_entry: Dictionary) -> void:
@@ -312,7 +414,7 @@ func _update_visual(event_id: String, active_entry: Dictionary) -> void:
 			visual.call("set_approach_timing", time_to_hit_sec, approach_duration_sec)
 		if visual.has_method("set_region_progress"):
 			visual.call("set_region_progress", region_progress)
-		# 每个视觉实例只从 active_tuning_sliders 中取自己的权威游标、引导带和覆盖率。
+		# 每个视觉实例只从 active_tuning_sliders 中取自己的权威填充、引导和端点状态。
 		# 这样同组生、死滑条可以同时显示不同位置，不会退化成旧版共同游标。
 		if visual.has_method("set_gameplay_snapshot"):
 			visual.call("set_gameplay_snapshot", gameplay_snapshot)
@@ -466,6 +568,8 @@ func _release_visual(event_id: String) -> void:
 	_active.erase(event_id)
 	if visual.has_method("reset_for_pool"):
 		visual.call("reset_for_pool")
+	visual.modulate = Color.WHITE
+	visual.z_index = 0
 	if visual.get_parent() != _pool_root:
 		visual.reparent(_pool_root)
 	visual.visible = false

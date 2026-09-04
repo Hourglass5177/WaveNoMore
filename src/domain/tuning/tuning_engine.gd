@@ -3,14 +3,16 @@ extends RefCounted
 
 ## 双钟独立调频滑条的确定性判定器。
 ##
-## 调频段只决定“什么时候允许改变频率”；滑条是连续跟随判定，不负责开启波源。
-## 玩家可以提前按住钟，开始后直接跟随引导，也不需要在尾点松键。
+## 调频段只决定“什么时候允许改变频率”；滑条不负责开启波源。
+## 玩家旋转多少，频率就真实改变多少。点状引导只提示节奏，不会吞掉或延迟输入。
 
 const NEVER_TIME_US: int = -9_000_000_000_000_000
-const USEC_PER_SEC: float = 1_000_000.0
 ## Replay 的双路输入会量化为 Q15；连续位移累加后可能留下万分位误差。
 ## 这里只放宽边界比较，不钳制玩家位置，以免越过滑条端点也被误算为命中。
 const TRACKING_EPSILON: float = 0.001
+
+## 时间窗外没有输入时，端点判定使用这个哨兵值表示“尚未到达”。
+const NO_ENDPOINT_OBSERVATION_US: int = 9_000_000_000_000_000
 
 var _compiled: CompiledChart
 var _rules: GameplayRuleSet
@@ -24,9 +26,6 @@ var _timeline_cursor: int = 0
 var _active_field_ids: Dictionary[String, bool] = {}
 
 var _current_time_us: int = NEVER_TIME_US
-var _motion_time_us: int = NEVER_TIME_US
-## x 为生钟、y 为死钟的摇杆速度意图，两个分量各自保持 -1～1。
-var _rate_vector: Vector2 = Vector2.ZERO
 ## 两口钟在统一频率轴上的归一化位置，0 为最低频、1 为最高频。
 var _life_value: float = 0.5
 var _death_value: float = 0.5
@@ -47,8 +46,6 @@ func configure(compiled: CompiledChart, rules: GameplayRuleSet) -> void:
 	_active_field_ids.clear()
 	_timeline_cursor = 0
 	_current_time_us = NEVER_TIME_US
-	_motion_time_us = NEVER_TIME_US
-	_rate_vector = Vector2.ZERO
 	_last_life_held = false
 	_last_death_held = false
 	_paused_for_rearm = false
@@ -68,10 +65,7 @@ func reset(compiled: CompiledChart, rules: GameplayRuleSet) -> void:
 func can_consume(sample: SemanticInputSample) -> bool:
 	if sample == null:
 		return false
-	return sample.kind in [
-		GameplayTypes.SemanticInputKind.TUNING_RATE_CHANGED,
-		GameplayTypes.SemanticInputKind.TUNING_DISPLACED,
-	]
+	return sample.kind == GameplayTypes.SemanticInputKind.TUNING_DISPLACED
 
 
 func handle_input(sample: SemanticInputSample, life_held: bool, death_held: bool) -> bool:
@@ -79,23 +73,40 @@ func handle_input(sample: SemanticInputSample, life_held: bool, death_held: bool
 		return false
 	_last_life_held = life_held
 	_last_death_held = death_held
-	_integrate_values_to(sample.timestamp_us, life_held, death_held)
 	if not field_active():
-		_rate_vector = Vector2.ZERO
 		return false
 
-	if sample.kind == GameplayTypes.SemanticInputKind.TUNING_RATE_CHANGED:
-		_rate_vector = Vector2(
-			clampf(sample.tune_vector.x, -1.0, 1.0) if life_held else 0.0,
-			clampf(sample.tune_vector.y, -1.0, 1.0) if death_held else 0.0
+	# 位移已由设备层换算成“整条频率轴的归一化增量”。滑条只限制本程
+	# 的物理行程，不再根据时间引导放大、阻尼或丢弃玩家的真实旋转。
+	if life_held:
+		var previous_life_value: float = _life_value
+		_life_value = _apply_side_displacement(
+			GameplayTypes.Affinity.ZHU,
+			_life_value,
+			sample.tune_vector.x,
+			sample.timestamp_us
 		)
-	else:
-		# 位移已经由设备适配层换算成“整条频率轴的归一化增量”。
-		if life_held:
-			_life_value = clampf(_life_value + sample.tune_vector.x, 0.0, 1.0)
-		if death_held:
-			_death_value = clampf(_death_value + sample.tune_vector.y, 0.0, 1.0)
-		_queue_frequency_change(sample.timestamp_us)
+		_record_endpoint_entries(
+			GameplayTypes.Affinity.ZHU,
+			previous_life_value,
+			_life_value,
+			sample.timestamp_us
+		)
+	if death_held:
+		var previous_death_value: float = _death_value
+		_death_value = _apply_side_displacement(
+			GameplayTypes.Affinity.XUAN,
+			_death_value,
+			sample.tune_vector.y,
+			sample.timestamp_us
+		)
+		_record_endpoint_entries(
+			GameplayTypes.Affinity.XUAN,
+			previous_death_value,
+			_death_value,
+			sample.timestamp_us
+		)
+	_queue_frequency_change(sample.timestamp_us)
 	return true
 
 
@@ -106,7 +117,6 @@ func advance_to(time_us: int, inclusive: bool = true, life_held: bool = false, d
 	_last_death_held = death_held
 	if _paused_for_rearm:
 		_current_time_us = time_us
-		_motion_time_us = time_us
 		return
 
 	while _timeline_cursor < _timeline_events.size():
@@ -114,16 +124,13 @@ func advance_to(time_us: int, inclusive: bool = true, life_held: bool = false, d
 		var event_us: int = int(event["time_us"])
 		if event_us > time_us or (event_us == time_us and not inclusive):
 			break
-		_integrate_values_to(event_us, life_held, death_held)
-		_process_timeline_event(event, life_held, death_held)
+		_process_timeline_event(event)
 		_timeline_cursor += 1
-	_integrate_values_to(time_us, life_held, death_held)
 	_current_time_us = time_us
 
 
 func cancel_active(time_us: int) -> void:
-	_integrate_values_to(time_us, _last_life_held, _last_death_held)
-	_rate_vector = Vector2.ZERO
+	_current_time_us = maxi(_current_time_us, time_us)
 	_last_life_held = false
 	_last_death_held = false
 
@@ -133,18 +140,35 @@ func is_active() -> bool:
 
 
 func field_active() -> bool:
-	return not _active_field_ids.is_empty()
+	# 调频只在谱面场域或尚未走到原定尾点的滑条内开放；不再追加晚到窗口。
+	return not _active_field_ids.is_empty() or _has_pending_slider_window(_current_time_us)
 
 
 func active_field_id() -> String:
 	var ids: Array = _active_field_ids.keys()
 	ids.sort()
-	return str(ids[0]) if not ids.is_empty() else ""
+	if not ids.is_empty():
+		return str(ids[0])
+	var pending: Array[Dictionary] = []
+	for state: Dictionary in _slider_states:
+		if bool(state["finished"]):
+			continue
+		var slider: Dictionary = state["slider"]
+		if (
+			_current_time_us >= int(slider["start_us"])
+			and _current_time_us <= int(state["judgment_end_us"])
+		):
+			pending.append(slider)
+	pending.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		if int(a["start_us"]) != int(b["start_us"]):
+			return int(a["start_us"]) < int(b["start_us"])
+		return str(a["event_id"]) < str(b["event_id"])
+	)
+	return str(pending[0].get("field_id", "")) if not pending.is_empty() else ""
 
 
 func begin_pause_rearm() -> Dictionary:
 	_paused_for_rearm = true
-	_rate_vector = Vector2.ZERO
 	return {
 		"tuning_required": field_active(),
 		"life_required": field_active() and _last_life_held,
@@ -156,7 +180,6 @@ func apply_resume_rearm(rearm_state: Dictionary) -> void:
 	_paused_for_rearm = false
 	_last_life_held = bool(rearm_state.get("life_held", false))
 	_last_death_held = bool(rearm_state.get("death_held", false))
-	_rate_vector = Vector2.ZERO
 
 
 func life_tuning_value() -> float:
@@ -177,29 +200,87 @@ func death_frequency_hz() -> float:
 
 func active_slider_snapshots() -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
+	var preview_lead_us: int = roundi(
+		maxf(_rule_float(&"approach_duration_sec", 2.25), 0.0) * 1_000_000.0
+	)
 	for state: Dictionary in _slider_states:
-		var slider: Dictionary = state["slider"]
-		if _current_time_us < int(slider["start_us"]) or _current_time_us > int(slider["end_us"]):
+		if bool(state["finished"]):
 			continue
-		var guide_progress: float = _guide_progress(slider, _current_time_us)
-		var band: Vector2 = _guide_band(slider, _current_time_us)
-		var player_value: float = _value_for_affinity(int(slider["affinity"]))
-		var player_progress: float = _value_to_slider_progress(slider, player_value)
-		var total: int = int(state["sample_total"])
-		var valid: int = int(state["sample_valid"])
+		var slider: Dictionary = state["slider"]
+		var start_us: int = int(slider["start_us"])
+		var input_open: bool = (
+			_current_time_us >= start_us
+			and _current_time_us <= int(state["judgment_end_us"])
+		)
+		if (
+			_current_time_us < start_us - preview_lead_us
+			or _current_time_us > int(state["judgment_end_us"])
+		):
+			continue
+		var guide_progress: float = _guide_progress(slider, _current_time_us) if input_open else 0.0
+		var band: Vector2 = _guide_band(slider, _current_time_us) if input_open else Vector2.ZERO
+		# PREVIEW 阶段只展示谱面起点，既不读取全局自由调频值，也不允许预填。
+		var player_value: float = (
+			_value_for_affinity(int(slider["affinity"]))
+			if input_open
+			else float(slider["start_value"])
+		)
+		var player_progress: float = _value_to_slider_progress(slider, player_value) if input_open else 0.0
 		var snapshot: Dictionary = slider.duplicate(true)
+		snapshot["phase"] = &"active" if input_open else &"preview"
+		snapshot["interaction_open"] = input_open
 		snapshot["guide_progress"] = guide_progress
 		snapshot["guide_value"] = lerpf(float(slider["start_value"]), float(slider["end_value"]), guide_progress)
 		snapshot["guide_band_min"] = band.x
 		snapshot["guide_band_max"] = band.y
 		snapshot["player_progress"] = player_progress
+		snapshot["raw_player_progress"] = player_progress
 		snapshot["player_value"] = player_value
-		snapshot["coverage"] = 1.0 if total == 0 else float(valid) / float(total)
 		snapshot["held"] = _last_life_held if int(slider["affinity"]) == GameplayTypes.Affinity.ZHU else _last_death_held
+		snapshot["required_rotation_sign"] = _required_rotation_sign(
+			slider,
+			_current_time_us if input_open else start_us
+		)
+		var endpoint_snapshots: Array[Dictionary] = _endpoint_snapshots(state)
+		snapshot["endpoint_states"] = endpoint_snapshots
+		var endpoint_index: int = _endpoint_index_for_time(
+			state,
+			maxi(_current_time_us, start_us)
+		)
+		snapshot["current_endpoint_index"] = endpoint_index
+		snapshot["current_traversal_index"] = endpoint_index
+		snapshot["turnaround_pending"] = (
+			input_open
+			and endpoint_index >= 0
+			and endpoint_index < maxi(1, int(slider["traversal_count"])) - 1
+		)
+		if endpoint_index >= 0 and endpoint_index < endpoint_snapshots.size():
+			var endpoint: Dictionary = endpoint_snapshots[endpoint_index]
+			snapshot["endpoint_target_progress"] = float(endpoint["target_progress"])
+			snapshot["endpoint_inside"] = bool(endpoint["inside"])
+			snapshot["endpoint_captured"] = bool(endpoint["captured"])
+			snapshot["endpoint_grade"] = int(endpoint["grade"])
+			snapshot["endpoint_best_error_us"] = int(endpoint["best_error_us"])
+			snapshot["endpoint_window_active"] = bool(endpoint["window_active"])
+			var side_held: bool = bool(snapshot["held"])
+			var magnetized: bool = (
+				side_held
+				and bool(endpoint["inside"])
+				and not bool(endpoint["finalized"])
+			)
+			snapshot["endpoint_magnetized"] = magnetized
+			if magnetized:
+				# 磁吸只修饰最后几格填充，不改真实频率值。松键会立刻露出真实
+				# 位置，反向旋转离开端点区后也能自然把填充拉回来。
+				snapshot["player_progress"] = float(endpoint["target_progress"])
 		result.append(snapshot)
 	result.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
 		if int(a["affinity"]) != int(b["affinity"]):
 			return int(a["affinity"]) < int(b["affinity"])
+		if bool(a.get("interaction_open", false)) != bool(b.get("interaction_open", false)):
+			return bool(a.get("interaction_open", false))
+		if int(a.get("start_us", 0)) != int(b.get("start_us", 0)):
+			return int(a.get("start_us", 0)) < int(b.get("start_us", 0))
 		return str(a["event_id"]) < str(b["event_id"])
 	)
 	return result
@@ -233,125 +314,268 @@ func last_press_qualified() -> bool:
 
 
 func _build_field_timeline() -> void:
-	var step: int = maxi(1, _rule_int(&"tuning_sample_interval_ticks", 30))
 	for field: Dictionary in _compiled.tuning_fields:
 		var field_id: String = str(field.get("event_id", field.get("id", "")))
 		# 同 tick 相邻场域的顺序必须是：旧滑条尾点 → 旧场退出 → 新场进入 → 新滑条起点。
 		# 因此 enter 排在 exit 之后，确保新场即使无时间间隔也会重新回到统一基频。
 		_timeline_events.append({"time_us": int(field["start_us"]), "priority": 4, "kind": &"field_enter", "field_id": field_id})
-		var tick: int = int(field["tick"])
-		var end_tick: int = int(field["end_tick"])
-		while tick <= end_tick:
-			_timeline_events.append({
-				"time_us": _compiled.tempo_map.tick_to_us(tick),
-				"priority": 2,
-				"kind": &"frequency_sample",
-				"field_id": field_id,
-				"tick": tick,
-			})
-			tick += step
 		_timeline_events.append({"time_us": int(field["end_us"]), "priority": 3, "kind": &"field_exit", "field_id": field_id})
 
 
 func _build_slider_states() -> void:
-	var step: int = maxi(1, _rule_int(&"tuning_sample_interval_ticks", 30))
 	for index: int in range(_compiled.tuning_sliders.size()):
 		var slider: Dictionary = _compiled.tuning_sliders[index].duplicate(true)
 		var event_id: String = str(slider.get("event_id", slider.get("id", "slider_%06d" % index)))
 		var group_key: String = str(slider.get("group_id", ""))
 		if group_key.is_empty():
 			group_key = event_id
+		var endpoint_states: Array[Dictionary] = _build_endpoint_states(slider)
+		var judgment_end_us: int = (
+			int(endpoint_states[-1]["deadline_us"])
+			if not endpoint_states.is_empty()
+			else int(slider["end_us"])
+		)
 		var state: Dictionary = {
 			"slider": slider,
 			"event_id": event_id,
 			"group_key": group_key,
-			"sample_total": 0,
-			"sample_valid": 0,
-			"coverage": 0.0,
 			"grade": GameplayTypes.JudgmentGrade.MISS,
 			"finished": false,
+			"endpoint_states": endpoint_states,
+			"judgment_end_us": judgment_end_us,
 		}
 		_slider_states.append(state)
 		if not _group_members.has(group_key):
 			_group_members[group_key] = []
 		_group_members[group_key].append(index)
 
-		var start_tick: int = int(slider["tick"])
-		var tick: int = start_tick
-		var end_tick: int = int(slider["end_tick"])
-		# 固定步长只生成严格早于尾点的样本，最后再显式补一次精确 end_tick。
-		# 这样非 30 tick 整数倍不会漏尾，刚好整除时也不会重复；极短滑条仍有头尾两点。
-		while tick < end_tick:
-			_timeline_events.append({
-				"time_us": _compiled.tempo_map.tick_to_us(tick),
-				# 起点需排在 field_enter 后；其余样本（含旧滑条尾点）在场域边界前完成。
-				"priority": 5 if tick == start_tick else 1,
-				"kind": &"slider_sample",
-				"state_index": index,
-				"tick": tick,
-				"event_id": event_id,
-			})
-			tick += step
 		_timeline_events.append({
-			"time_us": _compiled.tempo_map.tick_to_us(end_tick),
-			"priority": 1,
-			"kind": &"slider_sample",
+			"time_us": int(slider["start_us"]),
+			# 场域先进入并重置基频，随后把这一侧精确放到谱面声明的滑条起点。
+			"priority": 5,
+			"kind": &"slider_begin",
 			"state_index": index,
-			"tick": end_tick,
-			"event_id": event_id,
+			"event_id": "%s:begin" % event_id,
 		})
 		_timeline_events.append({
-			"time_us": int(slider["end_us"]),
+			"time_us": judgment_end_us,
 			"priority": 2,
 			"kind": &"slider_finish",
 			"state_index": index,
 			"event_id": event_id,
 		})
+		for endpoint_index: int in range(endpoint_states.size()):
+			var endpoint: Dictionary = endpoint_states[endpoint_index]
+			_timeline_events.append({
+				"time_us": int(endpoint["leg_start_us"]),
+				# 在场域进入及起点采样之后记录“本来就在端点内”的状态，
+				# 防止没有真实进入动作也被当成一次命中。
+				"priority": 6,
+				"kind": &"endpoint_open",
+				"state_index": index,
+				"endpoint_index": endpoint_index,
+				"event_id": "%s:endpoint:%d" % [event_id, endpoint_index],
+			})
+			_timeline_events.append({
+				"time_us": int(endpoint["deadline_us"]),
+				"priority": 1,
+				"kind": &"endpoint_finalize",
+				"state_index": index,
+				"endpoint_index": endpoint_index,
+				"event_id": "%s:endpoint:%d" % [event_id, endpoint_index],
+			})
 
 
-func _process_timeline_event(event: Dictionary, life_held: bool, death_held: bool) -> void:
+func _build_endpoint_states(slider: Dictionary) -> Array[Dictionary]:
+	## 每个单程都有自己的节奏端点。往返滑条因此会产生两个独立分项，
+	## 最终成绩自然取所有行程、所有阵营中最差的一项。
+	var result: Array[Dictionary] = []
+	var traversal_ticks: int = maxi(1, int(slider["traversal_ticks"]))
+	var traversal_count: int = maxi(1, int(slider["traversal_count"]))
+	for leg_index: int in range(traversal_count):
+		var leg_start_tick: int = int(slider["tick"]) + leg_index * traversal_ticks
+		var target_tick: int = leg_start_tick + traversal_ticks
+		var target_us: int = _compiled.tempo_map.tick_to_us(target_tick)
+		result.append({
+			"leg_index": leg_index,
+			"leg_start_tick": leg_start_tick,
+			"leg_start_us": _compiled.tempo_map.tick_to_us(leg_start_tick),
+			"target_tick": target_tick,
+			"target_us": target_us,
+			# 玩家可以提前抵达，但成绩仍在原定端点时刻统一结算。
+			"deadline_us": target_us,
+			"target_progress": 1.0 if leg_index % 2 == 0 else 0.0,
+			"opened": false,
+			"inside": false,
+			"captured": false,
+			"entry_count": 0,
+			"best_observed_us": NO_ENDPOINT_OBSERVATION_US,
+			"best_error_us": NO_ENDPOINT_OBSERVATION_US,
+			"grade": GameplayTypes.JudgmentGrade.MISS,
+			"finalized": false,
+		})
+	return result
+
+
+func _process_timeline_event(event: Dictionary) -> void:
 	match StringName(event["kind"]):
 		&"field_enter":
 			var was_empty: bool = _active_field_ids.is_empty()
 			_active_field_ids[str(event["field_id"])] = true
 			if was_empty:
 				_reset_values_to_base()
-				_rate_vector = Vector2.ZERO
 				_queue_frequency_change(int(event["time_us"]))
 		&"field_exit":
 			_active_field_ids.erase(str(event["field_id"]))
-			if _active_field_ids.is_empty():
+			if (
+				_active_field_ids.is_empty()
+				and not _has_pending_slider_window(int(event["time_us"]))
+			):
 				_reset_values_to_base()
-				_rate_vector = Vector2.ZERO
 				_queue_frequency_change(int(event["time_us"]))
-		&"slider_sample":
-			_process_slider_sample(int(event["state_index"]), int(event["time_us"]), life_held, death_held)
-		&"frequency_sample":
-			if field_active():
-				_queue_frequency_change(int(event["time_us"]))
+		&"slider_begin":
+			_begin_slider(int(event["state_index"]), int(event["time_us"]))
 		&"slider_finish":
 			_finish_slider(int(event["state_index"]), int(event["time_us"]))
+		&"endpoint_open":
+			_open_endpoint(int(event["state_index"]), int(event["endpoint_index"]))
+		&"endpoint_finalize":
+			_finalize_endpoint(int(event["state_index"]), int(event["endpoint_index"]))
 
 
-func _process_slider_sample(state_index: int, sample_us: int, life_held: bool, death_held: bool) -> void:
+func _begin_slider(state_index: int, time_us: int) -> void:
+	if state_index < 0 or state_index >= _slider_states.size():
+		return
+	var slider: Dictionary = _slider_states[state_index]["slider"]
+	var start_value: float = clampf(float(slider["start_value"]), 0.0, 1.0)
+	if int(slider["affinity"]) == GameplayTypes.Affinity.XUAN:
+		_death_value = start_value
+	else:
+		_life_value = start_value
+	_queue_frequency_change(time_us)
+
+
+func _open_endpoint(state_index: int, endpoint_index: int) -> void:
 	if state_index < 0 or state_index >= _slider_states.size():
 		return
 	var state: Dictionary = _slider_states[state_index]
-	if bool(state["finished"]):
+	var endpoints: Array = state["endpoint_states"]
+	if endpoint_index < 0 or endpoint_index >= endpoints.size():
+		return
+	var endpoint: Dictionary = endpoints[endpoint_index]
+	if bool(endpoint["opened"]):
 		return
 	var slider: Dictionary = state["slider"]
-	var affinity: int = int(slider["affinity"])
-	var held: bool = life_held if affinity == GameplayTypes.Affinity.ZHU else death_held
-	var player_value: float = _value_for_affinity(affinity)
-	var player_progress: float = _value_to_slider_progress(slider, player_value)
-	var band: Vector2 = _guide_band(slider, sample_us)
-	state["sample_total"] = int(state["sample_total"]) + 1
-	if (
-		held
-		and player_progress >= band.x - TRACKING_EPSILON
-		and player_progress <= band.y + TRACKING_EPSILON
-	):
-		state["sample_valid"] = int(state["sample_valid"]) + 1
+	var player_progress: float = _value_to_slider_progress(
+		slider,
+		_value_for_affinity(int(slider["affinity"]))
+	)
+	endpoint["opened"] = true
+	endpoint["inside"] = _inside_endpoint_capture(player_progress, float(endpoint["target_progress"]))
+
+
+func _finalize_endpoint(state_index: int, endpoint_index: int) -> void:
+	if state_index < 0 or state_index >= _slider_states.size():
+		return
+	var endpoints: Array = _slider_states[state_index]["endpoint_states"]
+	if endpoint_index < 0 or endpoint_index >= endpoints.size():
+		return
+	var endpoint: Dictionary = endpoints[endpoint_index]
+	endpoint["finalized"] = true
+
+
+func _record_endpoint_entries(
+		affinity: int,
+		previous_value: float,
+		current_value: float,
+		time_us: int
+) -> void:
+	## 每一程从开始到虚线抵达端点之间，只要玩家第一次把填充推入端点区就算完成。
+	## 完成只先锁存，真正的判定记录仍等 target_us 到来后才产生。
+	for state: Dictionary in _slider_states:
+		if bool(state["finished"]):
+			continue
+		var slider: Dictionary = state["slider"]
+		if int(slider["affinity"]) != affinity:
+			continue
+		var previous_progress: float = _value_to_slider_progress(slider, previous_value)
+		var current_progress: float = _value_to_slider_progress(slider, current_value)
+		var endpoints: Array = state["endpoint_states"]
+		for endpoint_value: Variant in endpoints:
+			var endpoint: Dictionary = endpoint_value
+			if bool(endpoint["finalized"]):
+				continue
+			if time_us < int(endpoint["leg_start_us"]) or time_us > int(endpoint["target_us"]):
+				continue
+			if not bool(endpoint["opened"]):
+				endpoint["opened"] = true
+				endpoint["inside"] = _inside_endpoint_capture(
+					previous_progress,
+					float(endpoint["target_progress"])
+				)
+			var is_inside: bool = _inside_endpoint_capture(
+				current_progress,
+				float(endpoint["target_progress"])
+			)
+			if is_inside and not bool(endpoint["inside"]):
+				_record_endpoint_entry(endpoint, time_us)
+			endpoint["inside"] = is_inside
+
+
+func _record_endpoint_entry(endpoint: Dictionary, observed_us: int) -> void:
+	if bool(endpoint["captured"]):
+		return
+	var target_us: int = int(endpoint["target_us"])
+	var error_us: int = observed_us - target_us
+	endpoint["entry_count"] = int(endpoint["entry_count"]) + 1
+	endpoint["captured"] = true
+	endpoint["best_observed_us"] = observed_us
+	endpoint["best_error_us"] = error_us
+	# 新规则不奖励“压线”，也不惩罚提前完成：到时或提前完成均为成功。
+	endpoint["grade"] = GameplayTypes.JudgmentGrade.PERFECT
+
+
+func _inside_endpoint_capture(player_progress: float, target_progress: float) -> bool:
+	return absf(player_progress - target_progress) <= (
+		_rule_float(&"tuning_endpoint_capture_ratio", 0.03) + TRACKING_EPSILON
+	)
+
+
+func _endpoint_snapshots(state: Dictionary) -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	for endpoint_value: Variant in state["endpoint_states"]:
+		var endpoint: Dictionary = endpoint_value
+		var has_observation: bool = int(endpoint["best_observed_us"]) != NO_ENDPOINT_OBSERVATION_US
+		result.append({
+			"leg_index": int(endpoint["leg_index"]),
+			"target_tick": int(endpoint["target_tick"]),
+			"target_us": int(endpoint["target_us"]),
+			"deadline_us": int(endpoint["deadline_us"]),
+			"target_progress": float(endpoint["target_progress"]),
+			"inside": bool(endpoint["inside"]),
+			"captured": bool(endpoint["captured"]),
+			"qualified": has_observation and int(endpoint["grade"]) != GameplayTypes.JudgmentGrade.MISS,
+			"entry_count": int(endpoint["entry_count"]),
+			"has_observation": has_observation,
+			"best_observed_us": int(endpoint["best_observed_us"]) if has_observation else 0,
+			"best_error_us": int(endpoint["best_error_us"]) if has_observation else 0,
+			"grade": int(endpoint["grade"]),
+			"finalized": bool(endpoint["finalized"]),
+			"window_active": (
+				_current_time_us >= int(endpoint["leg_start_us"])
+				and _current_time_us <= int(endpoint["target_us"])
+			),
+		})
+	return result
+
+
+func _endpoint_index_for_time(state: Dictionary, time_us: int) -> int:
+	var slider: Dictionary = state["slider"]
+	return clampi(
+		_slider_leg_at(slider, time_us),
+		0,
+		maxi(0, (state["endpoint_states"] as Array).size() - 1)
+	)
 
 
 func _finish_slider(state_index: int, finalized_at_us: int) -> void:
@@ -360,13 +584,15 @@ func _finish_slider(state_index: int, finalized_at_us: int) -> void:
 	var state: Dictionary = _slider_states[state_index]
 	if bool(state["finished"]):
 		return
-	var total: int = int(state["sample_total"])
-	var valid: int = int(state["sample_valid"])
-	var coverage: float = 0.0 if total <= 0 else float(valid) / float(total)
-	state["coverage"] = coverage
-	state["grade"] = _grade_coverage(coverage)
+	state["grade"] = GameplayTypes.JudgmentGrade.PERFECT
+	for endpoint_value: Variant in state["endpoint_states"]:
+		var endpoint: Dictionary = endpoint_value
+		state["grade"] = maxi(int(state["grade"]), int(endpoint["grade"]))
 	state["finished"] = true
 	_try_finalize_group(str(state["group_key"]), finalized_at_us)
+	if _active_field_ids.is_empty() and not _has_pending_slider_window(finalized_at_us):
+		_reset_values_to_base()
+		_queue_frequency_change(finalized_at_us)
 
 
 func _try_finalize_group(group_key: String, finalized_at_us: int) -> void:
@@ -395,42 +621,44 @@ func _try_finalize_group(group_key: String, finalized_at_us: int) -> void:
 			record.affinity = affinity
 		record.start_tick = mini(record.start_tick, int(slider["tick"]))
 		record.end_tick = maxi(record.end_tick, int(slider["end_tick"]))
-		var component_kind: StringName = &"life_coverage" if affinity == GameplayTypes.Affinity.ZHU else &"death_coverage"
-		var component := JudgmentComponentRecord.value_error(
-			component_kind,
-			int(slider["tick"]),
-			int(slider["start_us"]),
-			1.0 - float(state["coverage"]),
-			int(state["grade"])
-		)
-		component.metadata = {
+		var side_metadata: Dictionary = {
 			"event_id": str(state["event_id"]),
-			"valid_samples": int(state["sample_valid"]),
-			"total_samples": int(state["sample_total"]),
-			"coverage": float(state["coverage"]),
 		}
-		record.components.append(component)
-		side_data["life" if affinity == GameplayTypes.Affinity.ZHU else "death"] = component.metadata.duplicate(true)
+
+		var endpoint_metadata: Array[Dictionary] = []
+		for endpoint_value: Variant in state["endpoint_states"]:
+			var endpoint: Dictionary = endpoint_value
+			var observed_us: int = int(endpoint["best_observed_us"])
+			if observed_us == NO_ENDPOINT_OBSERVATION_US:
+				observed_us = int(endpoint["deadline_us"]) + 1
+			var endpoint_kind: StringName = (
+				&"life_endpoint"
+				if affinity == GameplayTypes.Affinity.ZHU
+				else &"death_endpoint"
+			)
+			var endpoint_component := JudgmentComponentRecord.timing(
+				endpoint_kind,
+				int(endpoint["target_tick"]),
+				int(endpoint["target_us"]),
+				observed_us,
+				int(endpoint["grade"])
+			)
+			endpoint_component.metadata = {
+				"event_id": str(state["event_id"]),
+				"leg_index": int(endpoint["leg_index"]),
+				"captured": bool(endpoint["captured"]),
+				"entry_count": int(endpoint["entry_count"]),
+			}
+			record.components.append(endpoint_component)
+			endpoint_metadata.append(endpoint_component.to_dictionary())
+
+		var side_key: String = "life" if affinity == GameplayTypes.Affinity.ZHU else "death"
+		side_metadata["endpoints"] = endpoint_metadata
+		side_data[side_key] = side_metadata
 	record.metadata = {"sides": side_data}
 	record.recompute_grade()
 	_group_grades[group_key] = record.grade
 	_pending_records.append(record)
-
-
-func _integrate_values_to(time_us: int, life_held: bool, death_held: bool) -> void:
-	if _motion_time_us == NEVER_TIME_US:
-		_motion_time_us = time_us
-		return
-	if time_us <= _motion_time_us:
-		return
-	if field_active():
-		var delta_sec: float = float(time_us - _motion_time_us) / USEC_PER_SEC
-		var normalized_speed: float = _normalized_cursor_speed_per_sec()
-		if life_held:
-			_life_value = clampf(_life_value + _rate_vector.x * normalized_speed * delta_sec, 0.0, 1.0)
-		if death_held:
-			_death_value = clampf(_death_value + _rate_vector.y * normalized_speed * delta_sec, 0.0, 1.0)
-	_motion_time_us = time_us
 
 
 func _guide_progress(slider: Dictionary, time_us: int) -> float:
@@ -447,8 +675,30 @@ func _guide_progress(slider: Dictionary, time_us: int) -> float:
 	return within if leg % 2 == 0 else 1.0 - within
 
 
+func _required_rotation_sign(slider: Dictionary, time_us: int) -> int:
+	if time_us < int(slider["start_us"]):
+		return 0
+	var value_delta: float = float(slider["end_value"]) - float(slider["start_value"])
+	if is_zero_approx(value_delta):
+		return 0
+	var traversal_ticks: int = maxi(1, int(slider["traversal_ticks"]))
+	var traversal_count: int = maxi(1, int(slider["traversal_count"]))
+	var current_tick: int = _compiled.tempo_map.us_to_tick_rounded(time_us)
+	var elapsed_ticks: int = maxi(0, current_tick - int(slider["tick"]))
+	var traversal_index: int = mini(
+		traversal_count - 1,
+		floori(float(elapsed_ticks) / float(traversal_ticks))
+	)
+	var frequency_direction: int = 1 if value_delta > 0.0 else -1
+	# required_rotation_sign 描述玩家看到的物理摇杆旋向，而不是频率轴正负。
+	# 生槽是上弧：顺时针向右即升频；死槽是中心对称的下弧：顺时针向左即降频。
+	var visual_mirror: int = -1 if int(slider["affinity"]) == GameplayTypes.Affinity.XUAN else 1
+	var direction: int = frequency_direction * visual_mirror
+	return direction if traversal_index % 2 == 0 else -direction
+
+
 func _guide_band(slider: Dictionary, time_us: int) -> Vector2:
-	var window_us: int = _rule_int(&"tuning_guide_time_window_ms", 180) * 1000
+	var window_us: int = _rule_int(&"tuning_guide_time_window_ms", 250) * 1000
 	var lower_us: int = maxi(int(slider["start_us"]), time_us - window_us)
 	var upper_us: int = mini(int(slider["end_us"]), time_us + window_us)
 	var values: Array[float] = [
@@ -466,13 +716,109 @@ func _guide_band(slider: Dictionary, time_us: int) -> Vector2:
 		if boundary_tick >= lower_tick and boundary_tick <= upper_tick:
 			values.append(_guide_progress(slider, _compiled.tempo_map.tick_to_us(boundary_tick)))
 		boundary_tick += traversal_ticks
-	var margin: float = _rule_float(&"tuning_spatial_margin", 0.08)
+	var margin: float = _rule_float(&"tuning_spatial_margin", 0.12)
 	var minimum: float = values[0]
 	var maximum: float = values[0]
 	for value: float in values:
 		minimum = minf(minimum, value)
 		maximum = maxf(maximum, value)
 	return Vector2(clampf(minimum - margin, 0.0, 1.0), clampf(maximum + margin, 0.0, 1.0))
+
+
+## 对一侧的真实旋转只做有限行程和端点捕获。
+## 点状时间引导不参与这段计算，因此相同角位移在任何时刻都会产生相同频率变化。
+func _apply_side_displacement(
+		affinity: int,
+		current_value: float,
+		raw_delta: float,
+		time_us: int
+) -> float:
+	if is_zero_approx(raw_delta):
+		return current_value
+	var state_index: int = _active_slider_state_index(affinity, time_us)
+	if state_index < 0:
+		# 计分滑条已进入缩圈预备期时，这一侧暂停自由调频。另一侧若没有
+		# 预备目标，仍可在同一场域内独立调频。
+		if _has_preview_slider_for_side(affinity, time_us):
+			return current_value
+		return clampf(current_value + raw_delta, 0.0, 1.0)
+
+	var slider: Dictionary = _slider_states[state_index]["slider"]
+	var start_value: float = float(slider["start_value"])
+	var end_value: float = float(slider["end_value"])
+	var span: float = end_value - start_value
+	if absf(span) <= 0.000001:
+		return current_value
+
+	# 自由调频可能让频率在滑条开始前落到本条行程之外。只能按真实位移
+	# 逐步转回；向更外侧旋转会被挡住，绝不能直接吸到最近边界。
+	var lower_value: float = minf(start_value, end_value)
+	var upper_value: float = maxf(start_value, end_value)
+	if current_value < lower_value - TRACKING_EPSILON:
+		if raw_delta <= 0.0:
+			return current_value
+		return clampf(current_value + raw_delta, 0.0, upper_value)
+	if current_value > upper_value + TRACKING_EPSILON:
+		if raw_delta >= 0.0:
+			return current_value
+		return clampf(current_value + raw_delta, lower_value, 1.0)
+
+	# 端点最后 3% 只负责记录到达，不再磁吸或篡改真实旋转量。
+	return clampf(current_value + raw_delta, lower_value, upper_value)
+
+
+func _active_slider_state_index(affinity: int, time_us: int) -> int:
+	# 同侧谱面不应真实重叠；如果预览数据仍有重叠，稳定地取编译排序后的第一条。
+	for index: int in range(_slider_states.size()):
+		var state: Dictionary = _slider_states[index]
+		if bool(state["finished"]):
+			continue
+		var slider: Dictionary = state["slider"]
+		if int(slider["affinity"]) != affinity:
+			continue
+		if time_us >= int(slider["start_us"]) and time_us <= int(state["judgment_end_us"]):
+			return index
+	return -1
+
+
+func _has_pending_slider_window(time_us: int) -> bool:
+	for state: Dictionary in _slider_states:
+		if bool(state["finished"]):
+			continue
+		var slider: Dictionary = state["slider"]
+		if time_us >= int(slider["start_us"]) and time_us <= int(state["judgment_end_us"]):
+			return true
+	return false
+
+
+func _has_preview_slider_for_side(affinity: int, time_us: int) -> bool:
+	var preview_lead_us: int = roundi(
+		maxf(_rule_float(&"approach_duration_sec", 2.25), 0.0) * 1_000_000.0
+	)
+	for state: Dictionary in _slider_states:
+		if bool(state["finished"]):
+			continue
+		var slider: Dictionary = state["slider"]
+		if int(slider["affinity"]) != affinity:
+			continue
+		var start_us: int = int(slider["start_us"])
+		if time_us >= start_us - preview_lead_us and time_us < start_us:
+			return true
+	return false
+
+
+func _slider_leg_at(slider: Dictionary, time_us: int) -> int:
+	var traversal_ticks: int = maxi(1, int(slider["traversal_ticks"]))
+	var traversal_count: int = maxi(1, int(slider["traversal_count"]))
+	var total_ticks: int = traversal_ticks * traversal_count
+	var current_tick: int = clampi(
+		_compiled.tempo_map.us_to_tick_rounded(time_us),
+		int(slider["tick"]),
+		int(slider["tick"]) + total_ticks
+	)
+	var elapsed_ticks: int = current_tick - int(slider["tick"])
+	# 折返完全由谱面强拍决定：一旦跨过行程边界，就不再接受旧旋向“补走”。
+	return mini(traversal_count - 1, elapsed_ticks / traversal_ticks)
 
 
 func _value_to_slider_progress(slider: Dictionary, value: float) -> float:
@@ -490,31 +836,22 @@ func _value_for_affinity(affinity: int) -> float:
 
 func _value_to_frequency(value: float) -> float:
 	return lerpf(
-		_rule_float(&"tuning_min_frequency_hz", 1.8),
-		_rule_float(&"tuning_max_frequency_hz", 6.9),
+		_rule_float(&"tuning_min_frequency_hz", 1.0),
+		_rule_float(&"tuning_max_frequency_hz", 7.0),
 		clampf(value, 0.0, 1.0)
 	)
 
 
 func _base_value() -> float:
-	var minimum: float = _rule_float(&"tuning_min_frequency_hz", 1.8)
-	var maximum: float = _rule_float(&"tuning_max_frequency_hz", 6.9)
-	var base: float = _rule_float(&"tuning_base_frequency_hz", 4.35)
+	var minimum: float = _rule_float(&"tuning_min_frequency_hz", 1.0)
+	var maximum: float = _rule_float(&"tuning_max_frequency_hz", 7.0)
+	var base: float = _rule_float(&"tuning_base_frequency_hz", 3.0)
 	return clampf(inverse_lerp(minimum, maximum, base), 0.0, 1.0)
 
 
 func _reset_values_to_base() -> void:
 	_life_value = _base_value()
 	_death_value = _base_value()
-
-
-func _normalized_cursor_speed_per_sec() -> float:
-	var range_hz: float = maxf(
-		_rule_float(&"tuning_max_frequency_hz", 6.9) - _rule_float(&"tuning_min_frequency_hz", 1.8),
-		0.001
-	)
-	var axis_length_px: float = range_hz * maxf(_rule_float(&"tuning_pixels_per_hz", 160.0), 0.001)
-	return _rule_float(&"tuning_cursor_speed_px_sec", 720.0) / axis_length_px
 
 
 func _queue_frequency_change(time_us: int) -> void:
@@ -529,16 +866,6 @@ func _queue_frequency_change(time_us: int) -> void:
 		_pending_frequency_changes[-1] = change
 	else:
 		_pending_frequency_changes.append(change)
-
-
-func _grade_coverage(coverage: float) -> int:
-	if coverage >= _rule_float(&"tuning_perfect_coverage", 0.90):
-		return GameplayTypes.JudgmentGrade.PERFECT
-	if coverage >= _rule_float(&"tuning_good_coverage", 0.75):
-		return GameplayTypes.JudgmentGrade.GOOD
-	if coverage >= _rule_float(&"tuning_pass_coverage", 0.60):
-		return GameplayTypes.JudgmentGrade.PASS
-	return GameplayTypes.JudgmentGrade.MISS
 
 
 func _sort_timeline_events(a: Dictionary, b: Dictionary) -> bool:

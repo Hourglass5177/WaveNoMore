@@ -189,8 +189,6 @@ static func _validate_tuning_sliders(chart: SongChart, fields_by_id: Dictionary,
 			var previous_end: int = previous.tick + previous.traversal_ticks * previous.traversal_count
 			if previous_end > current.tick:
 				report.add_error(&"tuning_slider.same_side_overlap", "Same-side tuning sliders '%s' and '%s' overlap." % [previous.event_id, current.event_id], current.event_id, &"tuning_sliders", current.tick)
-		_validate_tuning_slider_reachability(chart, ordered, fields_by_id, rules, report)
-
 	for group_id: String in groups.keys():
 		var members: Array = groups[group_id]
 		if members.size() != 2:
@@ -205,113 +203,6 @@ static func _validate_tuning_sliders(chart: SongChart, fields_by_id: Dictionary,
 		if first.tick != second.tick or first.traversal_ticks != second.traversal_ticks or first.traversal_count != second.traversal_count:
 			report.add_error(&"tuning_slider.group_timing", "Grouped tuning sliders must share their start tick and traversal timing.", group_id, &"tuning_sliders", mini(first.tick, second.tick))
 	return groups
-
-
-static func _validate_tuning_slider_reachability(
-	chart: SongChart,
-	ordered_sliders: Array,
-	fields_by_id: Dictionary,
-	rules: GameplayRuleSet,
-	report: ValidationReport
-) -> void:
-	## 写谱器中的引导可以瞬移，但玩家游标只能按规则速度移动。
-	## 每个场域从基频重新起算；完成一条滑条后，则从该条真实终点继续走向下一条起点。
-	if rules == null or not _can_measure_tuning_travel(chart, rules):
-		return
-	var tempo_map := TempoMap.from_chart(chart)
-	var frequency_range_hz: float = rules.tuning_max_frequency_hz - rules.tuning_min_frequency_hz
-	var base_value: float = inverse_lerp(
-		rules.tuning_min_frequency_hz,
-		rules.tuning_max_frequency_hz,
-		rules.tuning_base_frequency_hz
-	)
-	# 同一侧在不同场域中各自从基频开始，不能把上一场留下的频率带进来。
-	var previous_by_field: Dictionary = {}
-	for raw_slider: Variant in ordered_sliders:
-		var slider := raw_slider as TuningSliderEvent
-		if slider == null or not fields_by_id.has(slider.field_id):
-			continue
-		if slider.traversal_ticks <= 0 or slider.traversal_count <= 0:
-			continue
-		if not _is_normalized_finite(slider.start_value) or not _is_normalized_finite(slider.end_value):
-			continue
-		var field := fields_by_id[slider.field_id] as TuningFieldRegion
-		if field == null or slider.tick < field.tick:
-			continue
-
-		var source_tick: int = field.tick
-		var source_value: float = base_value
-		var source_label: String = "the field base frequency"
-		var previous := previous_by_field.get(slider.field_id) as TuningSliderEvent
-		if previous != null:
-			var previous_end_tick: int = previous.tick + previous.traversal_ticks * previous.traversal_count
-			# 重叠已有专门错误；这里不再基于负时间追加一条误导性的可达错误。
-			if previous_end_tick > slider.tick:
-				previous_by_field[slider.field_id] = slider
-				continue
-			source_tick = previous_end_tick
-			source_value = _tuning_slider_terminal_value(previous)
-			source_label = "slider '%s' endpoint" % previous.event_id
-
-		var available_us: int = maxi(0, tempo_map.tick_span_to_us(source_tick, slider.tick))
-		var available_px: float = float(available_us) / 1_000_000.0 * rules.tuning_cursor_speed_px_sec
-		var required_px: float = (
-			absf(slider.start_value - source_value)
-			* frequency_range_hz
-			* rules.tuning_pixels_per_hz
-		)
-		# 像素量化和 TempoMap 微秒取整只允许极小数值误差，不能替坏谱放宽一帧。
-		if required_px > available_px + 0.01:
-			var code: StringName = (
-				&"tuning_slider.unreachable_field_start"
-				if previous == null and slider.tick == field.tick
-				else &"tuning_slider.unreachable_start"
-			)
-			report.add_error(
-				code,
-				"Slider start is unreachable from %s: needs %.2f px, but %.2f px are available in %.3f s." % [
-					source_label,
-					required_px,
-					available_px,
-					float(available_us) / 1_000_000.0,
-				],
-				slider.event_id,
-				&"tuning_sliders",
-				slider.tick
-			)
-		previous_by_field[slider.field_id] = slider
-
-
-static func _tuning_slider_terminal_value(slider: TuningSliderEvent) -> float:
-	# 单程停在 end；往返两程停回 start，之后继续按奇偶交替。
-	return slider.end_value if slider.traversal_count % 2 == 1 else slider.start_value
-
-
-static func _can_measure_tuning_travel(chart: SongChart, rules: GameplayRuleSet) -> bool:
-	if chart.tempo_events.is_empty():
-		return false
-	var seen_ticks: Dictionary = {}
-	var has_zero: bool = false
-	for raw_event: Variant in chart.tempo_events:
-		var event := raw_event as TempoEvent
-		if event == null or not is_finite(event.bpm) or event.bpm <= 0.0 or seen_ticks.has(event.tick):
-			return false
-		seen_ticks[event.tick] = true
-		has_zero = has_zero or event.tick == 0
-	return (
-		has_zero
-		and is_finite(rules.tuning_min_frequency_hz)
-		and is_finite(rules.tuning_base_frequency_hz)
-		and is_finite(rules.tuning_max_frequency_hz)
-		and rules.tuning_min_frequency_hz > 0.0
-		and rules.tuning_min_frequency_hz < rules.tuning_max_frequency_hz
-		and rules.tuning_base_frequency_hz >= rules.tuning_min_frequency_hz
-		and rules.tuning_base_frequency_hz <= rules.tuning_max_frequency_hz
-		and is_finite(rules.tuning_pixels_per_hz)
-		and rules.tuning_pixels_per_hz > 0.0
-		and is_finite(rules.tuning_cursor_speed_px_sec)
-		and rules.tuning_cursor_speed_px_sec > 0.0
-	)
 
 
 static func _validate_su_manifestations(chart: SongChart, fields_by_id: Dictionary, slider_groups: Dictionary, report: ValidationReport, ids: Dictionary) -> void:
@@ -382,24 +273,19 @@ static func _validate_sections(chart: SongChart, report: ValidationReport, ids: 
 static func _validate_rules(rules: GameplayRuleSet, report: ValidationReport) -> void:
 	if rules.perfect_window_ms > rules.good_window_ms or rules.good_window_ms > rules.pass_window_ms or rules.pass_window_ms > rules.miss_window_ms:
 		report.add_error(&"rules.tap_windows", "Tap windows must satisfy Perfect <= Good <= Pass <= Miss.")
-	if rules.hold_release_perfect_ms > rules.hold_release_good_ms or rules.hold_release_good_ms > rules.hold_release_pass_ms:
-		report.add_error(&"rules.hold_windows", "Hold release windows must satisfy Perfect <= Good <= Pass.")
+	# hold_release_* 只为旧资源反序列化保留，不再影响玩法，故不再校验其大小关系。
 	if rules.tuning_sample_interval_ticks <= 0:
 		report.add_error(&"rules.tuning_sample_step", "Tuning sample interval must be positive.")
 	if rules.tuning_guide_time_window_ms < 0:
 		report.add_error(&"rules.tuning_time_window", "Tuning guide time window cannot be negative.")
 	if not is_finite(rules.tuning_spatial_margin) or rules.tuning_spatial_margin < 0.0 or rules.tuning_spatial_margin > 0.5:
 		report.add_error(&"rules.tuning_spatial_margin", "Tuning spatial margin must be finite and in [0, 0.5].")
-	if rules.tuning_perfect_coverage > 1.0 or rules.tuning_perfect_coverage < rules.tuning_good_coverage or rules.tuning_good_coverage < rules.tuning_pass_coverage or rules.tuning_pass_coverage <= 0.0:
-		report.add_error(&"rules.tuning_coverage", "Tuning coverage thresholds must satisfy 1 >= Perfect >= Good >= Pass > 0.")
 	if not is_finite(rules.tuning_min_frequency_hz) or not is_finite(rules.tuning_base_frequency_hz) or not is_finite(rules.tuning_max_frequency_hz) or rules.tuning_min_frequency_hz <= 0.0 or rules.tuning_min_frequency_hz >= rules.tuning_max_frequency_hz or rules.tuning_base_frequency_hz < rules.tuning_min_frequency_hz or rules.tuning_base_frequency_hz > rules.tuning_max_frequency_hz:
 		report.add_error(&"rules.tuning_frequency_range", "Tuning frequencies must satisfy 0 < minimum <= base <= maximum, with minimum < maximum.")
 	if not is_finite(rules.tuning_pixels_per_hz) or rules.tuning_pixels_per_hz <= 0.0:
 		report.add_error(&"rules.tuning_scale", "Tuning pixels per Hz must be finite and positive.")
-	if not is_finite(rules.tuning_cursor_speed_px_sec) or rules.tuning_cursor_speed_px_sec <= 0.0:
-		report.add_error(&"rules.tuning_cursor_speed", "Tuning cursor speed must be finite and positive.")
-	if not is_finite(rules.tuning_stick_deadzone) or rules.tuning_stick_deadzone < 0.0 or rules.tuning_stick_deadzone >= 1.0:
-		report.add_error(&"rules.tuning_stick_deadzone", "Tuning stick deadzone must be finite and in [0, 1).")
+	if not is_finite(rules.tuning_hz_per_revolution) or rules.tuning_hz_per_revolution <= 0.0:
+		report.add_error(&"rules.tuning_rotation_scale", "Tuning Hz per revolution must be finite and positive.")
 	if rules.rapid_perfect_ratio > 1.0 or rules.rapid_good_ratio > rules.rapid_perfect_ratio or rules.rapid_pass_ratio > rules.rapid_good_ratio or rules.rapid_pass_ratio <= 0.0:
 		report.add_error(&"rules.rapid_ratios", "Rapid ratios must satisfy 1 >= Perfect >= Good >= Pass > 0.")
 	if rules.pass_score <= 0:
@@ -420,7 +306,6 @@ static func _validate_input_conflicts(chart: SongChart, rules: GameplayRuleSet, 
 	var tempo_map := TempoMap.from_chart(chart)
 	var intervals: Array[Dictionary] = []
 	var pass_us: int = rules.pass_window_ms * 1000
-	var hold_tail_us: int = rules.hold_release_pass_ms * 1000
 	for note in chart.note_events:
 		if note == null:
 			continue
@@ -433,7 +318,8 @@ static func _validate_input_conflicts(chart: SongChart, rules: GameplayRuleSet, 
 			"type": "hold" if note.kind == GameplayTypes.NoteKind.HOLD else "tap",
 			"side": note.affinity,
 			"start": start_us - pass_us,
-			"end": end_us + (hold_tail_us if note.kind == GameplayTypes.NoteKind.HOLD else pass_us),
+			# Hold 的占用在尾点结束；旧版松键判定窗已经废弃。
+			"end": end_us if note.kind == GameplayTypes.NoteKind.HOLD else end_us + pass_us,
 			"tick": note.tick,
 		})
 	for slider in chart.tuning_sliders:
@@ -465,7 +351,18 @@ static func _validate_input_conflicts(chart: SongChart, rules: GameplayRuleSet, 
 			var second: Dictionary = intervals[second_index]
 			if int(first["side"]) != -1 and int(second["side"]) != -1 and int(first["side"]) != int(second["side"]):
 				continue
-			if maxi(int(first["start"]), int(second["start"])) > mini(int(first["end"]), int(second["end"])):
+			var overlap_start: int = maxi(int(first["start"]), int(second["start"]))
+			var overlap_end: int = mini(int(first["end"]), int(second["end"]))
+			if overlap_start > overlap_end:
+				continue
+			# 两条调频滑条可以首尾相接：旧条在该 tick 先结算，新条随后建立
+			# 独立手势会话，因此共享边界点不属于输入区间重叠。其他机制的判定窗
+			# 仍保留闭区间语义，避免一次按键同时落入两个对象。
+			if (
+				overlap_start == overlap_end
+				and first["type"] == "tuning"
+				and second["type"] == "tuning"
+			):
 				continue
 			# 相邻 Tap 可由判定器按误差最近原则稳定匹配；区域机制或 Hold 一旦重叠，
 			# 同一次输入就会争夺所有权，因此必须在制谱阶段拒绝。

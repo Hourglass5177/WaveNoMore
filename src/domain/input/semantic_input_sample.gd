@@ -11,11 +11,11 @@ const Q15_MAX: int = 32767
 var timestamp_us: int = 0
 ## 输入稳定顺序号；两个事件落在同一微秒时用它决定处理先后。
 var sequence: int = 0
-## 输入语义类型，例如生/死按下、松开、摇杆速率变化或指针相对位移。
+## 输入语义类型，例如生/死按下、松开或一次相对调频位移。
 var kind: int = GameplayTypes.SemanticInputKind.LIFE_PRESSED
 ## 双钟调频输入。X 永远代表生钟，Y 永远代表死钟，两个分量各自处于 -1～1。
-## TUNING_RATE_CHANGED 时表示游标速度意图；TUNING_DISPLACED 时表示本次归一化位移。
-## 非调频样本保持 Vector2.ZERO。两路必须独立，禁止把它当二维方向向量归一化。
+## 数值表示本次输入造成的归一化频率轴位移；非调频样本保持 Vector2.ZERO。
+## 两路必须独立，禁止把它当二维方向向量归一化。
 var tune_vector: Vector2 = Vector2.ZERO
 
 
@@ -52,10 +52,7 @@ func is_release() -> bool:
 
 
 func is_tuning() -> bool:
-	return (
-		kind == GameplayTypes.SemanticInputKind.TUNING_RATE_CHANGED
-		or kind == GameplayTypes.SemanticInputKind.TUNING_DISPLACED
-	)
+	return kind == GameplayTypes.SemanticInputKind.TUNING_DISPLACED
 
 
 func affinity() -> int:

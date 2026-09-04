@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="StageVisualTheme" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/content/resources/stage_visual_theme.gd" id="1_theme"]
+
+[resource]
+script = ExtResource("1_theme")
+theme_id = "s03_hold_lab_theme"
+life_color = Color(0.72, 0.11, 0.09, 1)
+death_color = Color(0.05, 0.065, 0.13, 1)
+su_color = Color(0.94, 0.91, 0.80, 1)
+ink_color = Color(0.017, 0.022, 0.04, 1)
+paper_color = Color(0.32, 0.34, 0.41, 1)

@@ -1,13 +1,10 @@
-[gd_resource type="Resource" script_class="RewardDefinition" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="RewardDefinition" load_steps=2 format=3]
 
 [ext_resource type="Script" path="res://src/content/resources/reward_definition.gd" id="1_reward"]
-[ext_resource type="Resource" path="res://content/pets/pet_horned_soul.tres" id="2_pet"]
 
 [resource]
 script = ExtResource("1_reward")
-reward_id = "reward_s01"
+reward_id = "reward_s01_test_only"
 next_stage_id = ""
-pet = ExtResource("2_pet")
-fc_grants_base_pet = true
-ap_grants_advanced_pet = true
-
+fc_grants_base_pet = false
+ap_grants_advanced_pet = false

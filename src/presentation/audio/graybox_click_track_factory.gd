@@ -91,7 +91,7 @@ static func create_sustained_tone(
 	darkness: float = 0.0
 ) -> AudioStreamWAV:
 	## 生成可无缝循环的灰盒钟体底音。这里的可听音高只用于区分两口钟；
-	## Gameplay 中 1.8～6.9 Hz 的“发波频率”会通过 pitch_scale 相对映射。
+	## Gameplay 中 1～7 Hz 的“发波频率”会通过 pitch_scale 相对映射。
 	var safe_duration_sec: float = maxf(duration_sec, 0.25)
 	var frame_count: int = ceili(safe_duration_sec * float(SAMPLE_RATE))
 	var pcm := PackedByteArray()

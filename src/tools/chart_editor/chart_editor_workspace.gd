@@ -450,8 +450,8 @@ func _create_event(kind: String, tick: int, row: int) -> void:
 				slider.traversal_ticks = tempo_map.ppq() * 2
 				slider.traversal_count = 1
 				slider.start_value = _base_tuning_value()
-				# 默认跨度约 2.4 Hz；生、死用同一频率轴，不因颜色改变数值方向。
-				slider.end_value = clampf(slider.start_value + _normalized_frequency_span(2.4), 0.0, 1.0)
+				# 普通滑条默认跨度为 2 Hz：对应 320 px 弦长，手势角由等效圆统一推导。
+				slider.end_value = clampf(slider.start_value + _normalized_frequency_span(2.0), 0.0, 1.0)
 				document.add_event(MingheChartEditorDocument.TRACK_TUNING_SLIDERS, slider)
 				created_ids.append(slider.event_id)
 		"su_manifestation":

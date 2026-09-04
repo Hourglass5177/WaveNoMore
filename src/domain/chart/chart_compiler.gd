@@ -147,6 +147,8 @@ static func _compile_tuning_sliders(chart: SongChart, tempo_map: TempoMap) -> Ar
 			"duration_us": end_us - start_us,
 			"start_value": slider.start_value,
 			"end_value": slider.end_value,
+			"arc_rotation_deg": slider.arc_rotation_deg,
+			"visual_offset_px": slider.visual_offset_px,
 			"damage_group_id": unit_id,
 		})
 	result.sort_custom(_sort_compiled_unit)
@@ -239,7 +241,8 @@ static func _chart_hash(compiled: CompiledChart) -> String:
 	for field in compiled.tuning_fields:
 		lines.append("tuning_field|%s|%d|%d" % [field["id"], field["tick"], field["end_tick"]])
 	for slider in compiled.tuning_sliders:
-		lines.append("tuning_slider|%s|%s|%s|%d|%d|%d|%d|%.9f|%.9f" % [slider["id"], slider["field_id"], slider["group_id"], slider["affinity"], slider["tick"], slider["traversal_ticks"], slider["traversal_count"], slider["start_value"], slider["end_value"]])
+		# visual_offset_px 是纯表现构图，不进入 Replay 内容哈希。
+		lines.append("tuning_slider|%s|%s|%s|%d|%d|%d|%d|%.9f|%.9f|%.3f" % [slider["id"], slider["field_id"], slider["group_id"], slider["affinity"], slider["tick"], slider["traversal_ticks"], slider["traversal_count"], slider["start_value"], slider["end_value"], slider.get("arc_rotation_deg", 0.0)])
 	for manifestation in compiled.su_manifestations:
 		var spawn_region: Rect2 = manifestation["spawn_region_normalized"]
 		lines.append("su_manifestation|%s|%s|%d|%d|%.9f|%.9f|%.9f|%.9f" % [manifestation["id"], manifestation["group_id"], manifestation["tick"], manifestation["count"], spawn_region.position.x, spawn_region.position.y, spawn_region.size.x, spawn_region.size.y])

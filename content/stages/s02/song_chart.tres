@@ -1,12 +1,10 @@
-[gd_resource type="Resource" script_class="SongChart" load_steps=23 format=3]
+[gd_resource type="Resource" script_class="SongChart" load_steps=97 format=3]
 
 [ext_resource type="Script" path="res://src/content/resources/song_chart.gd" id="1_chart"]
 [ext_resource type="Script" path="res://src/content/resources/tempo_event.gd" id="2_tempo"]
 [ext_resource type="Script" path="res://src/content/resources/meter_event.gd" id="3_meter"]
-[ext_resource type="Script" path="res://src/content/resources/tuning_field_region.gd" id="4_field"]
-[ext_resource type="Script" path="res://src/content/resources/tuning_slider_event.gd" id="5_slider"]
-[ext_resource type="Script" path="res://src/content/resources/su_manifestation_event.gd" id="6_su"]
-[ext_resource type="Script" path="res://src/content/resources/section_marker.gd" id="7_section"]
+[ext_resource type="Script" path="res://src/content/resources/note_event.gd" id="4_note"]
+[ext_resource type="Script" path="res://src/content/resources/section_marker.gd" id="5_section"]
 
 [sub_resource type="Resource" id="Tempo_0"]
 script = ExtResource("2_tempo")
@@ -19,140 +17,916 @@ tick = 0
 numerator = 4
 denominator = 4
 
-[sub_resource type="Resource" id="Field_A"]
-script = ExtResource("4_field")
-event_id = "tuning_field_find"
-tick = 2400
-duration_ticks = 3360
-
-[sub_resource type="Resource" id="A_Life_Solo"]
-script = ExtResource("5_slider")
-event_id = "slider_find_life_solo"
-field_id = "tuning_field_find"
+[sub_resource type="Resource" id="Note_s02_tap_001"]
+script = ExtResource("4_note")
+event_id = "s02_tap_001"
+damage_group_id = "s02_tap_001"
+tick = 3840
+duration_ticks = 0
+kind = 0
 affinity = 0
-tick = 2880
-traversal_ticks = 960
-traversal_count = 1
-start_value = 0.5
-end_value = 0.8
+visual_variant = &"quarter"
 
-[sub_resource type="Resource" id="A_Life_Pair"]
-script = ExtResource("5_slider")
-event_id = "slider_find_pair_life"
-field_id = "tuning_field_find"
-group_id = "tuning_find_pair"
-affinity = 0
+[sub_resource type="Resource" id="Note_s02_tap_002"]
+script = ExtResource("4_note")
+event_id = "s02_tap_002"
+damage_group_id = "s02_tap_002"
 tick = 4320
-traversal_ticks = 480
-traversal_count = 2
-start_value = 0.4
-end_value = 0.8
-
-[sub_resource type="Resource" id="A_Death_Pair"]
-script = ExtResource("5_slider")
-event_id = "slider_find_pair_death"
-field_id = "tuning_field_find"
-group_id = "tuning_find_pair"
+duration_ticks = 0
+kind = 0
 affinity = 1
-tick = 4320
-traversal_ticks = 480
-traversal_count = 2
-start_value = 0.6
-end_value = 0.2
+visual_variant = &"quarter"
 
-[sub_resource type="Resource" id="A_Su"]
-script = ExtResource("6_su")
-event_id = "su_find_pair"
-group_id = "tuning_find_pair"
+[sub_resource type="Resource" id="Note_s02_tap_003"]
+script = ExtResource("4_note")
+event_id = "s02_tap_003"
+damage_group_id = "s02_tap_003"
+tick = 4800
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"quarter"
+
+[sub_resource type="Resource" id="Note_s02_tap_004"]
+script = ExtResource("4_note")
+event_id = "s02_tap_004"
+damage_group_id = "s02_tap_004"
 tick = 5280
-count = 1
-spawn_region_normalized = Rect2(0.28, 0.1, 0.44, 0.7)
-visual_variant = &"white_knot"
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"quarter"
 
-[sub_resource type="Resource" id="Field_B"]
-script = ExtResource("4_field")
-event_id = "tuning_field_follow"
-tick = 8160
-duration_ticks = 4320
-
-[sub_resource type="Resource" id="B_Life_Pair"]
-script = ExtResource("5_slider")
-event_id = "slider_follow_pair_life"
-field_id = "tuning_field_follow"
-group_id = "tuning_follow_pair"
+[sub_resource type="Resource" id="Note_s02_tap_005"]
+script = ExtResource("4_note")
+event_id = "s02_tap_005"
+damage_group_id = "s02_tap_005"
+tick = 5760
+duration_ticks = 0
+kind = 0
 affinity = 0
-tick = 8640
-traversal_ticks = 960
-traversal_count = 2
-start_value = 0.2
-end_value = 0.85
+visual_variant = &"quarter"
 
-[sub_resource type="Resource" id="B_Death_Pair"]
-script = ExtResource("5_slider")
-event_id = "slider_follow_pair_death"
-field_id = "tuning_field_follow"
-group_id = "tuning_follow_pair"
+[sub_resource type="Resource" id="Note_s02_tap_006"]
+script = ExtResource("4_note")
+event_id = "s02_tap_006"
+damage_group_id = "s02_tap_006"
+tick = 6240
+duration_ticks = 0
+kind = 0
 affinity = 1
-tick = 8640
-traversal_ticks = 960
-traversal_count = 2
-start_value = 0.8
-end_value = 0.15
+visual_variant = &"quarter"
 
-[sub_resource type="Resource" id="B_Su"]
-script = ExtResource("6_su")
-event_id = "su_follow_pair"
-group_id = "tuning_follow_pair"
-tick = 10560
-count = 3
-spawn_region_normalized = Rect2(0.28, 0.2, 0.44, 0.6)
-visual_variant = &"white_knot_cluster"
+[sub_resource type="Resource" id="Note_s02_tap_007"]
+script = ExtResource("4_note")
+event_id = "s02_tap_007"
+damage_group_id = "s02_tap_007"
+tick = 6720
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"quarter"
 
-[sub_resource type="Resource" id="B_Death_Solo"]
-script = ExtResource("5_slider")
-event_id = "slider_follow_death_solo"
-field_id = "tuning_field_follow"
+[sub_resource type="Resource" id="Note_s02_tap_008"]
+script = ExtResource("4_note")
+event_id = "s02_tap_008"
+damage_group_id = "s02_tap_008"
+tick = 7200
+duration_ticks = 0
+kind = 0
 affinity = 1
-tick = 11040
-traversal_ticks = 720
-traversal_count = 2
-start_value = 0.5
-end_value = 0.1
+visual_variant = &"quarter"
 
-[sub_resource type="Resource" id="Section_intro"]
-script = ExtResource("7_section")
-event_id = "section_tuning_lab_intro"
-tick = 0
-label = "调频试验"
-tutorial_key = &"tuning_intro"
+[sub_resource type="Resource" id="Note_s02_tap_009"]
+script = ExtResource("4_note")
+event_id = "s02_tap_009"
+damage_group_id = "s02_tap_009"
+tick = 7680
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"quarter"
 
-[sub_resource type="Resource" id="Section_find"]
-script = ExtResource("7_section")
-event_id = "section_tuning_lab_find"
-tick = 2400
-label = "单钟与双钟"
-tutorial_key = &"tuning_find"
-
-[sub_resource type="Resource" id="Section_follow"]
-script = ExtResource("7_section")
-event_id = "section_tuning_lab_follow"
+[sub_resource type="Resource" id="Note_s02_tap_010"]
+script = ExtResource("4_note")
+event_id = "s02_tap_010"
+damage_group_id = "s02_tap_010"
 tick = 8160
-label = "往复追随"
-tutorial_key = &"tuning_follow"
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"quarter"
+
+[sub_resource type="Resource" id="Note_s02_tap_011"]
+script = ExtResource("4_note")
+event_id = "s02_tap_011"
+damage_group_id = "s02_tap_011"
+tick = 8640
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"quarter"
+
+[sub_resource type="Resource" id="Note_s02_tap_012"]
+script = ExtResource("4_note")
+event_id = "s02_tap_012"
+damage_group_id = "s02_tap_012"
+tick = 9120
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"quarter"
+
+[sub_resource type="Resource" id="Note_s02_tap_013"]
+script = ExtResource("4_note")
+event_id = "s02_tap_013"
+damage_group_id = "s02_tap_013"
+tick = 9600
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"quarter"
+
+[sub_resource type="Resource" id="Note_s02_tap_014"]
+script = ExtResource("4_note")
+event_id = "s02_tap_014"
+damage_group_id = "s02_tap_014"
+tick = 10080
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"quarter"
+
+[sub_resource type="Resource" id="Note_s02_tap_015"]
+script = ExtResource("4_note")
+event_id = "s02_tap_015"
+damage_group_id = "s02_tap_015"
+tick = 10560
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"quarter"
+
+[sub_resource type="Resource" id="Note_s02_tap_016"]
+script = ExtResource("4_note")
+event_id = "s02_tap_016"
+damage_group_id = "s02_tap_016"
+tick = 11040
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"quarter"
+
+[sub_resource type="Resource" id="Note_s02_tap_017"]
+script = ExtResource("4_note")
+event_id = "s02_tap_017"
+damage_group_id = "s02_tap_017"
+tick = 11520
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"eighth"
+
+[sub_resource type="Resource" id="Note_s02_tap_018"]
+script = ExtResource("4_note")
+event_id = "s02_tap_018"
+damage_group_id = "s02_tap_018"
+tick = 11760
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"eighth"
+
+[sub_resource type="Resource" id="Note_s02_tap_019"]
+script = ExtResource("4_note")
+event_id = "s02_tap_019"
+damage_group_id = "s02_tap_019"
+tick = 12240
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"eighth"
+
+[sub_resource type="Resource" id="Note_s02_tap_020"]
+script = ExtResource("4_note")
+event_id = "s02_tap_020"
+damage_group_id = "s02_tap_020"
+tick = 12720
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"eighth"
+
+[sub_resource type="Resource" id="Note_s02_tap_021"]
+script = ExtResource("4_note")
+event_id = "s02_tap_021"
+damage_group_id = "s02_tap_021"
+tick = 13440
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"eighth"
+
+[sub_resource type="Resource" id="Note_s02_tap_022"]
+script = ExtResource("4_note")
+event_id = "s02_tap_022"
+damage_group_id = "s02_tap_022"
+tick = 13680
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"eighth"
+
+[sub_resource type="Resource" id="Note_s02_tap_023"]
+script = ExtResource("4_note")
+event_id = "s02_tap_023"
+damage_group_id = "s02_tap_023"
+tick = 14160
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"eighth"
+
+[sub_resource type="Resource" id="Note_s02_tap_024"]
+script = ExtResource("4_note")
+event_id = "s02_tap_024"
+damage_group_id = "s02_tap_024"
+tick = 14640
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"eighth"
+
+[sub_resource type="Resource" id="Note_s02_tap_025"]
+script = ExtResource("4_note")
+event_id = "s02_tap_025"
+damage_group_id = "s02_tap_025"
+tick = 15360
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"eighth"
+
+[sub_resource type="Resource" id="Note_s02_tap_026"]
+script = ExtResource("4_note")
+event_id = "s02_tap_026"
+damage_group_id = "s02_tap_026"
+tick = 15600
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"eighth"
+
+[sub_resource type="Resource" id="Note_s02_tap_027"]
+script = ExtResource("4_note")
+event_id = "s02_tap_027"
+damage_group_id = "s02_tap_027"
+tick = 16080
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"eighth"
+
+[sub_resource type="Resource" id="Note_s02_tap_028"]
+script = ExtResource("4_note")
+event_id = "s02_tap_028"
+damage_group_id = "s02_tap_028"
+tick = 16560
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"eighth"
+
+[sub_resource type="Resource" id="Note_s02_tap_029"]
+script = ExtResource("4_note")
+event_id = "s02_tap_029"
+damage_group_id = "s02_tap_029"
+tick = 17280
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"eighth"
+
+[sub_resource type="Resource" id="Note_s02_tap_030"]
+script = ExtResource("4_note")
+event_id = "s02_tap_030"
+damage_group_id = "s02_tap_030"
+tick = 17520
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"eighth"
+
+[sub_resource type="Resource" id="Note_s02_tap_031"]
+script = ExtResource("4_note")
+event_id = "s02_tap_031"
+damage_group_id = "s02_tap_031"
+tick = 18000
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"eighth"
+
+[sub_resource type="Resource" id="Note_s02_tap_032"]
+script = ExtResource("4_note")
+event_id = "s02_tap_032"
+damage_group_id = "s02_tap_032"
+tick = 18480
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"eighth"
+
+[sub_resource type="Resource" id="Note_s02_tap_033"]
+script = ExtResource("4_note")
+event_id = "s02_tap_033"
+damage_group_id = "s02_tap_033"
+tick = 19200
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"same_side"
+
+[sub_resource type="Resource" id="Note_s02_tap_034"]
+script = ExtResource("4_note")
+event_id = "s02_tap_034"
+damage_group_id = "s02_tap_034"
+tick = 19560
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"same_side"
+
+[sub_resource type="Resource" id="Note_s02_tap_035"]
+script = ExtResource("4_note")
+event_id = "s02_tap_035"
+damage_group_id = "s02_tap_035"
+tick = 19920
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"same_side"
+
+[sub_resource type="Resource" id="Note_s02_tap_036"]
+script = ExtResource("4_note")
+event_id = "s02_tap_036"
+damage_group_id = "s02_tap_036"
+tick = 20400
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"same_side"
+
+[sub_resource type="Resource" id="Note_s02_tap_037"]
+script = ExtResource("4_note")
+event_id = "s02_tap_037"
+damage_group_id = "s02_tap_037"
+tick = 21120
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"same_side"
+
+[sub_resource type="Resource" id="Note_s02_tap_038"]
+script = ExtResource("4_note")
+event_id = "s02_tap_038"
+damage_group_id = "s02_tap_038"
+tick = 21480
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"same_side"
+
+[sub_resource type="Resource" id="Note_s02_tap_039"]
+script = ExtResource("4_note")
+event_id = "s02_tap_039"
+damage_group_id = "s02_tap_039"
+tick = 21840
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"same_side"
+
+[sub_resource type="Resource" id="Note_s02_tap_040"]
+script = ExtResource("4_note")
+event_id = "s02_tap_040"
+damage_group_id = "s02_tap_040"
+tick = 22320
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"same_side"
+
+[sub_resource type="Resource" id="Note_s02_tap_041"]
+script = ExtResource("4_note")
+event_id = "s02_tap_041"
+damage_group_id = "s02_tap_041"
+tick = 23040
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"same_side"
+
+[sub_resource type="Resource" id="Note_s02_tap_042"]
+script = ExtResource("4_note")
+event_id = "s02_tap_042"
+damage_group_id = "s02_tap_042"
+tick = 23400
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"same_side"
+
+[sub_resource type="Resource" id="Note_s02_tap_043"]
+script = ExtResource("4_note")
+event_id = "s02_tap_043"
+damage_group_id = "s02_tap_043"
+tick = 23760
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"same_side"
+
+[sub_resource type="Resource" id="Note_s02_tap_044"]
+script = ExtResource("4_note")
+event_id = "s02_tap_044"
+damage_group_id = "s02_tap_044"
+tick = 24240
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"same_side"
+
+[sub_resource type="Resource" id="Note_s02_tap_045"]
+script = ExtResource("4_note")
+event_id = "s02_tap_045"
+damage_group_id = "s02_tap_045"
+tick = 24960
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"same_side"
+
+[sub_resource type="Resource" id="Note_s02_tap_046"]
+script = ExtResource("4_note")
+event_id = "s02_tap_046"
+damage_group_id = "s02_tap_046"
+tick = 25320
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"same_side"
+
+[sub_resource type="Resource" id="Note_s02_tap_047"]
+script = ExtResource("4_note")
+event_id = "s02_tap_047"
+damage_group_id = "s02_tap_047"
+tick = 25680
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"same_side"
+
+[sub_resource type="Resource" id="Note_s02_tap_048"]
+script = ExtResource("4_note")
+event_id = "s02_tap_048"
+damage_group_id = "s02_tap_048"
+tick = 26160
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"same_side"
+
+[sub_resource type="Resource" id="Note_s02_tap_049"]
+script = ExtResource("4_note")
+event_id = "s02_tap_049"
+group_id = "s02_chord_01"
+damage_group_id = "s02_chord_01"
+tick = 26880
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"chord"
+
+[sub_resource type="Resource" id="Note_s02_tap_050"]
+script = ExtResource("4_note")
+event_id = "s02_tap_050"
+group_id = "s02_chord_01"
+damage_group_id = "s02_chord_01"
+tick = 26880
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"chord"
+
+[sub_resource type="Resource" id="Note_s02_tap_051"]
+script = ExtResource("4_note")
+event_id = "s02_tap_051"
+damage_group_id = "s02_tap_051"
+tick = 27840
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"response"
+
+[sub_resource type="Resource" id="Note_s02_tap_052"]
+script = ExtResource("4_note")
+event_id = "s02_tap_052"
+group_id = "s02_chord_02"
+damage_group_id = "s02_chord_02"
+tick = 28800
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"chord"
+
+[sub_resource type="Resource" id="Note_s02_tap_053"]
+script = ExtResource("4_note")
+event_id = "s02_tap_053"
+group_id = "s02_chord_02"
+damage_group_id = "s02_chord_02"
+tick = 28800
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"chord"
+
+[sub_resource type="Resource" id="Note_s02_tap_054"]
+script = ExtResource("4_note")
+event_id = "s02_tap_054"
+damage_group_id = "s02_tap_054"
+tick = 29760
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"response"
+
+[sub_resource type="Resource" id="Note_s02_tap_055"]
+script = ExtResource("4_note")
+event_id = "s02_tap_055"
+group_id = "s02_chord_03"
+damage_group_id = "s02_chord_03"
+tick = 30720
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"chord"
+
+[sub_resource type="Resource" id="Note_s02_tap_056"]
+script = ExtResource("4_note")
+event_id = "s02_tap_056"
+group_id = "s02_chord_03"
+damage_group_id = "s02_chord_03"
+tick = 30720
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"chord"
+
+[sub_resource type="Resource" id="Note_s02_tap_057"]
+script = ExtResource("4_note")
+event_id = "s02_tap_057"
+damage_group_id = "s02_tap_057"
+tick = 31680
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"response"
+
+[sub_resource type="Resource" id="Note_s02_tap_058"]
+script = ExtResource("4_note")
+event_id = "s02_tap_058"
+group_id = "s02_chord_04"
+damage_group_id = "s02_chord_04"
+tick = 32640
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"chord"
+
+[sub_resource type="Resource" id="Note_s02_tap_059"]
+script = ExtResource("4_note")
+event_id = "s02_tap_059"
+group_id = "s02_chord_04"
+damage_group_id = "s02_chord_04"
+tick = 32640
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"chord"
+
+[sub_resource type="Resource" id="Note_s02_tap_060"]
+script = ExtResource("4_note")
+event_id = "s02_tap_060"
+damage_group_id = "s02_tap_060"
+tick = 33600
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"response"
+
+[sub_resource type="Resource" id="Note_s02_tap_061"]
+script = ExtResource("4_note")
+event_id = "s02_tap_061"
+damage_group_id = "s02_tap_061"
+tick = 34560
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"mixed"
+
+[sub_resource type="Resource" id="Note_s02_tap_062"]
+script = ExtResource("4_note")
+event_id = "s02_tap_062"
+damage_group_id = "s02_tap_062"
+tick = 35040
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"mixed"
+
+[sub_resource type="Resource" id="Note_s02_tap_063"]
+script = ExtResource("4_note")
+event_id = "s02_tap_063"
+damage_group_id = "s02_tap_063"
+tick = 35760
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"mixed"
+
+[sub_resource type="Resource" id="Note_s02_tap_064"]
+script = ExtResource("4_note")
+event_id = "s02_tap_064"
+damage_group_id = "s02_tap_064"
+tick = 36480
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"mixed"
+
+[sub_resource type="Resource" id="Note_s02_tap_065"]
+script = ExtResource("4_note")
+event_id = "s02_tap_065"
+damage_group_id = "s02_tap_065"
+tick = 36720
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"mixed"
+
+[sub_resource type="Resource" id="Note_s02_tap_066"]
+script = ExtResource("4_note")
+event_id = "s02_tap_066"
+damage_group_id = "s02_tap_066"
+tick = 37440
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"mixed"
+
+[sub_resource type="Resource" id="Note_s02_tap_067"]
+script = ExtResource("4_note")
+event_id = "s02_tap_067"
+damage_group_id = "s02_tap_067"
+tick = 37920
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"mixed"
+
+[sub_resource type="Resource" id="Note_s02_tap_068"]
+script = ExtResource("4_note")
+event_id = "s02_tap_068"
+damage_group_id = "s02_tap_068"
+tick = 38400
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"mixed"
+
+[sub_resource type="Resource" id="Note_s02_tap_069"]
+script = ExtResource("4_note")
+event_id = "s02_tap_069"
+damage_group_id = "s02_tap_069"
+tick = 39120
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"mixed"
+
+[sub_resource type="Resource" id="Note_s02_tap_070"]
+script = ExtResource("4_note")
+event_id = "s02_tap_070"
+damage_group_id = "s02_tap_070"
+tick = 39360
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"mixed"
+
+[sub_resource type="Resource" id="Note_s02_tap_071"]
+script = ExtResource("4_note")
+event_id = "s02_tap_071"
+damage_group_id = "s02_tap_071"
+tick = 39720
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"mixed"
+
+[sub_resource type="Resource" id="Note_s02_tap_072"]
+script = ExtResource("4_note")
+event_id = "s02_tap_072"
+damage_group_id = "s02_tap_072"
+tick = 40320
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"mixed"
+
+[sub_resource type="Resource" id="Note_s02_tap_073"]
+script = ExtResource("4_note")
+event_id = "s02_tap_073"
+damage_group_id = "s02_tap_073"
+tick = 40800
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"mixed"
+
+[sub_resource type="Resource" id="Note_s02_tap_074"]
+script = ExtResource("4_note")
+event_id = "s02_tap_074"
+damage_group_id = "s02_tap_074"
+tick = 41040
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"mixed"
+
+[sub_resource type="Resource" id="Note_s02_tap_075"]
+script = ExtResource("4_note")
+event_id = "s02_tap_075"
+damage_group_id = "s02_tap_075"
+tick = 41760
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"mixed"
+
+[sub_resource type="Resource" id="Note_s02_tap_076"]
+script = ExtResource("4_note")
+event_id = "s02_tap_076"
+damage_group_id = "s02_tap_076"
+tick = 42240
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"mixed"
+
+[sub_resource type="Resource" id="Note_s02_tap_077"]
+script = ExtResource("4_note")
+event_id = "s02_tap_077"
+damage_group_id = "s02_tap_077"
+tick = 42600
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"mixed"
+
+[sub_resource type="Resource" id="Note_s02_tap_078"]
+script = ExtResource("4_note")
+event_id = "s02_tap_078"
+damage_group_id = "s02_tap_078"
+tick = 43080
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"mixed"
+
+[sub_resource type="Resource" id="Note_s02_tap_079"]
+script = ExtResource("4_note")
+event_id = "s02_tap_079"
+damage_group_id = "s02_tap_079"
+tick = 43560
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"mixed"
+
+[sub_resource type="Resource" id="Note_s02_tap_080"]
+script = ExtResource("4_note")
+event_id = "s02_tap_080"
+damage_group_id = "s02_tap_080"
+tick = 44160
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"mixed"
+
+[sub_resource type="Resource" id="Note_s02_tap_081"]
+script = ExtResource("4_note")
+event_id = "s02_tap_081"
+damage_group_id = "s02_tap_081"
+tick = 44400
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"mixed"
+
+[sub_resource type="Resource" id="Note_s02_tap_082"]
+script = ExtResource("4_note")
+event_id = "s02_tap_082"
+damage_group_id = "s02_tap_082"
+tick = 44880
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"mixed"
+
+[sub_resource type="Resource" id="Note_s02_tap_083"]
+script = ExtResource("4_note")
+event_id = "s02_tap_083"
+damage_group_id = "s02_tap_083"
+tick = 45120
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"mixed"
+
+[sub_resource type="Resource" id="Note_s02_tap_084"]
+script = ExtResource("4_note")
+event_id = "s02_tap_084"
+damage_group_id = "s02_tap_084"
+tick = 45600
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"mixed"
+
+[sub_resource type="Resource" id="Section_prepare"]
+script = ExtResource("5_section")
+event_id = "section_s02_prepare"
+tick = 0
+label = "准备"
+tutorial_key = &"tap_intro"
+
+[sub_resource type="Resource" id="Section_quarter"]
+script = ExtResource("5_section")
+event_id = "section_s02_quarter"
+tick = 3840
+label = "四分交替"
+tutorial_key = &"tap_quarter"
+
+[sub_resource type="Resource" id="Section_eighth"]
+script = ExtResource("5_section")
+event_id = "section_s02_eighth"
+tick = 11520
+label = "八分短句"
+tutorial_key = &"tap_eighth"
+
+[sub_resource type="Resource" id="Section_same"]
+script = ExtResource("5_section")
+event_id = "section_s02_same"
+tick = 19200
+label = "同侧重复"
+tutorial_key = &"tap_same_side"
+
+[sub_resource type="Resource" id="Section_chord"]
+script = ExtResource("5_section")
+event_id = "section_s02_chord"
+tick = 26880
+label = "双押与应答"
+tutorial_key = &"tap_chord"
+
+[sub_resource type="Resource" id="Section_mixed"]
+script = ExtResource("5_section")
+event_id = "section_s02_mixed"
+tick = 34560
+label = "混合节奏"
+tutorial_key = &"tap_mixed"
+
+[sub_resource type="Resource" id="Section_outro"]
+script = ExtResource("5_section")
+event_id = "section_s02_outro"
+tick = 46080
+label = "收尾"
+tutorial_key = &"tap_outro"
 
 [resource]
 script = ExtResource("1_chart")
 schema_version = 2
-chart_id = "s02_tuning_lab"
+chart_id = "s02_tap_lab"
 difficulty_id = "experiment"
 ppq = 480
 chart_offset_ticks = 0
-end_tick = 14400
+end_tick = 49920
 tempo_events = [SubResource("Tempo_0")]
 meter_events = [SubResource("Meter_0")]
-note_events = []
-tuning_fields = [SubResource("Field_A"), SubResource("Field_B")]
-tuning_sliders = [SubResource("A_Life_Solo"), SubResource("A_Life_Pair"), SubResource("A_Death_Pair"), SubResource("B_Life_Pair"), SubResource("B_Death_Pair"), SubResource("B_Death_Solo")]
-su_manifestations = [SubResource("A_Su"), SubResource("B_Su")]
+note_events = [SubResource("Note_s02_tap_001"), SubResource("Note_s02_tap_002"), SubResource("Note_s02_tap_003"), SubResource("Note_s02_tap_004"), SubResource("Note_s02_tap_005"), SubResource("Note_s02_tap_006"), SubResource("Note_s02_tap_007"), SubResource("Note_s02_tap_008"), SubResource("Note_s02_tap_009"), SubResource("Note_s02_tap_010"), SubResource("Note_s02_tap_011"), SubResource("Note_s02_tap_012"), SubResource("Note_s02_tap_013"), SubResource("Note_s02_tap_014"), SubResource("Note_s02_tap_015"), SubResource("Note_s02_tap_016"), SubResource("Note_s02_tap_017"), SubResource("Note_s02_tap_018"), SubResource("Note_s02_tap_019"), SubResource("Note_s02_tap_020"), SubResource("Note_s02_tap_021"), SubResource("Note_s02_tap_022"), SubResource("Note_s02_tap_023"), SubResource("Note_s02_tap_024"), SubResource("Note_s02_tap_025"), SubResource("Note_s02_tap_026"), SubResource("Note_s02_tap_027"), SubResource("Note_s02_tap_028"), SubResource("Note_s02_tap_029"), SubResource("Note_s02_tap_030"), SubResource("Note_s02_tap_031"), SubResource("Note_s02_tap_032"), SubResource("Note_s02_tap_033"), SubResource("Note_s02_tap_034"), SubResource("Note_s02_tap_035"), SubResource("Note_s02_tap_036"), SubResource("Note_s02_tap_037"), SubResource("Note_s02_tap_038"), SubResource("Note_s02_tap_039"), SubResource("Note_s02_tap_040"), SubResource("Note_s02_tap_041"), SubResource("Note_s02_tap_042"), SubResource("Note_s02_tap_043"), SubResource("Note_s02_tap_044"), SubResource("Note_s02_tap_045"), SubResource("Note_s02_tap_046"), SubResource("Note_s02_tap_047"), SubResource("Note_s02_tap_048"), SubResource("Note_s02_tap_049"), SubResource("Note_s02_tap_050"), SubResource("Note_s02_tap_051"), SubResource("Note_s02_tap_052"), SubResource("Note_s02_tap_053"), SubResource("Note_s02_tap_054"), SubResource("Note_s02_tap_055"), SubResource("Note_s02_tap_056"), SubResource("Note_s02_tap_057"), SubResource("Note_s02_tap_058"), SubResource("Note_s02_tap_059"), SubResource("Note_s02_tap_060"), SubResource("Note_s02_tap_061"), SubResource("Note_s02_tap_062"), SubResource("Note_s02_tap_063"), SubResource("Note_s02_tap_064"), SubResource("Note_s02_tap_065"), SubResource("Note_s02_tap_066"), SubResource("Note_s02_tap_067"), SubResource("Note_s02_tap_068"), SubResource("Note_s02_tap_069"), SubResource("Note_s02_tap_070"), SubResource("Note_s02_tap_071"), SubResource("Note_s02_tap_072"), SubResource("Note_s02_tap_073"), SubResource("Note_s02_tap_074"), SubResource("Note_s02_tap_075"), SubResource("Note_s02_tap_076"), SubResource("Note_s02_tap_077"), SubResource("Note_s02_tap_078"), SubResource("Note_s02_tap_079"), SubResource("Note_s02_tap_080"), SubResource("Note_s02_tap_081"), SubResource("Note_s02_tap_082"), SubResource("Note_s02_tap_083"), SubResource("Note_s02_tap_084")]
+tuning_fields = []
+tuning_sliders = []
+su_manifestations = []
 rapid_regions = []
-sections = [SubResource("Section_intro"), SubResource("Section_find"), SubResource("Section_follow")]
+sections = [SubResource("Section_prepare"), SubResource("Section_quarter"), SubResource("Section_eighth"), SubResource("Section_same"), SubResource("Section_chord"), SubResource("Section_mixed"), SubResource("Section_outro")]

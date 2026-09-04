@@ -30,8 +30,8 @@ const USEC_PER_SEC: float = 1_000_000.0
 
 ## 事件在命中时刻前多少秒进入画面。数值越大，音符出现越早、飞行越慢。
 @export_range(0.1, 10.0, 0.01) var approach_duration_sec: float = 2.25
-## 调频和疾振事件结束后继续保留视觉对象的秒数，用于收尾动画。
-@export_range(0.0, 5.0, 0.01) var visual_tail_sec: float = 0.35
+## 调频和疾振事件结束后继续保留视觉对象的秒数；默认覆盖调频端点的 500ms 晚侧判定窗。
+@export_range(0.0, 5.0, 0.01) var visual_tail_sec: float = 0.55
 ## 普通音符理论结束后最多保留的秒数，需覆盖波前接触或飞到角色的额外路程。
 @export_range(0.1, 5.0, 0.01) var note_visual_tail_sec: float = 1.45
 ## 普通音符已经接触波或抵达角色后再保留的秒数；数值越大，击碎/消散动画越从容。
