@@ -177,6 +177,7 @@ func _drain_domain_events() -> void:
 
 
 func _refresh_snapshot() -> void:
+	if defer_preview_snapshot: return
 	if not configured or simulation == null:
 		return
 	var next_snapshot: Dictionary = simulation.snapshot()
@@ -203,3 +204,10 @@ func _refresh_snapshot() -> void:
 		tuning_capture_changed.emit(_tuning_capture_active, initial_value)
 
 	snapshot_changed.emit(_last_snapshot.duplicate(true))
+
+## 无声历史重演仍发送全部领域事件，只把昂贵的表现汇总推迟到目标时刻。
+var defer_preview_snapshot := false
+
+func finish_preview_batch() -> void:
+	defer_preview_snapshot = false
+	_refresh_snapshot()

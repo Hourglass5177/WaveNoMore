@@ -193,6 +193,9 @@ func _on_clock_sample(sample: ClockSample) -> void:
 	_tuning_interference_visual.set_clock_sample(sample)
 	_backdrop.set_song_progress(sample.song_time_sec / maxf(_song_duration_sec, 0.001))
 
+func set_preview_time_driven() -> void:
+	_note_visual_host.preview_time_driven = true
+
 
 func _on_gameplay_snapshot(snapshot: Dictionary) -> void:
 	_note_visual_host.set_gameplay_snapshot(snapshot)

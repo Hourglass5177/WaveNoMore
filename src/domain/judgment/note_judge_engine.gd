@@ -8,6 +8,9 @@ extends RefCounted
 var _rules: GameplayRuleSet
 ## 每个编译音符的运行时状态，按 start_us、类型和稳定 ID 排序。
 var _states: Array[Dictionary] = []
+## 已编译事件保持原顺序；只把进入判定窗口的状态放入热循环。
+var _future_states: Array[Dictionary] = []
+var _future_cursor := 0
 ## 已完成但尚未由 GameplaySimulation 取走的判定记录。
 var _pending_records: Array[JudgmentRecord] = []
 ## 暂停重臂期间为 true；阻止恢复瞬间把旧物理按住状态当成有效续按。
@@ -22,8 +25,10 @@ func configure(compiled: CompiledChart, rules: GameplayRuleSet) -> void:
 	#print("[NoteJudge] configure")
 	_rules = rules
 	_states.clear()
+	_future_states.clear()
+	_future_cursor = 0
 	for note in compiled.notes:
-		_states.append({
+		_future_states.append({
 			"note": note.duplicate(true),
 			"status": &"pending",
 			"components": [] as Array[JudgmentComponentRecord],
@@ -49,6 +54,7 @@ func advance_to(time_us: int, inclusive: bool = true) -> void:
 	_current_time_us = time_us
 	if _paused_for_rearm:
 		return
+	_prepare_window(time_us)
 	for state in _states:
 		var note: Dictionary = state["note"]
 		if state["status"] == &"pending":
@@ -83,6 +89,7 @@ func advance_to(time_us: int, inclusive: bool = true) -> void:
 
 
 func handle_press(sample: SemanticInputSample) -> bool:
+	_prepare_window(sample.timestamp_us)
 	#print("[NoteJudge] handle_press timestamp=%d" % sample.timestamp_us)
 	#print("[NoteJudge] press affinity=%d timestamp=%d" % [sample.affinity(), sample.timestamp_us])
 	# binding 只描述本次敲击被哪一枚普通音符接受。GameplaySimulation 会把它
@@ -284,8 +291,19 @@ func _finalize_state(state: Dictionary, components: Array[JudgmentComponentRecor
 func _grade_tap_error(absolute_error_us: int) -> int:
 	if absolute_error_us <= _rules.perfect_window_ms * 1000:
 		return GameplayTypes.JudgmentGrade.PERFECT
+
 	if absolute_error_us <= _rules.good_window_ms * 1000:
 		return GameplayTypes.JudgmentGrade.GOOD
 	if absolute_error_us <= _rules.pass_window_ms * 1000:
 		return GameplayTypes.JudgmentGrade.PASS
 	return GameplayTypes.JudgmentGrade.MISS
+
+
+func _prepare_window(time_us: int) -> void:
+	_states = _states.filter(func(state: Dictionary) -> bool: return state["status"] != &"judged")
+	var horizon := time_us + maxi(_rules.pass_window_ms, _rules.miss_window_ms) * 1000
+	while _future_cursor < _future_states.size():
+		var state := _future_states[_future_cursor]
+		if int(state["note"]["start_us"]) > horizon: break
+		_states.append(state)
+		_future_cursor += 1

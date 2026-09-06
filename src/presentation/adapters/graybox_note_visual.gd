@@ -30,6 +30,8 @@ var _feedback_tween: Tween
 var _wave_contact_tween: Tween
 # 判定结果反馈当前使用的补间动画；避免连续结果互相叠加。
 var _timing_tween: Tween
+var preview_time_driven := false
+var _preview_clock := -INF
 
 
 func prepare(view_model: Dictionary) -> void:
@@ -81,7 +83,7 @@ func play_timing_confirmed(grade: int) -> void:
 	if _timing_tween != null:
 		_timing_tween.kill()
 	modulate = Color("a7a9af") if missed else Color("fff3cf")
-	_timing_tween = create_tween()
+	_timing_tween = _new_feedback_tween()
 	_timing_tween.set_trans(Tween.TRANS_QUAD)
 	_timing_tween.set_ease(Tween.EASE_OUT)
 	_timing_tween.tween_property(self, "modulate", Color.WHITE, 0.16)
@@ -98,10 +100,11 @@ func play_wave_contact(_contact: Dictionary) -> void:
 	if _wave_contact_tween != null:
 		_wave_contact_tween.kill()
 	modulate = Color("fff2cc")
-	_wave_contact_tween = create_tween()
+	_wave_contact_tween = _new_feedback_tween()
 	_wave_contact_tween.set_trans(Tween.TRANS_QUAD)
 	_wave_contact_tween.set_ease(Tween.EASE_OUT)
 	_wave_contact_tween.tween_property(self, "modulate", Color.WHITE, 0.18)
+	if preview_time_driven: _wave_contact_tween.custom_step(maxf(0, _preview_clock - float(_contact.get("contact_us", 0)) / 1000000.0))
 	queue_redraw()
 
 
@@ -111,10 +114,11 @@ func play_note_arrival(_arrival: Dictionary) -> void:
 	if _wave_contact_tween != null:
 		_wave_contact_tween.kill()
 	modulate = Color("777a83")
-	_wave_contact_tween = create_tween()
+	_wave_contact_tween = _new_feedback_tween()
 	_wave_contact_tween.set_trans(Tween.TRANS_QUAD)
 	_wave_contact_tween.set_ease(Tween.EASE_OUT)
 	_wave_contact_tween.tween_property(self, "modulate", Color.WHITE, 0.16)
+	if preview_time_driven: _wave_contact_tween.custom_step(maxf(0, _preview_clock - float(_arrival.get("arrival_us", 0)) / 1000000.0))
 	queue_redraw()
 
 
@@ -133,6 +137,19 @@ func reset_for_pool() -> void:
 	rotation = 0.0
 	scale = Vector2.ONE
 	modulate = Color.WHITE
+	_preview_clock = -INF
+
+func set_preview_time(seconds: float) -> void:
+	preview_time_driven = true
+	var elapsed := maxf(0, seconds - _preview_clock) if is_finite(_preview_clock) else 0.0
+	_preview_clock = maxf(_preview_clock, seconds)
+	for tween in [_feedback_tween, _wave_contact_tween, _timing_tween]:
+		if tween != null and tween.is_valid(): tween.custom_step(elapsed)
+
+func _new_feedback_tween() -> Tween:
+	var tween := create_tween()
+	if preview_time_driven: tween.pause()
+	return tween
 
 
 func _play_feedback() -> void:
@@ -140,7 +157,7 @@ func _play_feedback() -> void:
 		_feedback_tween.kill()
 	var impact_scale: Vector2 = Vector2(1.35, 0.72) if not missed else Vector2(0.82, 1.16)
 	scale *= impact_scale
-	_feedback_tween = create_tween()
+	_feedback_tween = _new_feedback_tween()
 	_feedback_tween.set_trans(Tween.TRANS_BACK)
 	_feedback_tween.set_ease(Tween.EASE_OUT)
 	_feedback_tween.tween_property(self, "scale", Vector2.ONE, 0.16)

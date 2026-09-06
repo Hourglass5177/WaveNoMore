@@ -322,10 +322,11 @@ func _bump_generation() -> void:
 
 
 ## 写谱预览的时钟由 Transport 提供；参数为去掉首拍偏移后的游戏时间。
-func publish_external_time(seconds: float) -> void:
+func publish_external_time(seconds: float, notify_visuals: bool = true) -> void:
 	song_time_sec = seconds
 	judge_time_sec = seconds
 	visual_time_sec = seconds
+	if not notify_visuals: return
 	var value := ClockSample.new()
 	value.song_time_sec = seconds
 	value.judge_time_sec = seconds

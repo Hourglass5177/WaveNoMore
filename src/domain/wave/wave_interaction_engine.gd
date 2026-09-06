@@ -85,6 +85,10 @@ var _pending_contacts: Array[Dictionary] = []
 var _pending_arrivals: Array[Dictionary] = []
 ## 按阵营缓存贝塞尔路径及弧长采样，供确定性位置和接触时间计算复用。
 var _motion_profiles: Dictionary[int, Dictionary] = {}
+## 到达事件按时间扫描一次；绑定中的音符单独推进，避免每次输入扫描整首歌。
+var _arrival_order: Array[String] = []
+var _arrival_cursor := 0
+var _bound_notes: Dictionary = {}
 
 
 func configure(compiled: CompiledChart, rules: GameplayRuleSet) -> void:
@@ -104,6 +108,9 @@ func reset() -> void:
 	_pending_contacts.clear()
 	_pending_arrivals.clear()
 	_motion_profiles.clear()
+	_arrival_order.clear()
+	_arrival_cursor = 0
+	_bound_notes.clear()
 	_read_rule_contract()
 
 	if _compiled == null:
@@ -128,6 +135,8 @@ func reset() -> void:
 		}
 		_note_ids.append(note_id)
 	_note_ids.sort_custom(_sort_note_ids)
+	_arrival_order.assign(_note_ids)
+	_arrival_order.sort_custom(func(a: String, b: String) -> bool: return int(_note_states[a].arrival.arrival_us) < int(_note_states[b].arrival.arrival_us))
 
 
 func launch(
@@ -173,6 +182,7 @@ func launch(
 	if valid and not bound_note.is_empty():
 		var binding: Dictionary = _try_bind_note(wave_id, sample, bound_note)
 		if not binding.is_empty():
+			_bound_notes[binding["note_id"]] = true
 			launch_record["bound_note_id"] = binding["note_id"]
 			launch_record["unit_kind"] = binding["unit_kind"]
 			launch_record["contact_us"] = binding["contact_us"]
@@ -190,17 +200,19 @@ func advance_to(time_us: int, inclusive: bool = true) -> void:
 
 	var due_contacts: Array[Dictionary] = []
 	var due_arrivals: Array[Dictionary] = []
-	for note_id: String in _note_ids:
+	for note_id: String in _bound_notes:
 		var state: Dictionary = _note_states[note_id]
 		var status: StringName = StringName(state.get("status", &"pending"))
 		if status == &"bound":
 			var contact: Dictionary = state.get("contact", {})
 			if _is_due(int(contact.get("contact_us", NEVER_TIME_US)), time_us, inclusive):
 				due_contacts.append(contact.duplicate(true))
-		elif status == &"pending":
-			var arrival: Dictionary = state.get("arrival", {})
-			if _is_due(int(arrival.get("arrival_us", NEVER_TIME_US)), time_us, inclusive):
-				due_arrivals.append(arrival.duplicate(true))
+	while _arrival_cursor < _arrival_order.size():
+		var state: Dictionary = _note_states[_arrival_order[_arrival_cursor]]
+		var arrival: Dictionary = state["arrival"]
+		if not _is_due(int(arrival["arrival_us"]), time_us, inclusive): break
+		_arrival_cursor += 1
+		if state["status"] == &"pending": due_arrivals.append(arrival.duplicate(true))
 
 	due_contacts.sort_custom(_sort_contacts)
 	due_arrivals.sort_custom(_sort_arrivals)
@@ -215,6 +227,7 @@ func advance_to(time_us: int, inclusive: bool = true) -> void:
 		if str(state.get("bound_wave_id", "")) != str(contact.get("wave_id", "")):
 			continue
 		state["status"] = &"contacted"
+		_bound_notes.erase(note_id)
 		_pending_contacts.append(contact.duplicate(true))
 
 	for arrival: Dictionary in due_arrivals:

@@ -6,6 +6,8 @@ static func decode_chart(data: Dictionary) -> Dictionary:
 	var errors: PackedStringArray = []
 	if data.get("format") != "minghe-chart" or data.get("format_version") != 1:
 		return {"chart": null, "errors": PackedStringArray(["不支持的谱面格式或版本"])}
+	var structure_error := _check_chart_structure(data)
+	if not structure_error.is_empty(): return {"chart": null, "errors": PackedStringArray([structure_error])}
 	var chart := SongChart.new()
 	chart.set_meta("json_source", data.duplicate(true))
 	chart.chart_id = str(data.get("chart_id", ""))
@@ -56,6 +58,45 @@ static func decode_chart(data: Dictionary) -> Dictionary:
 	chart.set_meta("unknown_notes", unknown)
 	return {"chart": chart, "errors": errors}
 
+## 这里只拒绝无法建立时间映射的数据；重叠、负长音等玩法冲突仍可作为草稿打开。
+static func _check_chart_structure(data: Dictionary) -> String:
+	if not data.get("timing") is Dictionary: return "timing 必须是时间对象"
+	var timing: Dictionary = data.timing
+	for key in ["ppq", "chart_offset_ticks", "end_tick"]:
+		if not _integer(timing.get(key)): return "timing.%s 必须是整数" % key
+	if timing.ppq <= 0: return "timing.ppq 必须大于零"
+	if not _number(timing.get("first_beat_offset_ms", 0)): return "首拍偏移必须是有限数值"
+	for key in ["tempo_events", "meter_events"]:
+		if not timing.get(key) is Array or timing[key].is_empty(): return "timing.%s 不能为空" % key
+		var previous := -1
+		for item in timing[key]:
+			if not item is Dictionary or not _integer(item.get("tick")): return "%s 的 tick 必须是整数" % key
+			if item.tick <= previous: return "%s 必须按非负 tick 严格递增" % key
+			previous = int(item.tick)
+			if key == "tempo_events":
+				if not _number(item.get("bpm")) or item.bpm <= 0: return "BPM 必须是大于零的有限数值"
+			else:
+				if not _integer(item.get("numerator")) or not _integer(item.get("denominator")): return "拍号必须为整数"
+				var denominator := int(item.denominator)
+				if item.numerator <= 0 or denominator <= 0: return "拍号必须大于零"
+				if denominator & (denominator - 1) != 0 or int(timing.ppq) * 4 % denominator != 0: return "拍号分母必须是 PPQ 可表示的二次幂"
+		if timing[key][0].tick != 0: return "%s 必须从 tick 0 开始" % key
+	for key in ["notes", "sections"]:
+		if not data.get(key, []) is Array: return "%s 必须是数组" % key
+		for item in data.get(key, []):
+			if not item is Dictionary or not _integer(item.get("tick")): return "%s 对象的 tick 必须是整数" % key
+			if key == "notes" and not _integer(item.get("duration_ticks", 0)): return "音符 duration_ticks 必须是整数"
+			if key == "notes" and not item.get("behaviors", {}) is Dictionary: return "音符 behaviors 必须是命名行为对象"
+	if not data.get("presentation", {}) is Dictionary: return "presentation 必须是对象"
+	if not data.get("presentation", {}).get("palette_overrides", {}) is Dictionary: return "palette_overrides 必须是对象"
+	return ""
+
+static func _number(value: Variant) -> bool:
+	return (value is int or value is float) and is_finite(float(value))
+
+static func _integer(value: Variant) -> bool:
+	return _number(value) and float(value) == floor(float(value))
+
 static func encode_chart(chart: SongChart) -> Dictionary:
 	var data: Dictionary = chart.get_meta("json_source", {}).duplicate(true)
 	data.merge({"format": "minghe-chart", "format_version": 1, "chart_id": chart.chart_id, "difficulty_id": chart.difficulty_id}, true)
@@ -88,14 +129,17 @@ static func encode_chart(chart: SongChart) -> Dictionary:
 				raw[key] = str(item.get(key))
 		data.notes.append(raw)
 	data.notes.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
-		if a.tick != b.tick: return a.tick < b.tick
-		if a.affinity != b.affinity: return a.affinity == "zhu"
-		return str(a.id) < str(b.id))
+		if a.get("tick", 0) != b.get("tick", 0): return a.get("tick", 0) < b.get("tick", 0)
+		if a.get("affinity", "") != b.get("affinity", ""): return a.get("affinity") == "zhu"
+		return str(a.get("id", "")) < str(b.get("id", "")))
 	return data
 
 static func decode_song(data: Dictionary) -> Dictionary:
 	if data.get("format") != "minghe-song" or data.get("format_version") != 1:
 		return {"song": null, "errors": PackedStringArray(["不支持的歌曲格式或版本"])}
+	if not data.get("charts", []) is Array: return {"song": null, "errors": ["charts 必须是数组"]}
+	for entry in data.get("charts", []):
+		if not entry is Dictionary or not entry.get("path") is String: return {"song": null, "errors": ["难度引用缺少 path"]}
 	var song := SongDefinition.new()
 	song.song_id = str(data.get("song_id", ""))
 	song.title = str(data.get("title", ""))
@@ -109,8 +153,18 @@ static func encode_song(song: SongDefinition) -> Dictionary:
 	return data
 
 static func load_audio(path: String) -> AudioStream:
+	if not FileAccess.file_exists(path): return null
 	match path.get_extension().to_lower():
 		"wav": return AudioStreamWAV.load_from_file(path)
 		"ogg": return AudioStreamOggVorbis.load_from_file(path)
 		"mp3": return AudioStreamMP3.load_from_file(path)
+	return null
+
+static func audio_from_bytes(data: PackedByteArray, extension: String) -> AudioStream:
+	if data.is_empty(): return null
+	match extension.to_lower():
+		"wav": return AudioStreamWAV.load_from_buffer(data)
+		"ogg": return AudioStreamOggVorbis.load_from_buffer(data)
+		"mp3":
+			var stream := AudioStreamMP3.new(); stream.data = data; return stream
 	return null

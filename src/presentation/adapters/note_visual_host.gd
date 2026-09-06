@@ -62,6 +62,8 @@ var visual_theme: StageVisualTheme
 var gameplay_snapshot: Dictionary = {}
 # 当前关卡共用规则；调频视觉从中读取 Hz 范围、像素换算与引导宽容。
 var gameplay_rules: GameplayRuleSet
+## 编辑预览由音乐时间推进反馈 Tween，暂停时不会继续消耗动画。
+var preview_time_driven := false
 
 # 四个槽位节点在 _ready() 中按导出路径取得。
 var _life_note_slot: Node2D
@@ -228,6 +230,8 @@ func _on_visual_judged(event_id: String, grade: int) -> void:
 	if not _active.has(event_id):
 		return
 	var active_entry: Dictionary = _active[event_id]
+	if preview_time_driven and active_entry["data"].get("unit_kind") == &"hold" and grade != GameplayTypes.JudgmentGrade.MISS:
+		active_entry["hold_visual_progress"] = 1.0
 	var visual: Node2D = active_entry["node"]
 	var timing_ring: Node2D = active_entry.get("timing_ring") as Node2D
 	var already_confirmed: bool = bool(active_entry.get("timing_confirmed", false))
@@ -250,6 +254,7 @@ func _on_visual_timing_confirmed(event_id: String, grade: int) -> void:
 		return
 	active_entry["timing_confirmed"] = true
 	var visual: Node2D = active_entry["node"]
+	_sync_preview_time(visual, _scheduler.visual_time_sec)
 	var timing_ring: Node2D = active_entry.get("timing_ring") as Node2D
 	if visual.has_method("play_timing_confirmed"):
 		visual.call("play_timing_confirmed", grade)
@@ -266,6 +271,7 @@ func _on_visual_wave_contacted(event_id: String, contact: Dictionary) -> void:
 	if not _active.has(event_id):
 		return
 	var visual: Node2D = _active[event_id]["node"]
+	_sync_preview_time(visual, float(contact.get("contact_us", 0)) / 1000000.0)
 	if visual.has_method("play_wave_contact"):
 		visual.call("play_wave_contact", contact)
 
@@ -274,6 +280,7 @@ func _on_visual_note_arrived(event_id: String, arrival: Dictionary) -> void:
 	if not _active.has(event_id):
 		return
 	var visual: Node2D = _active[event_id]["node"]
+	_sync_preview_time(visual, float(arrival.get("arrival_us", 0)) / 1000000.0)
 	# 抵达钟与判定结果是两个事件。Miss 只经 visual_judged 播放一次，
 	# 这里单纯表现物理撞钟，避免正式素材重复播放失败动画。
 	if visual.has_method("play_note_arrival"):
@@ -363,6 +370,7 @@ func _update_tuning_preview_presentation() -> void:
 
 func _update_visual(event_id: String, active_entry: Dictionary) -> void:
 	var visual: Node2D = active_entry["node"]
+	_sync_preview_time(visual, visual_time_sec)
 	var timing_ring: Node2D = active_entry.get("timing_ring") as Node2D
 	var kind: StringName = active_entry["kind"]
 	var data: Dictionary = active_entry["data"]
@@ -703,3 +711,8 @@ func _disconnect_scheduler() -> void:
 	if _scheduler.scheduler_reset.is_connected(clear):
 		_scheduler.scheduler_reset.disconnect(clear)
 	_scheduler = null
+
+
+func _sync_preview_time(visual: Node2D, seconds: float) -> void:
+	if preview_time_driven and visual.has_method("set_preview_time"):
+		visual.call("set_preview_time", seconds)

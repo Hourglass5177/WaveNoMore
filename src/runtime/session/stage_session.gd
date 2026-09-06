@@ -870,8 +870,8 @@ func _present_note_judgment(note_id: String) -> void:
 
 
 ## 外部会话只通过此入口提交语义输入，判定规则仍在 GameplaySimulation。
-func inject_replay_input(sample: SemanticInputSample) -> void:
-	gameplay_coordinator.accept_input(sample)
+func inject_preview_inputs(samples: Array[SemanticInputSample]) -> void:
+	for sample in samples: gameplay_coordinator.accept_input(sample)
 
 ## 重建时不经过玩家暂停重武装，保留自动演示的真实长按状态。
 func reset_preview() -> void:
@@ -879,10 +879,16 @@ func reset_preview() -> void:
 	gameplay_coordinator.reset()
 	chart_scheduler.reset()
 	state = GameplayTypes.StageState.PLAYING
+	_emit_snapshot_changes(gameplay_coordinator.snapshot())
 
 func advance_preview(time_us: int, inclusive: bool = true) -> void:
 	var seconds := float(time_us) / 1000000.0
 	chart_scheduler.advance(seconds)
-	song_clock.publish_external_time(seconds)
+	song_clock.publish_external_time(seconds, not gameplay_coordinator.defer_preview_snapshot)
 	gameplay_coordinator.advance_to(time_us, inclusive)
+	if not gameplay_coordinator.defer_preview_snapshot:
+		_emit_snapshot_changes(gameplay_coordinator.snapshot())
+
+func publish_preview_state(time_us: int) -> void:
+	song_clock.publish_external_time(float(time_us) / 1000000.0)
 	_emit_snapshot_changes(gameplay_coordinator.snapshot())

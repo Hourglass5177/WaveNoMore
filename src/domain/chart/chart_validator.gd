@@ -345,10 +345,14 @@ static func _validate_input_conflicts(chart: SongChart, rules: GameplayRuleSet, 
 			"end": tempo_map.tick_to_us(region.tick + region.duration_ticks),
 			"tick": region.tick,
 		})
+	# 按起点扫描，超过当前区间尾点后不再比较；重叠判定和闭区间边界保持原样。
+	for index in intervals.size(): intervals[index]["source_order"] = index
+	intervals.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return int(a["start"]) < int(b["start"]))
 	for first_index in range(intervals.size()):
 		for second_index in range(first_index + 1, intervals.size()):
 			var first: Dictionary = intervals[first_index]
 			var second: Dictionary = intervals[second_index]
+			if int(second["start"]) > int(first["end"]): break
 			if int(first["side"]) != -1 and int(second["side"]) != -1 and int(first["side"]) != int(second["side"]):
 				continue
 			var overlap_start: int = maxi(int(first["start"]), int(second["start"]))
@@ -368,6 +372,8 @@ static func _validate_input_conflicts(chart: SongChart, rules: GameplayRuleSet, 
 			# 同一次输入就会争夺所有权，因此必须在制谱阶段拒绝。
 			if first["type"] == "tap" and second["type"] == "tap":
 				continue
+			if first["source_order"] > second["source_order"]:
+				var swap := first; first = second; second = swap
 			report.add_error(
 				&"input.window_conflict",
 				"Gameplay input windows overlap between '%s' and '%s'." % [first["id"], second["id"]],
