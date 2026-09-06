@@ -203,7 +203,7 @@ func _show_modal(scene: PackedScene) -> void:
 		child.queue_free()
 	var modal := scene.instantiate()
 	modal_host.add_child(modal)
-	# 平时 ModalHost 必须放过鼠标，关卡的左右鼠标点击才能进入 InputRouter；
+	# 平时 ModalHost 必须放过鼠标，关卡的左右鼠标点击才能进入输入单例；
 	# 真正打开弹窗时才拦截鼠标，关闭后立刻恢复。键盘和手柄不受 mouse_filter 控制。
 	modal_host.mouse_filter = Control.MOUSE_FILTER_STOP
 	if modal.has_signal("close_requested"):

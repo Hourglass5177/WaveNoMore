@@ -27,8 +27,6 @@ signal exit_requested
 @export var song_player_path: NodePath = ^"Session/SongPlayer"
 ## 歌曲主时钟节点路径；必须指向 SongClock。
 @export var song_clock_path: NodePath = ^"Session/SongClock"
-## 键鼠和手柄语义输入路由节点路径；必须指向 InputRouter。
-@export var input_router_path: NodePath = ^"Session/InputRouter"
 ## 提前生成与回收音符视觉对象的调度器节点路径；必须指向 ChartScheduler。
 @export var chart_scheduler_path: NodePath = ^"Session/ChartScheduler"
 ## 场景树与纯玩法内核之间的协调器节点路径；必须指向 GameplayCoordinator。
@@ -56,8 +54,8 @@ signal exit_requested
 var song_player: AudioStreamPlayer
 ## 从 `song_clock_path` 解析出的歌曲时钟。
 var song_clock: SongClock
-## 从 `input_router_path` 解析出的输入路由。
-var input_router: InputRouter
+## 全局输入事件缓冲单例。
+var input_buffer: Node
 ## 从 `chart_scheduler_path` 解析出的视觉调度器。
 var chart_scheduler: ChartScheduler
 ## 从 `gameplay_coordinator_path` 解析出的玩法协调器。
@@ -91,12 +89,12 @@ func _exit_tree() -> void:
 func _ready() -> void:
 	song_player = get_node(song_player_path) as AudioStreamPlayer
 	song_clock = get_node(song_clock_path) as SongClock
-	input_router = get_node(input_router_path) as InputRouter
+	input_buffer = InputEventBuffer
 	chart_scheduler = get_node(chart_scheduler_path) as ChartScheduler
 	gameplay_coordinator = get_node(gameplay_coordinator_path) as GameplayCoordinator
 	stage_session = get_node(stage_session_path) as StageSession
-	replay_input_driver = get_node(replay_input_driver_path) as ReplayInputDriver
-	replay_recorder = get_node(replay_recorder_path)
+	replay_input_driver = null
+	replay_recorder = null
 	stage_show_director = get_node(stage_show_director_path)
 	presentation = get_node(presentation_path) as GrayboxStagePresentation
 	hud = get_node(hud_path) as StageHud
@@ -107,21 +105,17 @@ func _ready() -> void:
 	stage_session.bind_components(
 		song_player,
 		song_clock,
-		input_router,
+		input_buffer,
 		chart_scheduler,
 		gameplay_coordinator
 	)
-	replay_input_driver.bind(stage_session, song_clock)
-	replay_recorder.call("set_loadout_hash", active_loadout_hash)
-	replay_recorder.call("bind", stage_session, input_router)
-	replay_recorder.connect("replay_saved", _on_replay_saved)
 	stage_show_director.call("bind", song_clock, stage_session)
-	presentation.bind(song_clock, stage_session, chart_scheduler, input_router)
+	presentation.bind(song_clock, stage_session, chart_scheduler, input_buffer)
 	presentation.bind_show_director(stage_show_director)
 	hud.bind(stage_session, song_clock)
 	pause_overlay.bind(stage_session)
 	debug_hud.bind(stage_session)
-	audio_feedback.bind(stage_session, input_router)
+	audio_feedback.bind(stage_session, input_buffer)
 	stage_session.result_ready.connect(_on_stage_result_ready)
 	pause_overlay.exit_requested.connect(_on_exit_requested)
 

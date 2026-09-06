@@ -74,7 +74,7 @@ func _exit_tree() -> void:
 			player.stream = null
 
 
-func bind(session: StageSession, _input_router: InputRouter) -> void:
+func bind(session: StageSession, _input_buffer: Node) -> void:
 	if not session.judgment_recorded.is_connected(_on_judgment_recorded):
 		session.judgment_recorded.connect(_on_judgment_recorded)
 	if not session.wave_launched.is_connected(_on_wave_launched):

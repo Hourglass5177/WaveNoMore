@@ -150,7 +150,7 @@ func configure(stage: StageDefinition) -> void:
 	_song_duration_sec = _calculate_song_duration_sec()
 
 
-func bind(clock: SongClock, session: StageSession, scheduler: ChartScheduler, _input_router: InputRouter) -> void:
+func bind(clock: SongClock, session: StageSession, scheduler: ChartScheduler, _input_buffer: Node) -> void:
 	_disconnect_sources()
 	_clock = clock
 	_session = session

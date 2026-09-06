@@ -96,6 +96,8 @@ func set_held(affinity: int, held: bool, time_us: int) -> void:
 	# 按住状态生效后再由外层做一次包含端点的推进。
 	advance_to(time_us, false)
 	var source: Dictionary = _sources[affinity]
+	if not held:
+		source["input_channel"] = GameplayTypes.BellInputChannel.NONE
 	if bool(source["held"]) == held:
 		return
 	source["held"] = held
@@ -125,11 +127,27 @@ func begin_pause(time_us: int) -> void:
 		source["next_emit_us"] = NEVER_TIME_US
 
 
-func resume_after_pause(life_held: bool, death_held: bool, time_us: int) -> void:
+## 处理一次 A/B 敲钟操作。首次按下记录持续来源，非匹配释放不会停止载波。
+func handle_bell_input(sample: SemanticInputSample) -> void:
+	if sample == null or (not sample.is_press() and not sample.is_release()):
+		return
+	var affinity: int = sample.affinity()
+	if not _sources.has(affinity):
+		return
+	var source: Dictionary = _sources[affinity]
+	var channel: int = sample.input_channel()
+	if sample.is_press() and int(source["input_channel"]) == GameplayTypes.BellInputChannel.NONE:
+		source["input_channel"] = channel
+		set_held(affinity, true, sample.timestamp_us)
+	elif sample.is_release() and int(source["input_channel"]) == channel:
+		set_held(affinity, false, sample.timestamp_us)
+
+
+func resume_after_pause(life_channel: int, death_channel: int, time_us: int) -> void:
 	## 恢复只重启原本仍被玩家按住的波源，并延续暂停前的剩余周期；不会在恢复点凭空发波。
 	advance_to(time_us)
-	_resume_source_after_pause(GameplayTypes.Affinity.ZHU, life_held, time_us)
-	_resume_source_after_pause(GameplayTypes.Affinity.XUAN, death_held, time_us)
+	_resume_source_after_pause(GameplayTypes.Affinity.ZHU, life_channel, time_us)
+	_resume_source_after_pause(GameplayTypes.Affinity.XUAN, death_channel, time_us)
 
 
 func set_frequency(affinity: int, frequency_hz: float, time_us: int) -> void:
@@ -287,6 +305,7 @@ func _new_source(affinity: int, origin: Vector2) -> Dictionary:
 		"affinity": affinity,
 		"origin": origin,
 		"held": false,
+		"input_channel": GameplayTypes.BellInputChannel.NONE,
 		"frequency_hz": _rule_float(&"tuning_base_frequency_hz", DEFAULT_BASE_FREQUENCY_HZ),
 		"last_update_us": NEVER_TIME_US,
 		"last_emit_us": NEVER_TIME_US,
@@ -295,10 +314,12 @@ func _new_source(affinity: int, origin: Vector2) -> Dictionary:
 	}
 
 
-func _resume_source_after_pause(affinity: int, should_hold: bool, time_us: int) -> void:
+func _resume_source_after_pause(affinity: int, channel: int, time_us: int) -> void:
 	var source: Dictionary = _sources[affinity]
 	var remaining_us: int = int(source.get("paused_remaining_us", -1))
 	source["paused_remaining_us"] = -1
+	var should_hold: bool = channel != GameplayTypes.BellInputChannel.NONE
+	source["input_channel"] = channel
 	source["held"] = should_hold
 	source["last_update_us"] = time_us
 	if not should_hold:

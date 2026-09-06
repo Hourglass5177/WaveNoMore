@@ -1,13 +1,23 @@
-class_name InputRouter
 extends Node
 
-## 把键鼠、手柄和触屏事件转换为带判定时间的 SemanticInputSample。
-## 这里不读取谱面，也不保存调频位置；只把真实旋转/拖动换算成相对位移。
+## 接收物理输入并维护标准化事件缓冲。
+## 同一逻辑帧内，同类查询始终返回该类最老事件；帧尾按策略统一删除。
 
-signal semantic_input_emitted(sample: SemanticInputSample)
+signal physical_input_emitted(event: PhysicalInputEvent)
 signal held_state_changed(life_held: bool, death_held: bool)
 signal cancelled(reason: int)
 signal pause_requested
+
+@export var pre_input_window_us: int = 0
+@export var delete_all_same_kind: bool = true
+
+var _events: Array[PhysicalInputEvent] = []
+var _event_counts: PackedInt32Array = PackedInt32Array()
+var _requested_flags: PackedByteArray = PackedByteArray()
+var _frame_oldest_events: Array[PhysicalInputEvent] = []
+var _frame_time_us: int = 0
+var _input_enabled: bool = true
+var _session_active: bool = false
 
 const TUNING_ARC_GEOMETRY: GDScript = preload("res://src/domain/tuning/tuning_arc_geometry.gd")
 
@@ -99,9 +109,123 @@ var _previous_mouse_mode: Input.MouseMode = Input.MOUSE_MODE_VISIBLE
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	_event_counts.resize(GameplayTypes.PhysicalInputKind.ENUM_MAX)
+	_requested_flags.resize(GameplayTypes.PhysicalInputKind.ENUM_MAX)
+	_frame_oldest_events.resize(GameplayTypes.PhysicalInputKind.ENUM_MAX)
+	for index in range(GameplayTypes.PhysicalInputKind.ENUM_MAX):
+		_event_counts[index] = 0
+		_requested_flags[index] = 0
+		_frame_oldest_events[index] = null
 	if _tuning_rules == null:
 		configure_from_rules(GameplayRuleSet.new())
 	Input.joy_connection_changed.connect(_on_joy_connection_changed)
+
+
+func begin_frame(current_time_us: int) -> void:
+	_frame_time_us = current_time_us
+	for index in range(GameplayTypes.PhysicalInputKind.ENUM_MAX):
+		_requested_flags[index] = 0
+		_frame_oldest_events[index] = null
+
+
+func query(kind: int) -> Dictionary:
+	if kind < 0 or kind >= GameplayTypes.PhysicalInputKind.ENUM_MAX:
+		return {"exists": false, "event": null, "count": 0}
+	var cached: PhysicalInputEvent = _frame_oldest_events[kind]
+	if cached != null:
+		return {"exists": true, "event": cached, "count": _event_counts[kind]}
+	for sample in _events:
+		if sample.kind == kind:
+			_frame_oldest_events[kind] = sample
+			_requested_flags[kind] = 1
+			return {"exists": true, "event": sample, "count": _event_counts[kind]}
+	return {"exists": false, "event": null, "count": 0}
+
+
+func end_frame() -> void:
+	for kind in range(GameplayTypes.PhysicalInputKind.ENUM_MAX):
+		if _requested_flags[kind] == 0:
+			continue
+		if delete_all_same_kind:
+			var index: int = _events.size() - 1
+			while index >= 0:
+				if _events[index].kind == kind:
+					_remove_event_at(index)
+				index -= 1
+		else:
+			for index in range(_events.size()):
+				if _events[index].kind == kind:
+					_remove_event_at(index)
+					break
+		_requested_flags[kind] = 0
+		_frame_oldest_events[kind] = null
+	var cutoff: int = _frame_time_us - maxi(pre_input_window_us, 0)
+	while not _events.is_empty() and _events[0].timestamp_us < cutoff:
+		_remove_event_at(0)
+
+
+func begin_session() -> void:
+	clear()
+	_session_active = true
+	_input_enabled = true
+
+
+func end_session() -> void:
+	clear()
+	cancel_all(CancelReason.SESSION_END, false)
+	_session_active = false
+	_input_enabled = false
+
+
+func clear() -> void:
+	_events.clear()
+	for index in range(GameplayTypes.PhysicalInputKind.ENUM_MAX):
+		_event_counts[index] = 0
+		_requested_flags[index] = 0
+		_frame_oldest_events[index] = null
+
+
+func set_pre_input_window_us(value: int) -> void:
+	pre_input_window_us = maxi(value, 0)
+
+
+func set_delete_all_same_kind(enabled: bool) -> void:
+	delete_all_same_kind = enabled
+
+
+func has_input(kind: int) -> bool:
+	return kind >= 0 and kind < _event_counts.size() and _event_counts[kind] > 0
+
+
+func get_event_count(kind: int) -> int:
+	if kind < 0 or kind >= _event_counts.size():
+		return 0
+	return _event_counts[kind]
+
+
+func get_buffer_size() -> int:
+	return _events.size()
+
+
+func inject_physical_event(sample: PhysicalInputEvent) -> void:
+	if sample == null:
+		return
+	_enqueue_sample(sample)
+	physical_input_emitted.emit(sample)
+
+
+func _enqueue_sample(sample: PhysicalInputEvent) -> void:
+	var index: int = _events.size()
+	while index > 0 and PhysicalInputEvent.sort_events(sample, _events[index - 1]):
+		index -= 1
+	_events.insert(index, sample)
+	_event_counts[sample.kind] += 1
+
+
+func _remove_event_at(index: int) -> void:
+	var sample: PhysicalInputEvent = _events[index]
+	_events.remove_at(index)
+	_event_counts[sample.kind] -= 1
 
 
 func _process(_delta: float) -> void:
@@ -285,6 +409,10 @@ func get_held_snapshot() -> Dictionary:
 	return {
 		"life_held": life_held,
 		"death_held": death_held,
+		"life_a_held": _life_sources.has("bell:life:a"),
+		"life_b_held": _life_sources.has("bell:life:b"),
+		"death_a_held": _death_sources.has("bell:death:a"),
+		"death_b_held": _death_sources.has("bell:death:b"),
 		"last_tuning_displacement": last_tuning_displacement,
 	}
 
@@ -333,19 +461,11 @@ func cancel_all(
 	held_state_changed.emit(false, false)
 
 	if emit_semantic_cancel and mode != InputMode.REPLAY and (_clock != null or had_state):
-		_emit_semantic_input(GameplayTypes.SemanticInputKind.FOCUS_CANCELLED, Vector2.ZERO)
+		_emit_physical_event(GameplayTypes.PhysicalInputKind.FOCUS_CANCELLED)
 	cancelled.emit(int(reason))
 
-
-func inject_replay_input(sample: SemanticInputSample) -> void:
-	if sample == null:
-		return
-	_sequence = maxi(_sequence, sample.sequence + 1)
-	semantic_input_emitted.emit(sample)
-
-
 func _input(event: InputEvent) -> void:
-	if mode == InputMode.DISABLED or mode == InputMode.REPLAY:
+	if not _input_enabled or mode == InputMode.DISABLED or mode == InputMode.REPLAY:
 		return
 
 	if event.is_action_pressed(ACTION_PAUSE) and not event.is_echo():
@@ -376,24 +496,54 @@ func _input(event: InputEvent) -> void:
 func _handle_bell_event(event: InputEvent) -> bool:
 	if event.is_echo():
 		return false
+	if event is InputEventKey:
+		var key_event := event as InputEventKey
+		if key_event.keycode == KEY_LEFT and key_event.pressed:
+			_emit_physical_event(GameplayTypes.PhysicalInputKind.KEY_LEFT_PRESSED, KEY_LEFT, 0.0, Vector2.ZERO, Vector2.ZERO, -1, key_event.device)
+			_set_bell_source(false, "bell:death:b", true)
+			return true
+		if key_event.keycode == KEY_LEFT and not key_event.pressed:
+			_emit_physical_event(GameplayTypes.PhysicalInputKind.KEY_LEFT_RELEASED, KEY_LEFT, 0.0, Vector2.ZERO, Vector2.ZERO, -1, key_event.device)
+			_set_bell_source(false, "bell:death:b", false)
+			return true
+		if key_event.keycode == KEY_RIGHT and key_event.pressed:
+			_emit_physical_event(GameplayTypes.PhysicalInputKind.KEY_RIGHT_PRESSED, KEY_RIGHT, 0.0, Vector2.ZERO, Vector2.ZERO, -1, key_event.device)
+			_set_bell_source(true, "bell:life:b", true)
+			return true
+		if key_event.keycode == KEY_RIGHT and not key_event.pressed:
+			_emit_physical_event(GameplayTypes.PhysicalInputKind.KEY_RIGHT_RELEASED, KEY_RIGHT, 0.0, Vector2.ZERO, Vector2.ZERO, -1, key_event.device)
+			_set_bell_source(true, "bell:life:b", false)
+			return true
 
 	if event.is_action_pressed(ACTION_LIFE):
-		_set_bell_source(true, "mapped:life", true)
+		var life_pressed_kind: int = _bell_kind(event, true)
+		if life_pressed_kind >= 0:
+			_emit_physical_event(life_pressed_kind, _event_code(event), 0.0, Vector2.ZERO, Vector2.ZERO, -1, event.device)
+		_set_bell_source(true, _bell_source_key(life_pressed_kind), true)
 		# 先建立按住语义，再捕获已经处于起点窗内的摇杆；这样首帧位移不会因
-		# 领域层尚未收到 LIFE_PRESSED 而丢失。
+		# 领域层尚未收到对应 A/B 按下语义而丢失。
 		_track_device_hold(event, true, true)
 		return true
 	if event.is_action_released(ACTION_LIFE):
+		var life_released_kind: int = _bell_kind(event, false)
+		if life_released_kind >= 0:
+			_emit_physical_event(life_released_kind, _event_code(event), 0.0, Vector2.ZERO, Vector2.ZERO, -1, event.device)
 		_track_device_hold(event, true, false)
-		_set_bell_source(true, "mapped:life", Input.is_action_pressed(ACTION_LIFE))
+		_set_bell_source(true, _bell_source_key(life_released_kind), false)
 		return true
 	if event.is_action_pressed(ACTION_DEATH):
-		_set_bell_source(false, "mapped:death", true)
+		var death_pressed_kind: int = _bell_kind(event, true)
+		if death_pressed_kind >= 0:
+			_emit_physical_event(death_pressed_kind, _event_code(event), 0.0, Vector2.ZERO, Vector2.ZERO, -1, event.device)
+		_set_bell_source(false, _bell_source_key(death_pressed_kind), true)
 		_track_device_hold(event, false, true)
 		return true
 	if event.is_action_released(ACTION_DEATH):
+		var death_released_kind: int = _bell_kind(event, false)
+		if death_released_kind >= 0:
+			_emit_physical_event(death_released_kind, _event_code(event), 0.0, Vector2.ZERO, Vector2.ZERO, -1, event.device)
 		_track_device_hold(event, false, false)
-		_set_bell_source(false, "mapped:death", Input.is_action_pressed(ACTION_DEATH))
+		_set_bell_source(false, _bell_source_key(death_released_kind), false)
 		return true
 	return false
 
@@ -403,10 +553,12 @@ func _handle_touch_event(event: InputEvent) -> bool:
 		var touch := event as InputEventScreenTouch
 		var source_key := "touch:%d" % touch.index
 		if touch.pressed:
+			_emit_physical_event(GameplayTypes.PhysicalInputKind.TOUCH_PRESSED, touch.index, 0.0, touch.position, Vector2.ZERO, touch.index, touch.device)
 			var is_life: bool = touch.position.y < get_viewport().get_visible_rect().size.y * 0.5
 			_touch_affinity_by_index[touch.index] = GameplayTypes.Affinity.ZHU if is_life else GameplayTypes.Affinity.XUAN
 			_set_bell_source(is_life, source_key, true)
 		elif _touch_affinity_by_index.has(touch.index):
+			_emit_physical_event(GameplayTypes.PhysicalInputKind.TOUCH_RELEASED, touch.index, 0.0, touch.position, Vector2.ZERO, touch.index, touch.device)
 			var was_life: bool = int(_touch_affinity_by_index[touch.index]) == GameplayTypes.Affinity.ZHU
 			_touch_affinity_by_index.erase(touch.index)
 			_set_bell_source(was_life, source_key, false)
@@ -418,9 +570,16 @@ func _handle_touch_event(event: InputEvent) -> bool:
 			return false
 		if not _tuning_capture_requested:
 			return true
-		var is_life: bool = int(_touch_affinity_by_index[drag.index]) == GameplayTypes.Affinity.ZHU
-		var displacement: float = drag.relative.x * pointer_displacement_per_pixel
-		return _emit_pointer_displacement(displacement, is_life, not is_life)
+		_emit_physical_event(
+			GameplayTypes.PhysicalInputKind.TOUCH_MOVED,
+			drag.index,
+			0.0,
+			drag.position,
+			drag.relative,
+			drag.index,
+			drag.device
+		)
+		return true
 	return false
 
 
@@ -435,11 +594,9 @@ func _handle_tune_event(event: InputEvent) -> bool:
 		if not move_life and not move_death:
 			return false
 		# PC 只有一个鼠标：双键同时按住时，同一相对位移临时作用于两侧。
-		return _emit_pointer_displacement(
-			mouse_event.relative.x * pointer_displacement_per_pixel,
-			move_life,
-			move_death
-		)
+		if move_life or move_death:
+			_emit_physical_event(GameplayTypes.PhysicalInputKind.MOUSE_MOVED, 0, 0.0, mouse_event.position, mouse_event.relative, -1, mouse_event.device)
+		return true
 
 	if event is InputEventJoypadMotion:
 		var joy_motion := event as InputEventJoypadMotion
@@ -447,25 +604,16 @@ func _handle_tune_event(event: InputEvent) -> bool:
 		var life_axis: bool = joy_motion.axis in [JOY_AXIS_RIGHT_X, JOY_AXIS_RIGHT_Y]
 		# 真正的角度计算在 _process() 中一次读取完整二维向量；单独的轴事件只需截住，
 		# 否则先到达的 X 或 Y 会制造不存在的四分之一圈跳变。
-		return (
+		if (
 			(death_axis and _gamepad_death_devices.has(joy_motion.device))
 			or (life_axis and _gamepad_life_devices.has(joy_motion.device))
-		)
+		):
+			var kind := GameplayTypes.PhysicalInputKind.GAMEPAD_LEFT_STICK_MOVED if death_axis else GameplayTypes.PhysicalInputKind.GAMEPAD_RIGHT_STICK_MOVED
+			var raw_stick := _read_stick(joy_motion.device, death_axis)
+			_emit_joystick_event(kind, joy_motion.device, raw_stick)
+			return true
+		return false
 	return false
-
-
-func _emit_pointer_displacement(amount: float, move_life: bool, move_death: bool) -> bool:
-	if is_zero_approx(amount):
-		return true
-	# 缩圈预备期可以显示滑条和起手方向，但不能用鼠标/触屏提前填充。
-	move_life = move_life and _side_tuning_input_allowed(true)
-	move_death = move_death and _side_tuning_input_allowed(false)
-	if not move_life and not move_death:
-		return true
-	var displacement := Vector2(amount if move_life else 0.0, amount if move_death else 0.0)
-	_emit_tuning_displacement(displacement)
-	return true
-
 
 func _set_bell_source(is_life: bool, source_key: String, pressed: bool) -> void:
 	var sources: Dictionary = _life_sources if is_life else _death_sources
@@ -481,12 +629,6 @@ func _set_bell_source(is_life: bool, source_key: String, pressed: bool) -> void:
 		death_held = is_held_now
 
 	if was_held != is_held_now:
-		var kind: int
-		if is_life:
-			kind = GameplayTypes.SemanticInputKind.LIFE_PRESSED if is_held_now else GameplayTypes.SemanticInputKind.LIFE_RELEASED
-		else:
-			kind = GameplayTypes.SemanticInputKind.DEATH_PRESSED if is_held_now else GameplayTypes.SemanticInputKind.DEATH_RELEASED
-		_emit_semantic_input(kind, Vector2.ZERO)
 		held_state_changed.emit(life_held, death_held)
 	_update_mouse_capture()
 
@@ -499,19 +641,16 @@ func _track_device_hold(event: InputEvent, is_life: bool, pressed: bool) -> void
 			_mouse_death_held = pressed
 	elif event is InputEventJoypadButton:
 		var joy_button := event as InputEventJoypadButton
-		# L3/R3 只是对应钟的备用敲击键；旋钮所有权仍只由 L1/R1 获得。
-		# 否则点击摇杆会在下一帧对账时被肩键状态撤销，反而打断正在进行的旋转。
-		var rotary_button: JoyButton = (
-			JOY_BUTTON_RIGHT_SHOULDER if is_life else JOY_BUTTON_LEFT_SHOULDER
-		)
-		if joy_button.button_index != rotary_button:
+		var shoulder: JoyButton = JOY_BUTTON_RIGHT_SHOULDER if is_life else JOY_BUTTON_LEFT_SHOULDER
+		var stick_button: JoyButton = JOY_BUTTON_RIGHT_STICK if is_life else JOY_BUTTON_LEFT_STICK
+		if joy_button.button_index not in [shoulder, stick_button]:
 			return
 		var device: int = joy_button.device
 		var devices: Dictionary = _gamepad_life_devices if is_life else _gamepad_death_devices
 		var was_present: bool = devices.has(device)
 		if pressed:
 			devices[device] = true
-		else:
+		elif not _gamepad_side_held(device, is_life):
 			devices.erase(device)
 		# 只在这个设备的持有状态真的改变时切换旋钮所有者。重复按键事件或
 		# 非当前手柄的释放不能把正在使用的摇杆重置掉。
@@ -520,26 +659,28 @@ func _track_device_hold(event: InputEvent, is_life: bool, pressed: bool) -> void
 
 
 func _reconcile_mapped_holds() -> void:
-	_reconcile_gamepad_devices(_gamepad_life_devices, JOY_BUTTON_RIGHT_SHOULDER, true)
-	_reconcile_gamepad_devices(_gamepad_death_devices, JOY_BUTTON_LEFT_SHOULDER, false)
+	_reconcile_gamepad_devices(_gamepad_life_devices, true)
+	_reconcile_gamepad_devices(_gamepad_death_devices, false)
 	if _mouse_life_held and not Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT):
 		_mouse_life_held = false
 	if _mouse_death_held and not Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
 		_mouse_death_held = false
-	_set_bell_source(true, "mapped:life", Input.is_action_pressed(ACTION_LIFE))
-	_set_bell_source(false, "mapped:death", Input.is_action_pressed(ACTION_DEATH))
+	_set_bell_source(true, "bell:life:a", Input.is_key_pressed(KEY_J) or _mouse_life_held or _any_joy_button_pressed(JOY_BUTTON_RIGHT_SHOULDER))
+	_set_bell_source(true, "bell:life:b", Input.is_key_pressed(KEY_RIGHT) or _any_joy_button_pressed(JOY_BUTTON_RIGHT_STICK))
+	_set_bell_source(false, "bell:death:a", Input.is_key_pressed(KEY_F) or _mouse_death_held or _any_joy_button_pressed(JOY_BUTTON_LEFT_SHOULDER))
+	_set_bell_source(false, "bell:death:b", Input.is_key_pressed(KEY_LEFT) or _any_joy_button_pressed(JOY_BUTTON_LEFT_STICK))
 
 
-func _reconcile_gamepad_devices(devices: Dictionary, shoulder: JoyButton, is_life: bool) -> void:
+func _reconcile_gamepad_devices(devices: Dictionary, is_life: bool) -> void:
 	# 暂停、失焦或进入关卡前就已按住肩键时，不一定还能收到新的按下事件。
 	# 每帧从已连接设备补回真实持有者，下一次摇杆采样先重新定锚，不补算旧旋转。
 	for device: int in Input.get_connected_joypads():
-		if Input.is_joy_button_pressed(device, shoulder):
+		if _gamepad_side_held(device, is_life):
 			devices[device] = true
 	var removed_current_device: bool = false
 	for raw_device: Variant in devices.keys():
 		var device: int = int(raw_device)
-		if Input.is_joy_button_pressed(device, shoulder):
+		if _gamepad_side_held(device, is_life):
 			continue
 		devices.erase(raw_device)
 		removed_current_device = removed_current_device or device == (
@@ -552,6 +693,32 @@ func _reconcile_gamepad_devices(devices: Dictionary, shoulder: JoyButton, is_lif
 		else:
 			_death_rotary_tracker.reset()
 			_death_rotary_device = -1
+
+
+func _gamepad_side_held(device: int, is_life: bool) -> bool:
+	var shoulder: JoyButton = JOY_BUTTON_RIGHT_SHOULDER if is_life else JOY_BUTTON_LEFT_SHOULDER
+	var stick_button: JoyButton = JOY_BUTTON_RIGHT_STICK if is_life else JOY_BUTTON_LEFT_STICK
+	return Input.is_joy_button_pressed(device, shoulder) or Input.is_joy_button_pressed(device, stick_button)
+
+
+func _any_joy_button_pressed(button: JoyButton) -> bool:
+	for device: int in Input.get_connected_joypads():
+		if Input.is_joy_button_pressed(device, button):
+			return true
+	return false
+
+
+func _bell_source_key(kind: int) -> String:
+	match kind:
+		GameplayTypes.PhysicalInputKind.KEY_J_PRESSED, GameplayTypes.PhysicalInputKind.KEY_J_RELEASED, GameplayTypes.PhysicalInputKind.MOUSE_RIGHT_PRESSED, GameplayTypes.PhysicalInputKind.MOUSE_RIGHT_RELEASED, GameplayTypes.PhysicalInputKind.GAMEPAD_R1_PRESSED, GameplayTypes.PhysicalInputKind.GAMEPAD_R1_RELEASED:
+			return "bell:life:a"
+		GameplayTypes.PhysicalInputKind.KEY_RIGHT_PRESSED, GameplayTypes.PhysicalInputKind.KEY_RIGHT_RELEASED, GameplayTypes.PhysicalInputKind.GAMEPAD_R3_PRESSED, GameplayTypes.PhysicalInputKind.GAMEPAD_R3_RELEASED:
+			return "bell:life:b"
+		GameplayTypes.PhysicalInputKind.KEY_F_PRESSED, GameplayTypes.PhysicalInputKind.KEY_F_RELEASED, GameplayTypes.PhysicalInputKind.MOUSE_LEFT_PRESSED, GameplayTypes.PhysicalInputKind.MOUSE_LEFT_RELEASED, GameplayTypes.PhysicalInputKind.GAMEPAD_L1_PRESSED, GameplayTypes.PhysicalInputKind.GAMEPAD_L1_RELEASED:
+			return "bell:death:a"
+		GameplayTypes.PhysicalInputKind.KEY_LEFT_PRESSED, GameplayTypes.PhysicalInputKind.KEY_LEFT_RELEASED, GameplayTypes.PhysicalInputKind.GAMEPAD_L3_PRESSED, GameplayTypes.PhysicalInputKind.GAMEPAD_L3_RELEASED:
+			return "bell:death:b"
+	return ""
 
 
 func _poll_gamepad_rotation() -> void:
@@ -577,8 +744,8 @@ func _process_rotary_sticks(
 		_update_rotary_side(true, life_device, life_stick),
 		_update_rotary_side(false, death_device, death_stick)
 	)
-	if not displacement.is_zero_approx():
-		_emit_tuning_displacement(displacement)
+	# 摇杆事件已经以绝对 X/Y 向量进入物理缓冲；这里仅维护历史追踪器，
+	# 不再把角度变化量合成为调频输入事件。
 
 
 func _update_rotary_side(is_life: bool, device: int, stick: Vector2) -> float:
@@ -759,10 +926,7 @@ func _prime_rotary_side(is_life: bool) -> void:
 		device,
 		_read_stick(device, not is_life)
 	)
-	if not is_zero_approx(displacement):
-		_emit_tuning_displacement(
-			Vector2(displacement, 0.0) if is_life else Vector2(0.0, displacement)
-		)
+	# 定锚只更新追踪器，不生成增量调频事件。
 
 
 func _refresh_rotary_owner(is_life: bool) -> void:
@@ -781,24 +945,100 @@ func _refresh_rotary_owner(is_life: bool) -> void:
 		_prime_rotary_side(is_life)
 
 
-func _emit_tuning_displacement(displacement: Vector2) -> void:
-	var sample: SemanticInputSample = _emit_semantic_input(
-		GameplayTypes.SemanticInputKind.TUNING_DISPLACED,
-		displacement
-	)
-	last_tuning_displacement = sample.tune_vector
-
-
-func _emit_semantic_input(kind: int, value: Vector2) -> SemanticInputSample:
+## 生成非摇杆物理事件；设备类别由精确事件枚举确定，device_id 由原始事件传入。
+func _emit_physical_event(
+		kind: int,
+		code: int = 0,
+		axis_value: float = 0.0,
+		position: Vector2 = Vector2.ZERO,
+		relative: Vector2 = Vector2.ZERO,
+		touch_id: int = -1,
+		device_id: int = 0
+) -> PhysicalInputEvent:
 	var capture_usec: int = Time.get_ticks_usec()
 	var timestamp_us: int = capture_usec
 	if is_instance_valid(_clock):
 		# 事件抵达时只读取一次判定轴，避免帧缓存给输入额外增加一帧延迟。
 		timestamp_us = roundi(_clock.judge_time_at_usec(capture_usec) * 1_000_000.0)
-	var sample := SemanticInputSample.create(timestamp_us, _sequence, kind, value)
+	var sample := PhysicalInputEvent.create(
+		timestamp_us,
+		_sequence,
+		kind,
+		_physical_device_type(kind),
+		device_id,
+		code,
+		Vector2(axis_value, 0.0),
+		position,
+		relative,
+		touch_id
+	)
 	_sequence += 1
-	semantic_input_emitted.emit(sample)
+	_enqueue_sample(sample)
+	physical_input_emitted.emit(sample)
+	# print("[InputBuffer] physical kind=%d timestamp=%d sequence=%d code=%d" % [kind, timestamp_us, sample.sequence, code])
 	return sample
+
+
+## 返回物理事件枚举所属的设备类别，未知及系统生命周期事件归入 SYSTEM。
+func _physical_device_type(kind: int) -> int:
+	match kind:
+		GameplayTypes.PhysicalInputKind.KEY_F_PRESSED, GameplayTypes.PhysicalInputKind.KEY_F_RELEASED, GameplayTypes.PhysicalInputKind.KEY_J_PRESSED, GameplayTypes.PhysicalInputKind.KEY_J_RELEASED, GameplayTypes.PhysicalInputKind.KEY_LEFT_PRESSED, GameplayTypes.PhysicalInputKind.KEY_LEFT_RELEASED, GameplayTypes.PhysicalInputKind.KEY_RIGHT_PRESSED, GameplayTypes.PhysicalInputKind.KEY_RIGHT_RELEASED:
+			return GameplayTypes.PhysicalDeviceType.KEYBOARD
+		GameplayTypes.PhysicalInputKind.MOUSE_LEFT_PRESSED, GameplayTypes.PhysicalInputKind.MOUSE_LEFT_RELEASED, GameplayTypes.PhysicalInputKind.MOUSE_RIGHT_PRESSED, GameplayTypes.PhysicalInputKind.MOUSE_RIGHT_RELEASED, GameplayTypes.PhysicalInputKind.MOUSE_MOVED:
+			return GameplayTypes.PhysicalDeviceType.MOUSE
+		GameplayTypes.PhysicalInputKind.GAMEPAD_L1_PRESSED, GameplayTypes.PhysicalInputKind.GAMEPAD_L1_RELEASED, GameplayTypes.PhysicalInputKind.GAMEPAD_R1_PRESSED, GameplayTypes.PhysicalInputKind.GAMEPAD_R1_RELEASED, GameplayTypes.PhysicalInputKind.GAMEPAD_L3_PRESSED, GameplayTypes.PhysicalInputKind.GAMEPAD_L3_RELEASED, GameplayTypes.PhysicalInputKind.GAMEPAD_R3_PRESSED, GameplayTypes.PhysicalInputKind.GAMEPAD_R3_RELEASED, GameplayTypes.PhysicalInputKind.GAMEPAD_START_PRESSED, GameplayTypes.PhysicalInputKind.GAMEPAD_START_RELEASED, GameplayTypes.PhysicalInputKind.GAMEPAD_A_PRESSED, GameplayTypes.PhysicalInputKind.GAMEPAD_A_RELEASED, GameplayTypes.PhysicalInputKind.GAMEPAD_B_PRESSED, GameplayTypes.PhysicalInputKind.GAMEPAD_B_RELEASED, GameplayTypes.PhysicalInputKind.GAMEPAD_LEFT_STICK_MOVED, GameplayTypes.PhysicalInputKind.GAMEPAD_RIGHT_STICK_MOVED:
+			return GameplayTypes.PhysicalDeviceType.GAMEPAD
+		GameplayTypes.PhysicalInputKind.TOUCH_PRESSED, GameplayTypes.PhysicalInputKind.TOUCH_RELEASED, GameplayTypes.PhysicalInputKind.TOUCH_MOVED:
+			return GameplayTypes.PhysicalDeviceType.TOUCHSCREEN
+	return GameplayTypes.PhysicalDeviceType.SYSTEM
+
+func _emit_joystick_event(kind: int, device: int, raw_stick: Vector2) -> PhysicalInputEvent:
+	var capture_usec: int = Time.get_ticks_usec()
+	var timestamp_us: int = capture_usec
+	if is_instance_valid(_clock):
+		timestamp_us = roundi(_clock.judge_time_at_usec(capture_usec) * 1_000_000.0)
+	var sample := PhysicalInputEvent.create(
+		timestamp_us,
+		_sequence,
+		kind,
+		GameplayTypes.PhysicalDeviceType.GAMEPAD,
+		device,
+		0,
+		raw_stick
+	)
+	_sequence += 1
+	_enqueue_sample(sample)
+	physical_input_emitted.emit(sample)
+	# print("[InputBuffer] stick kind=%d device=%d axis=%s timestamp=%d" % [kind, device, str(raw_stick), timestamp_us])
+	return sample
+
+func _event_code(event: InputEvent) -> int:
+	if event is InputEventKey:
+		return (event as InputEventKey).keycode
+	if event is InputEventMouseButton:
+		return (event as InputEventMouseButton).button_index
+	if event is InputEventJoypadButton:
+		return (event as InputEventJoypadButton).button_index
+	return 0
+
+func _bell_kind(event: InputEvent, pressed: bool) -> int:
+	if event is InputEventKey:
+		var key := (event as InputEventKey).keycode
+		if key == KEY_F: return GameplayTypes.PhysicalInputKind.KEY_F_PRESSED if pressed else GameplayTypes.PhysicalInputKind.KEY_F_RELEASED
+		if key == KEY_J: return GameplayTypes.PhysicalInputKind.KEY_J_PRESSED if pressed else GameplayTypes.PhysicalInputKind.KEY_J_RELEASED
+		if key == KEY_LEFT: return GameplayTypes.PhysicalInputKind.KEY_LEFT_PRESSED if pressed else GameplayTypes.PhysicalInputKind.KEY_LEFT_RELEASED
+		if key == KEY_RIGHT: return GameplayTypes.PhysicalInputKind.KEY_RIGHT_PRESSED if pressed else GameplayTypes.PhysicalInputKind.KEY_RIGHT_RELEASED
+	if event is InputEventMouseButton:
+		var button := (event as InputEventMouseButton).button_index
+		if button == MOUSE_BUTTON_LEFT: return GameplayTypes.PhysicalInputKind.MOUSE_LEFT_PRESSED if pressed else GameplayTypes.PhysicalInputKind.MOUSE_LEFT_RELEASED
+		if button == MOUSE_BUTTON_RIGHT: return GameplayTypes.PhysicalInputKind.MOUSE_RIGHT_PRESSED if pressed else GameplayTypes.PhysicalInputKind.MOUSE_RIGHT_RELEASED
+	if event is InputEventJoypadButton:
+		var button := (event as InputEventJoypadButton).button_index
+		if button == JOY_BUTTON_LEFT_SHOULDER: return GameplayTypes.PhysicalInputKind.GAMEPAD_L1_PRESSED if pressed else GameplayTypes.PhysicalInputKind.GAMEPAD_L1_RELEASED
+		if button == JOY_BUTTON_RIGHT_SHOULDER: return GameplayTypes.PhysicalInputKind.GAMEPAD_R1_PRESSED if pressed else GameplayTypes.PhysicalInputKind.GAMEPAD_R1_RELEASED
+		if button == JOY_BUTTON_LEFT_STICK: return GameplayTypes.PhysicalInputKind.GAMEPAD_L3_PRESSED if pressed else GameplayTypes.PhysicalInputKind.GAMEPAD_L3_RELEASED
+		if button == JOY_BUTTON_RIGHT_STICK: return GameplayTypes.PhysicalInputKind.GAMEPAD_R3_PRESSED if pressed else GameplayTypes.PhysicalInputKind.GAMEPAD_R3_RELEASED
+	return -1
 
 
 func _update_mouse_capture() -> void:
@@ -835,8 +1075,7 @@ func _on_joy_connection_changed(device: int, connected: bool) -> void:
 	if device == _death_rotary_device:
 		_death_rotary_tracker.reset()
 		_death_rotary_device = -1
-	_set_bell_source(true, "mapped:life", Input.is_action_pressed(ACTION_LIFE))
-	_set_bell_source(false, "mapped:death", Input.is_action_pressed(ACTION_DEATH))
+	_reconcile_mapped_holds()
 	cancelled.emit(int(CancelReason.DEVICE_DISCONNECTED))
 
 

@@ -49,7 +49,7 @@ func _ready() -> void:
 	_song_progress = get_node(song_progress_path) as ProgressBar
 	_soul_fire_bar.step = 0.0
 	_song_progress.step = 0.0
-	# HUD 只展示信息，必须让鼠标穿透到底层 InputRouter，否则左右鼠标敲钟会失效。
+	# HUD 只展示信息，必须让鼠标穿透到底层输入单例，否则左右鼠标敲钟会失效。
 	_set_mouse_filter_recursive(self, Control.MOUSE_FILTER_IGNORE)
 
 

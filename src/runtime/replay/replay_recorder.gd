@@ -29,7 +29,7 @@ var is_recording: bool = false
 ## 被旁听的关卡会话，用于取得关卡、规则、状态和结算信息。
 var _session: StageSession
 ## 被旁听的输入路由，提供已经过时间补偿的语义输入样本。
-var _input_router: InputRouter
+var _input_buffer: Node
 ## 当前一局正在填充的 ReplayData；结算后转移到 `last_replay`。
 var _active_replay: ReplayData
 ## 当前装备组合的哈希。随从不改判定，但必须写入日志以复现实验环境。
@@ -38,9 +38,9 @@ var _loadout_hash: String = EMPTY_LOADOUT_HASH.sha256_text()
 var _discard_current_run: bool = false
 
 
-func bind(session: StageSession, input_router: InputRouter) -> void:
+func bind(session: StageSession, input_buffer: Node) -> void:
 	_session = session
-	_input_router = input_router
+	_input_buffer = input_buffer
 	if not session.run_started.is_connected(_on_run_started):
 		session.run_started.connect(_on_run_started)
 	if not session.replay_mode_changed.is_connected(_on_replay_mode_changed):
@@ -49,8 +49,7 @@ func bind(session: StageSession, input_router: InputRouter) -> void:
 		session.result_ready.connect(_on_result_ready)
 	if not session.timeline_seeked.is_connected(_on_timeline_seeked):
 		session.timeline_seeked.connect(_on_timeline_seeked)
-	if not input_router.semantic_input_emitted.is_connected(_on_semantic_input):
-		input_router.semantic_input_emitted.connect(_on_semantic_input)
+	# Replay 运行链路已停用；保留录制器源码供未来兼容，不连接新的物理输入缓冲。
 
 
 func set_loadout_hash(value: String) -> void:
@@ -117,7 +116,7 @@ func _on_run_started(run_id: int) -> void:
 	_active_replay.chart_hash = _session.compiled_chart.content_hash
 	_active_replay.rules_hash = ChartCompiler.rules_hash(_session.rule_set)
 	_active_replay.song_timing_hash = _song_timing_hash()
-	# InputRouter 的时间戳已经位于补偿后的判定轴，再设置 ReplayData 偏移会重复校准。
+	# 输入单例的时间戳已经位于补偿后的判定轴，再设置 ReplayData 偏移会重复校准。
 	_active_replay.captured_input_offset_us = 0
 	_active_replay.loadout_hash = _loadout_hash
 	_active_replay.build_id = _build_hash()

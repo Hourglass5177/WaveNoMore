@@ -14,7 +14,7 @@ config/name="冥河，冥河！"
 config/description="一款以楚文化、生死同构与编钟波纹为核心的双键节奏游戏。"
 config/version="0.1.0-mvp"
 run/main_scene="res://scenes/app/app_main.tscn"
-config/features=PackedStringArray("4.6", "GL Compatibility")
+config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.svg"
 
 [audio]
@@ -28,6 +28,7 @@ ContentCatalog="*res://src/services/catalog/content_catalog.gd"
 SaveService="*res://src/services/save/save_service.gd"
 SettingsService="*res://src/services/settings/settings_service.gd"
 MenuAudioService="*res://src/services/menu_audio/menu_audio_service.gd"
+InputEventBuffer="*res://src/runtime/input/input_event_buffer.gd"
 
 [display]
 

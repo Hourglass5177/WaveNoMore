@@ -12,7 +12,7 @@ var timestamp_us: int = 0
 ## 输入稳定顺序号；两个事件落在同一微秒时用它决定处理先后。
 var sequence: int = 0
 ## 输入语义类型，例如生/死按下、松开或一次相对调频位移。
-var kind: int = GameplayTypes.SemanticInputKind.LIFE_PRESSED
+var kind: int = GameplayTypes.SemanticInputKind.LIFE_A_PRESSED
 ## 双钟调频输入。X 永远代表生钟，Y 永远代表死钟，两个分量各自处于 -1～1。
 ## 数值表示本次输入造成的归一化频率轴位移；非调频样本保持 Vector2.ZERO。
 ## 两路必须独立，禁止把它当二维方向向量归一化。
@@ -44,11 +44,21 @@ static func sort_samples(a: SemanticInputSample, b: SemanticInputSample) -> bool
 
 
 func is_press() -> bool:
-	return kind == GameplayTypes.SemanticInputKind.LIFE_PRESSED or kind == GameplayTypes.SemanticInputKind.DEATH_PRESSED
+	return kind in [
+		GameplayTypes.SemanticInputKind.LIFE_A_PRESSED,
+		GameplayTypes.SemanticInputKind.LIFE_B_PRESSED,
+		GameplayTypes.SemanticInputKind.DEATH_A_PRESSED,
+		GameplayTypes.SemanticInputKind.DEATH_B_PRESSED,
+	]
 
 
 func is_release() -> bool:
-	return kind == GameplayTypes.SemanticInputKind.LIFE_RELEASED or kind == GameplayTypes.SemanticInputKind.DEATH_RELEASED
+	return kind in [
+		GameplayTypes.SemanticInputKind.LIFE_A_RELEASED,
+		GameplayTypes.SemanticInputKind.LIFE_B_RELEASED,
+		GameplayTypes.SemanticInputKind.DEATH_A_RELEASED,
+		GameplayTypes.SemanticInputKind.DEATH_B_RELEASED,
+	]
 
 
 func is_tuning() -> bool:
@@ -56,11 +66,54 @@ func is_tuning() -> bool:
 
 
 func affinity() -> int:
-	if kind == GameplayTypes.SemanticInputKind.LIFE_PRESSED or kind == GameplayTypes.SemanticInputKind.LIFE_RELEASED:
+	if kind in [
+		GameplayTypes.SemanticInputKind.LIFE_A_PRESSED,
+		GameplayTypes.SemanticInputKind.LIFE_A_RELEASED,
+		GameplayTypes.SemanticInputKind.LIFE_B_PRESSED,
+		GameplayTypes.SemanticInputKind.LIFE_B_RELEASED,
+	]:
 		return GameplayTypes.Affinity.ZHU
-	if kind == GameplayTypes.SemanticInputKind.DEATH_PRESSED or kind == GameplayTypes.SemanticInputKind.DEATH_RELEASED:
+	if kind in [
+		GameplayTypes.SemanticInputKind.DEATH_A_PRESSED,
+		GameplayTypes.SemanticInputKind.DEATH_A_RELEASED,
+		GameplayTypes.SemanticInputKind.DEATH_B_PRESSED,
+		GameplayTypes.SemanticInputKind.DEATH_B_RELEASED,
+	]:
 		return GameplayTypes.Affinity.XUAN
 	return GameplayTypes.Affinity.SU
+
+
+## 返回本次敲钟所属的 A/B 通道；非敲钟事件返回 NONE。
+func input_channel() -> int:
+	if kind in [
+		GameplayTypes.SemanticInputKind.LIFE_A_PRESSED,
+		GameplayTypes.SemanticInputKind.LIFE_A_RELEASED,
+		GameplayTypes.SemanticInputKind.DEATH_A_PRESSED,
+		GameplayTypes.SemanticInputKind.DEATH_A_RELEASED,
+	]:
+		return GameplayTypes.BellInputChannel.A
+	if kind in [
+		GameplayTypes.SemanticInputKind.LIFE_B_PRESSED,
+		GameplayTypes.SemanticInputKind.LIFE_B_RELEASED,
+		GameplayTypes.SemanticInputKind.DEATH_B_PRESSED,
+		GameplayTypes.SemanticInputKind.DEATH_B_RELEASED,
+	]:
+		return GameplayTypes.BellInputChannel.B
+	return GameplayTypes.BellInputChannel.NONE
+
+
+## 返回按下事件唯一匹配的释放事件；非按下事件返回 -1。
+func matching_release_kind() -> int:
+	match kind:
+		GameplayTypes.SemanticInputKind.LIFE_A_PRESSED:
+			return GameplayTypes.SemanticInputKind.LIFE_A_RELEASED
+		GameplayTypes.SemanticInputKind.LIFE_B_PRESSED:
+			return GameplayTypes.SemanticInputKind.LIFE_B_RELEASED
+		GameplayTypes.SemanticInputKind.DEATH_A_PRESSED:
+			return GameplayTypes.SemanticInputKind.DEATH_A_RELEASED
+		GameplayTypes.SemanticInputKind.DEATH_B_PRESSED:
+			return GameplayTypes.SemanticInputKind.DEATH_B_RELEASED
+	return -1
 
 
 func to_dictionary() -> Dictionary:
@@ -81,6 +134,6 @@ static func from_dictionary(data: Dictionary) -> SemanticInputSample:
 	return create(
 		int(data.get("timestamp_us", 0)),
 		int(data.get("sequence", 0)),
-		int(data.get("kind", GameplayTypes.SemanticInputKind.LIFE_PRESSED)),
+		int(data.get("kind", GameplayTypes.SemanticInputKind.LIFE_A_PRESSED)),
 		vector
 	)

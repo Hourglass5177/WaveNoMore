@@ -19,6 +19,7 @@ var _last_press_binding: Dictionary = {}
 
 
 func configure(compiled: CompiledChart, rules: GameplayRuleSet) -> void:
+	#print("[NoteJudge] configure")
 	_rules = rules
 	_states.clear()
 	for note in compiled.notes:
@@ -27,6 +28,7 @@ func configure(compiled: CompiledChart, rules: GameplayRuleSet) -> void:
 			"status": &"pending",
 			"components": [] as Array[JudgmentComponentRecord],
 			"held": false,
+			"input_channel": GameplayTypes.BellInputChannel.NONE,
 			"gap_started_us": -1,
 			"sustain_degraded": false,
 		})
@@ -41,6 +43,7 @@ func reset(compiled: CompiledChart, rules: GameplayRuleSet) -> void:
 
 
 func advance_to(time_us: int, inclusive: bool = true) -> void:
+	#print("[NoteJudge] advance_to time=%d inclusive=%s" % [time_us, str(inclusive)])
 	if time_us < _current_time_us:
 		return
 	_current_time_us = time_us
@@ -80,6 +83,8 @@ func advance_to(time_us: int, inclusive: bool = true) -> void:
 
 
 func handle_press(sample: SemanticInputSample) -> bool:
+	#print("[NoteJudge] handle_press timestamp=%d" % sample.timestamp_us)
+	#print("[NoteJudge] press affinity=%d timestamp=%d" % [sample.affinity(), sample.timestamp_us])
 	# binding 只描述本次敲击被哪一枚普通音符接受。GameplaySimulation 会把它
 	# 交给物理波纹层；Hold 续按或区域机制敲击虽然有效，却不绑定新音符。
 	_last_press_binding.clear()
@@ -93,6 +98,7 @@ func handle_press(sample: SemanticInputSample) -> bool:
 		if sample.timestamp_us - int(state["gap_started_us"]) <= _rules.hold_sustain_grace_ms * 1000:
 			state["gap_started_us"] = -1
 			state["held"] = true
+			state["input_channel"] = sample.input_channel()
 			state["sustain_degraded"] = true
 			return true
 	# 主动按下只会匹配 PASS 窗内的音符；更宽的 MISS 窗只负责无人命中时自动过期。
@@ -109,6 +115,7 @@ func handle_press(sample: SemanticInputSample) -> bool:
 		if absi(error_us) <= pass_us:
 			candidates.append({"state": state, "absolute_error": absi(error_us), "error": error_us})
 	if candidates.is_empty():
+		#print("[NoteJudge] press no_candidate")
 		return false
 	candidates.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
 		if int(a["absolute_error"]) != int(b["absolute_error"]):
@@ -132,8 +139,10 @@ func handle_press(sample: SemanticInputSample) -> bool:
 	else:
 		chosen["status"] = &"holding"
 		chosen["held"] = true
+		chosen["input_channel"] = sample.input_channel()
 		chosen["gap_started_us"] = -1
 		chosen["components"] = [component] as Array[JudgmentComponentRecord]
+	#print("[NoteJudge] press matched id=%s unit=%s grade=%d" % [str(chosen_note["id"]), str(chosen_note["unit_kind"]), grade])
 	return true
 
 
@@ -142,12 +151,14 @@ func last_press_binding() -> Dictionary:
 
 
 func handle_release(sample: SemanticInputSample) -> bool:
+	#print("[NoteJudge] handle_release timestamp=%d" % sample.timestamp_us)
+	#print("[NoteJudge] release affinity=%d timestamp=%d" % [sample.affinity(), sample.timestamp_us])
 	var affinity: int = sample.affinity()
 	for state in _states:
 		if state["status"] != &"holding":
 			continue
 		var note: Dictionary = state["note"]
-		if int(note["affinity"]) != affinity:
+		if int(note["affinity"]) != affinity or int(state["input_channel"]) != sample.input_channel():
 			continue
 		# 尾点不再判松键。恰好在尾点收到 RELEASE 时，advance_to(..., false)
 		# 尚未包含该端点，因此在这里仍按“已持续到尾点”自动完成。
@@ -163,6 +174,7 @@ func handle_release(sample: SemanticInputSample) -> bool:
 
 
 func cancel_active(time_us: int) -> void:
+	#print("[NoteJudge] cancel_active time=%d" % time_us)
 	for state in _states:
 		if state["status"] != &"holding":
 			continue
@@ -198,14 +210,25 @@ func active_hold_ids(held_only: bool = false) -> PackedStringArray:
 
 func begin_pause_rearm() -> Dictionary:
 	_paused_for_rearm = true
-	var state := {"life_required": false, "death_required": false}
+	var state := {
+		"life_required": false,
+		"death_required": false,
+		"life_a_required": false,
+		"life_b_required": false,
+		"death_a_required": false,
+		"death_b_required": false,
+	}
 	for note_state in _states:
 		if note_state["status"] != &"holding":
 			continue
-		if int(note_state["note"]["affinity"]) == GameplayTypes.Affinity.ZHU:
+		var life: bool = int(note_state["note"]["affinity"]) == GameplayTypes.Affinity.ZHU
+		var channel: int = int(note_state["input_channel"])
+		if life:
 			state["life_required"] = true
 		else:
 			state["death_required"] = true
+		var channel_name: String = "a" if channel == GameplayTypes.BellInputChannel.A else "b"
+		state[("life_" if life else "death_") + channel_name + "_required"] = true
 		note_state["held"] = false
 	return state
 
@@ -215,7 +238,10 @@ func apply_resume_rearm(rearm_state: Dictionary) -> void:
 		if note_state["status"] != &"holding":
 			continue
 		var life: bool = int(note_state["note"]["affinity"]) == GameplayTypes.Affinity.ZHU
-		var rearmed: bool = bool(rearm_state.get("life_held" if life else "death_held", false))
+		var channel: int = int(note_state["input_channel"])
+		var channel_name: String = "a" if channel == GameplayTypes.BellInputChannel.A else "b"
+		var rearm_key: String = ("life_" if life else "death_") + channel_name + "_held"
+		var rearmed: bool = bool(rearm_state.get(rearm_key, false))
 		note_state["held"] = rearmed
 		note_state["gap_started_us"] = -1 if rearmed else _current_time_us
 	_paused_for_rearm = false

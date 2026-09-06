@@ -53,8 +53,6 @@ signal debug_snapshot_ready(snapshot: Dictionary)
 @export var song_player_path: NodePath = ^"../SongPlayer"
 ## 相对于 StageSession 的歌曲主时钟路径；必须指向 SongClock。
 @export var song_clock_path: NodePath = ^"../SongClock"
-## 相对于 StageSession 的语义输入路由路径；必须指向 InputRouter。
-@export var input_router_path: NodePath = ^"../InputRouter"
 ## 相对于 StageSession 的视觉事件调度器路径；必须指向 ChartScheduler。
 @export var chart_scheduler_path: NodePath = ^"../ChartScheduler"
 ## 相对于 StageSession 的玩法协调器路径；必须指向 GameplayCoordinator。
@@ -85,15 +83,13 @@ var uses_generated_graybox_audio: bool = false
 var song_player: AudioStreamPlayer
 ## 已解析并绑定的歌曲主时钟。
 var song_clock: SongClock
-## 已解析并绑定的语义输入路由。
-var input_router: InputRouter
+## 已解析并绑定的全局输入事件缓冲。
+var input_router: Node
 ## 已解析并绑定的视觉调度器。
 var chart_scheduler: ChartScheduler
 ## 已解析并绑定的玩法内核协调器。
 var gameplay_coordinator: GameplayCoordinator
 
-## 尚未按时间送入玩法内核的语义输入；始终按时间戳和顺序号处理。
-var _pending_inputs: Array[SemanticInputSample] = []
 ## 进入暂停前的生命周期状态，用于倒计时结束后恢复到原状态。
 var _state_before_pause: int = GameplayTypes.StageState.PLAYING
 ## 暂停后恢复倒计时的剩余秒数；负值表示当前没有倒计时。
@@ -143,6 +139,7 @@ func _exit_tree() -> void:
 
 
 func _process(delta: float) -> void:
+	# print("[StageSession] process state=%d" % state)
 	if state == GameplayTypes.StageState.PAUSED:
 		_process_resume_countdown(delta)
 		return
@@ -161,7 +158,7 @@ func _process(delta: float) -> void:
 func bind_components(
 	player: AudioStreamPlayer,
 	clock: SongClock,
-	router: InputRouter,
+	router: Node,
 	scheduler: ChartScheduler,
 	coordinator: GameplayCoordinator
 ) -> void:
@@ -235,7 +232,6 @@ func start() -> bool:
 	# 每一轮都清空上轮输入、展示缓存和子系统状态；关卡资源本身无需重新编译。
 	run_id += 1
 	_result_emitted = false
-	_pending_inputs.clear()
 	_resume_rearm_state.clear()
 	_resume_countdown_remaining = -1.0
 	_last_health = -1
@@ -247,7 +243,7 @@ func start() -> bool:
 	input_router.reset_for_run()
 	# 先通知 ReplayRecorder 建立本轮记录，再开放输入并启动歌曲时钟。
 	run_started.emit(run_id)
-	input_router.set_mode(InputRouter.InputMode.REPLAY if _replay_mode else InputRouter.InputMode.GAMEPLAY)
+	input_router.set_mode(InputEventBuffer.InputMode.REPLAY if _replay_mode else InputEventBuffer.InputMode.GAMEPLAY)
 	song_clock.start(0.0)
 	var initial_sample: ClockSample = song_clock.sample()
 	if initial_sample.song_time_sec < 0.0:
@@ -259,6 +255,7 @@ func start() -> bool:
 
 
 func step(clock_sample: ClockSample) -> void:
+	# print("[StageSession] step ready=%s state=%d" % [str(_components_are_ready()), state])
 	if clock_sample == null or not _components_are_ready():
 		return
 	if state == GameplayTypes.StageState.PAUSED or state == GameplayTypes.StageState.RESULT:
@@ -267,8 +264,10 @@ func step(clock_sample: ClockSample) -> void:
 	# 先按 judge_time 处理确定性玩法，再按 visual_time 推进预见性表现；
 	# 两条时间轴不能互换，否则视觉校准会改变真实判定。
 	var judge_time_us: int = roundi(clock_sample.judge_time_sec * 1_000_000.0)
-	_process_due_inputs(judge_time_us)
+	input_router.begin_frame(judge_time_us)
+	gameplay_coordinator.process_input_frame()
 	gameplay_coordinator.advance_to(judge_time_us, true)
+	input_router.end_frame()
 	chart_scheduler.advance(clock_sample.visual_time_sec)
 
 	if state == GameplayTypes.StageState.PREROLL and clock_sample.song_time_sec >= 0.0:
@@ -299,35 +298,13 @@ func step(clock_sample: ClockSample) -> void:
 	debug_snapshot_ready.emit(_build_debug_snapshot(clock_sample, gameplay_snapshot))
 
 
-func enqueue_input(sample: SemanticInputSample) -> void:
-	if sample == null:
-		return
-	if state == GameplayTypes.StageState.PAUSED:
-		# 暂停恢复只观察 InputRouter 的当前按住快照，这些按键不是新的玩法判定。
-		return
-	if state not in [GameplayTypes.StageState.PREROLL, GameplayTypes.StageState.PLAYING]:
-		return
-	_pending_inputs.append(sample)
-	_pending_inputs.sort_custom(func(a: SemanticInputSample, b: SemanticInputSample) -> bool:
-		if a.timestamp_us != b.timestamp_us:
-			return a.timestamp_us < b.timestamp_us
-		return a.sequence < b.sequence
-	)
-
-
-func inject_replay_input(sample: SemanticInputSample) -> void:
-	if not _replay_mode:
-		return
-	enqueue_input(sample)
-
-
 func set_replay_mode(enabled: bool) -> void:
 	if _replay_mode == enabled:
 		return
 	_replay_mode = enabled
 	replay_mode_changed.emit(_replay_mode)
 	if is_instance_valid(input_router):
-		input_router.set_mode(InputRouter.InputMode.REPLAY if enabled else InputRouter.InputMode.GAMEPLAY)
+		input_router.set_mode(InputEventBuffer.InputMode.REPLAY if enabled else InputEventBuffer.InputMode.GAMEPLAY)
 
 
 func is_replay_playback() -> bool:
@@ -348,10 +325,10 @@ func request_pause(reason: StringName = &"manual") -> bool:
 	# 记录持续输入重武装信息后清键、冻钟，最后才暂停整棵 SceneTree。
 	_state_before_pause = state
 	_resume_rearm_state = gameplay_coordinator.begin_pause_rearm()
-	input_router.cancel_all(InputRouter.CancelReason.PAUSE, false)
+	input_router.cancel_all(InputEventBuffer.CancelReason.PAUSE, false)
 	song_clock.pause(now_usec)
 	_transition_to(GameplayTypes.StageState.PAUSED, reason)
-	input_router.set_mode(InputRouter.InputMode.RESUME_REARM)
+	input_router.set_mode(InputEventBuffer.InputMode.RESUME_REARM)
 	_resume_countdown_remaining = -1.0
 	get_tree().paused = true
 	_pause_in_progress = false
@@ -380,9 +357,8 @@ func retry() -> bool:
 	_resume_countdown_remaining = -1.0
 	_resume_rearm_state.clear()
 	_result_emitted = false
-	input_router.set_mode(InputRouter.InputMode.DISABLED)
-	input_router.cancel_all(InputRouter.CancelReason.RETRY, false)
-	_pending_inputs.clear()
+	input_router.set_mode(InputEventBuffer.InputMode.DISABLED)
+	input_router.cancel_all(InputEventBuffer.CancelReason.RETRY, false)
 	_clear_physical_note_state()
 	song_clock.stop()
 	gameplay_coordinator.reset()
@@ -395,9 +371,8 @@ func abort() -> void:
 	if get_tree().paused:
 		get_tree().paused = false
 	_resume_countdown_remaining = -1.0
-	input_router.set_mode(InputRouter.InputMode.DISABLED)
-	input_router.cancel_all(InputRouter.CancelReason.SESSION_END, false)
-	_pending_inputs.clear()
+	input_router.set_mode(InputEventBuffer.InputMode.DISABLED)
+	input_router.cancel_all(InputEventBuffer.CancelReason.SESSION_END, false)
 	chart_scheduler.reset()
 	_complete_result(false, true)
 
@@ -409,10 +384,9 @@ func teardown() -> void:
 	if get_tree() != null and get_tree().paused:
 		get_tree().paused = false
 	_resume_countdown_remaining = -1.0
-	_pending_inputs.clear()
 	if is_instance_valid(input_router):
-		input_router.cancel_all(InputRouter.CancelReason.SESSION_END, false)
-		input_router.set_mode(InputRouter.InputMode.DISABLED)
+		input_router.cancel_all(InputEventBuffer.CancelReason.SESSION_END, false)
+		input_router.set_mode(InputEventBuffer.InputMode.DISABLED)
 	if is_instance_valid(chart_scheduler):
 		chart_scheduler.reset()
 	if is_instance_valid(song_clock):
@@ -451,7 +425,6 @@ func seek_song_time(target_song_time_sec: float) -> bool:
 	]
 	# Seek 会建立一条新的时间线：丢弃待处理输入，重置玩法状态和物理事件，
 	# 再把玩法与视觉分别推进到目标判定时间和目标视觉时间。
-	_pending_inputs.clear()
 	_clear_physical_note_state()
 	input_router.reset_for_run()
 	gameplay_coordinator.reset()
@@ -491,37 +464,32 @@ func _complete_resume() -> void:
 	gameplay_coordinator.apply_resume_rearm({
 		"life_held": bool(held_snapshot.get("life_held", false)),
 		"death_held": bool(held_snapshot.get("death_held", false)),
+		"life_a_held": bool(held_snapshot.get("life_a_held", false)),
+		"life_b_held": bool(held_snapshot.get("life_b_held", false)),
+		"death_a_held": bool(held_snapshot.get("death_a_held", false)),
+		"death_b_held": bool(held_snapshot.get("death_b_held", false)),
 	})
 	_resume_rearm_state.clear()
 	song_clock.resume(Time.get_ticks_usec())
-	input_router.set_mode(InputRouter.InputMode.REPLAY if _replay_mode else InputRouter.InputMode.GAMEPLAY)
+	input_router.set_mode(InputEventBuffer.InputMode.REPLAY if _replay_mode else InputEventBuffer.InputMode.GAMEPLAY)
 	get_tree().paused = false
 	_transition_to(_state_before_pause, &"resume")
 	resume_countdown_changed.emit(0.0)
-
-
-func _process_due_inputs(judge_time_us: int) -> void:
-	while not _pending_inputs.is_empty():
-		var sample: SemanticInputSample = _pending_inputs[0]
-		if sample.timestamp_us > judge_time_us:
-			break
-		_pending_inputs.pop_front()
-		gameplay_coordinator.accept_input(sample)
 
 
 func _begin_failure(song_time: float) -> void:
 	if state == GameplayTypes.StageState.FAILING:
 		return
 	_fail_started_song_time_sec = song_time
-	input_router.set_mode(InputRouter.InputMode.DISABLED)
-	input_router.cancel_all(InputRouter.CancelReason.SESSION_END, false)
+	input_router.set_mode(InputEventBuffer.InputMode.DISABLED)
+	input_router.cancel_all(InputEventBuffer.CancelReason.SESSION_END, false)
 	_transition_to(GameplayTypes.StageState.FAILING, &"soul_fire_empty")
 
 
 func _begin_finishing(song_time: float) -> void:
 	_finish_started_song_time_sec = song_time
-	input_router.set_mode(InputRouter.InputMode.DISABLED)
-	input_router.cancel_all(InputRouter.CancelReason.SESSION_END, false)
+	input_router.set_mode(InputEventBuffer.InputMode.DISABLED)
+	input_router.cancel_all(InputEventBuffer.CancelReason.SESSION_END, false)
 	_transition_to(GameplayTypes.StageState.FINISHING, &"song_complete")
 
 
@@ -532,8 +500,8 @@ func _complete_result(success: bool, aborted: bool = false) -> void:
 	if get_tree().paused:
 		get_tree().paused = false
 	# 先封住一切新输入；自然结束时让内核补齐尚未到期的单位，主动退出则不伪造结果。
-	input_router.set_mode(InputRouter.InputMode.DISABLED)
-	input_router.cancel_all(InputRouter.CancelReason.SESSION_END, false)
+	input_router.set_mode(InputEventBuffer.InputMode.DISABLED)
+	input_router.cancel_all(InputEventBuffer.CancelReason.SESSION_END, false)
 	if not aborted:
 		gameplay_coordinator.force_finish()
 	song_clock.stop()
@@ -667,7 +635,7 @@ func _on_waves_reset() -> void:
 func _on_input_cancelled(reason: int) -> void:
 	if _pause_in_progress:
 		return
-	if reason == InputRouter.CancelReason.FOCUS_LOST and pause_on_focus_loss:
+	if reason == InputEventBuffer.CancelReason.FOCUS_LOST and pause_on_focus_loss:
 		request_pause(&"focus_lost")
 
 
@@ -713,7 +681,7 @@ func _build_debug_snapshot(clock_sample: ClockSample, gameplay_snapshot: Diction
 		"death_frequency_hz": gameplay_snapshot.get("death_frequency_hz", 0.0),
 		"active_tuning_sliders": active_sliders,
 		"active_tuning_slider_count": active_sliders.size(),
-		"pending_inputs": _pending_inputs.size(),
+		"pending_inputs": input_router.get_buffer_size(),
 		"score": gameplay_snapshot.get("score", 0),
 		"combo": gameplay_snapshot.get("combo", 0),
 		"soul_fire": gameplay_snapshot.get("soul_fire", 0),
@@ -835,7 +803,7 @@ func _resolve_components() -> void:
 	if not is_instance_valid(song_clock):
 		song_clock = get_node_or_null(song_clock_path) as SongClock
 	if not is_instance_valid(input_router):
-		input_router = get_node_or_null(input_router_path) as InputRouter
+		input_router = InputEventBuffer
 	if not is_instance_valid(chart_scheduler):
 		chart_scheduler = get_node_or_null(chart_scheduler_path) as ChartScheduler
 	if not is_instance_valid(gameplay_coordinator):
@@ -844,8 +812,6 @@ func _resolve_components() -> void:
 
 func _connect_components() -> void:
 	if is_instance_valid(input_router):
-		if not input_router.semantic_input_emitted.is_connected(enqueue_input):
-			input_router.semantic_input_emitted.connect(enqueue_input)
 		if not input_router.cancelled.is_connected(_on_input_cancelled):
 			input_router.cancelled.connect(_on_input_cancelled)
 		if not input_router.pause_requested.is_connected(_on_pause_requested):

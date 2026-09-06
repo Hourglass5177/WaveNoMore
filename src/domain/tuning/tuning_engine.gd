@@ -7,9 +7,12 @@ extends RefCounted
 ## 玩家旋转多少，频率就真实改变多少。点状引导只提示节奏，不会吞掉或延迟输入。
 
 const NEVER_TIME_US: int = -9_000_000_000_000_000
+const TUNING_ARC_GEOMETRY: GDScript = preload("res://src/domain/tuning/tuning_arc_geometry.gd")
+const DESIGN_WIDTH_PX: float = 1920.0
 ## Replay 的双路输入会量化为 Q15；连续位移累加后可能留下万分位误差。
 ## 这里只放宽边界比较，不钳制玩家位置，以免越过滑条端点也被误算为命中。
 const TRACKING_EPSILON: float = 0.001
+const STICK_INPUT_WINDOW_HALF_RAD: float = PI / 6.0
 
 ## 时间窗外没有输入时，端点判定使用这个哨兵值表示“尚未到达”。
 const NO_ENDPOINT_OBSERVATION_US: int = 9_000_000_000_000_000
@@ -31,7 +34,25 @@ var _life_value: float = 0.5
 var _death_value: float = 0.5
 var _last_life_held: bool = false
 var _last_death_held: bool = false
+var _life_input_channel: int = GameplayTypes.BellInputChannel.NONE
+var _death_input_channel: int = GameplayTypes.BellInputChannel.NONE
 var _paused_for_rearm: bool = false
+var _life_tuning_engaged: bool = false
+var _death_tuning_engaged: bool = false
+var _life_last_progress: float = 0.0
+var _death_last_progress: float = 0.0
+var _life_engage_angle_rad: float = 0.0
+var _death_engage_angle_rad: float = 0.0
+var _life_logical_start_offset: float = 0.0
+var _death_logical_start_offset: float = 0.0
+var _life_logical_end_offset: float = 0.0
+var _death_logical_end_offset: float = 0.0
+var _life_logical_half_sweep: float = 0.0
+var _death_logical_half_sweep: float = 0.0
+var _life_drag_state_index: int = -1
+var _death_drag_state_index: int = -1
+var _life_drag_traversal_index: int = -1
+var _death_drag_traversal_index: int = -1
 
 
 func configure(compiled: CompiledChart, rules: GameplayRuleSet) -> void:
@@ -48,7 +69,11 @@ func configure(compiled: CompiledChart, rules: GameplayRuleSet) -> void:
 	_current_time_us = NEVER_TIME_US
 	_last_life_held = false
 	_last_death_held = false
+	_life_input_channel = GameplayTypes.BellInputChannel.NONE
+	_death_input_channel = GameplayTypes.BellInputChannel.NONE
 	_paused_for_rearm = false
+	_clear_drag_state(GameplayTypes.Affinity.ZHU)
+	_clear_drag_state(GameplayTypes.Affinity.XUAN)
 	_reset_values_to_base()
 
 	if _compiled == null:
@@ -66,6 +91,30 @@ func can_consume(sample: SemanticInputSample) -> bool:
 	if sample == null:
 		return false
 	return sample.kind == GameplayTypes.SemanticInputKind.TUNING_DISPLACED
+
+
+## 记录每侧首次建立调频保持的 A/B 来源；只有匹配释放才归零并解除拖动。
+func handle_bell_input(sample: SemanticInputSample) -> void:
+	if sample == null or (not sample.is_press() and not sample.is_release()):
+		return
+	var affinity: int = sample.affinity()
+	var channel: int = sample.input_channel()
+	if affinity == GameplayTypes.Affinity.ZHU:
+		if sample.is_press() and _life_input_channel == GameplayTypes.BellInputChannel.NONE:
+			_life_input_channel = channel
+			_last_life_held = true
+		elif sample.is_release() and _life_input_channel == channel:
+			_life_input_channel = GameplayTypes.BellInputChannel.NONE
+			_last_life_held = false
+			reset_side_progress(affinity, sample.timestamp_us)
+	elif affinity == GameplayTypes.Affinity.XUAN:
+		if sample.is_press() and _death_input_channel == GameplayTypes.BellInputChannel.NONE:
+			_death_input_channel = channel
+			_last_death_held = true
+		elif sample.is_release() and _death_input_channel == channel:
+			_death_input_channel = GameplayTypes.BellInputChannel.NONE
+			_last_death_held = false
+			reset_side_progress(affinity, sample.timestamp_us)
 
 
 func handle_input(sample: SemanticInputSample, life_held: bool, death_held: bool) -> bool:
@@ -106,7 +155,151 @@ func handle_input(sample: SemanticInputSample, life_held: bool, death_held: bool
 			_death_value,
 			sample.timestamp_us
 		)
+
 	_queue_frequency_change(sample.timestamp_us)
+	return true
+
+
+## 使用单侧摇杆的绝对角度更新对应滑条，不读取或修改另一侧拖动状态。
+func apply_absolute_side(
+		affinity: int,
+		angle_rad: float,
+		timestamp_us: int,
+		is_held: bool,
+		stick_released: bool
+) -> bool:
+	if stick_released:
+		return reset_side_progress(affinity, timestamp_us)
+	if not field_active() or not is_held or is_nan(angle_rad):
+		return false
+	var changed: bool = _apply_absolute_angle(affinity, angle_rad, timestamp_us)
+	if changed:
+		_queue_frequency_change(timestamp_us)
+	return changed
+
+
+## 中断当前一侧的调频操作，并将活动滑条恢复到其声明的起点值。
+## 该操作只改变调频状态，不产生判定、乱按或波事件。
+func reset_side_progress(affinity: int, timestamp_us: int) -> bool:
+	var state_index: int = _active_slider_state_index(affinity, timestamp_us)
+	_clear_drag_state(affinity)
+	if state_index < 0:
+		return false
+	var state: Dictionary = _slider_states[state_index]
+	var slider: Dictionary = state["slider"]
+	var start_value: float = clampf(float(slider.get("start_value", 0.0)), 0.0, 1.0)
+	var previous_value: float = _value_for_affinity(affinity)
+	if affinity == GameplayTypes.Affinity.ZHU:
+		_life_value = start_value
+	else:
+		_death_value = start_value
+	for endpoint_value: Variant in state["endpoint_states"]:
+		var endpoint: Dictionary = endpoint_value
+		endpoint["inside"] = false
+	var changed: bool = not is_equal_approx(previous_value, start_value)
+	if changed:
+		_queue_frequency_change(timestamp_us)
+	return changed
+
+
+func _apply_absolute_angle(affinity: int, angle_rad: float, timestamp_us: int) -> bool:
+	var state_index := _active_slider_state_index(affinity, timestamp_us)
+	if state_index < 0:
+		return false
+	var slider: Dictionary = _slider_states[state_index]["slider"]
+	var start_value: float = float(slider.get("start_value", 0.0))
+	var end_value: float = float(slider.get("end_value", 1.0))
+	var sweep: float = TUNING_ARC_GEOMETRY.equivalent_sweep_rad(
+		start_value,
+		end_value,
+		_rule_float(&"tuning_min_frequency_hz", 1.0),
+		_rule_float(&"tuning_max_frequency_hz", 7.0),
+		_rule_float(&"tuning_pixels_per_hz", 160.0),
+		DESIGN_WIDTH_PX
+	)
+	if sweep <= 0.0:
+		return false
+	var frequency_sign: int = 1 if end_value > start_value else -1
+	var visual_mirror: int = -1 if affinity == GameplayTypes.Affinity.XUAN else 1
+	var leg_index: int = _slider_leg_at(slider, timestamp_us)
+	var leg_sign: int = 1 if leg_index % 2 == 0 else -1
+	var rotation_sign: int = frequency_sign * visual_mirror * leg_sign
+	var offset := deg_to_rad(float(slider.get("arc_rotation_deg", 0.0)))
+	var state_is_life: bool = affinity == GameplayTypes.Affinity.ZHU
+	var previous_state_index: int = _life_drag_state_index if state_is_life else _death_drag_state_index
+	var previous_leg_index: int = _life_drag_traversal_index if state_is_life else _death_drag_traversal_index
+	if previous_state_index != state_index or previous_leg_index != leg_index:
+		_clear_drag_state(affinity)
+		if state_is_life:
+			_life_drag_state_index = state_index
+			_life_drag_traversal_index = leg_index
+		else:
+			_death_drag_state_index = state_index
+			_death_drag_traversal_index = leg_index
+	var start_angle: float = TUNING_ARC_GEOMETRY.symmetric_directed_angles(
+		affinity,
+		rotation_sign,
+		sweep,
+		offset
+	).x
+	var directed_offset: float = wrapf(angle_rad - start_angle, -PI, PI) * float(rotation_sign)
+	var midpoint_offset: float = sweep * 0.5
+	var engaged: bool = _life_tuning_engaged if state_is_life else _death_tuning_engaged
+	if not engaged:
+		var window_end: float = minf(STICK_INPUT_WINDOW_HALF_RAD, midpoint_offset)
+		if directed_offset < -STICK_INPUT_WINDOW_HALF_RAD or directed_offset > window_end:
+			return false
+		var logical_half_sweep: float = midpoint_offset - directed_offset
+		if logical_half_sweep <= 0.0:
+			return false
+		if state_is_life:
+			_life_tuning_engaged = true
+			_life_engage_angle_rad = angle_rad
+			_life_logical_start_offset = directed_offset
+			_life_logical_half_sweep = logical_half_sweep
+			_life_logical_end_offset = midpoint_offset + logical_half_sweep
+			_life_last_progress = 0.0
+		else:
+			_death_tuning_engaged = true
+			_death_engage_angle_rad = angle_rad
+			_death_logical_start_offset = directed_offset
+			_death_logical_half_sweep = logical_half_sweep
+			_death_logical_end_offset = midpoint_offset + logical_half_sweep
+			_death_last_progress = 0.0
+		var initial_value: float = start_value if leg_index % 2 == 0 else end_value
+		return _set_absolute_side_value(affinity, initial_value, timestamp_us)
+	var logical_start: float = _life_logical_start_offset if state_is_life else _death_logical_start_offset
+	var logical_end: float = _life_logical_end_offset if state_is_life else _death_logical_end_offset
+	# 先求输入角度在逻辑行程中的归一化位置，再直接映射到本程调频条
+	# 的起终频率位置。圆心角只描述输入行程，不参与第二次视觉角度换算。
+	var normalized_progress: float = clampf(inverse_lerp(
+		logical_start,
+		logical_end,
+		directed_offset
+	), 0.0, 1.0)
+	if state_is_life:
+		_life_last_progress = normalized_progress
+	else:
+		_death_last_progress = normalized_progress
+	var traversal_start_value: float = start_value if leg_index % 2 == 0 else end_value
+	var traversal_end_value: float = end_value if leg_index % 2 == 0 else start_value
+	var next_value: float = lerpf(
+		traversal_start_value,
+		traversal_end_value,
+		normalized_progress
+	)
+	return _set_absolute_side_value(affinity, next_value, timestamp_us)
+
+
+func _set_absolute_side_value(affinity: int, next_value: float, timestamp_us: int) -> bool:
+	var previous_value: float = _value_for_affinity(affinity)
+	if is_equal_approx(previous_value, next_value):
+		return false
+	if affinity == GameplayTypes.Affinity.ZHU:
+		_life_value = next_value
+	else:
+		_death_value = next_value
+	_record_endpoint_entries(affinity, previous_value, next_value, timestamp_us)
 	return true
 
 
@@ -133,10 +326,35 @@ func cancel_active(time_us: int) -> void:
 	_current_time_us = maxi(_current_time_us, time_us)
 	_last_life_held = false
 	_last_death_held = false
+	_life_input_channel = GameplayTypes.BellInputChannel.NONE
+	_death_input_channel = GameplayTypes.BellInputChannel.NONE
+	_clear_drag_state(GameplayTypes.Affinity.ZHU)
+	_clear_drag_state(GameplayTypes.Affinity.XUAN)
 
 
 func is_active() -> bool:
 	return field_active()
+
+
+func _clear_drag_state(affinity: int) -> void:
+	if affinity == GameplayTypes.Affinity.ZHU:
+		_life_tuning_engaged = false
+		_life_last_progress = 0.0
+		_life_engage_angle_rad = 0.0
+		_life_logical_start_offset = 0.0
+		_life_logical_end_offset = 0.0
+		_life_logical_half_sweep = 0.0
+		_life_drag_state_index = -1
+		_life_drag_traversal_index = -1
+	else:
+		_death_tuning_engaged = false
+		_death_last_progress = 0.0
+		_death_engage_angle_rad = 0.0
+		_death_logical_start_offset = 0.0
+		_death_logical_end_offset = 0.0
+		_death_logical_half_sweep = 0.0
+		_death_drag_state_index = -1
+		_death_drag_traversal_index = -1
 
 
 func field_active() -> bool:
@@ -173,13 +391,25 @@ func begin_pause_rearm() -> Dictionary:
 		"tuning_required": field_active(),
 		"life_required": field_active() and _last_life_held,
 		"death_required": field_active() and _last_death_held,
+		"life_input_channel": _life_input_channel,
+		"death_input_channel": _death_input_channel,
 	}
 
 
 func apply_resume_rearm(rearm_state: Dictionary) -> void:
 	_paused_for_rearm = false
-	_last_life_held = bool(rearm_state.get("life_held", false))
-	_last_death_held = bool(rearm_state.get("death_held", false))
+	_life_input_channel = _matching_rearm_channel(rearm_state, true, _life_input_channel)
+	_death_input_channel = _matching_rearm_channel(rearm_state, false, _death_input_channel)
+	_last_life_held = _life_input_channel != GameplayTypes.BellInputChannel.NONE
+	_last_death_held = _death_input_channel != GameplayTypes.BellInputChannel.NONE
+
+
+func _matching_rearm_channel(rearm_state: Dictionary, life: bool, required_channel: int) -> int:
+	if required_channel == GameplayTypes.BellInputChannel.NONE:
+		return GameplayTypes.BellInputChannel.NONE
+	var prefix: String = "life" if life else "death"
+	var suffix: String = "a" if required_channel == GameplayTypes.BellInputChannel.A else "b"
+	return required_channel if bool(rearm_state.get(prefix + "_" + suffix + "_held", false)) else GameplayTypes.BellInputChannel.NONE
 
 
 func life_tuning_value() -> float:
@@ -368,8 +598,8 @@ func _build_slider_states() -> void:
 			var endpoint: Dictionary = endpoint_states[endpoint_index]
 			_timeline_events.append({
 				"time_us": int(endpoint["leg_start_us"]),
-				# 在场域进入及起点采样之后记录“本来就在端点内”的状态，
-				# 防止没有真实进入动作也被当成一次命中。
+				# 在场域进入及起点采样之后初始化实时端点位置；这里只更新
+				# inside，是否成功仍由 target_us 的最终位置和按住状态决定。
 				"priority": 6,
 				"kind": &"endpoint_open",
 				"state_index": index,
@@ -447,6 +677,7 @@ func _begin_slider(state_index: int, time_us: int) -> void:
 	if state_index < 0 or state_index >= _slider_states.size():
 		return
 	var slider: Dictionary = _slider_states[state_index]["slider"]
+	_clear_drag_state(int(slider["affinity"]))
 	var start_value: float = clampf(float(slider["start_value"]), 0.0, 1.0)
 	if int(slider["affinity"]) == GameplayTypes.Affinity.XUAN:
 		_death_value = start_value
@@ -477,10 +708,36 @@ func _open_endpoint(state_index: int, endpoint_index: int) -> void:
 func _finalize_endpoint(state_index: int, endpoint_index: int) -> void:
 	if state_index < 0 or state_index >= _slider_states.size():
 		return
-	var endpoints: Array = _slider_states[state_index]["endpoint_states"]
+	var state: Dictionary = _slider_states[state_index]
+	var endpoints: Array = state["endpoint_states"]
 	if endpoint_index < 0 or endpoint_index >= endpoints.size():
 		return
 	var endpoint: Dictionary = endpoints[endpoint_index]
+	var slider: Dictionary = state["slider"]
+	var affinity: int = int(slider["affinity"])
+	var player_progress: float = _value_to_slider_progress(
+		slider,
+		_value_for_affinity(affinity)
+	)
+	var is_inside: bool = _inside_endpoint_capture(
+		player_progress,
+		float(endpoint["target_progress"])
+	)
+	var is_held: bool = _last_life_held if affinity == GameplayTypes.Affinity.ZHU else _last_death_held
+	var qualified: bool = is_inside and is_held
+	endpoint["inside"] = is_inside
+	endpoint["captured"] = qualified
+	endpoint["grade"] = (
+		GameplayTypes.JudgmentGrade.PERFECT
+		if qualified
+		else GameplayTypes.JudgmentGrade.MISS
+	)
+	if qualified:
+		endpoint["best_observed_us"] = int(endpoint["target_us"])
+		endpoint["best_error_us"] = 0
+	else:
+		endpoint["best_observed_us"] = NO_ENDPOINT_OBSERVATION_US
+		endpoint["best_error_us"] = NO_ENDPOINT_OBSERVATION_US
 	endpoint["finalized"] = true
 
 
@@ -490,8 +747,7 @@ func _record_endpoint_entries(
 		current_value: float,
 		time_us: int
 ) -> void:
-	## 每一程从开始到虚线抵达端点之间，只要玩家第一次把填充推入端点区就算完成。
-	## 完成只先锁存，真正的判定记录仍等 target_us 到来后才产生。
+	## 行程中只维护玩家是否位于端点区以及进入次数；成功与否只在 target_us 结算。
 	for state: Dictionary in _slider_states:
 		if bool(state["finished"]):
 			continue
@@ -518,21 +774,13 @@ func _record_endpoint_entries(
 				float(endpoint["target_progress"])
 			)
 			if is_inside and not bool(endpoint["inside"]):
-				_record_endpoint_entry(endpoint, time_us)
+				_record_endpoint_entry_transition(endpoint)
 			endpoint["inside"] = is_inside
 
 
-func _record_endpoint_entry(endpoint: Dictionary, observed_us: int) -> void:
-	if bool(endpoint["captured"]):
-		return
-	var target_us: int = int(endpoint["target_us"])
-	var error_us: int = observed_us - target_us
+func _record_endpoint_entry_transition(endpoint: Dictionary) -> void:
+	## 提前进入只作为运行时观察信息，不能锁存判定成绩或命中时间。
 	endpoint["entry_count"] = int(endpoint["entry_count"]) + 1
-	endpoint["captured"] = true
-	endpoint["best_observed_us"] = observed_us
-	endpoint["best_error_us"] = error_us
-	# 新规则不奖励“压线”，也不惩罚提前完成：到时或提前完成均为成功。
-	endpoint["grade"] = GameplayTypes.JudgmentGrade.PERFECT
 
 
 func _inside_endpoint_capture(player_progress: float, target_progress: float) -> bool:
@@ -589,6 +837,7 @@ func _finish_slider(state_index: int, finalized_at_us: int) -> void:
 		var endpoint: Dictionary = endpoint_value
 		state["grade"] = maxi(int(state["grade"]), int(endpoint["grade"]))
 	state["finished"] = true
+	_clear_drag_state(int(state["slider"]["affinity"]))
 	_try_finalize_group(str(state["group_key"]), finalized_at_us)
 	if _active_field_ids.is_empty() and not _has_pending_slider_window(finalized_at_us):
 		_reset_values_to_base()

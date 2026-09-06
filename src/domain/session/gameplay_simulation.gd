@@ -1,6 +1,24 @@
 class_name GameplaySimulation
 extends RefCounted
 
+enum GameplayOperationKind {
+	LIFE_A_PRESSED,
+	LIFE_A_RELEASED,
+	LIFE_B_PRESSED,
+	LIFE_B_RELEASED,
+	DEATH_A_PRESSED,
+	DEATH_A_RELEASED,
+	DEATH_B_PRESSED,
+	DEATH_B_RELEASED,
+	LIFE_PRESENT,
+	DEATH_PRESENT,
+	TUNING_DISPLACED,
+	LIFE_TUNING_DISPLACED,
+	DEATH_TUNING_DISPLACED,
+	INPUT_CANCELLED,
+	ENUM_MAX,
+}
+
 ## 一局玩法的纯逻辑总入口，统一调度普通音符、调频、疾振、物理波、计分和魂火。
 ## 外部只能按绝对微秒推进或提交语义输入，不能依赖 Node、帧 delta 或画面碰撞。
 
@@ -25,10 +43,15 @@ var health_engine := HealthEngine.new()
 
 ## 当前歌曲时间，单位微秒；极小初值表示尚未推进到任何有效时间。
 var current_time_us: int = -9_000_000_000_000_000
-## 生钟键当前是否按住；由 LIFE_PRESSED/RELEASED 更新，失焦时强制 false。
+## 生钟当前是否由已记录的 A/B 通道持续按住；失焦时强制 false。
 var life_held: bool = false
-## 死钟键当前是否按住；由 DEATH_PRESSED/RELEASED 更新，失焦时强制 false。
+## 死钟当前是否由已记录的 A/B 通道持续按住；失焦时强制 false。
 var death_held: bool = false
+var _life_input_channel: int = GameplayTypes.BellInputChannel.NONE
+var _death_input_channel: int = GameplayTypes.BellInputChannel.NONE
+var _life_state_changed_us: int = -1
+var _death_state_changed_us: int = -1
+var _operation_table: Array[Dictionary] = []
 ## 本局全部已完成判定；按 record.sequence 稳定排列，直到本局销毁。
 var judgments: Array[JudgmentRecord] = []
 ## 本局全部未被机制消费的乱按；按输入 sequence 稳定排列。
@@ -72,6 +95,13 @@ func configure(p_compiled: CompiledChart, p_rules: GameplayRuleSet, debug_nonlet
 	current_time_us = -9_000_000_000_000_000
 	life_held = false
 	death_held = false
+	_life_input_channel = GameplayTypes.BellInputChannel.NONE
+	_death_input_channel = GameplayTypes.BellInputChannel.NONE
+	_life_state_changed_us = -1
+	_death_state_changed_us = -1
+	_operation_table.clear()
+	for _index in range(GameplayOperationKind.ENUM_MAX):
+		_operation_table.append({"exists": false, "timestamp_us": -1})
 	judgments.clear()
 	strays.clear()
 	_pending_judgments.clear()
@@ -111,10 +141,162 @@ func advance_to(time_us: int, inclusive: bool = true) -> void:
 	_collect_engine_records()
 	_collect_wave_events()
 
+## 在逻辑帧内直接读取物理输入缓冲，并通过纯转换层得到玩法语义。
+func process_input_frame() -> void:
+	#print("[GameplaySimulation] process_input_frame")
+	_reset_operation_table()
+	for physical_kind in range(GameplayTypes.PhysicalInputKind.ENUM_MAX):
+		var result: Dictionary = InputEventBuffer.query(physical_kind)
+		if not bool(result.get("exists", false)):
+			continue
+		var physical := result.get("event") as PhysicalInputEvent
+		var semantic: Dictionary = InputSemanticConverter.to_gameplay(physical)
+		if not bool(semantic.get("exists", false)):
+			continue
+		var semantic_event: Dictionary = semantic.get("event", {})
+		var source := semantic_event.get("source_event") as PhysicalInputEvent
+		if source == null:
+			continue
+		var semantic_kind: int = int(semantic_event.get("kind", -1))
+		#print("[SemanticConverter] physical=%d semantic=%d timestamp=%d sequence=%d" % [source.kind, semantic_kind, source.timestamp_us, source.sequence])
+		_set_operation_from_semantic(semantic_kind, source)
+	_process_operation_table()
+	_set_present_operations()
 
+
+func _reset_operation_table() -> void:
+	for index in range(GameplayOperationKind.ENUM_MAX):
+		_operation_table[index] = {"exists": false, "timestamp_us": -1}
+	for kind: int in [
+		GameplayOperationKind.LIFE_TUNING_DISPLACED,
+		GameplayOperationKind.DEATH_TUNING_DISPLACED,
+	]:
+		_operation_table[kind].merge({
+			"angle_rad": NAN,
+			"raw_vector": Vector2.ZERO,
+			"stick_released": false,
+		})
+
+
+func _set_operation_from_semantic(semantic_kind: int, source: PhysicalInputEvent) -> void:
+	var operation_kind: int = -1
+	match semantic_kind:
+		InputSemanticConverter.GameplayEvent.LIFE_A_PRESSED: operation_kind = GameplayOperationKind.LIFE_A_PRESSED
+		InputSemanticConverter.GameplayEvent.LIFE_A_RELEASED: operation_kind = GameplayOperationKind.LIFE_A_RELEASED
+		InputSemanticConverter.GameplayEvent.LIFE_B_PRESSED: operation_kind = GameplayOperationKind.LIFE_B_PRESSED
+		InputSemanticConverter.GameplayEvent.LIFE_B_RELEASED: operation_kind = GameplayOperationKind.LIFE_B_RELEASED
+		InputSemanticConverter.GameplayEvent.DEATH_A_PRESSED: operation_kind = GameplayOperationKind.DEATH_A_PRESSED
+		InputSemanticConverter.GameplayEvent.DEATH_A_RELEASED: operation_kind = GameplayOperationKind.DEATH_A_RELEASED
+		InputSemanticConverter.GameplayEvent.DEATH_B_PRESSED: operation_kind = GameplayOperationKind.DEATH_B_PRESSED
+		InputSemanticConverter.GameplayEvent.DEATH_B_RELEASED: operation_kind = GameplayOperationKind.DEATH_B_RELEASED
+		InputSemanticConverter.GameplayEvent.TUNING_DISPLACED:
+			_set_operation(GameplayOperationKind.TUNING_DISPLACED, source.timestamp_us, source.relative)
+			return
+		InputSemanticConverter.GameplayEvent.LIFE_TUNING_DISPLACED, InputSemanticConverter.GameplayEvent.DEATH_TUNING_DISPLACED:
+			var angle_data: Dictionary = InputSemanticConverter.to_tuning_angle(source)
+			if not bool(angle_data.get("exists", false)):
+				return
+			operation_kind = (
+				GameplayOperationKind.LIFE_TUNING_DISPLACED
+				if semantic_kind == InputSemanticConverter.GameplayEvent.LIFE_TUNING_DISPLACED
+				else GameplayOperationKind.DEATH_TUNING_DISPLACED
+			)
+			_set_operation(operation_kind, source.timestamp_us)
+			var tuning_entry: Dictionary = _operation_table[operation_kind]
+			tuning_entry["angle_rad"] = float(angle_data["angle_rad"])
+			tuning_entry["raw_vector"] = angle_data["raw_vector"]
+			tuning_entry["stick_released"] = bool(angle_data.get("released", false))
+			return
+		InputSemanticConverter.GameplayEvent.INPUT_CANCELLED: operation_kind = GameplayOperationKind.INPUT_CANCELLED
+	if operation_kind >= 0:
+		_set_operation(operation_kind, source.timestamp_us)
+
+
+func _set_operation(kind: int, timestamp_us: int, displacement: Vector2 = Vector2.ZERO) -> void:
+	var entry: Dictionary = _operation_table[kind]
+	if not bool(entry.get("exists", false)) or timestamp_us < int(entry.get("timestamp_us", -1)):
+		entry["exists"] = true
+		entry["timestamp_us"] = timestamp_us
+		if kind == GameplayOperationKind.TUNING_DISPLACED:
+			entry["displacement"] = displacement
+
+
+func _set_present_operations() -> void:
+	_set_operation(GameplayOperationKind.LIFE_PRESENT, _life_state_changed_us if life_held else -1)
+	_operation_table[GameplayOperationKind.LIFE_PRESENT]["exists"] = life_held
+	_set_operation(GameplayOperationKind.DEATH_PRESENT, _death_state_changed_us if death_held else -1)
+	_operation_table[GameplayOperationKind.DEATH_PRESENT]["exists"] = death_held
+	_operation_table[GameplayOperationKind.LIFE_PRESENT]["exists"] = life_held
+	_operation_table[GameplayOperationKind.LIFE_PRESENT]["timestamp_us"] = _life_state_changed_us
+	_operation_table[GameplayOperationKind.DEATH_PRESENT]["exists"] = death_held
+	_operation_table[GameplayOperationKind.DEATH_PRESENT]["timestamp_us"] = _death_state_changed_us
+
+
+func _process_operation_table() -> void:
+	var operations: Array[int] = [
+		GameplayOperationKind.LIFE_A_PRESSED,
+		GameplayOperationKind.LIFE_A_RELEASED,
+		GameplayOperationKind.LIFE_B_PRESSED,
+		GameplayOperationKind.LIFE_B_RELEASED,
+		GameplayOperationKind.DEATH_A_PRESSED,
+		GameplayOperationKind.DEATH_A_RELEASED,
+		GameplayOperationKind.DEATH_B_PRESSED,
+		GameplayOperationKind.DEATH_B_RELEASED,
+		GameplayOperationKind.TUNING_DISPLACED,
+		GameplayOperationKind.LIFE_TUNING_DISPLACED,
+		GameplayOperationKind.DEATH_TUNING_DISPLACED,
+		GameplayOperationKind.INPUT_CANCELLED,
+	]
+	operations = operations.filter(func(kind: int) -> bool:
+		return bool(_operation_table[kind].get("exists", false))
+	)
+	operations.sort_custom(func(a: int, b: int) -> bool:
+		var a_time: int = int(_operation_table[a]["timestamp_us"])
+		var b_time: int = int(_operation_table[b]["timestamp_us"])
+		return a < b if a_time == b_time else a_time < b_time
+	)
+	for operation_kind in operations:
+		var entry: Dictionary = _operation_table[operation_kind]
+		if not bool(entry.get("exists", false)):
+			continue
+		var semantic_kind: int = GameplayTypes.SemanticInputKind.FOCUS_CANCELLED
+		match operation_kind:
+			GameplayOperationKind.LIFE_A_PRESSED: semantic_kind = GameplayTypes.SemanticInputKind.LIFE_A_PRESSED
+			GameplayOperationKind.LIFE_A_RELEASED: semantic_kind = GameplayTypes.SemanticInputKind.LIFE_A_RELEASED
+			GameplayOperationKind.LIFE_B_PRESSED: semantic_kind = GameplayTypes.SemanticInputKind.LIFE_B_PRESSED
+			GameplayOperationKind.LIFE_B_RELEASED: semantic_kind = GameplayTypes.SemanticInputKind.LIFE_B_RELEASED
+			GameplayOperationKind.DEATH_A_PRESSED: semantic_kind = GameplayTypes.SemanticInputKind.DEATH_A_PRESSED
+			GameplayOperationKind.DEATH_A_RELEASED: semantic_kind = GameplayTypes.SemanticInputKind.DEATH_A_RELEASED
+			GameplayOperationKind.DEATH_B_PRESSED: semantic_kind = GameplayTypes.SemanticInputKind.DEATH_B_PRESSED
+			GameplayOperationKind.DEATH_B_RELEASED: semantic_kind = GameplayTypes.SemanticInputKind.DEATH_B_RELEASED
+			GameplayOperationKind.TUNING_DISPLACED: semantic_kind = GameplayTypes.SemanticInputKind.TUNING_DISPLACED
+		var vector: Vector2 = entry.get("displacement", Vector2.ZERO)
+		#print("[GameplayTable] operation=%d timestamp=%d" % [operation_kind, int(entry["timestamp_us"])])
+		if operation_kind == GameplayOperationKind.TUNING_DISPLACED:
+			accept_input(SemanticInputSample.create(int(entry["timestamp_us"]), 0, semantic_kind, vector))
+			continue
+		if operation_kind in [
+			GameplayOperationKind.LIFE_TUNING_DISPLACED,
+			GameplayOperationKind.DEATH_TUNING_DISPLACED,
+		]:
+			var affinity: int = (
+				GameplayTypes.Affinity.ZHU
+				if operation_kind == GameplayOperationKind.LIFE_TUNING_DISPLACED
+				else GameplayTypes.Affinity.XUAN
+			)
+			tuning_engine.apply_absolute_side(
+				affinity,
+				float(entry.get("angle_rad", NAN)),
+				int(entry["timestamp_us"]),
+				life_held if affinity == GameplayTypes.Affinity.ZHU else death_held,
+				bool(entry.get("stick_released", false))
+			)
+			continue
+		accept_input(SemanticInputSample.create(int(entry["timestamp_us"]), 0, semantic_kind, vector))
 func accept_input(sample: SemanticInputSample) -> int:
 	if sample == null or compiled == null or rules == null or health_engine.failed or _paused_for_rearm:
 		return GameplayTypes.InputOwner.NONE
+	#print("[GameplayCore] semantic kind=%d timestamp=%d" % [sample.kind, sample.timestamp_us])
 	# 即使设备适配器绕过 SemanticInputSample.create 直接构造对象，
 	# 进入内核前仍重新量化为 Replay 约定的 Q15，保证实时与回放一致。
 	sample = SemanticInputSample.create(sample.timestamp_us, sample.sequence, sample.kind, sample.tune_vector)
@@ -129,6 +311,8 @@ func accept_input(sample: SemanticInputSample) -> int:
 		carrier_engine.set_held(GameplayTypes.Affinity.XUAN, false, sample.timestamp_us)
 		life_held = false
 		death_held = false
+		_life_input_channel = GameplayTypes.BellInputChannel.NONE
+		_death_input_channel = GameplayTypes.BellInputChannel.NONE
 		note_engine.cancel_active(sample.timestamp_us)
 		tuning_engine.cancel_active(sample.timestamp_us)
 		rapid_engine.cancel_active(sample.timestamp_us)
@@ -136,7 +320,8 @@ func accept_input(sample: SemanticInputSample) -> int:
 		_collect_engine_records()
 		return _last_input_owner
 	_update_held_state(sample)
-	_update_carrier_held_state(sample)
+	carrier_engine.handle_bell_input(sample)
+	tuning_engine.handle_bell_input(sample)
 	var consumed: bool = false
 	# 输入所有权固定为：疾振 > 已起手或可起手的调频 > 普通 Tap/Hold。
 	# 谱面校验器会拒绝区域机制与 Hold 的冲突，避免同一输入存在两种解释。
@@ -151,6 +336,7 @@ func accept_input(sample: SemanticInputSample) -> int:
 			consumed = note_engine.handle_press(sample)
 		elif sample.is_release():
 			consumed = note_engine.handle_release(sample)
+		#print("[NoteDispatch] consumed=%s owner=%d timestamp=%d" % [str(consumed), _last_input_owner, sample.timestamp_us])
 		_last_input_owner = GameplayTypes.InputOwner.NOTE if consumed else GameplayTypes.InputOwner.NONE
 	if not consumed and sample.is_press():
 		var stray := StrayInputRecord.create(sample, rules)
@@ -173,6 +359,7 @@ func accept_input(sample: SemanticInputSample) -> int:
 			GameplayTypes.InputOwner.RAPID:
 				wave_qualified = rapid_engine.last_press_qualified()
 		wave_engine.launch(sample, wave_qualified, _last_input_owner, bound_note)
+		#print("[WaveDispatch] qualified=%s owner=%d timestamp=%d" % [str(wave_qualified), _last_input_owner, sample.timestamp_us])
 	_apply_tuning_frequency_changes(sample.timestamp_us, true)
 	carrier_engine.advance_to(sample.timestamp_us, true)
 	_collect_engine_records()
@@ -206,9 +393,11 @@ func begin_pause_rearm() -> Dictionary:
 
 
 func apply_resume_rearm(rearm_state: Dictionary) -> void:
-	life_held = bool(rearm_state.get("life_held", false))
-	death_held = bool(rearm_state.get("death_held", false))
-	carrier_engine.resume_after_pause(life_held, death_held, current_time_us)
+	_life_input_channel = _rearm_channel(rearm_state, true, _life_input_channel)
+	_death_input_channel = _rearm_channel(rearm_state, false, _death_input_channel)
+	life_held = _life_input_channel != GameplayTypes.BellInputChannel.NONE
+	death_held = _death_input_channel != GameplayTypes.BellInputChannel.NONE
+	carrier_engine.resume_after_pause(_life_input_channel, _death_input_channel, current_time_us)
 	note_engine.apply_resume_rearm(rearm_state)
 	tuning_engine.apply_resume_rearm(rearm_state)
 	_paused_for_rearm = false
@@ -301,28 +490,37 @@ func snapshot() -> Dictionary:
 
 
 func _update_held_state(sample: SemanticInputSample) -> void:
-	match sample.kind:
-		GameplayTypes.SemanticInputKind.LIFE_PRESSED:
+	if not sample.is_press() and not sample.is_release():
+		return
+	var affinity: int = sample.affinity()
+	var channel: int = sample.input_channel()
+	if affinity == GameplayTypes.Affinity.ZHU:
+		if sample.is_press() and _life_input_channel == GameplayTypes.BellInputChannel.NONE:
+			_life_input_channel = channel
 			life_held = true
-		GameplayTypes.SemanticInputKind.LIFE_RELEASED:
+			_life_state_changed_us = sample.timestamp_us
+		elif sample.is_release() and _life_input_channel == channel:
+			_life_input_channel = GameplayTypes.BellInputChannel.NONE
 			life_held = false
-		GameplayTypes.SemanticInputKind.DEATH_PRESSED:
+			_life_state_changed_us = sample.timestamp_us
+	elif affinity == GameplayTypes.Affinity.XUAN:
+		if sample.is_press() and _death_input_channel == GameplayTypes.BellInputChannel.NONE:
+			_death_input_channel = channel
 			death_held = true
-		GameplayTypes.SemanticInputKind.DEATH_RELEASED:
+			_death_state_changed_us = sample.timestamp_us
+		elif sample.is_release() and _death_input_channel == channel:
+			_death_input_channel = GameplayTypes.BellInputChannel.NONE
 			death_held = false
+			_death_state_changed_us = sample.timestamp_us
 
 
-func _update_carrier_held_state(sample: SemanticInputSample) -> void:
-	# 载波与滑条解耦：任何玩法段按住钟都会持续发波；松开只停止未来波前。
-	match sample.kind:
-		GameplayTypes.SemanticInputKind.LIFE_PRESSED:
-			carrier_engine.set_held(GameplayTypes.Affinity.ZHU, true, sample.timestamp_us)
-		GameplayTypes.SemanticInputKind.LIFE_RELEASED:
-			carrier_engine.set_held(GameplayTypes.Affinity.ZHU, false, sample.timestamp_us)
-		GameplayTypes.SemanticInputKind.DEATH_PRESSED:
-			carrier_engine.set_held(GameplayTypes.Affinity.XUAN, true, sample.timestamp_us)
-		GameplayTypes.SemanticInputKind.DEATH_RELEASED:
-			carrier_engine.set_held(GameplayTypes.Affinity.XUAN, false, sample.timestamp_us)
+## 暂停恢复只重新建立暂停前记录的通道，不让另一通道抢占持续状态。
+func _rearm_channel(rearm_state: Dictionary, life: bool, required_channel: int) -> int:
+	if required_channel == GameplayTypes.BellInputChannel.NONE:
+		return GameplayTypes.BellInputChannel.NONE
+	var prefix: String = "life" if life else "death"
+	var suffix: String = "a" if required_channel == GameplayTypes.BellInputChannel.A else "b"
+	return required_channel if bool(rearm_state.get(prefix + "_" + suffix + "_held", false)) else GameplayTypes.BellInputChannel.NONE
 
 
 func _apply_tuning_frequency_changes(target_us: int, inclusive: bool) -> void:

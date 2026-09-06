@@ -115,11 +115,11 @@ static func build_perfect_replay(
 		)
 	var raw_events: Array[Dictionary] = []
 	for note in compiled.notes:
-		var press_kind: int = GameplayTypes.SemanticInputKind.LIFE_PRESSED if int(note["affinity"]) == GameplayTypes.Affinity.ZHU else GameplayTypes.SemanticInputKind.DEATH_PRESSED
-		var release_kind: int = GameplayTypes.SemanticInputKind.LIFE_RELEASED if int(note["affinity"]) == GameplayTypes.Affinity.ZHU else GameplayTypes.SemanticInputKind.DEATH_RELEASED
-		raw_events.append({"time": int(note["start_us"]), "kind": press_kind, "vector": Vector2.ZERO, "priority": 0 if press_kind == GameplayTypes.SemanticInputKind.LIFE_PRESSED else 1})
+		var press_kind: int = GameplayTypes.SemanticInputKind.LIFE_A_PRESSED if int(note["affinity"]) == GameplayTypes.Affinity.ZHU else GameplayTypes.SemanticInputKind.DEATH_A_PRESSED
+		var release_kind: int = GameplayTypes.SemanticInputKind.LIFE_A_RELEASED if int(note["affinity"]) == GameplayTypes.Affinity.ZHU else GameplayTypes.SemanticInputKind.DEATH_A_RELEASED
+		raw_events.append({"time": int(note["start_us"]), "kind": press_kind, "vector": Vector2.ZERO, "priority": 0 if press_kind == GameplayTypes.SemanticInputKind.LIFE_A_PRESSED else 1})
 		var release_time: int = int(note["end_us"]) if note["unit_kind"] == &"hold" else int(note["start_us"]) + 1000
-		raw_events.append({"time": release_time, "kind": release_kind, "vector": Vector2.ZERO, "priority": 3 if release_kind == GameplayTypes.SemanticInputKind.LIFE_RELEASED else 4})
+		raw_events.append({"time": release_time, "kind": release_kind, "vector": Vector2.ZERO, "priority": 3 if release_kind == GameplayTypes.SemanticInputKind.LIFE_A_RELEASED else 4})
 	# 调频段开始时领域层会把两钟恢复到统一基频。重放生成器记录同样的重置点，
 	# 随后把每个采样的绝对引导位置转换成相对位移语义。
 	for field in compiled.tuning_fields:
@@ -168,8 +168,8 @@ static func build_perfect_replay(
 		for index in range(required):
 			var strike_us: int = int(region["start_us"]) + roundi(float(index) * float(duration_us) / float(maxi(1, required - 1)))
 			var life: bool = index % 2 == 0
-			var press_kind: int = GameplayTypes.SemanticInputKind.LIFE_PRESSED if life else GameplayTypes.SemanticInputKind.DEATH_PRESSED
-			var release_kind: int = GameplayTypes.SemanticInputKind.LIFE_RELEASED if life else GameplayTypes.SemanticInputKind.DEATH_RELEASED
+			var press_kind: int = GameplayTypes.SemanticInputKind.LIFE_A_PRESSED if life else GameplayTypes.SemanticInputKind.DEATH_A_PRESSED
+			var release_kind: int = GameplayTypes.SemanticInputKind.LIFE_A_RELEASED if life else GameplayTypes.SemanticInputKind.DEATH_A_RELEASED
 			raw_events.append({"time": strike_us, "kind": press_kind, "vector": Vector2.ZERO, "priority": 0 if life else 1})
 			raw_events.append({"time": strike_us + 1000, "kind": release_kind, "vector": Vector2.ZERO, "priority": 3 if life else 4})
 	# 同一时刻固定处理“频率段重置 → 按下 → 调频位移 → 松开”。
@@ -286,8 +286,8 @@ static func _append_tuning_hold_events(
 			else:
 				merged[-1]["end_us"] = maxi(int(merged[-1]["end_us"]), int(interval["end_us"]))
 		var life: bool = affinity == GameplayTypes.Affinity.ZHU
-		var press_kind: int = GameplayTypes.SemanticInputKind.LIFE_PRESSED if life else GameplayTypes.SemanticInputKind.DEATH_PRESSED
-		var release_kind: int = GameplayTypes.SemanticInputKind.LIFE_RELEASED if life else GameplayTypes.SemanticInputKind.DEATH_RELEASED
+		var press_kind: int = GameplayTypes.SemanticInputKind.LIFE_A_PRESSED if life else GameplayTypes.SemanticInputKind.DEATH_A_PRESSED
+		var release_kind: int = GameplayTypes.SemanticInputKind.LIFE_A_RELEASED if life else GameplayTypes.SemanticInputKind.DEATH_A_RELEASED
 		for interval: Dictionary in merged:
 			raw_events.append({
 				"time": int(interval["start_us"]),

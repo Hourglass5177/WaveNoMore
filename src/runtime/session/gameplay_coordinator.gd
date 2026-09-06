@@ -78,6 +78,15 @@ func accept_input(sample: SemanticInputSample) -> void:
 	_drain_domain_events()
 	_refresh_snapshot()
 
+## 逻辑帧入口：玩法内核自主查询 InputEventBuffer 并处理当前帧物理输入。
+func process_input_frame() -> void:
+	#print("[GameplayCoordinator] process_input_frame configured=%s" % str(configured))
+	if not configured or simulation == null:
+		return
+	simulation.process_input_frame()
+	_drain_domain_events()
+	_refresh_snapshot()
+
 
 func advance_to(timestamp_us: int, inclusive: bool = true) -> void:
 	if not configured or simulation == null:

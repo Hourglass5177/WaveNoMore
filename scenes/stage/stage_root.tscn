@@ -1,13 +1,10 @@
-[gd_scene load_steps=17 format=3]
+[gd_scene load_steps=14 format=3]
 
 [ext_resource type="Script" path="res://src/runtime/session/stage_root.gd" id="1_root"]
 [ext_resource type="Script" path="res://src/runtime/clock/song_clock.gd" id="2_clock"]
-[ext_resource type="Script" path="res://src/runtime/input/input_router.gd" id="3_input"]
 [ext_resource type="Script" path="res://src/runtime/scheduler/chart_scheduler.gd" id="4_scheduler"]
 [ext_resource type="Script" path="res://src/runtime/session/gameplay_coordinator.gd" id="5_coordinator"]
 [ext_resource type="Script" path="res://src/runtime/session/stage_session.gd" id="6_session"]
-[ext_resource type="Script" path="res://src/runtime/replay/replay_input_driver.gd" id="7_replay"]
-[ext_resource type="Script" path="res://src/runtime/replay/replay_recorder.gd" id="13_recorder"]
 [ext_resource type="Script" path="res://src/runtime/director/stage_show_director.gd" id="14_director"]
 [ext_resource type="PackedScene" path="res://scenes/presentation/worlds/graybox_stage_presentation.tscn" id="8_presentation"]
 [ext_resource type="Script" path="res://src/presentation/audio/audio_feedback_director.gd" id="9_audio"]
@@ -26,10 +23,6 @@ bus = &"Music"
 [node name="SongClock" type="Node" parent="Session"]
 script = ExtResource("2_clock")
 
-[node name="InputRouter" type="Node" parent="Session"]
-process_mode = 3
-script = ExtResource("3_input")
-
 [node name="ChartScheduler" type="Node" parent="Session"]
 script = ExtResource("4_scheduler")
 
@@ -39,12 +32,6 @@ script = ExtResource("5_coordinator")
 [node name="StageSession" type="Node" parent="Session"]
 process_mode = 3
 script = ExtResource("6_session")
-
-[node name="ReplayInputDriver" type="Node" parent="Session"]
-script = ExtResource("7_replay")
-
-[node name="ReplayRecorder" type="Node" parent="Session"]
-script = ExtResource("13_recorder")
 
 [node name="StageShowDirector" type="Node" parent="Session"]
 script = ExtResource("14_director")
