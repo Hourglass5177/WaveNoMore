@@ -13,7 +13,7 @@ const CURVE_DENSE_SAMPLE_COUNT: int = 193
 # 本项目谱面固定使用 PPQ 480；这里只用它计算点状引导的轻微拍点呼吸。
 const TICKS_PER_BEAT: float = 480.0
 const GUIDE_DOT_SPACING_PX: float = 28.0
-# 两侧滑条的最内沿各离开画面中线 32 像素，中央因此留出完整的 64 像素呼吸区。
+# 历史布局常量；运行时调频条圆心固定在画布中心，不再使用该分栏间距。
 const CENTER_GUTTER_PX: float = 32.0
 
 ## 0 为调频滑条，1 为疾振计数器。
@@ -26,11 +26,11 @@ const CENTER_GUTTER_PX: float = 32.0
 @export_range(72.0, 144.0, 1.0) var tuning_rail_width: float = 104.0
 ## 主体外侧骨白描边厚度，不参与频率长度计算。
 @export_range(2.0, 16.0, 1.0) var tuning_outline_width: float = 8.0
-## 生滑条的纵向插槽；横向位置会按轨道实际宽度自动计算。死滑条取其中心反演。
+## 历史插槽参数；运行时调频条统一使用画布中心，该资源属性不再参与布局。
 @export var life_slot_offset: Vector2 = Vector2(0.0, -188.0)
 ## 用于安全摆放滑条的设计画布尺寸；只平移插槽，绝不缩短轨道。
 @export var canvas_size: Vector2 = Vector2(1920.0, 1080.0)
-## 滑条端点尽量与画布边缘保留的距离；轨道长于画布时会居中溢出而不会缩放。
+## 历史边界参数；运行时不再根据边界移动或缩放调频条。
 @export_range(0.0, 180.0, 1.0) var slider_edge_margin_px: float = 72.0
 ## 每 1 Hz 对应的端点弦长；圆弧可以变弯，但同样频差的两端距离保持一致。
 @export_range(40.0, 260.0, 1.0) var pixels_per_hz: float = 160.0
@@ -97,7 +97,7 @@ var _slider_radius_px: float = 0.0
 var _slider_center_distance_px: float = 0.0
 # 谱面可把整段等效圆弧旋转到横向、斜向或近纵向；起手扇区使用同一角度。
 var _arc_rotation_rad: float = 0.0
-# 谱师相对默认安全锚点设置的构图偏移；从预读到激活始终保持不变。
+# 历史构图偏移；运行时视觉圆心固定在画布中心，不读取该值布局。
 var _visual_offset_px: Vector2 = Vector2.ZERO
 # 玩家填充前沿与时间引导在轨道上的空间位置，均为 0～1。
 var _player_progress: float = 0.0
@@ -803,43 +803,21 @@ func _player_inside_guide() -> bool:
 
 
 func _slider_center() -> Vector2:
-	# 滑条跟随“操控手”而不是钟的位置：右手控制的生钟在右上，左手控制的死钟在左下。
-	# 横向偏移和屏幕边界都按旋转后的真实包围盒计算，近纵向滑条也不会被错误摆出画面。
-	var outer_radius: float = tuning_rail_width * 0.5 + tuning_outline_width
-	var half_canvas: Vector2 = canvas_size * 0.5
-	var minimum_center_x: float = (
-		-half_canvas.x + slider_edge_margin_px + outer_radius - _curve_min_relative.x
-	)
-	var maximum_center_x: float = (
-		half_canvas.x - slider_edge_margin_px - outer_radius - _curve_max_relative.x
-	)
-	var preferred_x: float
-	if affinity == GameplayTypes.Affinity.ZHU:
-		preferred_x = CENTER_GUTTER_PX + outer_radius - _curve_min_relative.x
-	else:
-		preferred_x = -CENTER_GUTTER_PX - outer_radius - _curve_max_relative.x
-	if minimum_center_x > maximum_center_x:
-		preferred_x = (minimum_center_x + maximum_center_x) * 0.5
-	else:
-		preferred_x = clampf(preferred_x, minimum_center_x, maximum_center_x)
+	# FieldSlot 的局部坐标以设计画布左上角为原点。曲线采样点以弦中点为
+	# 基准，而不是圆心；因此先补偿弦中点到真实圆心的法向距离。
+	# visual_offset_px、life_slot_offset、CENTER_GUTTER_PX 与
+	# slider_edge_margin_px 保留在数据/编辑器中，但运行时不参与布局。
+	return canvas_size * 0.5 - _arc_center_offset()
 
-	var minimum_center_y: float = (
-		-half_canvas.y + slider_edge_margin_px + outer_radius - _curve_min_relative.y
+
+func _arc_center_offset() -> Vector2:
+	## 返回真实圆心相对弦中点的向量；与曲线采样复用相同的旋转和镜像。
+	var center_distance: float = (
+		_slider_radius_px * cos(_slider_sweep_rad * 0.5)
+		if _slider_radius_px > 0.0
+		else 0.0
 	)
-	var maximum_center_y: float = (
-		half_canvas.y - slider_edge_margin_px - outer_radius - _curve_max_relative.y
-	)
-	var side_sign: float = 1.0 if affinity == GameplayTypes.Affinity.ZHU else -1.0
-	var preferred_y: float = life_slot_offset.y * side_sign
-	if minimum_center_y > maximum_center_y:
-		preferred_y = (minimum_center_y + maximum_center_y) * 0.5
-	else:
-		preferred_y = clampf(preferred_y, minimum_center_y, maximum_center_y)
-	var desired := Vector2(preferred_x, preferred_y) + _visual_offset_px
-	# 偏移是美术构图参数，但最终仍守住同一安全边界；这样预览期间无需动态换位。
-	desired.x = clampf(desired.x, minimum_center_x, maximum_center_x) if minimum_center_x <= maximum_center_x else desired.x
-	desired.y = clampf(desired.y, minimum_center_y, maximum_center_y) if minimum_center_y <= maximum_center_y else desired.y
-	return desired
+	return _transform_curve_relative(Vector2(0.0, center_distance))
 
 
 func _slider_start_point() -> Vector2:
@@ -878,21 +856,11 @@ func _point_on_slider(progress: float) -> Vector2:
 func _rebuild_slider_curves() -> void:
 	## 先构造“左低右高”的标准圆弧，再根据谱面升降频方向决定事件采样顺序。
 	## 弦长表示频率跨度；圆心角来自同一份等效圆规格，也就是摇杆的完整手势行程。
-	var dense_relative := PackedVector2Array()
+	var frequency_relative := PackedVector2Array()
 	for index: int in range(CURVE_DENSE_SAMPLE_COUNT):
 		var t: float = float(index) / float(CURVE_DENSE_SAMPLE_COUNT - 1)
-		dense_relative.append(
-			(_normalized_curve_point(t) * _slider_chord_px).rotated(_arc_rotation_rad)
-		)
-
-	# 死界曲线取生界曲线的中心反演并反转采样，因此画面整体中心对称，
-	# 但标准曲线的采样方向仍然从画面左侧低频指向右侧高频。
-	var frequency_relative := PackedVector2Array()
-	for index: int in range(dense_relative.size()):
-		var relative: Vector2 = dense_relative[index]
-		if affinity == GameplayTypes.Affinity.XUAN:
-			relative = -dense_relative[dense_relative.size() - 1 - index]
-		frequency_relative.append(relative)
+		# _relative_curve_point() 是阵营镜像和死侧反向采样的唯一入口。
+		frequency_relative.append(_relative_curve_point(t))
 	_update_curve_bounds(frequency_relative)
 
 	var dense_world := PackedVector2Array()
@@ -925,6 +893,19 @@ func _update_curve_bounds(points: PackedVector2Array) -> void:
 
 func _normalized_curve_point(t: float) -> Vector2:
 	return TUNING_ARC_GEOMETRY.normalized_chord_arc_point(t, _gesture_sweep_rad())
+
+
+func _relative_curve_point(t: float) -> Vector2:
+	## 将标准圆弧点统一应用旋转和死侧中心反演。
+	var sample_t: float = 1.0 - t if affinity == GameplayTypes.Affinity.XUAN else t
+	var standard_relative: Vector2 = _normalized_curve_point(sample_t) * _slider_chord_px
+	return _transform_curve_relative(standard_relative)
+
+
+func _transform_curve_relative(standard_relative: Vector2) -> Vector2:
+	## 曲线采样点与圆心偏移必须共享同一坐标变换，避免圆心补偿方向分叉。
+	var transformed: Vector2 = standard_relative.rotated(_arc_rotation_rad)
+	return -transformed if affinity == GameplayTypes.Affinity.XUAN else transformed
 
 
 func _resample_polyline(source: PackedVector2Array, target_count: int) -> PackedVector2Array:

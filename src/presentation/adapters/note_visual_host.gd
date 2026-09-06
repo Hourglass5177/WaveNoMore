@@ -409,7 +409,9 @@ func _update_visual(event_id: String, active_entry: Dictionary) -> void:
 				)
 			)
 	elif kind == ChartScheduler.KIND_TUNING:
-		visual.position = approach_origin
+		# 调频视觉使用完整设计画布坐标绘制，FieldSlot 原点就是画布左上角；
+		# 不再叠加以画布中心为值的 approach_origin，避免中心被平移到右下角。
+		visual.position = Vector2.ZERO
 		if visual.has_method("set_approach_timing"):
 			visual.call("set_approach_timing", time_to_hit_sec, approach_duration_sec)
 		if visual.has_method("set_region_progress"):
