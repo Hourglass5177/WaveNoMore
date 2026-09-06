@@ -32,6 +32,8 @@ var _color_edit := {}
 var _colors := {}
 var _preview_theme_id := ""
 var _problem_messages: PackedStringArray = []
+const RECORD_ICON = preload("res://assets/chart_studio/record.svg")
+const RECORD_STOP_ICON = preload("res://assets/chart_studio/record_stop.svg")
 const PLAY_ICON = preload("res://assets/chart_studio/play.svg")
 const PAUSE_ICON = preload("res://assets/chart_studio/pause.svg")
 @onready var timeline: StudioTimeline = $Layout/Split/TimelineColumn/Timeline
@@ -151,7 +153,9 @@ func _setup_stability_controls() -> void:
 	settings.load("user://chart_studio/settings.cfg")
 	_ui_scale = float(settings.get_value("ui", "scale", 0))
 	recorder.threshold_ms = float(settings.get_value("input", "hold_threshold_ms", 150))
-	_record_button.text = "录制"; _record_button.toggle_mode = true
+	_record_button.icon = RECORD_ICON; _record_button.toggle_mode = true
+	_record_button.custom_minimum_size = Vector2(36, 34)
+	_record_button.accessibility_name = "实时录入"
 	_record_button.tooltip_text = "开启／关闭实时录入（R）"; _record_button.focus_mode = Control.FOCUS_NONE
 	transport.get_node("Playback").add_child(_record_button)
 	_record_button.toggled.connect(func(enabled: bool) -> void:
@@ -199,7 +203,10 @@ func _setup_stability_controls() -> void:
 		_update_record_status())
 
 func _update_record_status() -> void:
-	_record_button.text = "录制中" if record_armed and audio.playing else "待录制" if record_armed else "录制"
+	# 方块表示可以关闭录制，包括已开启但尚未播放的状态。
+	_record_button.icon = RECORD_STOP_ICON if record_armed else RECORD_ICON
+	_record_button.tooltip_text = ("关闭实时录入（R）" if audio.playing else "已开启实时录入，播放后按 F／J；关闭（R）") if record_armed else "开启实时录入（R）"
+	_record_button.accessibility_name = "关闭实时录入" if record_armed else "开启实时录入"
 
 func _finish_recording(cancel_held := false) -> void:
 	if not recorder.active: return
