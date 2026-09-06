@@ -98,6 +98,7 @@ func _run() -> void:
 
 	var results: Array = []
 	for scenario in [[1280, 720, 1.0], [1440, 900, 1.0], [1920, 1080, 1.0], [1280, 900, 1.25], [1600, 1000, 1.25], [1920, 1080, 1.5]]:
+		workspace._ui_scale = scenario[2]
 		root.content_scale_factor = scenario[2]
 		root.min_size = Vector2i(Vector2(1024, 720) * scenario[2])
 		root.size = Vector2i(scenario[0], scenario[1])
@@ -108,7 +109,7 @@ func _run() -> void:
 		for i in groups.size():
 			valid = valid and visible.encloses(groups[i].get_global_rect())
 			for j in range(i + 1, groups.size()): valid = valid and not groups[i].get_global_rect().intersects(groups[j].get_global_rect())
-		valid = valid and workspace.timeline.size.y >= 244
+		valid = valid and workspace.timeline.size.y >= 164
 		var name := "%dx%d_%d" % [scenario[0], scenario[1], roundi(scenario[2] * 100)]
 		check(valid, "布局不越界且分组不重叠 " + name)
 		results.append({"scenario": name, "valid": valid, "logical_size": str(visible.size), "window_size": str(root.size)})

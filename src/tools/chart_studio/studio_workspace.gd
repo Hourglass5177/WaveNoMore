@@ -22,6 +22,7 @@ var _follow_suspended := false
 var _scroll := HScrollBar.new()
 var _view_menu := MenuButton.new()
 var _ui_scale := 0.0
+var _layout_before_focus := {}
 var _seek_timer := Timer.new()
 var _seek_target := 0.0
 var _recovery_ready := false
@@ -43,6 +44,7 @@ const PAUSE_ICON = preload("res://assets/chart_studio/pause.svg")
 
 func _ready() -> void:
 	get_window().title = "冥河 · 写谱器"
+	get_window().content_scale_mode = Window.CONTENT_SCALE_MODE_CANVAS_ITEMS
 	get_window().content_scale_size = Vector2i.ZERO
 	get_window().min_size = Vector2i(1024, 720)
 	InputEventBuffer.set_mode(InputEventBuffer.InputMode.DISABLED)
@@ -174,7 +176,16 @@ func _setup_stability_controls() -> void:
 	menu.add_separator(); menu.add_item("显示整曲", 10); menu.add_item("显示选区", 11)
 	menu.id_pressed.connect(func(id: int) -> void:
 		if id < 4: _ui_scale = [0.0, 1.0, 1.25, 1.5][id]; _apply_ui_scale(); _save_tool_settings()
-		else: _fit_timeline(id == 11))
+		elif id < 20: _fit_timeline(id == 11)
+		else: _layout_action(id))
+	menu.add_separator()
+	menu.add_check_item("显示歌曲侧栏", 20); menu.add_check_item("显示属性侧栏", 21)
+	menu.add_check_item("显示时间线", 22); menu.add_check_item("专注预览", 23)
+	menu.add_item("恢复默认布局", 24)
+	menu.about_to_popup.connect(_sync_layout_menu)
+	_sync_layout_menu()
+	for split: SplitContainer in [$Layout/Split, $Layout/Split/Top, $Layout/Split/Top/Main]:
+		split.add_theme_constant_override("separation", 10)
 	get_window().size_changed.connect(_apply_ui_scale)
 	_apply_ui_scale()
 	add_child(_seek_timer); _seek_timer.one_shot = true; _seek_timer.wait_time = 0.05
@@ -200,6 +211,7 @@ func _apply_ui_scale() -> void:
 	var window := get_window()
 	var factor := _ui_scale if _ui_scale > 0 else maxf(maxf(1, DisplayServer.screen_get_scale()), minf(window.size.x / 1280.0, window.size.y / 720.0))
 	if not is_equal_approx(window.content_scale_factor, factor): window.content_scale_factor = factor
+	$Layout/Split/Top/Main/PreviewColumn/Aspect/Preview.update_resolution.call_deferred()
 	var menu := _view_menu.get_popup()
 	for i in mini(4, menu.item_count): menu.set_item_checked(i, is_equal_approx(_ui_scale, [0.0, 1.0, 1.25, 1.5][i]))
 
@@ -772,7 +784,7 @@ func _save_workspace() -> void:
 	StudioProjectIO.write_json(document.directory.path_join("editor/workspace.json"), _capture_workspace())
 
 func _capture_workspace() -> Dictionary:
-	return {"version": 1, "current": document.current, "position": audio.position, "view_start": timeline.view_start, "zoom": timeline.pixels_per_second, "loop_start": audio.loop_start, "loop_end": audio.loop_end, "loop_enabled": audio.loop_enabled, "rate": audio.rate, "snap_index": get_node("%Snap").selected}
+	return {"version": 1, "layout": _capture_layout(), "current": document.current, "position": audio.position, "view_start": timeline.view_start, "zoom": timeline.pixels_per_second, "loop_start": audio.loop_start, "loop_end": audio.loop_end, "loop_enabled": audio.loop_enabled, "rate": audio.rate, "snap_index": get_node("%Snap").selected}
 
 func _workspace_data() -> Dictionary:
 	var path := document.directory.path_join("editor/workspace.json")
@@ -785,6 +797,7 @@ func _load_workspace() -> void:
 	document.change_kind = &"project"; document.changed.emit()
 
 func _apply_workspace(data: Dictionary) -> void:
+	if data.has("layout"): _restore_layout(data.layout)
 	document.current = clampi(int(data.get("current", 0)), 0, document.charts.size() - 1)
 	timeline.view_start = float(data.get("view_start", -2))
 	timeline.pixels_per_second = float(data.get("zoom", 160))
@@ -936,3 +949,42 @@ func _input(event: InputEvent) -> void:
 				_seek(float(document.tempo_map().tick_to_us(_cursor_tick() + length * (-1 if key.keycode == KEY_PAGEUP else 1))) / 1000000.0)
 			_: return
 	accept_event()
+
+
+func _capture_layout() -> Dictionary:
+	return {"vertical": $Layout/Split.split_offset, "left": $Layout/Split/Top.split_offset,
+		"right": $Layout/Split/Top/Main.split_offset, "library": $Layout/Split/Top/LibraryScroll.visible,
+		"inspector": $Layout/Split/Top/Main/Inspector.visible, "timeline": timeline.visible}
+
+func _restore_layout(layout: Dictionary) -> void:
+	$Layout/Split/Top/LibraryScroll.visible = layout.get("library", true)
+	$Layout/Split/Top/Main/Inspector.visible = layout.get("inspector", true)
+	timeline.visible = layout.get("timeline", true); _scroll.visible = timeline.visible
+	# 容器先完成显示/隐藏，再应用拖动位置，避免使用旧的最小尺寸限位。
+	_apply_split_offsets.call_deferred(layout)
+
+func _apply_split_offsets(layout: Dictionary) -> void:
+	$Layout/Split.split_offset = int(layout.get("vertical", 360))
+	$Layout/Split/Top.split_offset = int(layout.get("left", 190))
+	$Layout/Split/Top/Main.split_offset = int(layout.get("right", 0))
+
+func _layout_action(id: int) -> void:
+	_finish_text_edit()
+	match id:
+		20: $Layout/Split/Top/LibraryScroll.visible = not $Layout/Split/Top/LibraryScroll.visible
+		21: $Layout/Split/Top/Main/Inspector.visible = not $Layout/Split/Top/Main/Inspector.visible
+		22: timeline.visible = not timeline.visible; _scroll.visible = timeline.visible
+		23:
+			if _layout_before_focus.is_empty():
+				_layout_before_focus = _capture_layout()
+				_restore_layout({"library": false, "inspector": false, "timeline": false, "vertical": 100000})
+			else:
+				_restore_layout(_layout_before_focus); _layout_before_focus = {}
+		24:
+			_layout_before_focus = {}; _restore_layout({})
+	_sync_layout_menu()
+
+func _sync_layout_menu() -> void:
+	var menu := _view_menu.get_popup()
+	var states := [$Layout/Split/Top/LibraryScroll.visible, $Layout/Split/Top/Main/Inspector.visible, timeline.visible, not _layout_before_focus.is_empty()]
+	for i in states.size(): menu.set_item_checked(menu.get_item_index(20 + i), states[i])

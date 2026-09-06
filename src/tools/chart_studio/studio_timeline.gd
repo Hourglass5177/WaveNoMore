@@ -50,15 +50,17 @@ var _map: TempoMap
 var _indexed_notes: Array[NoteEvent] = []
 var _prefix_end := PackedInt64Array()
 const RULER := 108.0
-const ROW := 68.0
+var row_height: float:
+	get: return maxf(28.0, (size.y - RULER) / 2.0)
 
 func _ready() -> void:
 	focus_mode = Control.FOCUS_ALL
 	clip_contents = true
-	custom_minimum_size = Vector2(500, 250)
+	custom_minimum_size = Vector2(320, 164)
 	_overlay = Control.new(); _overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_overlay); _overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_overlay.draw.connect(_draw_overlay)
+	resized.connect(func() -> void: queue_redraw(); _redraw_overlay())
 
 func bind(doc: StudioDocument) -> void:
 	document = doc
@@ -87,7 +89,7 @@ func tick_at(x: float, free := false) -> int:
 func note_rect(note: NoteEvent) -> Rect2:
 	var x := x_at(note.tick)
 	var width := maxf(12, x_at(note.tick + note.duration_ticks) - x + 12)
-	return Rect2(x - 6, RULER + note.affinity * ROW + 12, width, ROW - 24)
+	return Rect2(x - 6, RULER + note.affinity * row_height + 6, width, row_height - 12)
 
 func _draw() -> void:
 	draw_rect(Rect2(Vector2.ZERO, size), Color("141a25"))
@@ -99,8 +101,8 @@ func _draw() -> void:
 	if loop_range.y > loop_range.x:
 		draw_rect(Rect2((loop_range.x - view_start) * pixels_per_second, 0, (loop_range.y - loop_range.x) * pixels_per_second, 24), Color(0.75, 0.58, 0.25, 0.3 if loop_enabled else 0.1))
 	for side in 2:
-		draw_rect(Rect2(0, RULER + side * ROW, size.x, ROW), Color("211d25") if side == 0 else Color("1b2431"))
-		draw_string(font, Vector2(8, RULER + side * ROW + 17), "生钟 / F" if side == 0 else "死钟 / J", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color("969fb1"))
+		draw_rect(Rect2(0, RULER + side * row_height, size.x, row_height), Color("211d25") if side == 0 else Color("1b2431"))
+		draw_string(font, Vector2(8, RULER + side * row_height + 17), "生钟 / F" if side == 0 else "死钟 / J", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color("969fb1"))
 	var second_step := maxf(0.25, pow(2, ceil(log(70.0 / pixels_per_second) / log(2.0))))
 	var seconds: float = floor(view_start / second_step) * second_step
 	while seconds <= end_sec:
@@ -221,7 +223,7 @@ func _begin(event: InputEventMouseButton) -> void:
 		_mode = "seek"
 		seek_requested.emit(view_start + _down.x / pixels_per_second)
 		return
-	if _down.y >= RULER + ROW * 2: return
+	if _down.y >= RULER + row_height * 2: return
 	var hit := _hit(_down)
 	if event.shift_pressed:
 		if hit != null:
@@ -243,7 +245,7 @@ func _begin(event: InputEventMouseButton) -> void:
 		selection_changed.emit()
 	else:
 		_mode = "draw"
-		_side = clampi(int((_down.y - RULER) / ROW), 0, 1)
+		_side = clampi(int((_down.y - RULER) / row_height), 0, 1)
 	queue_redraw()
 
 func _motion(event: InputEventMouseMotion) -> void:
@@ -280,7 +282,7 @@ func _motion(event: InputEventMouseMotion) -> void:
 			elif _mode == "tail": note.duration_ticks = maxi(minimum, old.duration_ticks + delta)
 			else:
 				note.tick += delta
-				if sides.size() == 1: note.affinity = clampi(int((_current.y - RULER) / ROW), 0, 1)
+				if sides.size() == 1: note.affinity = clampi(int((_current.y - RULER) / row_height), 0, 1)
 			candidates.append(note)
 	if not _mode.is_empty():
 		queue_redraw()

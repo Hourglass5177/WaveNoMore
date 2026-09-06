@@ -131,3 +131,5 @@ Label/colors/font_color = Color(0.76, 0.81, 0.88, 1)
 SectionLabel/base_type = &"Label"
 SectionLabel/colors/font_color = Color(0.50, 0.73, 0.84, 1)
 SectionLabel/font_sizes/font_size = 16
+
+Button/constants/icon_max_width = 20

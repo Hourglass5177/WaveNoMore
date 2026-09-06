@@ -13,6 +13,7 @@ $studioSuites = @{
     'run_workspace_smoke' = 'WORKSPACE SMOKE COMPLETE'
     'run_ui_tests' = 'UI TESTS: 0'
     'run_stability_tests' = 'STABILITY TESTS: 0'
+    'run_layout_tests' = 'LAYOUT TESTS: 0'
 }
 foreach ($studioSuite in $studioSuites.Keys) {
     $studioStdoutPath = Join-Path $studioLogDirectory ($studioSuite + '.log')
