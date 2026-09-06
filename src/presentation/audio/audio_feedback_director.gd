@@ -46,6 +46,14 @@ var _base_frequency_hz: float = 3.0
 var _pool: Array[AudioStreamPlayer] = []
 # 下一个可用播放器的下标；每次播放后轮转，避免密集音效切断前一个声音。
 var _cursor: int = 0
+## 无声定位期间只恢复视觉和模拟，不补播历史音效。
+var preview_muted: bool = false:
+	set(value):
+		preview_muted = value
+		if value:
+			for player in _pool: player.stop()
+			if _life_carrier_player != null: _life_carrier_player.stop()
+			if _death_carrier_player != null: _death_carrier_player.stop()
 # 生、死各一条循环播放器，不占用敲击瞬态的轮转池。
 var _life_carrier_player: AudioStreamPlayer
 var _death_carrier_player: AudioStreamPlayer
@@ -91,6 +99,8 @@ func configure_from_rules(rules: GameplayRuleSet) -> void:
 
 
 func play(stream: AudioStream, volume_db: float = 0.0, pitch_scale: float = 1.0) -> void:
+	if preview_muted:
+		return
 	if stream == null or _pool.is_empty():
 		return
 	var player: AudioStreamPlayer = _pool[_cursor]
@@ -111,6 +121,9 @@ func _on_judgment_recorded(record: JudgmentRecord) -> void:
 
 
 func _on_gameplay_snapshot_changed(snapshot: Dictionary) -> void:
+	if preview_muted:
+		_stop_carrier_players()
+		return
 	_update_carrier_player(
 		_life_carrier_player,
 		bool(snapshot.get("life_held", false)),

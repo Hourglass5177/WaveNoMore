@@ -67,6 +67,9 @@ signal debug_snapshot_ready(snapshot: Dictionary)
 @export var pause_on_focus_loss: bool = true
 
 ## 当前关卡生命周期状态，使用 GameplayTypes.StageState 枚举。
+## 写谱器外部时间模式：不轮询物理输入，不执行玩家暂停和结算流程。
+var external_preview: bool = false
+
 var state: int = GameplayTypes.StageState.LOADING
 ## 当前装载的关卡聚合资源，组合歌曲、谱面、演出、主题、奖励和规则。
 var stage_definition: StageDefinition
@@ -139,6 +142,8 @@ func _exit_tree() -> void:
 
 
 func _process(delta: float) -> void:
+	if external_preview:
+		return
 	# print("[StageSession] process state=%d" % state)
 	if state == GameplayTypes.StageState.PAUSED:
 		_process_resume_countdown(delta)
@@ -862,3 +867,22 @@ func _present_note_judgment(note_id: String) -> void:
 	_presented_note_ids[note_id] = true
 	chart_scheduler.mark_judged(note_id, record.grade)
 	judgment_presented.emit(record)
+
+
+## 外部会话只通过此入口提交语义输入，判定规则仍在 GameplaySimulation。
+func inject_replay_input(sample: SemanticInputSample) -> void:
+	gameplay_coordinator.accept_input(sample)
+
+## 重建时不经过玩家暂停重武装，保留自动演示的真实长按状态。
+func reset_preview() -> void:
+	_clear_physical_note_state()
+	gameplay_coordinator.reset()
+	chart_scheduler.reset()
+	state = GameplayTypes.StageState.PLAYING
+
+func advance_preview(time_us: int, inclusive: bool = true) -> void:
+	var seconds := float(time_us) / 1000000.0
+	chart_scheduler.advance(seconds)
+	song_clock.publish_external_time(seconds)
+	gameplay_coordinator.advance_to(time_us, inclusive)
+	_emit_snapshot_changes(gameplay_coordinator.snapshot())

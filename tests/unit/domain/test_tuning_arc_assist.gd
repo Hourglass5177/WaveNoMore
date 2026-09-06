@@ -97,7 +97,7 @@ func _test_default_scale_and_rotary_clutch() -> void:
 	_expect_near(rules.tuning_base_frequency_hz, 3.0, 0.000001, "default carrier frequency is 3 Hz")
 	_expect_near(rules.tuning_max_frequency_hz, 7.0, 0.000001, "default maximum frequency is 7 Hz")
 	_expect_near(rules.tuning_hz_per_revolution, 32.0, 0.000001, "one stick revolution changes frequency by 32 Hz")
-	var router := InputRouter.new()
+	var router: Node = load("res://src/runtime/input/input_event_buffer.gd").new()
 	router.configure_from_rules(rules)
 	var frequency_range: float = rules.tuning_max_frequency_hz - rules.tuning_min_frequency_hz
 	_expect_near(

@@ -83,7 +83,7 @@ func process_input_frame() -> void:
 	#print("[GameplayCoordinator] process_input_frame configured=%s" % str(configured))
 	if not configured or simulation == null:
 		return
-	simulation.process_input_frame()
+	simulation.process_input_frame(get_tree().root.get_node("InputEventBuffer"))
 	_drain_domain_events()
 	_refresh_snapshot()
 

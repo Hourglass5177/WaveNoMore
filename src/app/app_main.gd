@@ -31,6 +31,9 @@ var _current_stage: StageDefinition
 
 
 func _ready() -> void:
+	if StudioLaunch.is_active():
+		get_tree().change_scene_to_file.call_deferred("res://scenes/tools/chart_studio/studio.tscn")
+		return
 	# AppRouter 记录页面和返回历史；具体实例化哪个场景仍由这个宿主统一完成。
 	AppRouter.route_requested.connect(_on_route_requested)
 	AppRouter.clear_history()

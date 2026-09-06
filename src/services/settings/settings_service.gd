@@ -37,6 +37,7 @@ var fullscreen: bool = false
 
 
 func _ready() -> void:
+	if StudioLaunch.is_active(): return
 	load_settings()
 	apply_settings()
 

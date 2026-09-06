@@ -92,7 +92,7 @@ func _test_tap_boundaries_and_pass_contract() -> void:
 	var perfect_sim := GameplaySimulation.new()
 	perfect_sim.configure(compiled, rules)
 	perfect_sim.advance_to(target_us + rules.perfect_window_ms * 1000, false)
-	perfect_sim.accept_input(SemanticInputSample.create(target_us + rules.perfect_window_ms * 1000, 0, GameplayTypes.SemanticInputKind.LIFE_PRESSED))
+	perfect_sim.accept_input(SemanticInputSample.create(target_us + rules.perfect_window_ms * 1000, 0, GameplayTypes.SemanticInputKind.LIFE_A_PRESSED))
 	perfect_sim.force_finish()
 	_expect_equal(perfect_sim.judgments[0].grade, GameplayTypes.JudgmentGrade.PERFECT, "Perfect boundary is inclusive")
 
@@ -100,7 +100,7 @@ func _test_tap_boundaries_and_pass_contract() -> void:
 	pass_sim.configure(compiled, rules)
 	var pass_time: int = target_us + rules.pass_window_ms * 1000
 	pass_sim.advance_to(pass_time, false)
-	pass_sim.accept_input(SemanticInputSample.create(pass_time, 0, GameplayTypes.SemanticInputKind.LIFE_PRESSED))
+	pass_sim.accept_input(SemanticInputSample.create(pass_time, 0, GameplayTypes.SemanticInputKind.LIFE_A_PRESSED))
 	pass_sim.force_finish()
 	var summary := pass_sim.result_summary()
 	_expect_equal(pass_sim.judgments[0].grade, GameplayTypes.JudgmentGrade.PASS, "Pass boundary is inclusive")
@@ -112,7 +112,7 @@ func _test_tap_boundaries_and_pass_contract() -> void:
 	outside_sim.configure(compiled, rules)
 	var outside_time: int = pass_time + 1
 	outside_sim.advance_to(outside_time, false)
-	outside_sim.accept_input(SemanticInputSample.create(outside_time, 0, GameplayTypes.SemanticInputKind.LIFE_PRESSED))
+	outside_sim.accept_input(SemanticInputSample.create(outside_time, 0, GameplayTypes.SemanticInputKind.LIFE_A_PRESSED))
 	outside_sim.force_finish()
 	_expect_equal(outside_sim.strays.size(), 1, "one microsecond outside PASS is stray")
 	_expect_equal(outside_sim.judgments[0].grade, GameplayTypes.JudgmentGrade.MISS, "outside PASS does not consume note")
@@ -139,7 +139,7 @@ func _test_hold_head_and_sustain_contract() -> void:
 	var held_through_tail := GameplaySimulation.new()
 	held_through_tail.configure(compiled, rules)
 	held_through_tail.advance_to(int(hold["start_us"]), false)
-	held_through_tail.accept_input(SemanticInputSample.create(int(hold["start_us"]), 0, GameplayTypes.SemanticInputKind.LIFE_PRESSED))
+	held_through_tail.accept_input(SemanticInputSample.create(int(hold["start_us"]), 0, GameplayTypes.SemanticInputKind.LIFE_A_PRESSED))
 	held_through_tail.advance_to(int(hold["end_us"]), true)
 	_expect_equal(held_through_tail.judgments.size(), 1, "Hold auto-completes at its tail without a release input")
 	_expect_equal(held_through_tail.judgments[0].grade, GameplayTypes.JudgmentGrade.PERFECT, "holding through the tail preserves Perfect")
@@ -148,7 +148,7 @@ func _test_hold_head_and_sustain_contract() -> void:
 
 	# 尾点之后再松键只负责停止载波，不会改写已经完成的 Hold，也不会成为乱按。
 	var late_release_us: int = int(hold["end_us"]) + 500_000
-	held_through_tail.accept_input(SemanticInputSample.create(late_release_us, 1, GameplayTypes.SemanticInputKind.LIFE_RELEASED))
+	held_through_tail.accept_input(SemanticInputSample.create(late_release_us, 1, GameplayTypes.SemanticInputKind.LIFE_A_RELEASED))
 	_expect_equal(held_through_tail.judgments.size(), 1, "late release cannot create or downgrade a second Hold result")
 	_expect_equal(held_through_tail.strays.size(), 0, "late Hold release is not a stray press")
 
@@ -160,7 +160,7 @@ func _test_hold_head_and_sustain_contract() -> void:
 	var legacy_run := GameplaySimulation.new()
 	legacy_run.configure(legacy_compiled, rules)
 	legacy_run.advance_to(int(legacy_compiled.notes[0]["start_us"]), false)
-	legacy_run.accept_input(SemanticInputSample.create(int(legacy_compiled.notes[0]["start_us"]), 0, GameplayTypes.SemanticInputKind.LIFE_PRESSED))
+	legacy_run.accept_input(SemanticInputSample.create(int(legacy_compiled.notes[0]["start_us"]), 0, GameplayTypes.SemanticInputKind.LIFE_A_PRESSED))
 	legacy_run.advance_to(int(legacy_compiled.notes[0]["end_us"]), true)
 	_expect_equal(legacy_run.judgments[0].grade, GameplayTypes.JudgmentGrade.PERFECT, "legacy tail_requires_release=true is ignored by runtime")
 
@@ -176,9 +176,9 @@ func _test_hold_gap_event_ordering() -> void:
 	var tail_wins := GameplaySimulation.new()
 	tail_wins.configure(compiled, rules)
 	tail_wins.advance_to(start_us, false)
-	tail_wins.accept_input(SemanticInputSample.create(start_us, 0, GameplayTypes.SemanticInputKind.LIFE_PRESSED))
+	tail_wins.accept_input(SemanticInputSample.create(start_us, 0, GameplayTypes.SemanticInputKind.LIFE_A_PRESSED))
 	var near_tail_release_us: int = end_us - 50_000
-	tail_wins.accept_input(SemanticInputSample.create(near_tail_release_us, 1, GameplayTypes.SemanticInputKind.LIFE_RELEASED))
+	tail_wins.accept_input(SemanticInputSample.create(near_tail_release_us, 1, GameplayTypes.SemanticInputKind.LIFE_A_RELEASED))
 	tail_wins.advance_to(end_us + 500_000, true)
 	_expect_equal(tail_wins.judgments[0].grade, GameplayTypes.JudgmentGrade.PERFECT, "tail reached inside sustain grace succeeds even across one large frame")
 	_expect_equal(tail_wins.judgments[0].finalized_at_us, end_us, "successful large-step Hold finalizes at authored tail time")
@@ -187,10 +187,10 @@ func _test_hold_gap_event_ordering() -> void:
 	var repressed := GameplaySimulation.new()
 	repressed.configure(compiled, rules)
 	repressed.advance_to(start_us, false)
-	repressed.accept_input(SemanticInputSample.create(start_us, 0, GameplayTypes.SemanticInputKind.LIFE_PRESSED))
+	repressed.accept_input(SemanticInputSample.create(start_us, 0, GameplayTypes.SemanticInputKind.LIFE_A_PRESSED))
 	var short_gap_us: int = start_us + 100_000
-	repressed.accept_input(SemanticInputSample.create(short_gap_us, 1, GameplayTypes.SemanticInputKind.LIFE_RELEASED))
-	repressed.accept_input(SemanticInputSample.create(short_gap_us + 50_000, 2, GameplayTypes.SemanticInputKind.LIFE_PRESSED))
+	repressed.accept_input(SemanticInputSample.create(short_gap_us, 1, GameplayTypes.SemanticInputKind.LIFE_A_RELEASED))
+	repressed.accept_input(SemanticInputSample.create(short_gap_us + 50_000, 2, GameplayTypes.SemanticInputKind.LIFE_A_PRESSED))
 	repressed.advance_to(end_us, true)
 	_expect_equal(repressed.judgments[0].grade, GameplayTypes.JudgmentGrade.PASS, "re-press inside sustain grace resumes Hold without a Miss")
 
@@ -198,9 +198,9 @@ func _test_hold_gap_event_ordering() -> void:
 	var gap_loses := GameplaySimulation.new()
 	gap_loses.configure(compiled, rules)
 	gap_loses.advance_to(start_us, false)
-	gap_loses.accept_input(SemanticInputSample.create(start_us, 0, GameplayTypes.SemanticInputKind.LIFE_PRESSED))
+	gap_loses.accept_input(SemanticInputSample.create(start_us, 0, GameplayTypes.SemanticInputKind.LIFE_A_PRESSED))
 	var early_release_us: int = start_us + 100_000
-	gap_loses.accept_input(SemanticInputSample.create(early_release_us, 1, GameplayTypes.SemanticInputKind.LIFE_RELEASED))
+	gap_loses.accept_input(SemanticInputSample.create(early_release_us, 1, GameplayTypes.SemanticInputKind.LIFE_A_RELEASED))
 	gap_loses.advance_to(end_us + 500_000, true)
 	var expected_failure_us: int = early_release_us + rules.hold_sustain_grace_ms * 1000 + 1
 	_expect_equal(gap_loses.judgments[0].grade, GameplayTypes.JudgmentGrade.MISS, "release beyond sustain grace still misses")
@@ -217,18 +217,18 @@ func _test_hold_presentation_state_contract() -> void:
 
 	var start_us: int = int(hold["start_us"])
 	simulation.advance_to(start_us, false)
-	simulation.accept_input(SemanticInputSample.create(start_us, 0, GameplayTypes.SemanticInputKind.LIFE_PRESSED))
+	simulation.accept_input(SemanticInputSample.create(start_us, 0, GameplayTypes.SemanticInputKind.LIFE_A_PRESSED))
 	var held_snapshot: Dictionary = simulation.snapshot()
 	_expect((held_snapshot["active_hold_ids"] as PackedStringArray).has("hold_only"), "accepted Hold head exposes its stable active ID")
 	_expect((held_snapshot["held_hold_ids"] as PackedStringArray).has("hold_only"), "pressed Hold exposes that its body may be consumed")
 
 	var release_us: int = start_us + 20_000
-	simulation.accept_input(SemanticInputSample.create(release_us, 1, GameplayTypes.SemanticInputKind.LIFE_RELEASED))
+	simulation.accept_input(SemanticInputSample.create(release_us, 1, GameplayTypes.SemanticInputKind.LIFE_A_RELEASED))
 	var released_snapshot: Dictionary = simulation.snapshot()
 	_expect((released_snapshot["active_hold_ids"] as PackedStringArray).has("hold_only"), "early release keeps Hold recoverable during sustain grace")
 	_expect(not (released_snapshot["held_hold_ids"] as PackedStringArray).has("hold_only"), "early release freezes visual body consumption")
 
-	simulation.accept_input(SemanticInputSample.create(release_us + 20_000, 2, GameplayTypes.SemanticInputKind.LIFE_PRESSED))
+	simulation.accept_input(SemanticInputSample.create(release_us + 20_000, 2, GameplayTypes.SemanticInputKind.LIFE_A_PRESSED))
 	_expect((simulation.snapshot()["held_hold_ids"] as PackedStringArray).has("hold_only"), "re-press inside grace resumes Hold body consumption")
 
 
@@ -423,7 +423,7 @@ func _test_tuning_single_and_grouped_results() -> void:
 	var missing_death := ReplayRunner.build_perfect_replay(paired, rules)
 	var life_only_inputs: Array[SemanticInputSample] = []
 	for sample: SemanticInputSample in missing_death.inputs:
-		if sample.kind != GameplayTypes.SemanticInputKind.DEATH_PRESSED and sample.kind != GameplayTypes.SemanticInputKind.DEATH_RELEASED:
+		if sample.kind != GameplayTypes.SemanticInputKind.DEATH_A_PRESSED and sample.kind != GameplayTypes.SemanticInputKind.DEATH_A_RELEASED:
 			life_only_inputs.append(sample)
 	missing_death.inputs = life_only_inputs
 	var paired_result: Dictionary = ReplayRunner.run(paired, rules, missing_death, 16_667)
@@ -510,8 +510,8 @@ func _build_preheld_tail_free_tuning_replay(compiled: CompiledChart, rules: Game
 	var replay := ReplayRunner.build_perfect_replay(compiled, rules)
 	var start_us: int = int(compiled.tuning_fields[0]["start_us"])
 	var retained: Array[SemanticInputSample] = [
-		SemanticInputSample.create(start_us - 100_000, 0, GameplayTypes.SemanticInputKind.LIFE_PRESSED),
-		SemanticInputSample.create(start_us - 100_000, 1, GameplayTypes.SemanticInputKind.DEATH_PRESSED),
+		SemanticInputSample.create(start_us - 100_000, 0, GameplayTypes.SemanticInputKind.LIFE_A_PRESSED),
+		SemanticInputSample.create(start_us - 100_000, 1, GameplayTypes.SemanticInputKind.DEATH_A_PRESSED),
 	]
 	for sample: SemanticInputSample in replay.inputs:
 		if sample.kind == GameplayTypes.SemanticInputKind.TUNING_DISPLACED:
@@ -567,8 +567,8 @@ func _test_rapid_alternation_and_debounce() -> void:
 	var valid := GameplaySimulation.new()
 	valid.configure(compiled, rules)
 	valid.advance_to(int(region["start_us"]), false)
-	valid.accept_input(SemanticInputSample.create(int(region["start_us"]), 0, GameplayTypes.SemanticInputKind.LIFE_PRESSED))
-	valid.accept_input(SemanticInputSample.create(int(region["start_us"]) + int(region["debounce_us"]), 1, GameplayTypes.SemanticInputKind.DEATH_PRESSED))
+	valid.accept_input(SemanticInputSample.create(int(region["start_us"]), 0, GameplayTypes.SemanticInputKind.LIFE_A_PRESSED))
+	valid.accept_input(SemanticInputSample.create(int(region["start_us"]) + int(region["debounce_us"]), 1, GameplayTypes.SemanticInputKind.DEATH_A_PRESSED))
 	var valid_waves: Array[Dictionary] = valid.drain_wave_launches()
 	valid.advance_to(int(region["end_us"]) + 1, true)
 	_expect_equal(valid.judgments[0].grade, GameplayTypes.JudgmentGrade.PERFECT, "rapid debounce boundary is inclusive and opposite side counts")
@@ -578,8 +578,8 @@ func _test_rapid_alternation_and_debounce() -> void:
 	var invalid := GameplaySimulation.new()
 	invalid.configure(compiled, rules)
 	invalid.advance_to(int(region["start_us"]), false)
-	invalid.accept_input(SemanticInputSample.create(int(region["start_us"]), 0, GameplayTypes.SemanticInputKind.LIFE_PRESSED))
-	invalid.accept_input(SemanticInputSample.create(int(region["start_us"]) + int(region["debounce_us"]) * 2, 1, GameplayTypes.SemanticInputKind.LIFE_PRESSED))
+	invalid.accept_input(SemanticInputSample.create(int(region["start_us"]), 0, GameplayTypes.SemanticInputKind.LIFE_A_PRESSED))
+	invalid.accept_input(SemanticInputSample.create(int(region["start_us"]) + int(region["debounce_us"]) * 2, 1, GameplayTypes.SemanticInputKind.LIFE_A_PRESSED))
 	var invalid_waves: Array[Dictionary] = invalid.drain_wave_launches()
 	invalid.advance_to(int(region["end_us"]) + 1, true)
 	_expect_equal(invalid.judgments[0].grade, GameplayTypes.JudgmentGrade.MISS, "same-side rapid strike is consumed but not counted")
@@ -593,7 +593,7 @@ func _test_stray_contract() -> void:
 	var simulation := GameplaySimulation.new()
 	simulation.configure(compiled, rules)
 	var before_health: int = simulation.health_engine.soul_fire
-	simulation.accept_input(SemanticInputSample.create(10_000, 0, GameplayTypes.SemanticInputKind.DEATH_PRESSED))
+	simulation.accept_input(SemanticInputSample.create(10_000, 0, GameplayTypes.SemanticInputKind.DEATH_A_PRESSED))
 	var stray_waves: Array[Dictionary] = simulation.drain_wave_launches()
 	_expect_equal(simulation.strays.size(), 1, "empty press is recorded")
 	_expect_equal(simulation.health_engine.soul_fire, before_health, "empty press does not damage soul fire")
@@ -666,7 +666,7 @@ func _test_focus_cancel() -> void:
 	var simulation := GameplaySimulation.new()
 	simulation.configure(compiled, rules)
 	simulation.advance_to(int(hold["start_us"]), false)
-	simulation.accept_input(SemanticInputSample.create(int(hold["start_us"]), 0, GameplayTypes.SemanticInputKind.LIFE_PRESSED))
+	simulation.accept_input(SemanticInputSample.create(int(hold["start_us"]), 0, GameplayTypes.SemanticInputKind.LIFE_A_PRESSED))
 	simulation.accept_input(SemanticInputSample.create(int(hold["start_us"]) + 10_000, 1, GameplayTypes.SemanticInputKind.FOCUS_CANCELLED))
 	_expect_equal(simulation.judgments.size(), 1, "focus cancel finalizes active Hold")
 	if not simulation.judgments.is_empty():
@@ -711,12 +711,12 @@ func _test_pause_rearm() -> void:
 	var simulation := GameplaySimulation.new()
 	simulation.configure(compiled, rules)
 	simulation.advance_to(int(hold["start_us"]), false)
-	simulation.accept_input(SemanticInputSample.create(int(hold["start_us"]), 0, GameplayTypes.SemanticInputKind.LIFE_PRESSED))
+	simulation.accept_input(SemanticInputSample.create(int(hold["start_us"]), 0, GameplayTypes.SemanticInputKind.LIFE_A_PRESSED))
 	var requirements: Dictionary = simulation.begin_pause_rearm()
 	_expect(bool(requirements["life_required"]), "pause reports active life Hold rearm requirement")
 	simulation.apply_resume_rearm({"life_held": true, "death_held": false})
 	simulation.advance_to(int(hold["end_us"]), false)
-	simulation.accept_input(SemanticInputSample.create(int(hold["end_us"]), 1, GameplayTypes.SemanticInputKind.LIFE_RELEASED))
+	simulation.accept_input(SemanticInputSample.create(int(hold["end_us"]), 1, GameplayTypes.SemanticInputKind.LIFE_A_RELEASED))
 	simulation.advance_to(int(hold["end_us"]), true)
 	_expect_equal(simulation.judgments[0].grade, GameplayTypes.JudgmentGrade.PERFECT, "pause rearm preserves Hold without a second head judgment")
 

@@ -319,3 +319,15 @@ func _resolve_capture_usec(capture_usec: int) -> int:
 func _bump_generation() -> void:
 	_generation += 1
 	generation_changed.emit(_generation)
+
+
+## 写谱预览的时钟由 Transport 提供；参数为去掉首拍偏移后的游戏时间。
+func publish_external_time(seconds: float) -> void:
+	song_time_sec = seconds
+	judge_time_sec = seconds
+	visual_time_sec = seconds
+	var value := ClockSample.new()
+	value.song_time_sec = seconds
+	value.judge_time_sec = seconds
+	value.visual_time_sec = seconds
+	sample_published.emit(value)

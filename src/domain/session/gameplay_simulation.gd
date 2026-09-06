@@ -142,11 +142,11 @@ func advance_to(time_us: int, inclusive: bool = true) -> void:
 	_collect_wave_events()
 
 ## 在逻辑帧内直接读取物理输入缓冲，并通过纯转换层得到玩法语义。
-func process_input_frame() -> void:
+func process_input_frame(input_buffer: Node) -> void:
 	#print("[GameplaySimulation] process_input_frame")
 	_reset_operation_table()
 	for physical_kind in range(GameplayTypes.PhysicalInputKind.ENUM_MAX):
-		var result: Dictionary = InputEventBuffer.query(physical_kind)
+		var result: Dictionary = input_buffer.query(physical_kind)
 		if not bool(result.get("exists", false)):
 			continue
 		var physical := result.get("event") as PhysicalInputEvent
