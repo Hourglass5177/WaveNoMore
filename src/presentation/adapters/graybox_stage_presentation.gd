@@ -223,6 +223,9 @@ func _apply_visual_settings() -> void:
 		_tuning_interference_visual.set_visual_intensity(float(_settings_service.get("tuning_wave_intensity")))
 
 
+func update_preview_palette(visual_theme: StageVisualTheme) -> void:
+	_apply_palette(visual_theme)
+
 func _apply_palette(visual_theme: StageVisualTheme) -> void:
 	_backdrop.life_color = visual_theme.life_color
 	_backdrop.death_color = visual_theme.death_color

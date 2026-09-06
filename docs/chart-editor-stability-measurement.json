@@ -1,0 +1,13 @@
+{
+  "renderer": "OpenGL Compatibility, RTX 4060 Laptop",
+  "frames": 120,
+  "median_ms": 5.9325,
+  "p95_ms": 8.19,
+  "max_ms": 10.705,
+  "rebuild_counts": [
+    4
+  ],
+  "palette_total_ms": 209.445,
+  "palette_commits": 12,
+  "audio_backward_samples": 6
+}

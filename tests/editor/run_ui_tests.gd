@@ -18,6 +18,8 @@ func key(code: Key) -> void:
 
 func _run() -> void:
 	var workspace = load("res://scenes/tools/chart_studio/studio.tscn").instantiate()
+	workspace.recovery_path = "user://chart_studio/tests/run_ui_tests/recovery.json"
+	workspace.offer_recovery_on_start = false
 	root.add_child(workspace)
 	workspace._open_path("res://tests/editor/fixtures/training/song.json")
 	for frame in 30: await process_frame

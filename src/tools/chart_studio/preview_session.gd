@@ -12,6 +12,8 @@ var _time_us: int = -1000000000
 var _request := 0
 var offset_sec := 0.0
 var sound_enabled := true
+var rebuild_count := 0
+var load_count := 0
 
 func clear_preview() -> void:
 	_request += 1
@@ -22,6 +24,7 @@ func clear_preview() -> void:
 	stage_root = null
 
 func load_preview(stage: StageDefinition, viewport: SubViewport) -> bool:
+	load_count += 1
 	clear_preview()
 	stage_root = load("res://scenes/stage/stage_root.tscn").instantiate() as StageRoot
 	stage_root.auto_start_initial_stage = false
@@ -50,6 +53,8 @@ func load_preview(stage: StageDefinition, viewport: SubViewport) -> bool:
 
 func seek_preview(audio_us: int) -> void:
 	if not is_instance_valid(stage_root): return
+	rebuild_count += 1
+	var tree := get_tree()
 	_request += 1
 	var request := _request
 	var target := audio_us - roundi(offset_sec * 1000000.0)
@@ -69,8 +74,8 @@ func seek_preview(audio_us: int) -> void:
 	while _cursor < _inputs.size() and _inputs[_cursor].timestamp_us <= target:
 		_step_to(_inputs[_cursor].timestamp_us)
 		if Time.get_ticks_usec() - batch_start > 8000:
-			await get_tree().process_frame
-			if request != _request: return
+			await tree.process_frame
+			if request != _request or not is_inside_tree(): return
 			batch_start = Time.get_ticks_usec()
 	_step_to(target)
 	stage_root.gameplay_coordinator.finish_preview_batch()
@@ -94,10 +99,15 @@ func advance(audio_sec: float, playing: bool) -> void:
 	if not is_instance_valid(stage_root) or rebuilding: return
 	stage_root.audio_feedback.preview_muted = not playing or not sound_enabled
 	var target := roundi((audio_sec - offset_sec) * 1000000.0)
-	if target < _time_us:
-		seek_preview(roundi(audio_sec * 1000000.0))
-	elif target != _time_us:
+	# 真正的定位和循环由 Transport 明确通知；普通采样的抖动不能触发重演。
+	if target > _time_us:
 		_step_to(target)
+
+func apply_palette(theme: StageVisualTheme) -> void:
+	if is_instance_valid(stage_root): stage_root.presentation.update_preview_palette(theme)
+
+func _exit_tree() -> void:
+	_request += 1
 
 func _step_to(target: int) -> void:
 	var session := stage_root.stage_session

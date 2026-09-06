@@ -14,6 +14,22 @@ var _note_sound_enabled := true
 var _last_beat := -1000000
 var _candidate_timer := Timer.new()
 var _property_commits: Array[Callable] = []
+var recorder := StudioRecorder.new()
+var record_armed := false
+var _record_button := Button.new()
+var _follow := CheckButton.new()
+var _follow_suspended := false
+var _scroll := HScrollBar.new()
+var _view_menu := MenuButton.new()
+var _ui_scale := 0.0
+var _seek_timer := Timer.new()
+var _seek_target := 0.0
+var _recovery_ready := false
+var recovery_path := "user://chart_studio/recovery.json"
+var offer_recovery_on_start := true
+var _color_edit := {}
+var _colors := {}
+var _preview_theme_id := ""
 var _problem_messages: PackedStringArray = []
 const PLAY_ICON = preload("res://assets/chart_studio/play.svg")
 const PAUSE_ICON = preload("res://assets/chart_studio/pause.svg")
@@ -27,10 +43,8 @@ const PAUSE_ICON = preload("res://assets/chart_studio/pause.svg")
 
 func _ready() -> void:
 	get_window().title = "冥河 · 写谱器"
-	# 工具按桌面缩放保持字号；缩小窗口让容器换行，不把整个界面缩成小字。
 	get_window().content_scale_size = Vector2i.ZERO
-	get_window().content_scale_factor = maxf(1.0, DisplayServer.screen_get_scale())
-	get_window().min_size = Vector2i(Vector2(1024, 720) * get_window().content_scale_factor)
+	get_window().min_size = Vector2i(1024, 720)
 	InputEventBuffer.set_mode(InputEventBuffer.InputMode.DISABLED)
 	InputEventBuffer.set_process_input(false)
 	add_child(audio)
@@ -49,11 +63,13 @@ func _ready() -> void:
 	timeline.bind(document)
 	document.changed.connect(_on_document_changed)
 	timeline.selection_changed.connect(_inspect)
-	timeline.seek_requested.connect(_seek)
-	timeline.gesture_started.connect(_finish_text_edit)
+	timeline.seek_requested.connect(_scrub)
+	timeline.seek_finished.connect(_seek)
+	timeline.gesture_started.connect(func() -> void: _finish_recording(true); _finish_text_edit())
 	add_child(_candidate_timer)
 	_candidate_timer.one_shot = true; _candidate_timer.wait_time = 0.12
-	_candidate_timer.timeout.connect(func() -> void: _refresh_pending = true)
+	_candidate_timer.timeout.connect(func() -> void:
+		if not recorder.active: _refresh_pending = true)
 	timeline.candidate_changed.connect(func() -> void: _candidate_timer.start())
 	timeline.context_requested.connect(func(at: Vector2) -> void: _context.position = Vector2i(at); _context.popup())
 	for label in ["删除", "复制", "粘贴", "生死互换", "组合双押", "解除组合", "量化起始位置", "量化起止位置", "重复乐句"]: _context.add_item(label)
@@ -78,12 +94,13 @@ func _ready() -> void:
 	snap.select(2)
 	_sync_snap_hint()
 	snap.item_selected.connect(func(i: int) -> void:
+		_finish_recording(true)
 		var divisors := [1, 2, 4, 8, 16, 3, 6, 0]
 		timeline.snap_ticks = document.chart().ppq / divisors[i] if divisors[i] else 0
 		timeline.queue_redraw())
 	audio.position_changed.connect(_position_changed)
 	audio.waveform_ready.connect(func(peaks: PackedVector2Array, duration: float) -> void:
-		timeline.set_waveform(peaks, duration))
+		timeline.set_waveform(peaks, duration); _update_scroll())
 	audio.error_reported.connect(_message)
 	preview.status_changed.connect(_preview_status)
 	for pair in [["SongTitle", "title"], ["Artist", "artist"]]:
@@ -92,7 +109,7 @@ func _ready() -> void:
 		edit.focus_exited.connect(func() -> void:
 			if not _updating: document.set_song_field(pair[1], edit.text))
 	library.get_node("Difficulty").item_selected.connect(func(i: int) -> void:
-		_finish_text_edit(); audio.set_playing(false); document.current = i; timeline.selected.clear(); document.changed.emit())
+		_finish_text_edit(); audio.set_playing(false); document.current = i; document.change_kind = &"project"; timeline.selected.clear(); document.changed.emit())
 	library.get_node("AddDifficulty").pressed.connect(func() -> void: document.add_difficulty("difficulty_%d" % (document.charts.size() + 1), true))
 	library.get_node("AddSection").pressed.connect(_add_section)
 	library.get_node("Sections").item_selected.connect(func(i: int) -> void: _seek(float(document.tempo_map().tick_to_us(document.chart().sections[i].tick)) / 1000000.0))
@@ -100,9 +117,10 @@ func _ready() -> void:
 		var tick: int = problems.get_item_metadata(i)
 		_seek(float(document.tempo_map().tick_to_us(tick)) / 1000000.0))
 	add_child(_autosave)
-	_autosave.wait_time = 30
+	_autosave.wait_time = 1
+	_autosave.one_shot = true
 	_autosave.timeout.connect(_write_recovery)
-	_autosave.start()
+	_setup_stability_controls()
 	_on_document_changed()
 	audio.state_changed.connect(_sync_transport)
 	_sync_transport()
@@ -111,14 +129,157 @@ func _ready() -> void:
 	_offer_recovery.call_deferred()
 
 func _process(_delta: float) -> void:
+	if recorder.active:
+		var focused := get_viewport().gui_get_focus_owner()
+		if focused is LineEdit or focused is TextEdit: _finish_recording(true)
+		else:
+			timeline.recording_notes = recorder.display_notes(audio.position, Time.get_ticks_usec())
+			timeline._redraw_overlay()
 	audio.set_suspended(preview.rebuilding)
 	timeline.loop_range = Vector2(audio.loop_start, audio.loop_end)
 	timeline.loop_enabled = audio.loop_enabled
-	if _refresh_pending and not preview.rebuilding:
+	if _refresh_pending and not preview.rebuilding and not recorder.active:
 		_refresh_pending = false
 		_rebuild_preview()
 	preview.sound_enabled = _note_sound_enabled
 	preview.set_transport(roundi(audio.position * 1000000.0), audio.playing)
+
+func _setup_stability_controls() -> void:
+	var settings := ConfigFile.new()
+	settings.load("user://chart_studio/settings.cfg")
+	_ui_scale = float(settings.get_value("ui", "scale", 0))
+	recorder.threshold_ms = float(settings.get_value("input", "hold_threshold_ms", 150))
+	_record_button.text = "录制"; _record_button.toggle_mode = true
+	_record_button.tooltip_text = "开启／关闭实时录入（R）"; _record_button.focus_mode = Control.FOCUS_NONE
+	transport.get_node("Playback").add_child(_record_button)
+	_record_button.toggled.connect(func(enabled: bool) -> void:
+		record_armed = enabled
+		if not enabled: _finish_recording()
+		elif audio.playing: recorder.begin(timeline._map, timeline.snap_ticks)
+		_update_record_status())
+	_follow.text = "跟随"; _follow.button_pressed = true; _follow.focus_mode = Control.FOCUS_NONE
+	_follow.tooltip_text = "播放时跟随播放头；手动浏览暂时停止跟随"
+	transport.get_node("Sound").add_child(_follow)
+	_follow.toggled.connect(func(_enabled: bool) -> void: _follow_suspended = false)
+	timeline.manual_browse.connect(func() -> void: _follow_suspended = true)
+	timeline.loop_changed.connect(func(start: float, end: float) -> void: audio.loop_start = start; audio.loop_end = end)
+	$Layout/Split/TimelineColumn.add_child(_scroll)
+	_scroll.value_changed.connect(func(value: float) -> void: _follow_suspended = true; timeline.view_start = value)
+	timeline.view_changed.connect(_update_scroll)
+	timeline.resized.connect(_update_scroll)
+	_view_menu.text = "视图"; $Layout/Toolbar.add_child(_view_menu)
+	var menu := _view_menu.get_popup()
+	menu.about_to_popup.connect(func() -> void: _finish_recording(true))
+	for label in ["自动缩放", "100%", "125%", "150%"]: menu.add_radio_check_item(label)
+	menu.add_separator(); menu.add_item("显示整曲", 10); menu.add_item("显示选区", 11)
+	menu.id_pressed.connect(func(id: int) -> void:
+		if id < 4: _ui_scale = [0.0, 1.0, 1.25, 1.5][id]; _apply_ui_scale(); _save_tool_settings()
+		else: _fit_timeline(id == 11))
+	get_window().size_changed.connect(_apply_ui_scale)
+	_apply_ui_scale()
+	add_child(_seek_timer); _seek_timer.one_shot = true; _seek_timer.wait_time = 0.05
+	_seek_timer.timeout.connect(func() -> void: audio.seek(_seek_target))
+	audio.discontinuity.connect(func(seconds: float, reason: StringName) -> void:
+		if reason != &"rate": preview.seek_preview(roundi(seconds * 1000000.0)))
+	audio.loop_wrapping.connect(func(end: float) -> void:
+		if recorder.active: recorder.cut_loop(end, Time.get_ticks_usec()))
+	audio.state_changed.connect(func() -> void:
+		if not audio.playing: _finish_recording()
+		_update_record_status())
+
+func _update_record_status() -> void:
+	_record_button.text = "录制中" if record_armed and audio.playing else "待录制" if record_armed else "录制"
+
+func _finish_recording(cancel_held := false) -> void:
+	if not recorder.active: return
+	var notes := recorder.finish(audio.position, Time.get_ticks_usec(), cancel_held)
+	timeline.recording_notes.clear(); timeline._redraw_overlay()
+	if not notes.is_empty(): document.execute("实时录制", [], notes); _write_recovery()
+
+func _apply_ui_scale() -> void:
+	var window := get_window()
+	var factor := _ui_scale if _ui_scale > 0 else maxf(maxf(1, DisplayServer.screen_get_scale()), minf(window.size.x / 1280.0, window.size.y / 720.0))
+	if not is_equal_approx(window.content_scale_factor, factor): window.content_scale_factor = factor
+	var menu := _view_menu.get_popup()
+	for i in mini(4, menu.item_count): menu.set_item_checked(i, is_equal_approx(_ui_scale, [0.0, 1.0, 1.25, 1.5][i]))
+
+func _save_tool_settings() -> void:
+	var config := ConfigFile.new(); config.load("user://chart_studio/settings.cfg")
+	config.set_value("ui", "scale", _ui_scale)
+	config.set_value("input", "hold_threshold_ms", recorder.threshold_ms)
+	DirAccess.make_dir_recursive_absolute("user://chart_studio")
+	config.save("user://chart_studio/settings.cfg")
+
+func _update_scroll() -> void:
+	if document.charts.is_empty(): return
+	var span := timeline.size.x / timeline.pixels_per_second
+	_scroll.min_value = minf(-10, timeline.view_start)
+	_scroll.max_value = maxf(maxf(timeline.audio_duration + 5, float(timeline._map.tick_to_us(document.chart().end_tick)) / 1000000.0 + 5), timeline.view_start + span)
+	_scroll.page = span
+	_scroll.set_value_no_signal(timeline.view_start)
+
+func _fit_timeline(selection_only: bool) -> void:
+	var from := -2.0
+	var to := maxf(timeline.audio_duration, float(timeline._map.tick_to_us(document.chart().end_tick)) / 1000000.0) + 1
+	if selection_only:
+		var notes := _selected_notes()
+		if notes.is_empty(): _message("请先选择音符"); return
+		from = INF; to = -INF
+		for note in notes:
+			from = minf(from, float(timeline._map.tick_to_us(note.tick)) / 1000000.0 - 0.5)
+			to = maxf(to, float(timeline._map.tick_to_us(note.tick + note.duration_ticks)) / 1000000.0 + 0.5)
+	timeline.pixels_per_second = timeline.size.x / maxf(1, to - from)
+	timeline.view_start = from; _follow_suspended = true
+
+func _document_theme(presentation: Dictionary = {}) -> StageVisualTheme:
+	var raw: Dictionary = presentation if not presentation.is_empty() else document.chart().get_meta("json_source", {}).get("presentation", {})
+	var theme: StageVisualTheme = load(ChartProjectLoader.THEMES.get(str(raw.get("theme_id", "default")), ChartProjectLoader.THEMES.default)).duplicate(true)
+	for key in ["life", "death", "su", "ink", "paper"]:
+		if raw.get("palette_overrides", {}).has(key): theme.set(key + "_color", Color(raw.palette_overrides[key]))
+	return theme
+
+func _begin_color(key: String) -> void:
+	_finish_recording(true)
+	_color_edit = {"key": key, "presentation": document.chart().get_meta("json_source", {}).get("presentation", {}).duplicate(true)}
+
+func _preview_color(key: String, color: Color) -> void:
+	if _color_edit.is_empty(): _begin_color(key)
+	var raw: Dictionary = _color_edit.presentation
+	if not raw.has("palette_overrides"): raw.palette_overrides = {}
+	raw.palette_overrides[key] = "#" + color.to_html(true)
+	preview.apply_palette(_document_theme(raw))
+
+func _finish_color() -> void:
+	if _color_edit.is_empty(): return
+	var value: Dictionary = _color_edit.presentation
+	var key: String = _color_edit.key
+	_color_edit = {} # 先结束手势，再关闭弹窗，避免 popup_closed 重入。
+	if _colors.has(key) and is_instance_valid(_colors[key]): _colors[key].get_popup().hide()
+	document.change_presentation(value)
+
+func _apply_document_palette() -> void:
+	var theme_id := str(document.chart().get_meta("json_source", {}).get("presentation", {}).get("theme_id", "default"))
+	if theme_id != _preview_theme_id: _refresh_pending = true
+	var theme := _document_theme()
+	preview.apply_palette(theme)
+	for key in _colors:
+		if is_instance_valid(_colors[key]): _colors[key].color = theme.get(key + "_color")
+
+func _restore_recovery(data: Dictionary) -> void:
+	var decoded := ChartJsonCodec.decode_song(data.song)
+	if decoded.song == null: _message("恢复稿版本无法读取"); return
+	var charts: Array[SongChart] = []
+	for raw: Dictionary in data.charts:
+		var item := ChartJsonCodec.decode_chart(raw)
+		if item.chart == null: _message("恢复谱面无法读取：" + str(item.errors)); return
+		charts.append(item.chart)
+	if charts.is_empty(): _message("恢复稿没有难度谱面"); return
+	document.song = decoded.song; document.charts = charts
+	document.directory = str(data.get("source", "")); document.reset_history()
+	document.song.audio_stream = ChartJsonCodec.load_audio(document.directory.path_join(str(data.song.get("audio", ""))))
+	_activate_project(data.get("workspace", _workspace_data()))
+	document.mark_changed()
+	_message("已恢复 %d 个音符，请保存谱面" % document.chart().note_events.size())
 
 func _setup_controls() -> void:
 	var icons := {"%Home": "home", "%Loop": "loop", "Layout/Toolbar/Undo": "undo", "Layout/Toolbar/Redo": "redo"}
@@ -238,10 +399,22 @@ func _meter_controls(tick: int) -> void:
 		button.pressed.connect(func() -> void: _finish_text_edit(); _set_meter(pair[0], pair[1], tick))
 
 func _on_document_changed() -> void:
-	_refresh_pending = true
-	_candidate_timer.stop()
-	if preview.rebuilding: preview.clear_preview()
 	if not is_node_ready(): return
+	if _recovery_ready and document.dirty: _autosave.start()
+	get_window().title = "冥河 · %s%s" % [document.song.title, " *" if document.dirty else ""]
+	var kind := document.change_kind
+	if kind == &"presentation":
+		_apply_document_palette(); return
+	if kind == &"metadata":
+		_updating = true
+		library.get_node("SongTitle").text = document.song.title
+		library.get_node("Artist").text = document.song.artist
+		_updating = false
+		if not get_viewport().gui_get_focus_owner() is LineEdit: _inspect.call_deferred()
+		return
+	_refresh_pending = kind != &"sections"
+	_candidate_timer.stop()
+	if preview.rebuilding and _refresh_pending: preview.clear_preview()
 	var snap_divisors := [1, 2, 4, 8, 16, 3, 6, 0]
 	var divisor: int = snap_divisors[maxi(0, get_node("%Snap").selected)]
 	timeline.snap_ticks = document.chart().ppq / divisor if divisor else 0
@@ -293,6 +466,7 @@ func _rebuild_preview() -> void:
 		_preview_status("无法预览")
 		_message("谱面暂时无法预览。可以继续编辑和保存，请检查问题列表。")
 		return
+	_preview_theme_id = theme_id
 	var stage := ChartProjectLoader.make_stage(document.song, draft)
 	audio.set_suspended(true)
 	if preview.load_preview(stage, viewport):
@@ -300,6 +474,10 @@ func _rebuild_preview() -> void:
 		if not preview.rebuilding: audio.set_suspended(false)
 
 func _inspect() -> void:
+	if not _color_edit.is_empty(): return
+	var scroll: ScrollContainer = fields.get_parent()
+	var scroll_at := scroll.scroll_vertical
+	_colors.clear()
 	for child in fields.get_children(): fields.remove_child(child); child.queue_free()
 	_section("位置与时长" if not timeline.selected.is_empty() else "谱面信息")
 	if timeline.selected.is_empty():
@@ -322,6 +500,7 @@ func _inspect() -> void:
 		_meter_controls(property_tick)
 		_section("试听")
 		_number("试听补偿（ms）", audio.device_compensation_ms, -500, 500, func(value: float) -> void: audio.device_compensation_ms = value)
+		_number("长按判定（ms）", recorder.threshold_ms, 50, 500, func(value: float) -> void: recorder.threshold_ms = value; _save_tool_settings())
 		_section("外观")
 		_label("关卡主题")
 		var theme := OptionButton.new()
@@ -333,16 +512,14 @@ func _inspect() -> void:
 		theme.select(maxi(0, theme_keys.find(current_theme)))
 		theme.item_selected.connect(func(i: int) -> void:
 			var data := ChartJsonCodec.encode_chart(document.chart()); data.presentation.theme_id = theme_keys[i]; document.change_metadata(data))
+		var palette_theme := _document_theme()
 		for key in ["life", "death", "su", "ink", "paper"]:
 			_label({"life": "生界颜色", "death": "死界颜色", "su": "骨白相纹", "ink": "墨色", "paper": "纸色"}[key])
-			var picker := ColorPickerButton.new()
-			picker.color = ChartProjectLoader.make_stage(document.song, document.chart()).visual_theme.get(key + "_color")
-			fields.add_child(picker)
-			picker.popup_closed.connect(func() -> void:
-				var data := ChartJsonCodec.encode_chart(document.chart())
-				if not data.presentation.has("palette_overrides"): data.presentation.palette_overrides = {}
-				data.presentation.palette_overrides[key] = "#" + picker.color.to_html(true)
-				document.change_metadata(data))
+			var picker := ColorPickerButton.new(); picker.color = palette_theme.get(key + "_color")
+			fields.add_child(picker); _colors[key] = picker
+			picker.get_popup().about_to_popup.connect(func() -> void: _begin_color(key))
+			picker.color_changed.connect(func(color: Color) -> void: _preview_color(key, color))
+			picker.popup_closed.connect(func() -> void: _finish_color())
 		if not document.chart().sections.is_empty(): _section("段落")
 		for section in document.chart().sections:
 			_text_field("段落位置（tick）：%d" % section.tick, section.label, func(value: String) -> void:
@@ -368,6 +545,8 @@ func _inspect() -> void:
 		_button("删除所选音符", func() -> void: _edit_action(0))
 		_section("外观")
 		_text_field("外观标识", str(notes[0].visual_variant), func(value: String) -> void: _mutate_selected("外观设置", func(n: NoteEvent) -> void: n.visual_variant = StringName(value)))
+
+	scroll.set_deferred("scroll_vertical", scroll_at)
 
 func _text_field(title: String, value: String, callback: Callable) -> void:
 	_label(title)
@@ -409,6 +588,7 @@ func _flush_property_edits() -> void:
 	for commit in pending: commit.call()
 
 func _finish_text_edit() -> void:
+	_finish_color()
 	var focused := get_viewport().gui_get_focus_owner()
 	if focused is LineEdit or focused is TextEdit: focused.release_focus()
 	_flush_property_edits()
@@ -459,7 +639,7 @@ func _edit_action(id: int) -> void:
 	_inspect()
 
 func _cursor_tick() -> int:
-	var tick := document.tempo_map().us_to_tick(roundi(audio.position * 1000000.0))
+	var tick := timeline._map.us_to_tick(roundi(audio.position * 1000000.0))
 	return roundi(tick / timeline.snap_ticks) * timeline.snap_ticks if timeline.snap_ticks else roundi(tick)
 
 func _set_bpm(value: float, at_tick: int) -> void:
@@ -483,26 +663,29 @@ func _add_section() -> void:
 	document.change_metadata(data)
 
 func _seek(seconds: float) -> void:
-	_flush_property_edits()
-	# 定位结果应出现在视野中；已在视野内时不打断谱师手动调整的视图。
+	_seek_timer.stop(); _finish_recording(true); _flush_property_edits()
 	var span := timeline.size.x / timeline.pixels_per_second
-	if seconds < timeline.view_start or seconds > timeline.view_start + span:
-		timeline.view_start = maxf(0, seconds - span * 0.25)
+	if seconds == 0: timeline.view_start = -2.0
+	elif seconds < timeline.view_start or seconds > timeline.view_start + span: timeline.view_start = seconds - span * 0.25
 	audio.seek(seconds)
-	preview.seek_preview(roundi(seconds * 1000000.0))
 	if timeline.selected.is_empty(): _inspect()
 
+func _scrub(seconds: float) -> void:
+	_finish_recording(true); _seek_target = seconds; timeline.playhead = seconds
+	if _seek_timer.is_stopped(): _seek_timer.start()
+
 func _position_changed(seconds: float) -> void:
-	timeline.playhead = seconds; timeline.queue_redraw()
-	if audio.playing and (seconds < timeline.view_start or seconds > timeline.view_start + timeline.size.x / timeline.pixels_per_second * 0.85): timeline.view_start = seconds - timeline.size.x / timeline.pixels_per_second * 0.15
+	timeline.playhead = seconds
+	if audio.playing and _follow.button_pressed and not _follow_suspended and (seconds < timeline.view_start or seconds > timeline.view_start + timeline.size.x / timeline.pixels_per_second * 0.85): timeline.view_start = seconds - timeline.size.x / timeline.pixels_per_second * 0.15
 	get_node("%Position").text = _time_label(seconds)
 	get_node("%TickPosition").text = "tick %d" % _cursor_tick()
-	var beat := floori(document.tempo_map().us_to_tick(roundi(seconds * 1000000)) / document.chart().ppq)
+	var beat := floori(timeline._map.us_to_tick(roundi(seconds * 1000000)) / document.chart().ppq)
 	if audio.playing and _metronome_enabled and beat == _last_beat + 1: _metronome.play()
 	_last_beat = beat
 
 func _toggle_play() -> void:
 	_finish_text_edit()
+	if not audio.playing: _follow_suspended = false
 	audio.set_playing(not audio.playing)
 	if not audio.playing and timeline.selected.is_empty(): _inspect()
 	_sync_transport()
@@ -512,6 +695,7 @@ func _message(text: String, detail: String = "") -> void:
 	status.tooltip_text = detail if not detail.is_empty() else text
 
 func _file_dialog(mode: FileDialog.FileMode, filters: PackedStringArray, callback: Callable) -> void:
+	_finish_recording(true)
 	var dialog := FileDialog.new(); dialog.access = FileDialog.ACCESS_FILESYSTEM; dialog.file_mode = mode; dialog.filters = filters
 	add_child(dialog)
 	if mode == FileDialog.FILE_MODE_OPEN_DIR: dialog.dir_selected.connect(callback)
@@ -523,7 +707,7 @@ func _file_dialog(mode: FileDialog.FileMode, filters: PackedStringArray, callbac
 	dialog.popup_centered(Vector2i(900, 600))
 
 func _new() -> void:
-	_confirm_discard(func() -> void: audio.set_playing(false); document.new_project(); timeline.selected.clear(); _on_document_changed(); _save_as())
+	_confirm_discard(func() -> void: audio.set_playing(false); document.new_project(); _activate_project({}); _save_as())
 
 func _open() -> void:
 	_confirm_discard(func() -> void: _file_dialog(FileDialog.FILE_MODE_OPEN_FILE, PackedStringArray(["song.json ; 歌曲项目"]), _open_path))
@@ -531,27 +715,24 @@ func _open() -> void:
 func _open_path(path: String) -> void:
 	var error := StudioProjectIO.open_project(path, document)
 	if not error.is_empty(): _message(error); return
-	timeline.selected.clear()
-	audio.set_stream(document.song.audio_stream)
-	var data := ChartJsonCodec.encode_song(document.song)
-	audio.build_waveform(document.directory.path_join(str(data.get("audio", ""))))
-	_on_document_changed()
-	_load_workspace()
+	_activate_project(_workspace_data())
 	_message("已打开：" + document.song.title, path)
 
 func _save() -> void:
+	_finish_recording()
 	if document.directory.is_empty(): _save_as(); return
 	var error := StudioProjectIO.save_project(document)
 	_message(error if not error.is_empty() else "已保存", document.directory)
 	if error.is_empty(): _save_workspace()
-	if error.is_empty(): DirAccess.remove_absolute("user://chart_studio/recovery.json")
+	if error.is_empty(): DirAccess.remove_absolute(recovery_path)
 	if error.is_empty(): get_window().title = "冥河 · " + document.song.title
 
 func _save_as() -> void:
+	_finish_recording()
 	_file_dialog(FileDialog.FILE_MODE_OPEN_DIR, PackedStringArray(), func(path: String) -> void:
 		var error := StudioProjectIO.save_project(document, path); _message(error if not error.is_empty() else "项目已保存，可以导入音乐")
 		if error.is_empty():
-			_save_workspace(); DirAccess.remove_absolute("user://chart_studio/recovery.json")
+			_save_workspace(); DirAccess.remove_absolute(recovery_path)
 			get_window().title = "冥河 · " + document.song.title)
 
 func _import_audio() -> void:
@@ -562,6 +743,7 @@ func _import_audio() -> void:
 		audio.set_stream(document.song.audio_stream); audio.build_waveform(path); _message("音乐已导入，正在生成波形…"))
 
 func _export() -> void:
+	_finish_recording(true)
 	var dialog := ConfirmationDialog.new(); dialog.title = "导出谱面 · 选择难度（ZIP）"
 	dialog.ok_button_text = "选择保存位置"
 	dialog.cancel_button_text = "取消"
@@ -587,64 +769,76 @@ func _legacy() -> void:
 				_message("旧谱已导入，未支持的内容已归档。", target.path_join("legacy/import-report.json")))))
 
 func _save_workspace() -> void:
-	StudioProjectIO.write_json(document.directory.path_join("editor/workspace.json"), {"version": 1, "current": document.current, "position": audio.position, "view_start": timeline.view_start, "zoom": timeline.pixels_per_second, "loop_start": audio.loop_start, "loop_end": audio.loop_end, "loop_enabled": audio.loop_enabled, "rate": audio.rate, "snap_index": get_node("%Snap").selected})
+	StudioProjectIO.write_json(document.directory.path_join("editor/workspace.json"), _capture_workspace())
+
+func _capture_workspace() -> Dictionary:
+	return {"version": 1, "current": document.current, "position": audio.position, "view_start": timeline.view_start, "zoom": timeline.pixels_per_second, "loop_start": audio.loop_start, "loop_end": audio.loop_end, "loop_enabled": audio.loop_enabled, "rate": audio.rate, "snap_index": get_node("%Snap").selected}
+
+func _workspace_data() -> Dictionary:
+	var path := document.directory.path_join("editor/workspace.json")
+	if not FileAccess.file_exists(path): return {}
+	var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
+	return data if data is Dictionary else {}
 
 func _load_workspace() -> void:
-	var path := document.directory.path_join("editor/workspace.json")
-	if not FileAccess.file_exists(path): return
-	var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
-	if not data is Dictionary: return
+	_apply_workspace(_workspace_data())
+	document.change_kind = &"project"; document.changed.emit()
+
+func _apply_workspace(data: Dictionary) -> void:
 	document.current = clampi(int(data.get("current", 0)), 0, document.charts.size() - 1)
-	timeline.view_start = float(data.get("view_start", 0))
+	timeline.view_start = float(data.get("view_start", -2))
 	timeline.pixels_per_second = float(data.get("zoom", 160))
-	audio.loop_start = float(data.get("loop_start", 0))
-	audio.loop_end = float(data.get("loop_end", 4))
+	audio.loop_start = float(data.get("loop_start", 0)); audio.loop_end = float(data.get("loop_end", 4))
 	audio.loop_enabled = bool(data.get("loop_enabled", false))
-	var rates := [0.5, 0.75, 1.0, 1.25, 1.5]
-	var rate_index := rates.find(float(data.get("rate", 1.0)))
-	if rate_index < 0: rate_index = 2
-	audio.set_rate(rates[rate_index]); get_node("%Rate").select(rate_index)
-	get_node("%Snap").select(clampi(int(data.get("snap_index", 2)), 0, 7))
-	_sync_snap_hint()
+	var rate: float = data.get("rate", 1.0)
+	audio.set_rate(rate if rate in [0.5, 0.75, 1.0, 1.25, 1.5] else 1.0)
+	get_node("%Snap").select(clampi(int(data.get("snap_index", 2)), 0, 7)); _sync_snap_hint()
 	audio.seek(float(data.get("position", 0)))
-	document.changed.emit()
+
+func _activate_project(state: Dictionary) -> void:
+	_finish_recording(true); _finish_color()
+	preview.clear_preview(); audio.set_playing(false)
+	timeline.selected.clear(); timeline.candidates.clear()
+	timeline.set_waveform(PackedVector2Array(), 0); audio.build_waveform("")
+	audio.set_stream(document.song.audio_stream); _apply_workspace(state)
+	document.change_kind = &"project"; document.changed.emit()
+	var relative := str(ChartJsonCodec.encode_song(document.song).get("audio", ""))
+	if not relative.is_empty(): audio.build_waveform(document.directory.path_join(relative))
+	_update_scroll()
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT and is_node_ready():
+		_finish_recording(true)
 		timeline.cancel_gesture()
 		_input_starts.clear()
 
 func _write_recovery() -> void:
-	if not document.dirty: return
-	var data := {"song": ChartJsonCodec.encode_song(document.song), "charts": [], "source": document.directory}
+	if not _recovery_ready or (not document.dirty and not recorder.active): return
+	var data := {"song": ChartJsonCodec.encode_song(document.song), "charts": [], "source": document.directory, "saved_at": Time.get_datetime_string_from_system(), "workspace": _capture_workspace()}
 	for chart in document.charts: data.charts.append(ChartJsonCodec.encode_chart(chart))
-	StudioProjectIO.write_json("user://chart_studio/recovery.json", data)
+	if recorder.active:
+		var temp := SongChart.new(); temp.note_events.assign(recorder.notes)
+		data.charts[document.current].notes.append_array(ChartJsonCodec.encode_chart(temp).notes)
+	StudioProjectIO.write_json(recovery_path, data)
 
 func _offer_recovery() -> void:
-	var path := "user://chart_studio/recovery.json"
+	_recovery_ready = true
+	if not offer_recovery_on_start: return
+	var path := recovery_path
 	if not FileAccess.file_exists(path): return
 	var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
 	if not data is Dictionary: return
 	var dialog := ConfirmationDialog.new()
-	dialog.dialog_text = "找到上次未保存的恢复稿。恢复后可另存为新项目。"
+	var summary := ""
+	for chart: Dictionary in data.charts: summary += "\n%s：%d 个音符" % [chart.get("difficulty_id", ""), chart.get("notes", []).size()]
+	dialog.dialog_text = "恢复 %s\n%s%s\n恢复后可另存为新项目。" % [data.song.get("title", ""), data.get("saved_at", "旧版恢复稿"), summary]
 	dialog.ok_button_text = "恢复稿件"
 	add_child(dialog)
-	dialog.confirmed.connect(func() -> void:
-		var decoded := ChartJsonCodec.decode_song(data.song)
-		if decoded.song == null: _message("恢复稿版本无法读取"); return
-		var charts: Array[SongChart] = []
-		for raw: Dictionary in data.charts:
-			var item := ChartJsonCodec.decode_chart(raw)
-			if item.chart == null: _message("恢复谱面版本无法读取"); return
-			charts.append(item.chart)
-		document.song = decoded.song; document.charts = charts; document.current = 0
-		document.directory = str(data.get("source", "")); document.reset_history()
-		document.song.audio_stream = ChartJsonCodec.load_audio(document.directory.path_join(str(data.song.get("audio", ""))))
-		audio.set_stream(document.song.audio_stream)
-		document.mark_changed(); _message("恢复完成，请保存稿件"))
+	dialog.confirmed.connect(func() -> void: _restore_recovery(data))
 	dialog.popup_centered()
 
 func _confirm_discard(callback: Callable) -> void:
+	_finish_recording(true); _finish_color()
 	if not document.dirty: callback.call(); return
 	var dialog := ConfirmationDialog.new(); dialog.dialog_text = "当前项目有未保存的修改。请选择保存修改或放弃修改后继续。"; dialog.ok_button_text = "放弃并继续"
 	dialog.add_button("保存并继续", true, "save")
@@ -657,7 +851,7 @@ func _save_then(callback: Callable) -> void:
 	var save_at := func(path: String) -> void:
 		var error := StudioProjectIO.save_project(document, path)
 		if not error.is_empty(): _message(error); return
-		_save_workspace(); DirAccess.remove_absolute("user://chart_studio/recovery.json")
+		_save_workspace(); DirAccess.remove_absolute(recovery_path)
 		get_window().title = "冥河 · " + document.song.title
 		callback.call()
 	if document.directory.is_empty(): _file_dialog(FileDialog.FILE_MODE_OPEN_DIR, PackedStringArray(), save_at)
@@ -667,14 +861,15 @@ func _close() -> void:
 	_finish_text_edit()
 	_confirm_discard(func() -> void:
 		if not document.directory.is_empty(): _save_workspace()
-		DirAccess.remove_absolute("user://chart_studio/recovery.json")
+		DirAccess.remove_absolute(recovery_path)
 		get_tree().quit())
 
 func _help() -> void:
+	_finish_recording(true)
 	var dialog := AcceptDialog.new()
 	dialog.title = "写谱器帮助"
 	dialog.ok_button_text = "关闭"
-	dialog.dialog_text = "编辑\n点击空白处：单击音符；沿时间拖动：长音\nShift：框选或增减选择；Esc：取消当前操作\nF／J：暂停时输入生钟／死钟音符，按住并用方向键延长\n中键：平移；Ctrl+滚轮：缩放；Alt：临时关闭吸附\nCtrl+C／V／D：复制／粘贴／重复乐句；Ctrl+M：生死互换\nQ：量化起始位置，保留时长；Shift+Q：量化起止位置\n\n播放\n空格：播放／暂停；Home：返回音乐开头\nI：将当前位置设为循环起点；O：设为循环终点\nL：开启／关闭循环播放\n\n文件\nCtrl+N／O：新建／打开；Ctrl+S：保存；Ctrl+Shift+S：另存为\nCtrl+Z：撤销；Ctrl+Shift+Z 或 Ctrl+Y：重做\n属性按 Enter 或离开输入框时提交，保存也会提交当前输入。"
+	dialog.dialog_text = "编辑\n点击空白处：单击音符；沿时间拖动：长音\nShift：框选或增减选择；Esc：取消当前操作\nF／J：暂停时输入生钟／死钟音符，按住并用方向键延长\n中键：平移；Ctrl+滚轮：缩放；Alt：临时关闭吸附\nCtrl+C／V／D：复制／粘贴／重复乐句；Ctrl+M：生死互换\nQ：量化起始位置，保留时长；Shift+Q：量化起止位置\n\n播放\n空格：播放／暂停；Home：返回音乐开头\nI：将当前位置设为循环起点；O：设为循环终点\nL：开启／关闭循环播放\nR：开启／关闭实时录入，再播放并按 F／J\n短按为单击，按住超过 150 ms 为长音；跟随吸附\n暂停结束本段录制，整段可一步撤销；阈值可在试听设置调整\n拖动标尺或波形定位；拖动循环把手调整范围\n视图菜单：界面缩放、显示整曲／选区；跟随按钮恢复自动跟随\n\n文件\nCtrl+N／O：新建／打开；Ctrl+S：保存；Ctrl+Shift+S：另存为\nCtrl+Z：撤销；Ctrl+Shift+Z 或 Ctrl+Y：重做\n属性按 Enter 或离开输入框时提交，保存也会提交当前输入。"
 	add_child(dialog); dialog.popup_centered()
 
 func _input(event: InputEvent) -> void:
@@ -687,6 +882,13 @@ func _input(event: InputEvent) -> void:
 		if child is Window and child.visible: return
 	var key := event as InputEventKey
 	if key.echo: return
+	if key.keycode in [KEY_F, KEY_J] and audio.playing:
+		if record_armed:
+			if not recorder.active: recorder.begin(timeline._map, timeline.snap_ticks)
+			var side := 0 if key.keycode == KEY_F else 1
+			if key.pressed: recorder.press(side, audio.position, Time.get_ticks_usec())
+			else: recorder.release(side, audio.position, Time.get_ticks_usec()); _autosave.start()
+		accept_event(); return
 	if key.keycode in [KEY_F, KEY_J] and not audio.playing:
 		if key.pressed: _input_starts[key.keycode] = _cursor_tick()
 		elif _input_starts.has(key.keycode):
@@ -717,6 +919,7 @@ func _input(event: InputEvent) -> void:
 	else:
 		match key.keycode:
 			KEY_SPACE: _toggle_play()
+			KEY_R: _record_button.button_pressed = not _record_button.button_pressed
 			KEY_ESCAPE: timeline.cancel_gesture(); _input_starts.clear()
 			KEY_DELETE, KEY_BACKSPACE: _edit_action(0)
 			KEY_Q: _edit_action(7 if key.shift_pressed else 6)
@@ -724,7 +927,7 @@ func _input(event: InputEvent) -> void:
 			KEY_O: audio.loop_end = audio.position
 			KEY_L: audio.loop_enabled = not audio.loop_enabled
 			KEY_HOME: _seek(0)
-			KEY_END: _seek(float(document.tempo_map().tick_to_us(document.chart().end_tick)) / 1000000.0)
+			KEY_END: _seek(float(timeline._map.tick_to_us(document.chart().end_tick)) / 1000000.0)
 			KEY_LEFT, KEY_RIGHT: _seek(float(document.tempo_map().tick_to_us(_cursor_tick() + maxi(1, timeline.snap_ticks) * (-1 if key.keycode == KEY_LEFT else 1))) / 1000000.0)
 			KEY_PAGEUP, KEY_PAGEDOWN:
 				var length := document.chart().ppq * 4

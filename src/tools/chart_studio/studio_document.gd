@@ -2,6 +2,9 @@ class_name StudioDocument
 extends RefCounted
 ## 每条命令仅保存受影响音符的新旧资源；视图选择和候选手势由 Timeline 自己拥有。
 signal changed
+## 最近一次通知的用途；保留无参数信号，视图按用途决定局部更新。
+var change_kind: StringName = &"project"
+var affected_ids := PackedStringArray()
 var song: SongDefinition
 var charts: Array[SongChart] = []
 var current := 0
@@ -87,11 +90,20 @@ func undo(redo := false) -> void:
 	_cursors[key] = cursor + (1 if redo else -1)
 	if key == "song":
 		song.set(command.field, command.after if redo else command.before)
-		mark_changed()
+		mark_changed(&"metadata")
+		return
+	if command.has("presentation"):
+		_apply_presentation(command.after if redo else command.before)
 		return
 	_apply(command.before if redo else command.after, command.after if redo else command.before, command.meta_after if redo else command.meta_before)
 
 func _apply(remove: Array, add: Array, metadata: Dictionary) -> void:
+	var kind: StringName = &"notes"
+	if not metadata.is_empty():
+		var old: Dictionary = chart().get_meta("json_source", {})
+		kind = &"timing" if old.get("timing") != metadata.get("timing") else &"metadata"
+		if old.get("presentation") != metadata.get("presentation"): kind = &"presentation"
+		if old.get("sections") != metadata.get("sections"): kind = &"sections"
 	var ids := {}
 	for note: NoteEvent in remove: ids[note.event_id] = true
 	chart().note_events = chart().note_events.filter(func(n: NoteEvent) -> bool: return not ids.has(n.event_id))
@@ -102,14 +114,35 @@ func _apply(remove: Array, add: Array, metadata: Dictionary) -> void:
 		replacement.note_events = chart().note_events
 		charts[current] = replacement
 	chart().note_events.sort_custom(func(a: NoteEvent, b: NoteEvent) -> bool: return a.tick < b.tick if a.tick != b.tick else a.event_id < b.event_id)
-	mark_changed()
+	var affected := {}
+	for note in remove + add:
+		affected[note.event_id] = true
+	mark_changed(kind, PackedStringArray(affected.keys()))
+
+func change_presentation(value: Dictionary) -> void:
+	var old: Dictionary = chart().get_meta("json_source", {}).get("presentation", {}).duplicate(true)
+	if old == value: return
+	var key := chart().chart_id
+	var history: Array = _histories.get(key, [])
+	history.resize(int(_cursors.get(key, 0)))
+	history.append({"presentation": true, "before": old, "after": value.duplicate(true)})
+	_histories[key] = history; _cursors[key] = history.size(); _history_target = key
+	_apply_presentation(value)
+
+func _apply_presentation(value: Dictionary) -> void:
+	# 只复制外观数据，不复制整张谱面的音符。
+	var raw: Dictionary = chart().get_meta("json_source", {}).duplicate()
+	raw.presentation = value.duplicate(true)
+	chart().set_meta("json_source", raw)
+	mark_changed(&"presentation")
 
 func change_metadata(data: Dictionary) -> void:
 	execute("修改谱面属性", [], [], ChartJsonCodec.encode_chart(chart()), data)
 
-func mark_changed() -> void:
+func mark_changed(kind: StringName = &"project", ids: PackedStringArray = PackedStringArray()) -> void:
 	dirty = true
 	revision += 1
+	change_kind = kind; affected_ids = ids
 	changed.emit()
 
 func copy_notes(ids: PackedStringArray) -> void:
@@ -157,4 +190,4 @@ func set_song_field(field: String, value: String) -> void:
 	_cursors["song"] = history.size()
 	_history_target = "song"
 	song.set(field, value)
-	mark_changed()
+	mark_changed(&"metadata")

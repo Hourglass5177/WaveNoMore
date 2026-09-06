@@ -17,6 +17,8 @@ func key(code: Key, pressed: bool, character := 0) -> void:
 
 func _run() -> void:
 	var workspace = load("res://scenes/tools/chart_studio/studio.tscn").instantiate()
+	workspace.recovery_path = "user://chart_studio/tests/run_input_tests/recovery.json"
+	workspace.offer_recovery_on_start = false
 	root.add_child(workspace)
 	await process_frame
 	workspace.timeline.grab_focus()
