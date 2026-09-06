@@ -1,0 +1,15 @@
+{
+  "notes": 10000,
+  "duration_seconds": 300,
+  "insert_ms": 142.598,
+  "engine": "4.7.2-stable (official)",
+  "cpu": "Intel(R) Core(TM) Ultra 9 185H",
+  "compile_ms": 1541.312,
+  "seek_targets_ms": {
+    "0": 399.852,
+    "150": 14530.273,
+    "299": 40028.507
+  },
+  "restore_ms": 40028.507,
+  "advance_ms": 20.791
+}

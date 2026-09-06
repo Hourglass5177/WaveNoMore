@@ -2,12 +2,26 @@
 
 ## 环境
 
-- Godot `4.6.2.stable` 标准版（非 .NET 版）；
+- Godot `4.7.2.stable` 标准版（非 .NET 版）；
 - 同版本的 Windows Desktop 导出模板；
 - 目标平台：Windows x86_64；
 - 构建预设：`Windows x86_64 Release`。
 
 引擎与导出模板的补丁版本必须一致。模板可在 Godot 编辑器的“编辑器 → 管理导出模板”中安装。
+
+## 独立写谱器开发版
+
+在 `Game` 目录执行以下步骤，只导出写谱器。预设 `Chart Studio Windows` 启用 `minghe_chart_editor`，由共享应用入口进入工具场景，PCK 嵌入 EXE。
+
+```powershell
+$godotExe = 'F:/godot 4.7.2/Godot_v4.7.2-stable_win64_console.exe'
+& $godotExe --headless --path . --editor --quit --disable-plugins
+./tests/editor/run.ps1 -GodotExe $godotExe
+New-Item -ItemType Directory -Force builds/chart-studio | Out-Null
+& $godotExe --headless --path . --export-release 'Chart Studio Windows' 'builds/chart-studio/minghe-chart-studio.exe'
+```
+
+产物可直接在 Windows x86_64 启动，无需安装 Godot。当前验收状态见 [开发记录](docs/chart-editor-progress.md)。打包时附上 `docs/chart-editor-guide.md` 和 `tests/editor/fixtures/training` 示例项目；不附加测试解码依赖。
 
 ## 发布构建
 

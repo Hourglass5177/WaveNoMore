@@ -1,0 +1,37 @@
+[
+  {
+    "rate": 0.5,
+    "frequency_hz": 440.0,
+    "onset_seconds": 0.5126458333333334,
+    "source_onset_seconds": 0.5,
+    "additional_latency_ms": 12.645833333333357
+  },
+  {
+    "rate": 0.75,
+    "frequency_hz": 440.0,
+    "onset_seconds": 0.346125,
+    "source_onset_seconds": 0.3333333333333333,
+    "additional_latency_ms": 12.791666666666702
+  },
+  {
+    "rate": 1.0,
+    "frequency_hz": 440.0,
+    "onset_seconds": 0.2514166666666667,
+    "source_onset_seconds": 0.25,
+    "additional_latency_ms": 1.4166666666666772
+  },
+  {
+    "rate": 1.25,
+    "frequency_hz": 440.0,
+    "onset_seconds": 0.21229166666666666,
+    "source_onset_seconds": 0.2,
+    "additional_latency_ms": 12.291666666666645
+  },
+  {
+    "rate": 1.5,
+    "frequency_hz": 440.0,
+    "onset_seconds": 0.17870833333333333,
+    "source_onset_seconds": 0.16666666666666666,
+    "additional_latency_ms": 12.041666666666673
+  }
+]

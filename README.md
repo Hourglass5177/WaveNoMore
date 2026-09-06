@@ -1,6 +1,6 @@
 # 《冥河，冥河！》Godot 工程
 
-- 引擎：Godot 4.6.x（GDScript）
+- 引擎：Godot 4.7.2（GDScript）
 - 基准画布：1920×1080
 - 启动场景：`scenes/app/app_main.tscn`
 - 正式内容：`content/stages/<stage_id>/`
@@ -42,7 +42,9 @@ $godotExe = 'F:\Godot_v4.6.2-stable_win64.exe\Godot_v4.6.2-stable_win64_console.
 
 ## 写谱与美术接入
 
-- Godot 编辑器顶部菜单可打开 `冥河写谱器`；也可直接运行 `scenes/tools/chart_editor/standalone_chart_editor.tscn`。
-- 新建关卡会生成六文件内容包，已有谱面采用带 Journal 的原子保存。
+- 新版独立写谱器入口：`scenes/tools/chart_studio/studio.tscn`，或启动参数 `-- --chart-editor`。仅支持生死 Tap/Hold，使用共同 JSON 协议保存、预览和交付。
+- [谱师使用说明](docs/chart-editor-guide.md)、[共同接口](docs/chart-editor-interfaces.md)、[进度与验证记录](docs/chart-editor-progress.md)。当前为开发版，尚未完成全部验收。
+- 新测试：在 Game 目录运行 `./tests/editor/run.ps1 -GodotExe <Godot控制台程序路径>`。
+- 旧 `chart_editor` 与插件暂留作迁移参照；新版验收通过后移除，不再扩展旧工具。
 - `scenes/tools/art_lab/art_lab.tscn` 用实际 runtime scene 检查锚点、状态、动画、画幅与遮挡。
 - Windows 导出步骤见 `BUILDING.md`。

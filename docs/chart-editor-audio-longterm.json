@@ -1,0 +1,9 @@
+{
+  "rate": 1.0,
+  "sample_rate": 48000,
+  "pulse_count": 30,
+  "pulse_span_seconds": 290.00095833333336,
+  "pulse_span_error_ms": 0.9583333333580413,
+  "transport_vs_wall_drift_ms": 0.6978669585300246,
+  "scope": "1x 五分钟，真实 WASAPI 总线录音；未包含扬声器、屏幕及其他倍率"
+}

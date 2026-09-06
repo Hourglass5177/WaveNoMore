@@ -1,0 +1,120 @@
+{
+  "format": "minghe-chart",
+  "format_version": 1,
+  "chart_id": "editor_training_normal",
+  "song_id": "editor_training",
+  "difficulty_id": "normal",
+  "difficulty_name": "示例",
+  "mapper": "谱师",
+  "timing": {
+    "ppq": 480,
+    "first_beat_offset_ms": 2000,
+    "chart_offset_ticks": 0,
+    "end_tick": 5760,
+    "tempo_events": [
+      {
+        "tick": 0,
+        "bpm": 120
+      },
+      {
+        "tick": 1920,
+        "bpm": 150
+      }
+    ],
+    "meter_events": [
+      {
+        "tick": 0,
+        "numerator": 4,
+        "denominator": 4
+      },
+      {
+        "tick": 3840,
+        "numerator": 3,
+        "denominator": 4
+      }
+    ]
+  },
+  "notes": [
+    {
+      "id": "n01",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 0,
+      "duration_ticks": 0
+    },
+    {
+      "id": "n02",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 480,
+      "duration_ticks": 0
+    },
+    {
+      "id": "n03",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 960,
+      "duration_ticks": 0,
+      "group_id": "g01",
+      "damage_group_id": "g01"
+    },
+    {
+      "id": "n04",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 960,
+      "duration_ticks": 0,
+      "group_id": "g01",
+      "damage_group_id": "g01"
+    },
+    {
+      "id": "n05",
+      "kind": "hold",
+      "affinity": "zhu",
+      "tick": 1440,
+      "duration_ticks": 960,
+      "visual_variant": "default"
+    },
+    {
+      "id": "n06",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 1920,
+      "duration_ticks": 0
+    },
+    {
+      "id": "n07",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 2880,
+      "duration_ticks": 0
+    },
+    {
+      "id": "n08",
+      "kind": "hold",
+      "affinity": "xuan",
+      "tick": 3360,
+      "duration_ticks": 960
+    }
+  ],
+  "sections": [
+    {
+      "id": "s01",
+      "tick": 0,
+      "name": "交替与双押"
+    },
+    {
+      "id": "s02",
+      "tick": 1920,
+      "name": "变速与长音"
+    },
+    {
+      "id": "s03",
+      "tick": 3840,
+      "name": "三拍段"
+    }
+  ],
+  "presentation": {
+    "theme_id": "default"
+  }
+}
