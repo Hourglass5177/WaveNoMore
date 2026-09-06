@@ -14,9 +14,12 @@ var _note_sound_enabled := true
 var _last_beat := -1000000
 var _candidate_timer := Timer.new()
 var _property_commits: Array[Callable] = []
+var _problem_messages: PackedStringArray = []
+const PLAY_ICON = preload("res://assets/chart_studio/play.svg")
+const PAUSE_ICON = preload("res://assets/chart_studio/pause.svg")
 @onready var timeline: StudioTimeline = $Layout/Split/TimelineColumn/Timeline
-@onready var transport: HBoxContainer = $Layout/Split/TimelineColumn/Transport
-@onready var library: VBoxContainer = $Layout/Split/Top/Library
+@onready var transport: HFlowContainer = $Layout/Split/TimelineColumn/Transport
+@onready var library: VBoxContainer = $Layout/Split/Top/LibraryScroll/Library
 @onready var fields: VBoxContainer = $Layout/Split/Top/Main/Inspector/Fields
 @onready var viewport: SubViewport = $Layout/Split/Top/Main/PreviewColumn/Aspect/Preview/Viewport
 @onready var status: Label = $Layout/Status
@@ -24,8 +27,10 @@ var _property_commits: Array[Callable] = []
 
 func _ready() -> void:
 	get_window().title = "冥河 · 写谱器"
-	get_window().content_scale_size = Vector2i(1440, 900)
-	get_window().min_size = Vector2i(1280, 720)
+	# 工具按桌面缩放保持字号；缩小窗口让容器换行，不把整个界面缩成小字。
+	get_window().content_scale_size = Vector2i.ZERO
+	get_window().content_scale_factor = maxf(1.0, DisplayServer.screen_get_scale())
+	get_window().min_size = Vector2i(Vector2(1024, 720) * get_window().content_scale_factor)
 	InputEventBuffer.set_mode(InputEventBuffer.InputMode.DISABLED)
 	InputEventBuffer.set_process_input(false)
 	add_child(audio)
@@ -36,7 +41,7 @@ func _ready() -> void:
 	for caption in ["节拍器", "音符提示音"]:
 		var toggle := CheckButton.new(); toggle.text = caption
 		toggle.button_pressed = caption == "音符提示音"
-		transport.add_child(toggle)
+		transport.get_node("Sound").add_child(toggle)
 		toggle.toggled.connect(func(enabled: bool) -> void:
 			if caption == "节拍器": _metronome_enabled = enabled
 			else: _note_sound_enabled = enabled)
@@ -51,23 +56,27 @@ func _ready() -> void:
 	_candidate_timer.timeout.connect(func() -> void: _refresh_pending = true)
 	timeline.candidate_changed.connect(func() -> void: _candidate_timer.start())
 	timeline.context_requested.connect(func(at: Vector2) -> void: _context.position = Vector2i(at); _context.popup())
-	for label in ["删除", "复制", "粘贴", "生死互换", "组合双押", "解除组合", "量化头", "量化头尾", "重复乐句"]: _context.add_item(label)
+	for label in ["删除", "复制", "粘贴", "生死互换", "组合双押", "解除组合", "量化起始位置", "量化起止位置", "重复乐句"]: _context.add_item(label)
+	_context.set_item_tooltip(6, "将起始位置对齐吸附网格，保留长音时长（Q）")
+	_context.set_item_tooltip(7, "分别将起始和结束位置对齐吸附网格（Shift+Q）")
 	_context.id_pressed.connect(func(id: int) -> void: _edit_action(id))
 	var actions := {"New": _new, "Open": _open, "Save": _save, "SaveAs": _save_as, "Audio": _import_audio, "Export": _export, "Legacy": _legacy, "Undo": func() -> void: document.undo(), "Redo": func() -> void: document.undo(true), "Help": _help}
 	for key in actions:
 		$Layout/Toolbar.get_node(key).pressed.connect(func() -> void: _finish_text_edit(); actions[key].call())
-	transport.get_node("Play").pressed.connect(_toggle_play)
-	transport.get_node("Home").pressed.connect(func() -> void: _seek(0))
-	transport.get_node("Loop").pressed.connect(func() -> void: audio.loop_enabled = not audio.loop_enabled)
-	transport.get_node("In").pressed.connect(func() -> void: audio.loop_start = audio.position)
-	transport.get_node("Out").pressed.connect(func() -> void: audio.loop_end = audio.position)
-	var rate: OptionButton = transport.get_node("Rate")
-	for value in [0.5, 0.75, 1.0, 1.25, 1.5]: rate.add_item("%.2f 倍 · 保音高" % value)
+	_setup_controls()
+	get_node("%Play").pressed.connect(_toggle_play)
+	get_node("%Home").pressed.connect(func() -> void: _seek(0))
+	get_node("%Loop").pressed.connect(func() -> void: audio.loop_enabled = not audio.loop_enabled)
+	get_node("%In").pressed.connect(func() -> void: audio.loop_start = audio.position)
+	get_node("%Out").pressed.connect(func() -> void: audio.loop_end = audio.position)
+	var rate: OptionButton = get_node("%Rate")
+	for caption in ["0.5倍", "0.75倍", "1.0倍", "1.25倍", "1.5倍"]: rate.add_item("倍速：" + caption)
 	rate.select(2)
 	rate.item_selected.connect(func(i: int) -> void: audio.set_rate([0.5, 0.75, 1.0, 1.25, 1.5][i]))
-	var snap: OptionButton = transport.get_node("Snap")
-	for label in ["四分", "八分", "十六分", "三十二分", "六十四分", "八分三连", "十六分三连", "自由"]: snap.add_item(label)
+	var snap: OptionButton = get_node("%Snap")
+	for label in ["1/4", "1/8", "1/16", "1/32", "1/64", "1/8 三连音", "1/16 三连音", "关闭"]: snap.add_item("吸附：" + label)
 	snap.select(2)
+	_sync_snap_hint()
 	snap.item_selected.connect(func(i: int) -> void:
 		var divisors := [1, 2, 4, 8, 16, 3, 6, 0]
 		timeline.snap_ticks = document.chart().ppq / divisors[i] if divisors[i] else 0
@@ -76,7 +85,7 @@ func _ready() -> void:
 	audio.waveform_ready.connect(func(peaks: PackedVector2Array, duration: float) -> void:
 		timeline.set_waveform(peaks, duration))
 	audio.error_reported.connect(_message)
-	preview.status_changed.connect(func(text: String) -> void: $Layout/Split/Top/Main/PreviewColumn/PreviewLabel.text = text)
+	preview.status_changed.connect(_preview_status)
 	for pair in [["SongTitle", "title"], ["Artist", "artist"]]:
 		var edit: LineEdit = library.get_node(pair[0])
 		edit.text_submitted.connect(func(text: String) -> void: document.set_song_field(pair[1], text))
@@ -95,6 +104,8 @@ func _ready() -> void:
 	_autosave.timeout.connect(_write_recovery)
 	_autosave.start()
 	_on_document_changed()
+	audio.state_changed.connect(_sync_transport)
+	_sync_transport()
 	get_window().close_requested.connect(_close)
 	get_tree().auto_accept_quit = false
 	_offer_recovery.call_deferred()
@@ -109,13 +120,130 @@ func _process(_delta: float) -> void:
 	preview.sound_enabled = _note_sound_enabled
 	preview.set_transport(roundi(audio.position * 1000000.0), audio.playing)
 
+func _setup_controls() -> void:
+	var icons := {"%Home": "home", "%Loop": "loop", "Layout/Toolbar/Undo": "undo", "Layout/Toolbar/Redo": "redo"}
+	for path in icons:
+		var button: Button = get_node(path)
+		button.text = ""
+		button.icon = load("res://assets/chart_studio/%s.svg" % icons[path])
+		button.custom_minimum_size = Vector2(36, 34)
+	get_node("%Play").custom_minimum_size = Vector2(36, 34)
+	get_node("%Loop").toggle_mode = true
+	var hints := {"%Home": "返回音乐开头（Home）", "%Rate": "播放速度", "Layout/Toolbar/New": "新建项目（Ctrl+N）", "Layout/Toolbar/Open": "打开项目（Ctrl+O）", "Layout/Toolbar/Save": "保存（Ctrl+S）", "Layout/Toolbar/SaveAs": "另存为（Ctrl+Shift+S）", "Layout/Toolbar/Undo": "撤销（Ctrl+Z）", "Layout/Toolbar/Redo": "重做（Ctrl+Shift+Z / Ctrl+Y）", "Layout/Toolbar/Legacy": "导入旧谱：选择旧 .tres 关卡入口", "Layout/Toolbar/Export": "选择难度并导出 ZIP 谱面包"}
+	for path in hints:
+		var control: Control = get_node(path)
+		control.tooltip_text = hints[path]
+		control.accessibility_name = hints[path]
+	# 仅时间数字使用等宽字体，正文继续使用中文字体。
+	var numbers := SystemFont.new()
+	numbers.font_names = PackedStringArray(["Consolas", "monospace"])
+	get_node("%Position").add_theme_font_override("font", numbers)
+	get_node("%TickPosition").add_theme_font_override("font", numbers)
+	$Layout/ProblemToggle.toggled.connect(func(open: bool) -> void: problems.visible = open)
+	get_node("%Snap").item_selected.connect(func(_i: int) -> void: _sync_snap_hint())
+	_sync_snap_hint()
+
+func _sync_snap_hint() -> void:
+	var descriptions := ["四分音符", "八分音符", "十六分音符", "三十二分音符", "六十四分音符", "八分三连音", "十六分三连音"]
+	var index: int = get_node("%Snap").selected
+	get_node("%Snap").tooltip_text = "不按节拍吸附" if index == 7 else "按%s吸附；Alt 临时关闭" % descriptions[maxi(0, index)]
+
+func _sync_transport() -> void:
+	var play: Button = get_node("%Play")
+	play.icon = PAUSE_ICON if audio.playing else PLAY_ICON
+	play.tooltip_text = "暂停（空格）" if audio.playing else "播放（空格）"
+	play.accessibility_name = "暂停" if audio.playing else "播放"
+	var loop: Button = get_node("%Loop")
+	loop.set_pressed_no_signal(audio.loop_enabled)
+	loop.tooltip_text = "关闭循环播放（L）" if audio.loop_enabled else "开启循环播放（L）"
+	loop.accessibility_name = "循环播放"
+	get_node("%In").tooltip_text = "将当前位置设为循环起点（I）\n当前起点：" + _time_label(audio.loop_start)
+	get_node("%Out").tooltip_text = "将当前位置设为循环终点（O）\n当前终点：" + _time_label(audio.loop_end)
+	get_node("%Rate").select([0.5, 0.75, 1.0, 1.25, 1.5].find(audio.rate))
+
+func _preview_status(message: String) -> void:
+	var suffix := ""
+	if message == "定位中": suffix = "  ·  正在定位…"
+	elif "不可预览" in message or message == "无法预览": suffix = "  ·  无法预览"
+	$Layout/Split/Top/Main/PreviewColumn/PreviewLabel.text = "关卡预览" + suffix
+
+func _time_label(seconds: float) -> String:
+	var absolute := absf(seconds)
+	return ("−" if seconds < 0 else "") + "%02d:%06.3f" % [int(absolute) / 60, fmod(absolute, 60)]
+
+func _section(title: String) -> void:
+	if fields.get_child_count() > 0: fields.add_child(HSeparator.new())
+	var label := Label.new(); label.text = title; label.theme_type_variation = &"SectionLabel"
+	fields.add_child(label)
+
+func _field_hint(title: String) -> String:
+	return {"难度标识": "用于谱面文件名；同一歌曲内不能重复", "首拍偏移（ms）": "音乐开头到第一拍的时间，单位毫秒", "当前位置 BPM": "从当前位置开始应用该速度", "全谱偏移（tick）": "按音乐 tick 整体偏移谱面，保留原有时间语义", "起始位置（tick）": "修改后整体移动选区，保持相对间隔", "长音时长（tick）": "修改所选长音的持续长度，单击音符不受影响", "外观标识": "对应音符外观预设的稳定标识", "试听补偿（ms）": "本机试听延迟补偿，不修改歌曲首拍偏移"}.get(title, title)
+
+func _issue_label(issue: ValidationIssue) -> String:
+	# 翻译工具当前支持的领域问题；原始诊断仍保留在悬停详情，不改共享校验规则。
+	var messages := {
+		"chart.null": "没有可读取的谱面", "schema.unsupported": "谱面版本不受支持",
+		"chart.id_empty": "谱面标识不能为空", "chart.difficulty_empty": "难度标识不能为空",
+		"chart.ppq_not_frozen": "当前游戏要求每拍 480 tick", "chart.end_invalid": "谱面结束位置必须大于零",
+		"chart.after_song_end": "谱面结束位置超出音乐时长", "tempo.empty": "请设置初始 BPM",
+		"tempo.null": "BPM 事件缺少数据", "tempo.bpm_invalid": "BPM 必须是大于零的数值",
+		"tempo.duplicate_tick": "同一位置只能设置一个 BPM", "tempo.missing_zero": "请在 tick 0 设置初始 BPM",
+		"meter.null": "拍号事件缺少数据", "meter.invalid": "拍号无效，请检查每小节拍数和分母",
+		"meter.duplicate_tick": "同一位置只能设置一个拍号", "note.null": "音符缺少数据",
+		"note.preroll": "该音符位于第一拍之前", "note.kind_invalid": "音符类型不受支持",
+		"note.affinity_invalid": "单击和长音必须属于生钟或死钟", "note.tap_duration": "单击音符的时长必须为零",
+		"note.hold_duration": "长音时长必须大于零", "note.after_chart_end": "音符超出谱面结束位置",
+		"note.group_size": "双押组合必须恰好包含两个音符", "note.group_mismatch": "双押音符必须起始位置相同，分别属于生钟和死钟",
+		"input.window_conflict": "音符操作时间冲突，请调整起始位置或长音时长",
+		"event.id_empty": "谱面对象缺少标识", "event.id_duplicate": "谱面对象标识重复",
+		"section.outside_chart": "段落位置超出谱面范围"
+	}
+	var caption: String = messages.get(str(issue.code), issue.message)
+	return caption + "（%s，tick %d）" % [issue.event_id, issue.tick] if not issue.event_id.is_empty() else caption
+
+func _convert_selected(kind: int) -> void:
+	_mutate_selected("转为长音" if kind == GameplayTypes.NoteKind.HOLD else "转为单击", func(note: NoteEvent) -> void:
+		if note.kind == kind: return
+		note.kind = kind
+		note.duration_ticks = maxi(1, timeline.snap_ticks) if kind == GameplayTypes.NoteKind.HOLD else 0)
+
+func _meter_controls(tick: int) -> void:
+	_label("当前位置拍号")
+	var current_n := 4
+	var current_d := 4
+	for meter in document.chart().meter_events:
+		if meter.tick <= tick: current_n = meter.numerator; current_d = meter.denominator
+	var row := HBoxContainer.new(); fields.add_child(row)
+	var numerator := SpinBox.new(); numerator.min_value = 1; numerator.max_value = 32; numerator.value = current_n
+	numerator.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	numerator.tooltip_text = "每小节的拍数；修改从当前位置生效"
+	row.add_child(numerator)
+	var slash := Label.new(); slash.text = "/"; row.add_child(slash)
+	var denominator := OptionButton.new(); denominator.tooltip_text = "以几分音符为一拍"; row.add_child(denominator)
+	for value in [1, 2, 4, 8, 16, 32, 64]:
+		if document.chart().ppq * 4 % value != 0: continue
+		denominator.add_item(str(value), value)
+		if value == current_d: denominator.select(denominator.item_count - 1)
+	var commit := func() -> void:
+		numerator.apply()
+		if int(numerator.value) != current_n: _set_meter(int(numerator.value), current_d, tick)
+	numerator.get_line_edit().text_submitted.connect(func(_text: String) -> void: _queue_property_commit(commit))
+	numerator.get_line_edit().focus_exited.connect(func() -> void: _queue_property_commit(commit))
+	denominator.item_selected.connect(func(i: int) -> void: _set_meter(int(numerator.value), denominator.get_item_id(i), tick))
+	var presets := HBoxContainer.new(); fields.add_child(presets)
+	for pair in [[3, 4], [4, 4]]:
+		var button := Button.new(); button.text = "%d/%d" % [pair[0], pair[1]]; button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		button.tooltip_text = "从当前位置应用 %s 拍号" % button.text
+		presets.add_child(button)
+		button.pressed.connect(func() -> void: _finish_text_edit(); _set_meter(pair[0], pair[1], tick))
+
 func _on_document_changed() -> void:
 	_refresh_pending = true
 	_candidate_timer.stop()
 	if preview.rebuilding: preview.clear_preview()
 	if not is_node_ready(): return
 	var snap_divisors := [1, 2, 4, 8, 16, 3, 6, 0]
-	var divisor: int = snap_divisors[maxi(0, transport.get_node("Snap").selected)]
+	var divisor: int = snap_divisors[maxi(0, get_node("%Snap").selected)]
 	timeline.snap_ticks = document.chart().ppq / divisor if divisor else 0
 	_updating = true
 	library.get_node("SongTitle").text = document.song.title
@@ -144,14 +272,26 @@ func _rebuild_preview() -> void:
 		report.add_error(&"editor.unsupported_note", "暂不支持的音符：%s；原数据仍保留" % unknown.get("id", ""), str(unknown.get("id", "")), &"notes", int(unknown.get("tick", 0)))
 	var theme_id := str(ChartJsonCodec.encode_chart(draft).get("presentation", {}).get("theme_id", "default"))
 	if not ChartProjectLoader.THEMES.has(theme_id): report.add_error(&"editor.unknown_theme", "找不到主题：" + theme_id)
+	var previous_messages := _problem_messages
+	_problem_messages = PackedStringArray()
 	problems.clear()
 	for issue in report.issues:
-		problems.add_item(str(issue.get("message")))
+		_problem_messages.append(str(issue.get("message")))
+		problems.add_item(_issue_label(issue))
+		problems.set_item_tooltip(problems.item_count - 1, str(issue.get("message")))
 		problems.set_item_metadata(problems.item_count - 1, int(issue.get("tick")))
+	var toggle: Button = $Layout/ProblemToggle
+	toggle.text = "问题（%d）" % problems.item_count
+	toggle.disabled = problems.item_count == 0
+	if problems.item_count == 0: toggle.set_pressed_no_signal(false)
+	elif _problem_messages != previous_messages: toggle.set_pressed_no_signal(true)
+	problems.visible = toggle.button_pressed
+	if not previous_messages.is_empty() and _problem_messages.is_empty(): _message("问题已修正")
 	if report.has_errors() or not document.chart().get_meta("unknown_notes", []).is_empty():
 		audio.set_playing(false)
 		preview.clear_preview()
-		_message("当前稿件可保存，但有内容不能预览；请检查问题列表。")
+		_preview_status("无法预览")
+		_message("谱面暂时无法预览。可以继续编辑和保存，请检查问题列表。")
 		return
 	var stage := ChartProjectLoader.make_stage(document.song, draft)
 	audio.set_suspended(true)
@@ -161,35 +301,28 @@ func _rebuild_preview() -> void:
 
 func _inspect() -> void:
 	for child in fields.get_children(): fields.remove_child(child); child.queue_free()
-	_label("音符属性" if not timeline.selected.is_empty() else "谱面与时间")
+	_section("位置与时长" if not timeline.selected.is_empty() else "谱面信息")
 	if timeline.selected.is_empty():
 		var property_tick := _cursor_tick()
-		_text_field("难度名称", document.chart().difficulty_id, func(value: String) -> void:
-			if value.is_empty() or "/" in value or "\\" in value: _message("难度名称不能为空或包含路径分隔符"); return
+		_text_field("难度标识", document.chart().difficulty_id, func(value: String) -> void:
+			if value.is_empty() or "/" in value or "\\" in value: _message("难度标识不能为空或包含路径分隔符"); return
 			for chart in document.charts:
-				if chart != document.chart() and chart.difficulty_id == value: _message("难度名称重复"); return
+				if chart != document.chart() and chart.difficulty_id == value: _message("难度标识重复"); return
 			var data := ChartJsonCodec.encode_chart(document.chart()); data.difficulty_id = value; data.difficulty_name = value; document.change_metadata(data))
 		_text_field("谱师", str(ChartJsonCodec.encode_chart(document.chart()).get("mapper", "")), func(value: String) -> void:
 			var data := ChartJsonCodec.encode_chart(document.chart()); data.mapper = value; document.change_metadata(data))
-		_number("首拍偏移 ms", document.offset_sec() * 1000, -30000, 30000, func(value: float) -> void:
+		_section("时间与节拍")
+		_number("首拍偏移（ms）", document.offset_sec() * 1000, -30000, 30000, func(value: float) -> void:
 			var data := ChartJsonCodec.encode_chart(document.chart()); data.timing.first_beat_offset_ms = value; document.change_metadata(data), 0.001)
-		_number("BPM（编辑点）", document.tempo_map().bpm_at_tick(property_tick + document.chart().chart_offset_ticks), 1, 1000, func(value: float) -> void: _set_bpm(value, property_tick), 0.001)
-		_number("谱面尾点 tick", document.chart().end_tick, 1, 10000000, func(value: float) -> void:
+		_number("当前位置 BPM", document.tempo_map().bpm_at_tick(property_tick + document.chart().chart_offset_ticks), 1, 1000, func(value: float) -> void: _set_bpm(value, property_tick), 0.001)
+		_number("谱面结束位置（tick）", document.chart().end_tick, 1, 10000000, func(value: float) -> void:
 			var data := ChartJsonCodec.encode_chart(document.chart()); data.timing.end_tick = int(value); document.change_metadata(data))
-		_number("全谱偏移 tick", document.chart().chart_offset_ticks, -100000, 100000, func(value: float) -> void:
+		_number("全谱偏移（tick）", document.chart().chart_offset_ticks, -100000, 100000, func(value: float) -> void:
 			var data := ChartJsonCodec.encode_chart(document.chart()); data.timing.chart_offset_ticks = int(value); document.change_metadata(data))
-		_button("当前位置设 3/4", func() -> void: _set_meter(3, 4, property_tick))
-		_button("当前位置设 4/4", func() -> void: _set_meter(4, 4, property_tick))
-		var meter_n := 4
-		var meter_d := 4
-		for meter in document.chart().meter_events:
-			if meter.tick <= property_tick: meter_n = meter.numerator; meter_d = meter.denominator
-		_number("拍号分子（游标处）", meter_n, 1, 32, func(value: float) -> void: _set_meter(int(value), meter_d, property_tick))
-		_number("拍号分母（2 的幂）", meter_d, 1, 64, func(value: float) -> void:
-			var denominator := int(value)
-			if (denominator & (denominator - 1)) != 0 or (document.chart().ppq * 4) % denominator != 0: _message("分母必须是 PPQ 可精确表示的 2 的幂"); return
-			_set_meter(meter_n, denominator, property_tick))
-		_number("设备试听补偿 ms", audio.device_compensation_ms, -500, 500, func(value: float) -> void: audio.device_compensation_ms = value)
+		_meter_controls(property_tick)
+		_section("试听")
+		_number("试听补偿（ms）", audio.device_compensation_ms, -500, 500, func(value: float) -> void: audio.device_compensation_ms = value)
+		_section("外观")
 		_label("关卡主题")
 		var theme := OptionButton.new()
 		var theme_keys := ChartProjectLoader.THEMES.keys()
@@ -210,8 +343,9 @@ func _inspect() -> void:
 				if not data.presentation.has("palette_overrides"): data.presentation.palette_overrides = {}
 				data.presentation.palette_overrides[key] = "#" + picker.color.to_html(true)
 				document.change_metadata(data))
+		if not document.chart().sections.is_empty(): _section("段落")
 		for section in document.chart().sections:
-			_text_field("段落 · tick %d" % section.tick, section.label, func(value: String) -> void:
+			_text_field("段落位置（tick）：%d" % section.tick, section.label, func(value: String) -> void:
 				var data := ChartJsonCodec.encode_chart(document.chart())
 				for raw: Dictionary in data.sections:
 					if raw.id == section.event_id: raw.name = value
@@ -220,21 +354,24 @@ func _inspect() -> void:
 		var notes := _selected_notes()
 		if notes.is_empty(): return
 		_label("已选 %d 个音符" % notes.size())
-		_number("头部 tick（整组选移）", notes[0].tick, -100000, 10000000, func(value: float) -> void: _mutate_selected("移动选区", func(n: NoteEvent) -> void: n.tick += int(value) - notes[0].tick))
-		_number("Hold 长度 tick", notes[0].duration_ticks, 0, 1000000, func(value: float) -> void: _mutate_selected("修改长度", func(n: NoteEvent) -> void:
-			if n.kind == GameplayTypes.NoteKind.HOLD: n.duration_ticks = maxi(1, int(value))))
+		_number("起始位置（tick）", notes[0].tick, -100000, 10000000, func(value: float) -> void: _mutate_selected("移动选区", func(n: NoteEvent) -> void: n.tick += int(value) - notes[0].tick))
+		var holds := notes.filter(func(n: NoteEvent) -> bool: return n.kind == GameplayTypes.NoteKind.HOLD)
+		if not holds.is_empty():
+			_number("长音时长（tick）", holds[0].duration_ticks, 1, 1000000, func(value: float) -> void: _mutate_selected("修改时长", func(n: NoteEvent) -> void:
+				if n.kind == GameplayTypes.NoteKind.HOLD: n.duration_ticks = int(value)))
+		_section("编辑操作")
 		_button("生死互换", func() -> void: _edit_action(3))
-		_button("转换 Tap / Hold", func() -> void: _mutate_selected("转换音符", func(n: NoteEvent) -> void:
-			n.kind = GameplayTypes.NoteKind.TAP if n.kind == GameplayTypes.NoteKind.HOLD else GameplayTypes.NoteKind.HOLD
-			n.duration_ticks = maxi(1, timeline.snap_ticks) if n.kind == GameplayTypes.NoteKind.HOLD else 0))
+		if holds.size() < notes.size(): _button("转为长音", func() -> void: _convert_selected(GameplayTypes.NoteKind.HOLD))
+		if not holds.is_empty(): _button("转为单击", func() -> void: _convert_selected(GameplayTypes.NoteKind.TAP))
 		_button("组合双押", func() -> void: _edit_action(4))
 		_button("解除组合", func() -> void: _edit_action(5))
-		_button("删除选中", func() -> void: _edit_action(0))
-		_text_field("外观键", str(notes[0].visual_variant), func(value: String) -> void: _mutate_selected("外观设置", func(n: NoteEvent) -> void: n.visual_variant = StringName(value)))
+		_button("删除所选音符", func() -> void: _edit_action(0))
+		_section("外观")
+		_text_field("外观标识", str(notes[0].visual_variant), func(value: String) -> void: _mutate_selected("外观设置", func(n: NoteEvent) -> void: n.visual_variant = StringName(value)))
 
 func _text_field(title: String, value: String, callback: Callable) -> void:
 	_label(title)
-	var edit := LineEdit.new(); edit.text = value; fields.add_child(edit)
+	var edit := LineEdit.new(); edit.text = value; edit.tooltip_text = _field_hint(title); fields.add_child(edit)
 	var committed := [value]
 	var apply := func() -> void:
 		if edit.text != committed[0]: committed[0] = edit.text; callback.call(edit.text)
@@ -245,12 +382,13 @@ func _label(text: String) -> void:
 	var label := Label.new(); label.text = text; fields.add_child(label)
 
 func _button(text: String, callback: Callable) -> void:
-	var button := Button.new(); button.text = text; fields.add_child(button); button.pressed.connect(callback)
+	var button := Button.new(); button.text = text; fields.add_child(button); button.pressed.connect(func() -> void: _finish_text_edit(); callback.call())
 
 func _number(text: String, value: float, minimum: float, maximum: float, callback: Callable, step_value := 1.0) -> void:
 	_label(text)
 	var spin := SpinBox.new()
 	spin.min_value = minimum; spin.max_value = maximum; spin.step = step_value; spin.value = value
+	spin.tooltip_text = _field_hint(text)
 	fields.add_child(spin)
 	# 提交在文本确认或离焦时进行，输入过程中不重建控件。
 	var edit := spin.get_line_edit()
@@ -300,7 +438,7 @@ func _edit_action(id: int) -> void:
 		4:
 			var notes := _selected_notes()
 			if notes.size() != 2 or notes[0].tick != notes[1].tick or notes[0].affinity == notes[1].affinity:
-				_message("双押组合需要两个同 tick、异侧音符"); return
+				_message("请选择起始位置相同、分别位于生钟和死钟的两个音符"); return
 			var group := StudioDocument.new_id("group")
 			_mutate_selected("组合双押", func(n: NoteEvent) -> void: n.group_id = group; n.damage_group_id = group)
 		5: _mutate_selected("解除组合", func(n: NoteEvent) -> void: n.group_id = ""; n.damage_group_id = "")
@@ -346,6 +484,10 @@ func _add_section() -> void:
 
 func _seek(seconds: float) -> void:
 	_flush_property_edits()
+	# 定位结果应出现在视野中；已在视野内时不打断谱师手动调整的视图。
+	var span := timeline.size.x / timeline.pixels_per_second
+	if seconds < timeline.view_start or seconds > timeline.view_start + span:
+		timeline.view_start = maxf(0, seconds - span * 0.25)
 	audio.seek(seconds)
 	preview.seek_preview(roundi(seconds * 1000000.0))
 	if timeline.selected.is_empty(): _inspect()
@@ -353,7 +495,8 @@ func _seek(seconds: float) -> void:
 func _position_changed(seconds: float) -> void:
 	timeline.playhead = seconds; timeline.queue_redraw()
 	if audio.playing and (seconds < timeline.view_start or seconds > timeline.view_start + timeline.size.x / timeline.pixels_per_second * 0.85): timeline.view_start = seconds - timeline.size.x / timeline.pixels_per_second * 0.15
-	transport.get_node("Position").text = "%02d:%06.3f  |  tick %d" % [int(seconds) / 60, fmod(seconds, 60), _cursor_tick()]
+	get_node("%Position").text = _time_label(seconds)
+	get_node("%TickPosition").text = "tick %d" % _cursor_tick()
 	var beat := floori(document.tempo_map().us_to_tick(roundi(seconds * 1000000)) / document.chart().ppq)
 	if audio.playing and _metronome_enabled and beat == _last_beat + 1: _metronome.play()
 	_last_beat = beat
@@ -362,10 +505,11 @@ func _toggle_play() -> void:
 	_finish_text_edit()
 	audio.set_playing(not audio.playing)
 	if not audio.playing and timeline.selected.is_empty(): _inspect()
-	transport.get_node("Play").text = "Ⅱ 暂停" if audio.playing else "▶ 播放"
+	_sync_transport()
 
-func _message(text: String) -> void:
+func _message(text: String, detail: String = "") -> void:
 	status.text = text
+	status.tooltip_text = detail if not detail.is_empty() else text
 
 func _file_dialog(mode: FileDialog.FileMode, filters: PackedStringArray, callback: Callable) -> void:
 	var dialog := FileDialog.new(); dialog.access = FileDialog.ACCESS_FILESYSTEM; dialog.file_mode = mode; dialog.filters = filters
@@ -393,12 +537,12 @@ func _open_path(path: String) -> void:
 	audio.build_waveform(document.directory.path_join(str(data.get("audio", ""))))
 	_on_document_changed()
 	_load_workspace()
-	_message("已打开：" + path)
+	_message("已打开：" + document.song.title, path)
 
 func _save() -> void:
 	if document.directory.is_empty(): _save_as(); return
 	var error := StudioProjectIO.save_project(document)
-	_message(error if not error.is_empty() else "已保存 · " + document.directory)
+	_message(error if not error.is_empty() else "已保存", document.directory)
 	if error.is_empty(): _save_workspace()
 	if error.is_empty(): DirAccess.remove_absolute("user://chart_studio/recovery.json")
 	if error.is_empty(): get_window().title = "冥河 · " + document.song.title
@@ -415,10 +559,12 @@ func _import_audio() -> void:
 	_file_dialog(FileDialog.FILE_MODE_OPEN_FILE, PackedStringArray(["*.wav,*.ogg,*.mp3 ; 音频"]), func(path: String) -> void:
 		var error := StudioProjectIO.import_audio(path, document)
 		if not error.is_empty(): _message(error); return
-		audio.set_stream(document.song.audio_stream); audio.build_waveform(path); _message("音乐已导入，正在建立波形；请检查首拍对齐"))
+		audio.set_stream(document.song.audio_stream); audio.build_waveform(path); _message("音乐已导入，正在生成波形…"))
 
 func _export() -> void:
-	var dialog := ConfirmationDialog.new(); dialog.title = "选择交付难度"
+	var dialog := ConfirmationDialog.new(); dialog.title = "导出谱面 · 选择难度（ZIP）"
+	dialog.ok_button_text = "选择保存位置"
+	dialog.cancel_button_text = "取消"
 	var list := ItemList.new(); list.select_mode = ItemList.SELECT_MULTI; list.custom_minimum_size = Vector2(320, 220)
 	for chart in document.charts: list.add_item(chart.difficulty_id)
 	list.select(document.current)
@@ -428,20 +574,20 @@ func _export() -> void:
 		if selected.is_empty(): _message("至少选择一个难度"); return
 		_file_dialog(FileDialog.FILE_MODE_SAVE_FILE, PackedStringArray(["*.zip ; 可玩谱面包"]), func(path: String) -> void:
 			var error := StudioProjectIO.export_zip(document, path, selected)
-			_message(error if not error.is_empty() else "导出完成：" + path)))
+			_message(error if not error.is_empty() else "谱面已导出", path)))
 	dialog.popup_centered()
 
 func _legacy() -> void:
 	_confirm_discard(func() -> void:
-		_file_dialog(FileDialog.FILE_MODE_OPEN_FILE, PackedStringArray(["*.tres ; 旧 StageDefinition"]), func(path: String) -> void:
+		_file_dialog(FileDialog.FILE_MODE_OPEN_FILE, PackedStringArray(["*.tres ; 旧关卡入口（.tres）"]), func(path: String) -> void:
 			_file_dialog(FileDialog.FILE_MODE_OPEN_DIR, PackedStringArray(), func(target: String) -> void:
 				var error := StudioProjectIO.import_legacy(path, target, document)
 				if not error.is_empty(): _message(error); return
 				_open_path(target.path_join("song.json"))
-				_message("迁移完成；未支持内容和原文件见 legacy/import-report.json"))))
+				_message("旧谱已导入，未支持的内容已归档。", target.path_join("legacy/import-report.json")))))
 
 func _save_workspace() -> void:
-	StudioProjectIO.write_json(document.directory.path_join("editor/workspace.json"), {"version": 1, "current": document.current, "position": audio.position, "view_start": timeline.view_start, "zoom": timeline.pixels_per_second, "loop_start": audio.loop_start, "loop_end": audio.loop_end, "loop_enabled": audio.loop_enabled, "rate": audio.rate, "snap_index": transport.get_node("Snap").selected})
+	StudioProjectIO.write_json(document.directory.path_join("editor/workspace.json"), {"version": 1, "current": document.current, "position": audio.position, "view_start": timeline.view_start, "zoom": timeline.pixels_per_second, "loop_start": audio.loop_start, "loop_end": audio.loop_end, "loop_enabled": audio.loop_enabled, "rate": audio.rate, "snap_index": get_node("%Snap").selected})
 
 func _load_workspace() -> void:
 	var path := document.directory.path_join("editor/workspace.json")
@@ -457,8 +603,9 @@ func _load_workspace() -> void:
 	var rates := [0.5, 0.75, 1.0, 1.25, 1.5]
 	var rate_index := rates.find(float(data.get("rate", 1.0)))
 	if rate_index < 0: rate_index = 2
-	audio.set_rate(rates[rate_index]); transport.get_node("Rate").select(rate_index)
-	transport.get_node("Snap").select(clampi(int(data.get("snap_index", 2)), 0, 7))
+	audio.set_rate(rates[rate_index]); get_node("%Rate").select(rate_index)
+	get_node("%Snap").select(clampi(int(data.get("snap_index", 2)), 0, 7))
+	_sync_snap_hint()
 	audio.seek(float(data.get("position", 0)))
 	document.changed.emit()
 
@@ -499,10 +646,11 @@ func _offer_recovery() -> void:
 
 func _confirm_discard(callback: Callable) -> void:
 	if not document.dirty: callback.call(); return
-	var dialog := ConfirmationDialog.new(); dialog.dialog_text = "当前项目有未保存修改。放弃修改并继续？"; dialog.ok_button_text = "放弃并继续"
+	var dialog := ConfirmationDialog.new(); dialog.dialog_text = "当前项目有未保存的修改。请选择保存修改或放弃修改后继续。"; dialog.ok_button_text = "放弃并继续"
 	dialog.add_button("保存并继续", true, "save")
 	dialog.custom_action.connect(func(action: StringName) -> void:
 		if action == &"save": dialog.hide(); _save_then(callback))
+	dialog.title = "未保存的修改"; dialog.cancel_button_text = "取消"
 	add_child(dialog); dialog.confirmed.connect(callback); dialog.popup_centered()
 
 func _save_then(callback: Callable) -> void:
@@ -524,8 +672,9 @@ func _close() -> void:
 
 func _help() -> void:
 	var dialog := AcceptDialog.new()
-	dialog.title = "写谱器操作"
-	dialog.dialog_text = "空白点击：Tap；空白拖动：Hold；Shift 框选／增减选\n中键平移；Ctrl+滚轮缩放；Alt 关闭吸附；Esc 取消\nF/J：暂停时输入生／死音符，按住并用方向键延长\n空格播放暂停；I/O/L 循环；Ctrl+C/V/D 复制粘贴重复\nCtrl+M 生死互换；Q 量化；Shift+Q 量化头尾\nCtrl+S 保存；Ctrl+Z 撤销；Ctrl+Shift+Z 重做\n属性输入后按 Enter 确认。"
+	dialog.title = "写谱器帮助"
+	dialog.ok_button_text = "关闭"
+	dialog.dialog_text = "编辑\n点击空白处：单击音符；沿时间拖动：长音\nShift：框选或增减选择；Esc：取消当前操作\nF／J：暂停时输入生钟／死钟音符，按住并用方向键延长\n中键：平移；Ctrl+滚轮：缩放；Alt：临时关闭吸附\nCtrl+C／V／D：复制／粘贴／重复乐句；Ctrl+M：生死互换\nQ：量化起始位置，保留时长；Shift+Q：量化起止位置\n\n播放\n空格：播放／暂停；Home：返回音乐开头\nI：将当前位置设为循环起点；O：设为循环终点\nL：开启／关闭循环播放\n\n文件\nCtrl+N／O：新建／打开；Ctrl+S：保存；Ctrl+Shift+S：另存为\nCtrl+Z：撤销；Ctrl+Shift+Z 或 Ctrl+Y：重做\n属性按 Enter 或离开输入框时提交，保存也会提交当前输入。"
 	add_child(dialog); dialog.popup_centered()
 
 func _input(event: InputEvent) -> void:

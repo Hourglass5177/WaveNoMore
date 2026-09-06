@@ -4,13 +4,27 @@ extends Node
 signal position_changed(seconds: float)
 signal waveform_ready(peaks: PackedVector2Array, duration: float)
 signal error_reported(message: String)
+## 控件订阅播放意图和循环参数，包含快捷键、恢复工作区与自然结束。
+signal state_changed
 var playing := false
 var suspended := false
 var rate := 1.0
 var position := 0.0
-var loop_enabled := false
-var loop_start := 0.0
-var loop_end := 4.0
+var loop_enabled := false:
+	set(value):
+		if loop_enabled == value: return
+		loop_enabled = value
+		state_changed.emit()
+var loop_start := 0.0:
+	set(value):
+		if loop_start == value: return
+		loop_start = value
+		state_changed.emit()
+var loop_end := 4.0:
+	set(value):
+		if loop_end == value: return
+		loop_end = value
+		state_changed.emit()
 var processing_latency := 0.0
 var device_compensation_ms := 0.0
 var _anchor := 0
@@ -60,6 +74,7 @@ func set_playing(value: bool) -> void:
 		_player.play(position)
 	else:
 		_player.stop()
+	state_changed.emit()
 
 func seek(seconds: float) -> void:
 	position = seconds
@@ -79,6 +94,7 @@ func set_rate(value: float) -> void:
 	# 1024 FFT 实测比旁路多约 11ms；该量作用于试听时钟，不写入歌曲偏移。
 	processing_latency = 0.0 if is_equal_approx(rate, 1.0) else 512.0 / AudioServer.get_mix_rate()
 	seek(position)
+	state_changed.emit()
 
 func _process(_delta: float) -> void:
 	if playing and not suspended:

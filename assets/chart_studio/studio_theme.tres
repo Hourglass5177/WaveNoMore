@@ -1,0 +1,133 @@
+[gd_resource type="Theme" load_steps=7 format=3]
+
+[sub_resource type="StyleBoxFlat" id="Normal"]
+content_margin_left = 10.0
+content_margin_right = 10.0
+content_margin_top = 7.0
+content_margin_bottom = 7.0
+bg_color = Color(0.115, 0.14, 0.19, 1)
+border_color = Color(0.20, 0.25, 0.32, 1)
+border_width_left = 1
+border_width_right = 1
+border_width_top = 1
+border_width_bottom = 1
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_left = 4
+corner_radius_bottom_right = 4
+
+[sub_resource type="StyleBoxFlat" id="Hover"]
+content_margin_left = 10.0
+content_margin_right = 10.0
+content_margin_top = 7.0
+content_margin_bottom = 7.0
+bg_color = Color(0.17, 0.21, 0.28, 1)
+border_color = Color(0.36, 0.44, 0.55, 1)
+border_width_left = 1
+border_width_right = 1
+border_width_top = 1
+border_width_bottom = 1
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_left = 4
+corner_radius_bottom_right = 4
+
+[sub_resource type="StyleBoxFlat" id="Pressed"]
+content_margin_left = 10.0
+content_margin_right = 10.0
+content_margin_top = 7.0
+content_margin_bottom = 7.0
+bg_color = Color(0.20, 0.31, 0.41, 1)
+border_color = Color(0.40, 0.65, 0.77, 1)
+border_width_left = 1
+border_width_right = 1
+border_width_top = 1
+border_width_bottom = 1
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_left = 4
+corner_radius_bottom_right = 4
+
+[sub_resource type="StyleBoxFlat" id="Disabled"]
+content_margin_left = 10.0
+content_margin_right = 10.0
+content_margin_top = 7.0
+content_margin_bottom = 7.0
+bg_color = Color(0.10, 0.12, 0.16, 1)
+border_color = Color(0.16, 0.19, 0.24, 1)
+border_width_left = 1
+border_width_right = 1
+border_width_top = 1
+border_width_bottom = 1
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_left = 4
+corner_radius_bottom_right = 4
+
+[sub_resource type="StyleBoxFlat" id="Focus"]
+content_margin_left = 10.0
+content_margin_right = 10.0
+content_margin_top = 7.0
+content_margin_bottom = 7.0
+bg_color = Color(0, 0, 0, 0)
+border_color = Color(0.62, 0.79, 0.9, 1)
+border_width_left = 1
+border_width_right = 1
+border_width_top = 1
+border_width_bottom = 1
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_left = 4
+corner_radius_bottom_right = 4
+
+[sub_resource type="StyleBoxFlat" id="Input"]
+content_margin_left = 10.0
+content_margin_right = 10.0
+content_margin_top = 7.0
+content_margin_bottom = 7.0
+bg_color = Color(0.055, 0.07, 0.10, 1)
+border_color = Color(0.22, 0.27, 0.34, 1)
+border_width_left = 1
+border_width_right = 1
+border_width_top = 1
+border_width_bottom = 1
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_left = 4
+corner_radius_bottom_right = 4
+
+[resource]
+default_font_size = 15
+Button/styles/normal = SubResource("Normal")
+Button/styles/hover = SubResource("Hover")
+Button/styles/pressed = SubResource("Pressed")
+Button/styles/disabled = SubResource("Disabled")
+Button/styles/focus = SubResource("Focus")
+Button/colors/font_color = Color(0.88, 0.91, 0.96, 1)
+Button/colors/font_disabled_color = Color(0.40, 0.45, 0.52, 1)
+OptionButton/styles/normal = SubResource("Normal")
+OptionButton/styles/hover = SubResource("Hover")
+OptionButton/styles/pressed = SubResource("Pressed")
+OptionButton/styles/disabled = SubResource("Disabled")
+OptionButton/styles/focus = SubResource("Focus")
+OptionButton/colors/font_color = Color(0.88, 0.91, 0.96, 1)
+OptionButton/colors/font_disabled_color = Color(0.40, 0.45, 0.52, 1)
+CheckButton/styles/normal = SubResource("Normal")
+CheckButton/styles/hover = SubResource("Hover")
+CheckButton/styles/pressed = SubResource("Pressed")
+CheckButton/styles/disabled = SubResource("Disabled")
+CheckButton/styles/focus = SubResource("Focus")
+CheckButton/colors/font_color = Color(0.88, 0.91, 0.96, 1)
+CheckButton/colors/font_disabled_color = Color(0.40, 0.45, 0.52, 1)
+LineEdit/styles/normal = SubResource("Input")
+LineEdit/styles/focus = SubResource("Focus")
+SpinBox/styles/normal = SubResource("Input")
+SpinBox/styles/focus = SubResource("Focus")
+VBoxContainer/constants/separation = 8
+HBoxContainer/constants/separation = 8
+HFlowContainer/constants/h_separation = 16
+HFlowContainer/constants/v_separation = 8
+Label/colors/font_color = Color(0.76, 0.81, 0.88, 1)
+SectionLabel/base_type = &"Label"
+SectionLabel/colors/font_color = Color(0.50, 0.73, 0.84, 1)
+SectionLabel/font_sizes/font_size = 16

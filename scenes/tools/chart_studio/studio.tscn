@@ -2,8 +2,7 @@
 
 [ext_resource type="Script" path="res://src/tools/chart_studio/studio_workspace.gd" id="1"]
 [ext_resource type="Script" path="res://src/tools/chart_studio/studio_timeline.gd" id="2"]
-[sub_resource type="Theme" id="Theme"]
-default_font_size = 15
+[ext_resource type="Theme" path="res://assets/chart_studio/studio_theme.tres" id="3"]
 
 [node name="ChartStudio" type="Control"]
 layout_mode = 3
@@ -12,7 +11,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme = SubResource("Theme")
+theme = ExtResource("3")
 script = ExtResource("1")
 
 [node name="Background" type="ColorRect" parent="."]
@@ -33,7 +32,7 @@ offset_top = 8.0
 offset_right = -12.0
 offset_bottom = -8.0
 
-[node name="Toolbar" type="HBoxContainer" parent="Layout"]
+[node name="Toolbar" type="HFlowContainer" parent="Layout"]
 layout_mode = 2
 
 [node name="New" type="Button" parent="Layout/Toolbar"]
@@ -63,12 +62,12 @@ focus_mode = 0
 
 [node name="Legacy" type="Button" parent="Layout/Toolbar"]
 layout_mode = 2
-text = "导入旧关卡"
+text = "导入旧谱"
 focus_mode = 0
 
 [node name="Export" type="Button" parent="Layout/Toolbar"]
 layout_mode = 2
-text = "导出 ZIP"
+text = "导出谱面"
 focus_mode = 0
 
 [node name="Undo" type="Button" parent="Layout/Toolbar"]
@@ -83,7 +82,7 @@ focus_mode = 0
 
 [node name="Help" type="Button" parent="Layout/Toolbar"]
 layout_mode = 2
-text = "操作说明"
+text = "帮助"
 focus_mode = 0
 
 [node name="Split" type="VSplitContainer" parent="Layout"]
@@ -95,36 +94,60 @@ split_offset = 400
 layout_mode = 2
 split_offset = 220
 
-[node name="Library" type="VBoxContainer" parent="Layout/Split/Top"]
+[node name="LibraryScroll" type="ScrollContainer" parent="Layout/Split/Top"]
+custom_minimum_size = Vector2(190, 190)
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="Library" type="VBoxContainer" parent="Layout/Split/Top/LibraryScroll"]
+size_flags_horizontal = 3
 custom_minimum_size = Vector2(190, 190)
 layout_mode = 2
 
-[node name="Title" type="Label" parent="Layout/Split/Top/Library"]
+[node name="Title" type="Label" parent="Layout/Split/Top/LibraryScroll/Library"]
 layout_mode = 2
 text = "冥河 · 写谱器"
 
-[node name="SongTitle" type="LineEdit" parent="Layout/Split/Top/Library"]
+[node name="SongTitleLabel" type="Label" parent="Layout/Split/Top/LibraryScroll/Library"]
+layout_mode = 2
+text = "歌曲"
+
+[node name="SongTitle" type="LineEdit" parent="Layout/Split/Top/LibraryScroll/Library"]
 layout_mode = 2
 placeholder_text = "歌曲名称"
 
-[node name="Artist" type="LineEdit" parent="Layout/Split/Top/Library"]
+[node name="ArtistLabel" type="Label" parent="Layout/Split/Top/LibraryScroll/Library"]
+layout_mode = 2
+text = "作者"
+
+[node name="Artist" type="LineEdit" parent="Layout/Split/Top/LibraryScroll/Library"]
 layout_mode = 2
 placeholder_text = "音乐作者"
 
-[node name="Difficulty" type="OptionButton" parent="Layout/Split/Top/Library"]
+[node name="DifficultyLabel" type="Label" parent="Layout/Split/Top/LibraryScroll/Library"]
+layout_mode = 2
+text = "难度"
+
+[node name="Difficulty" type="OptionButton" parent="Layout/Split/Top/LibraryScroll/Library"]
 layout_mode = 2
 
-[node name="AddDifficulty" type="Button" parent="Layout/Split/Top/Library"]
+[node name="AddDifficulty" type="Button" parent="Layout/Split/Top/LibraryScroll/Library"]
 layout_mode = 2
 text = "复制为新难度"
 
-[node name="Sections" type="ItemList" parent="Layout/Split/Top/Library"]
+[node name="SectionsLabel" type="Label" parent="Layout/Split/Top/LibraryScroll/Library"]
+layout_mode = 2
+text = "段落"
+
+[node name="Sections" type="ItemList" parent="Layout/Split/Top/LibraryScroll/Library"]
+custom_minimum_size = Vector2(0, 72)
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="AddSection" type="Button" parent="Layout/Split/Top/Library"]
+[node name="AddSection" type="Button" parent="Layout/Split/Top/LibraryScroll/Library"]
 layout_mode = 2
-text = "当前位置加段落"
+text = "添加段落"
+tooltip_text = "在当前位置添加段落"
 
 [node name="Main" type="HSplitContainer" parent="Layout/Split/Top"]
 layout_mode = 2
@@ -136,7 +159,7 @@ size_flags_horizontal = 3
 
 [node name="PreviewLabel" type="Label" parent="Layout/Split/Top/Main/PreviewColumn"]
 layout_mode = 2
-text = "自动演示 · 默认主题"
+text = "关卡预览"
 
 [node name="Aspect" type="AspectRatioContainer" parent="Layout/Split/Top/Main/PreviewColumn"]
 layout_mode = 2
@@ -166,46 +189,89 @@ size_flags_horizontal = 3
 [node name="TimelineColumn" type="VBoxContainer" parent="Layout/Split"]
 layout_mode = 2
 
-[node name="Transport" type="HBoxContainer" parent="Layout/Split/TimelineColumn"]
+[node name="Transport" type="HFlowContainer" parent="Layout/Split/TimelineColumn"]
 layout_mode = 2
 
-[node name="Play" type="Button" parent="Layout/Split/TimelineColumn/Transport"]
+[node name="Playback" type="HBoxContainer" parent="Layout/Split/TimelineColumn/Transport"]
 layout_mode = 2
-text = "▶ 播放"
+
+[node name="Play" type="Button" parent="Layout/Split/TimelineColumn/Transport/Playback"]
+unique_name_in_owner = true
+layout_mode = 2
+text = ""
 focus_mode = 0
 
-[node name="Home" type="Button" parent="Layout/Split/TimelineColumn/Transport"]
+[node name="Home" type="Button" parent="Layout/Split/TimelineColumn/Transport/Playback"]
+unique_name_in_owner = true
 layout_mode = 2
-text = "回起点"
+text = ""
 focus_mode = 0
 
-[node name="Loop" type="Button" parent="Layout/Split/TimelineColumn/Transport"]
+[node name="LoopRange" type="HBoxContainer" parent="Layout/Split/TimelineColumn/Transport"]
 layout_mode = 2
-text = "循环 L"
+
+[node name="Divider" type="VSeparator" parent="Layout/Split/TimelineColumn/Transport/LoopRange"]
+layout_mode = 2
+
+[node name="Loop" type="Button" parent="Layout/Split/TimelineColumn/Transport/LoopRange"]
+unique_name_in_owner = true
+layout_mode = 2
+text = ""
 focus_mode = 0
 
-[node name="In" type="Button" parent="Layout/Split/TimelineColumn/Transport"]
+[node name="In" type="Button" parent="Layout/Split/TimelineColumn/Transport/LoopRange"]
+unique_name_in_owner = true
 layout_mode = 2
-text = "设 I"
+text = "循环起点"
 focus_mode = 0
 
-[node name="Out" type="Button" parent="Layout/Split/TimelineColumn/Transport"]
+[node name="Out" type="Button" parent="Layout/Split/TimelineColumn/Transport/LoopRange"]
+unique_name_in_owner = true
 layout_mode = 2
-text = "设 O"
+text = "循环终点"
 focus_mode = 0
 
-[node name="Rate" type="OptionButton" parent="Layout/Split/TimelineColumn/Transport"]
+[node name="Options" type="HBoxContainer" parent="Layout/Split/TimelineColumn/Transport"]
+layout_mode = 2
+
+[node name="Divider" type="VSeparator" parent="Layout/Split/TimelineColumn/Transport/Options"]
+layout_mode = 2
+
+[node name="Rate" type="OptionButton" parent="Layout/Split/TimelineColumn/Transport/Options"]
+unique_name_in_owner = true
 layout_mode = 2
 focus_mode = 0
 
-[node name="Snap" type="OptionButton" parent="Layout/Split/TimelineColumn/Transport"]
+[node name="Snap" type="OptionButton" parent="Layout/Split/TimelineColumn/Transport/Options"]
+unique_name_in_owner = true
 layout_mode = 2
 focus_mode = 0
 
-[node name="Position" type="Label" parent="Layout/Split/TimelineColumn/Transport"]
+[node name="Readout" type="HBoxContainer" parent="Layout/Split/TimelineColumn/Transport"]
+layout_mode = 2
+
+[node name="Divider" type="VSeparator" parent="Layout/Split/TimelineColumn/Transport/Readout"]
+layout_mode = 2
+
+[node name="Position" type="Label" parent="Layout/Split/TimelineColumn/Transport/Readout"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
+custom_minimum_size = Vector2(104, 0)
 text = "00:00.000"
+theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
+
+[node name="TickPosition" type="Label" parent="Layout/Split/TimelineColumn/Transport/Readout"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(118, 0)
+text = "tick 0"
+
+[node name="Sound" type="HBoxContainer" parent="Layout/Split/TimelineColumn/Transport"]
+layout_mode = 2
+
+[node name="Divider" type="VSeparator" parent="Layout/Split/TimelineColumn/Transport/Sound"]
+layout_mode = 2
 
 [node name="Timeline" type="Control" parent="Layout/Split/TimelineColumn"]
 layout_mode = 2
@@ -214,9 +280,17 @@ script = ExtResource("2")
 
 [node name="Status" type="Label" parent="Layout"]
 layout_mode = 2
-text = "新建项目后保存到一个空目录，再导入音乐。"
+text = "导入音乐，开始制作谱面。"
 autowrap_mode = 2
+
+[node name="ProblemToggle" type="Button" parent="Layout"]
+layout_mode = 2
+text = "问题（0）"
+toggle_mode = true
+alignment = 0
+focus_mode = 0
 
 [node name="Problems" type="ItemList" parent="Layout"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 65)
+custom_minimum_size = Vector2(0, 96)
+visible = false
