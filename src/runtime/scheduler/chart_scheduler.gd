@@ -120,6 +120,11 @@ func advance(target_visual_time_sec: float) -> void:
 		var event_data: Dictionary = active_entry["data"]
 		var expiry_usec: int = _event_end_usec(event_data) + _tail_usec_for(active_entry["kind"])
 		var resolved_usec: int = int(active_entry.get("resolved_us", -1))
+		if StringName(event_data.get("unit_kind", &"")) == &"hold":
+			# Hold 的失败尾部由 Host 沿实际视觉路线送完；成功仍保留结果展示时间。
+			if resolved_usec < 0:
+				continue
+			expiry_usec = resolved_usec + roundi(resolved_note_tail_sec * USEC_PER_SEC)
 		if resolved_usec >= 0:
 			expiry_usec = mini(expiry_usec, resolved_usec + roundi(resolved_note_tail_sec * USEC_PER_SEC))
 		if expiry_usec < target_usec:
@@ -134,6 +139,8 @@ func mark_judged(event_id: String, grade: int) -> void:
 	visual_judged.emit(event_id, grade)
 	if _active.has(event_id) and StringName(_active[event_id].get("kind", &"")) == KIND_NOTE:
 		var active_entry: Dictionary = _active[event_id]
+		if StringName(active_entry["data"].get("unit_kind", &"")) == &"hold" and grade == GameplayTypes.JudgmentGrade.MISS:
+			return
 		if int(active_entry.get("resolved_us", -1)) < 0:
 			active_entry["resolved_us"] = roundi(visual_time_sec * USEC_PER_SEC)
 
@@ -159,8 +166,22 @@ func mark_wave_contacted(event_id: String, contact: Dictionary) -> void:
 
 func mark_note_arrived(event_id: String, arrival: Dictionary) -> void:
 	if _active.has(event_id):
+		# 领域路线没有包含 Hold 视觉暂停，不能用它提前回收或播放视觉抵达。
+		if StringName(_active[event_id]["data"].get("unit_kind", &"")) == &"hold":
+			return
 		_active[event_id]["resolved_us"] = int(arrival.get("arrival_us", roundi(visual_time_sec * USEC_PER_SEC)))
 	visual_note_arrived.emit(event_id, arrival.duplicate(true))
+
+
+func finish_hold_visual(event_id: String) -> void:
+	## Host 确认失败 Hold 的尾部抵达路线末端后，请求统一回收。
+	if not _active.has(event_id):
+		return
+	var entry: Dictionary = _active[event_id]
+	if StringName(entry["data"].get("unit_kind", &"")) != &"hold":
+		return
+	_active.erase(event_id)
+	visual_despawn_requested.emit(entry["kind"], event_id)
 
 
 func get_active_events() -> Array[Dictionary]:

@@ -547,7 +547,10 @@ func _on_judgment_recorded(record: JudgmentRecord) -> void:
 		_deferred_note_grades[record.unit_id] = record.grade
 		_deferred_note_records[record.unit_id] = record
 		var should_present_now: bool = false
-		if record.grade == GameplayTypes.JudgmentGrade.MISS:
+		if record.unit_kind == &"hold":
+			# Hold 头的固定由快照驱动；最终持续结果必须立即驱动续行或收尾，不能等待领域波抵达。
+			should_present_now = true
+		elif record.grade == GameplayTypes.JudgmentGrade.MISS:
 			# 头部 MISS 的音符没有对向波，会在抵达钟时解决。Hold 头即使已接触，
 			# 尾部仍可能 MISS；这种结果属于先前接触路径，不会再产生 arrival。
 			should_present_now = (

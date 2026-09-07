@@ -229,6 +229,15 @@ func _on_visual_judged(event_id: String, grade: int) -> void:
 		return
 	var active_entry: Dictionary = _active[event_id]
 	var visual: Node2D = active_entry["node"]
+	if StringName(active_entry["data"].get("unit_kind", &"")) == &"hold":
+		if grade == GameplayTypes.JudgmentGrade.MISS:
+			active_entry["hold_failed"] = true
+			active_entry["hold_resume_time"] = visual_time_sec
+		else:
+			_pin_hold_visual(active_entry)
+			active_entry["hold_finished"] = true
+			active_entry["hold_visual_progress"] = 1.0
+			visual.call("set_hold_progress", 1.0)
 	var timing_ring: Node2D = active_entry.get("timing_ring") as Node2D
 	var already_confirmed: bool = bool(active_entry.get("timing_confirmed", false))
 	if grade == GameplayTypes.JudgmentGrade.MISS and visual.has_method("play_miss"):
@@ -249,6 +258,8 @@ func _on_visual_timing_confirmed(event_id: String, grade: int) -> void:
 	if bool(active_entry.get("timing_confirmed", false)):
 		return
 	active_entry["timing_confirmed"] = true
+	if StringName(active_entry["data"].get("unit_kind", &"")) == &"hold" and grade != GameplayTypes.JudgmentGrade.MISS:
+		_pin_hold_visual(active_entry)
 	var visual: Node2D = active_entry["node"]
 	var timing_ring: Node2D = active_entry.get("timing_ring") as Node2D
 	if visual.has_method("play_timing_confirmed"):
@@ -384,7 +395,11 @@ func _update_visual(event_id: String, active_entry: Dictionary) -> void:
 	if end_sec > start_sec:
 		region_progress = clampf((visual_time_sec - start_sec) / (end_sec - start_sec), 0.0, 1.0)
 
-	if kind == ChartScheduler.KIND_NOTE:
+	if is_hold:
+		_update_hold_visual(event_id, active_entry, approach, region_progress, hold_active, hold_held)
+		if not _active.has(event_id):
+			return
+	elif kind == ChartScheduler.KIND_NOTE:
 		visual.position = _sample_approach_path(data, approach)
 		# 不对称灰盒轮廓会沿路径切线转向，才能读成“旋入”；兄弟节点圆环仍保持正圆和正向。
 		visual.rotation = _sample_approach_tangent(data, approach).angle() if orient_notes_along_path else 0.0
@@ -397,17 +412,6 @@ func _update_visual(event_id: String, active_entry: Dictionary) -> void:
 				presented_hold_progress = maxf(presented_hold_progress, region_progress)
 				active_entry["hold_visual_progress"] = presented_hold_progress
 			visual.call("set_hold_progress", presented_hold_progress)
-		if is_hold and visual.has_method("set_path_spine") and visual.has_method("visual_state_snapshot"):
-			var hold_visual_state: Dictionary = visual.call("visual_state_snapshot")
-			visual.call(
-				"set_path_spine",
-				_build_hold_path_spine(
-					data,
-					approach,
-					float(hold_visual_state.get("visible_length", 0.0)),
-					visual.rotation
-				)
-			)
 	elif kind == ChartScheduler.KIND_TUNING:
 		# 调频视觉使用完整设计画布坐标绘制，FieldSlot 原点就是画布左上角；
 		# 不再叠加以画布中心为值的 approach_origin，避免中心被平移到右下角。
@@ -454,6 +458,62 @@ func _update_visual(event_id: String, active_entry: Dictionary) -> void:
 		elif timing_ring.has_method("set_approach_progress"):
 			# 自定义美术场景可能只提供旧版进度接口，因此在这里兼容回退。
 			timing_ring.call("set_approach_progress", approach)
+
+
+func _pin_hold_visual(entry: Dictionary) -> void:
+	## 第一次接受头判时固定当前视觉路线坐标；续按不更换锚点。
+	if entry.has("hold_anchor_distance") or bool(entry.get("hold_failed", false)):
+		return
+	var data: Dictionary = entry["data"]
+	var visual: Node2D = entry["node"]
+	var approach: float = maxf(1.0 + (visual_time_sec - float(_start_usec(data)) / 1_000_000.0) / approach_duration_sec, 0.0)
+	entry["hold_anchor_distance"] = approach * _approach_distance_px(data)
+	entry["hold_anchor_rotation"] = _sample_approach_tangent(data, approach).angle() if orient_notes_along_path else 0.0
+	# 命中后头身尾完整显露；后续不再用进场缩放覆盖命中反馈。
+	visual.call("set_approach_progress", 1.0)
+
+
+func _update_hold_visual(
+		event_id: String, entry: Dictionary, approach: float, region_progress: float,
+		hold_active: bool, hold_held: bool
+) -> void:
+	## 独立推进 Hold 的固定、宽限冻结和失败续行，不改变领域判定。
+	var visual: Node2D = entry["node"]
+	var data: Dictionary = entry["data"]
+	var failed: bool = bool(entry.get("hold_failed", false))
+	var finished: bool = bool(entry.get("hold_finished", false))
+	if hold_active and not failed:
+		_pin_hold_visual(entry)
+	var pinned: bool = entry.has("hold_anchor_distance")
+	var route_length: float = _approach_distance_px(data)
+	var distance: float = approach * route_length
+	if pinned:
+		distance = float(entry["hold_anchor_distance"])
+		if failed:
+			distance += maxf(visual_time_sec - float(entry["hold_resume_time"]), 0.0) * route_length / approach_duration_sec
+		visual.rotation = float(entry["hold_anchor_rotation"])
+	else:
+		visual.call("set_approach_progress", approach)
+	if not pinned or failed:
+		visual.rotation = _sample_approach_tangent(data, distance / maxf(route_length, 0.001)).angle() if orient_notes_along_path else 0.0
+	var affinity: int = int(data.get("affinity", GameplayTypes.Affinity.ZHU))
+	visual.position = _sample_route_distance(affinity, distance)
+	var consumed: float = float(entry.get("hold_visual_progress", 0.0))
+	if finished:
+		consumed = 1.0
+	elif hold_active and hold_held and not failed:
+		consumed = maxf(consumed, region_progress)
+	entry["hold_visual_progress"] = consumed
+	visual.call("set_hold_progress", consumed)
+	var state: Dictionary = visual.call("visual_state_snapshot")
+	var remaining_length: float = float(state["visible_length"])
+	visual.call("set_path_spine", _build_hold_path_spine(data, distance / maxf(route_length, 0.001), remaining_length, visual.rotation))
+	if failed:
+		var target: Vector2 = death_target if affinity == GameplayTypes.Affinity.XUAN else life_target
+		var origin: Vector2 = death_wave_origin if affinity == GameplayTypes.Affinity.XUAN else life_wave_origin
+		# 路线坐标继续增长，采样点在钟位截断，身体逐段送入末端。
+		if distance - remaining_length >= route_length + target.distance_to(origin):
+			_scheduler.finish_hold_visual(event_id)
 
 
 func _active_tuning_slider_state(event_id: String) -> Dictionary:
