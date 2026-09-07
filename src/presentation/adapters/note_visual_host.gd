@@ -1,8 +1,10 @@
 class_name NoteVisualHost
 extends Node2D
 
-## 音符表现的生成、更新与回收中心。所有位置都由绝对视觉时间重算，结果不会回流到判定。
+## 音符表现的生成、更新与回收中心。头部由绝对时间定位，动态身体只在时钟帧尾推进。
 
+## 调频附加动画独立场景，不注册为 Gameplay Note。
+const TUNING_HOLD_SCENE: PackedScene = preload("res://scenes/presentation/notes/tuning_hold_visual.tscn")
 # 正式主题缺少对应素材时使用的四种灰盒场景。
 const DEFAULT_NOTE_SCENE: PackedScene = preload("res://scenes/presentation/notes/graybox_note_visual.tscn")
 # 未配置正式素材时使用的 Hold 灰盒场景。
@@ -15,8 +17,6 @@ const DEFAULT_RAPID_SCENE: PackedScene = preload("res://scenes/presentation/fiel
 const DEFAULT_TIMING_RING_SCENE: PackedScene = preload("res://scenes/presentation/notes/default_timing_ring.tscn")
 # 判定进度环在对象池中的固定分类键，供创建和回收时找到同一池。
 const TIMING_RING_POOL_KEY: StringName = &"timing_ring"
-# Hold 身体沿路线采样的点数，必须与 GrayboxHoldVisual 的截面数一致。
-const HOLD_PATH_SAMPLE_COUNT: int = 36
 
 @export_group("Scene Wiring")
 ## 生音符活动节点的父级路径；只负责分组，不决定其世界坐标。
@@ -73,6 +73,13 @@ var _field_slot: Node2D
 var _pool_root: Node2D
 # 活动表按事件 ID 保存节点、类型和谱面数据；对象池按素材类型保存可复用节点。
 var _active: Dictionary[String, Dictionary] = {}
+## 附加动画独立于滑条回收，按滑条 ID 保存节点、数据、抵达和待结算状态。
+var _tuning_holds: Dictionary[String, Dictionary] = {}
+## 调频使用输入开放的判定时间，不受视觉提前量影响。
+var _judge_visual_time: float = 0.0
+var _last_judge_visual_time: float = 0.0
+## 首帧或 Seek 后只初始化，不补算旧时间线的积分。
+var _clock_initialized: bool = false
 # 从本次调度开始已经见过的调频 ID；直到 Seek、重试或换关清场前都拦截重复生成。
 var _known_tuning_ids: Dictionary[String, bool] = {}
 # 各类型可复用节点的对象池；键是场景类型，值是当前闲置实例数组。
@@ -137,7 +144,50 @@ func configure_rules(rules: GameplayRuleSet) -> void:
 			visual.call("configure_from_rules", gameplay_rules)
 
 
+func set_clock_sample(sample: ClockSample) -> void:
+	## 附加动画跟随判定时间；快照只设置状态，相同时间不重复积分。
+	var delta_sec: float = maxf(sample.judge_time_sec - _last_judge_visual_time, 0.0) if _clock_initialized else 0.0
+	_clock_initialized = true
+	_last_judge_visual_time = sample.judge_time_sec
+	_judge_visual_time = sample.judge_time_sec
+	set_visual_time(sample.visual_time_sec)
+	for hold_entry: Dictionary in _active.values():
+		var hold_visual: Node2D = hold_entry["node"]
+		if hold_visual is GrayboxHoldVisual:
+			hold_visual.advance_body(delta_sec)
+	for event_id: String in _tuning_holds.keys():
+		var entry: Dictionary = _tuning_holds[event_id]
+		var visual: TuningHoldVisual = entry["node"]
+		var data: Dictionary = entry["data"]
+		var canvas: Vector2 = gameplay_rules.wave_canvas_size
+		if entry.has("pending_grade"):
+			visual.settle(int(entry["pending_grade"]), _judge_visual_time)
+			entry.erase("pending_grade")
+		if visual.settled:
+			visual.update_exit(_judge_visual_time, _approach_distance_px(data) / approach_duration_sec, canvas)
+		else:
+			var progress: float = clampf(1.0 + (_judge_visual_time - float(_start_usec(data)) / 1_000_000.0) / approach_duration_sec, 0.0, 1.0)
+			visual.position = _sample_approach_path(data, progress)
+			if not bool(entry.get("arrived", false)):
+				visual.set_approach_progress(progress)
+			if progress >= 1.0:
+				entry["arrived"] = true
+				visual.position = canvas * 0.5
+				if _active.has(event_id):
+					var field: Node2D = _active[event_id]["node"]
+					if field.has_method("update_hold_heading"):
+						field.call("update_hold_heading", visual)
+			else:
+				visual.set_head_heading(_sample_approach_tangent(data, progress).angle())
+			visual.set_body_target(float(visual.visual_state_snapshot()["visible_length"]))
+		visual.advance_body(delta_sec)
+		if visual.done:
+			visual.queue_free()
+			_tuning_holds.erase(event_id)
+
+
 func set_visual_time(value: float) -> void:
+	## 更新时间目标，不积分；快照和时钟重复通知不会让身体多走一步。
 	visual_time_sec = value
 	_update_active_visuals()
 
@@ -148,6 +198,13 @@ func set_gameplay_snapshot(snapshot: Dictionary) -> void:
 
 
 func clear() -> void:
+	## Seek、重试、会话结束统一清除主视觉及独立调频附加动画。
+	for entry: Dictionary in _tuning_holds.values():
+		entry["node"].queue_free()
+	_tuning_holds.clear()
+	_clock_initialized = false
+	_judge_visual_time = 0.0
+	_last_judge_visual_time = 0.0
 	var ids: Array[String] = []
 	ids.assign(_active.keys())
 	for event_id: String in ids:
@@ -213,6 +270,10 @@ func _spawn_visual_now(kind: StringName, event_id: String, event_data: Dictionar
 	}
 	if kind == ChartScheduler.KIND_TUNING:
 		_update_tuning_preview_presentation()
+		var companion: TuningHoldVisual = TUNING_HOLD_SCENE.instantiate()
+		_field_slot.add_child(companion)
+		companion.prepare(event_data)
+		_tuning_holds[event_id] = {"node": companion, "data": event_data.duplicate(true)}
 	_update_visual(event_id, _active[event_id])
 
 
@@ -225,6 +286,11 @@ func _on_visual_despawn_requested(kind: StringName, event_id: String) -> void:
 
 
 func _on_visual_judged(event_id: String, grade: int) -> void:
+	if _tuning_holds.has(event_id):
+		# 一个组成绩只终结一次；后续快照或重复通知不得重新开始收短/离场。
+		var companion: TuningHoldVisual = _tuning_holds[event_id]["node"]
+		if not companion.settled and not _tuning_holds[event_id].has("pending_grade"):
+			_tuning_holds[event_id]["pending_grade"] = grade
 	if not _active.has(event_id):
 		return
 	var active_entry: Dictionary = _active[event_id]
@@ -314,7 +380,7 @@ func _update_tuning_preview_presentation() -> void:
 		var phase: int = 2 # 0：当前；1：未来；2：已结束但仍在播放收尾。
 		if bool(state.get("interaction_open", false)):
 			phase = 0
-		elif start_us > roundi(visual_time_sec * 1_000_000.0):
+		elif start_us > roundi(_judge_visual_time * 1_000_000.0):
 			phase = 1
 		if not groups.has(group_key):
 			groups[group_key] = {
@@ -387,13 +453,14 @@ func _update_visual(event_id: String, active_entry: Dictionary) -> void:
 	)
 	var start_sec: float = float(_start_usec(data)) / 1_000_000.0
 	var end_sec: float = float(_end_usec(data)) / 1_000_000.0
-	var time_to_hit_sec: float = start_sec - visual_time_sec
+	var presentation_time: float = _judge_visual_time if kind == ChartScheduler.KIND_TUNING else visual_time_sec
+	var time_to_hit_sec: float = start_sec - presentation_time
 	# approach 可以超过 1：圆环在中心闭合后，未解决音符仍会飞向钟，
 	# 直到真实波前碰到它，或它抵达钟并成为 Miss。
 	var approach: float = maxf(1.0 - time_to_hit_sec / approach_duration_sec, 0.0)
 	var region_progress: float = 0.0
 	if end_sec > start_sec:
-		region_progress = clampf((visual_time_sec - start_sec) / (end_sec - start_sec), 0.0, 1.0)
+		region_progress = clampf((presentation_time - start_sec) / (end_sec - start_sec), 0.0, 1.0)
 
 	if is_hold:
 		_update_hold_visual(event_id, active_entry, approach, region_progress, hold_active, hold_held)
@@ -507,13 +574,15 @@ func _update_hold_visual(
 	visual.call("set_hold_progress", consumed)
 	var state: Dictionary = visual.call("visual_state_snapshot")
 	var remaining_length: float = float(state["visible_length"])
-	visual.call("set_path_spine", _build_hold_path_spine(data, distance / maxf(route_length, 0.001), remaining_length, visual.rotation))
 	if failed:
 		var target: Vector2 = death_target if affinity == GameplayTypes.Affinity.XUAN else life_target
 		var origin: Vector2 = death_wave_origin if affinity == GameplayTypes.Affinity.XUAN else life_wave_origin
-		# 路线坐标继续增长，采样点在钟位截断，身体逐段送入末端。
-		if distance - remaining_length >= route_length + target.distance_to(origin):
+		# 头部在钟位停止，之后按原路线速度从尾端裁短动态身体。
+		remaining_length = maxf(remaining_length - maxf(distance - route_length - target.distance_to(origin), 0.0), 0.0)
+		if remaining_length <= 0.0:
 			_scheduler.finish_hold_visual(event_id)
+			return
+	visual.call("set_body_target", remaining_length, hold_active and not hold_held and not failed and not finished)
 
 
 func _active_tuning_slider_state(event_id: String) -> Dictionary:
@@ -575,29 +644,6 @@ func _path_profile_for_affinity(affinity: int) -> Dictionary:
 		)
 		_path_profile_keys[affinity] = cache_key
 	return _path_profiles[affinity]
-
-
-func _build_hold_path_spine(
-		data: Dictionary,
-		progress: float,
-		visible_length_px: float,
-		world_rotation: float
-) -> PackedVector2Array:
-	var affinity: int = int(data.get("affinity", GameplayTypes.Affinity.ZHU))
-	var profile: Dictionary = _path_profile_for_affinity(affinity)
-	var approach_length_px: float = NoteApproachPath.length(profile)
-	var head_route_distance_px: float = maxf(progress, 0.0) * approach_length_px
-	var presented_length_px: float = maxf(visible_length_px, 0.0)
-	if progress < 1.0:
-		presented_length_px = minf(presented_length_px, head_route_distance_px)
-	var head_world: Vector2 = _sample_route_distance(affinity, head_route_distance_px)
-	var spine := PackedVector2Array()
-	for index: int in range(HOLD_PATH_SAMPLE_COUNT):
-		var ratio: float = float(index) / float(HOLD_PATH_SAMPLE_COUNT - 1)
-		var route_distance_px: float = head_route_distance_px - presented_length_px * ratio
-		var world_point: Vector2 = _sample_route_distance(affinity, route_distance_px)
-		spine.append((world_point - head_world).rotated(-world_rotation))
-	return spine
 
 
 func _sample_route_distance(affinity: int, route_distance_px: float) -> Vector2:

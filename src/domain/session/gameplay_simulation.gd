@@ -71,6 +71,11 @@ var _pending_note_arrivals: Array[Dictionary] = []
 var _su_manifestations: Array[Dictionary] = []
 ## 下一条尚未处理的编译后素音事件索引。
 var _su_cursor: int = 0
+## 素音预读等待表与已冻结的 UV 目标，均按事件 ID 独立保存。
+var _su_events_by_id: Dictionary[String, Dictionary] = {}
+var _su_pending: Dictionary[String, Dictionary] = {}
+var _su_prepared: Dictionary[String, Dictionary] = {}
+var _su_resolved_ids: Dictionary[String, bool] = {}
 ## 分配给下一条 JudgmentRecord 的全局递增序号；同微秒也不会重复。
 var _judgment_sequence: int = 0
 ## 最近一次输入的 InputOwner；NONE 表示未被任何机制消费。
@@ -111,6 +116,12 @@ func configure(p_compiled: CompiledChart, p_rules: GameplayRuleSet, debug_nonlet
 	_pending_note_arrivals.clear()
 	_su_manifestations.clear()
 	_su_cursor = 0
+	_su_events_by_id.clear()
+	_su_pending.clear()
+	_su_prepared.clear()
+	_su_resolved_ids.clear()
+	for event: Dictionary in compiled.su_manifestations:
+		_su_events_by_id[str(event["event_id"])] = event
 	_judgment_sequence = 0
 	_last_input_owner = GameplayTypes.InputOwner.NONE
 	_paused_for_rearm = false
@@ -479,6 +490,7 @@ func snapshot() -> Dictionary:
 		"carrier_wave_count": carrier_engine.emission_count(),
 		"carrier_wavefronts": carrier_engine.visible_wavefronts(current_time_us),
 		"su_manifestations": _su_manifestations.duplicate(true),
+		"su_prepared_targets": _su_prepared.values().duplicate(true),
 		"paused_for_rearm": _paused_for_rearm,
 		"cleared": evaluated.cleared,
 		"fc": evaluated.full_combo,
@@ -537,52 +549,91 @@ func _apply_tuning_frequency_changes(target_us: int, inclusive: bool) -> void:
 	carrier_engine.advance_to(target_us, inclusive)
 
 
-func _process_su_manifestations(time_us: int, inclusive: bool) -> void:
-	if compiled == null:
-		return
+func request_su_preparation(event_id: String) -> void:
+	## 预读请求只登记事件；下一次逻辑推进使用真实波历史尝试生成。
+	if _su_events_by_id.has(event_id) and not _su_resolved_ids.has(event_id):
+		_su_pending[event_id] = _su_events_by_id[event_id]
+
+
+func reset_su_timeline(time_us: int) -> void:
+	## Seek/清场丢弃旧目标；早于新时间的事件不再生成结果或打印历史 Miss。
+	_su_pending.clear()
+	_su_prepared.clear()
+	_su_manifestations.clear()
+	_su_resolved_ids.clear()
+	_su_cursor = 0
 	while _su_cursor < compiled.su_manifestations.size():
 		var event: Dictionary = compiled.su_manifestations[_su_cursor]
-		var event_us: int = int(event.get("time_us", event.get("start_us", 0)))
+		if int(event["time_us"]) >= time_us:
+			break
+		_su_resolved_ids[str(event["event_id"])] = true
+		_su_cursor += 1
+
+
+func clear_su_targets() -> void:
+	## 会话结束释放预读请求、目标、结果和去重状态，不改变其他玩法数据。
+	_su_pending.clear()
+	_su_prepared.clear()
+	_su_manifestations.clear()
+	_su_resolved_ids.clear()
+
+
+func _try_prepare_su(event: Dictionary, prepared_at_us: int) -> void:
+	## 对已发射载波求目标时刻的交点，不推进 Carrier、不预测未来输入。
+	var event_id: String = str(event["event_id"])
+	if _su_prepared.has(event_id):
+		return
+	var points: Array[Vector2] = carrier_engine.find_constructive_intersections(
+		int(event["time_us"]), event["spawn_region_normalized"], int(event["count"])
+	)
+	if points.is_empty():
+		return
+	var points_uv: Array[Vector2] = []
+	for point: Vector2 in points:
+		points_uv.append(carrier_engine.canvas_position_to_uv(point))
+	var target: Dictionary = event.duplicate(true)
+	target["points"] = points_uv
+	target["requested_count"] = int(event["count"])
+	target["prepared_at_us"] = prepared_at_us
+	_su_prepared[event_id] = target
+
+
+func _process_su_manifestations(time_us: int, inclusive: bool) -> void:
+	## 待生成目标每帧重试；已有目标冻结坐标，目标时刻只结算一次。
+	if compiled == null:
+		return
+	for event: Dictionary in _su_pending.values():
+		_try_prepare_su(event, time_us)
+	while _su_cursor < compiled.su_manifestations.size():
+		var event: Dictionary = compiled.su_manifestations[_su_cursor]
+		var event_us: int = int(event["time_us"])
 		if event_us > time_us or (event_us == time_us and not inclusive):
 			break
+		var event_id: String = str(event["event_id"])
+		# 预读请求尚未到达也不能漏掉目标时刻的最后一次尝试。
+		_try_prepare_su(event, time_us)
 		var group_id: String = str(event.get("group_id", ""))
-		var group_ready: bool = tuning_engine.has_finalized_group(group_id)
-		var group_success: bool = group_ready and tuning_engine.group_grade(group_id) != GameplayTypes.JudgmentGrade.MISS
-		var requested_count: int = maxi(1, int(event.get("count", 1)))
-		var normalized_region: Rect2 = event.get(
-			"spawn_region_normalized",
-			Rect2(Vector2(0.2, 0.2), Vector2(0.6, 0.6))
+		var group_ready: bool = group_id.is_empty() or tuning_engine.has_finalized_group(group_id)
+		var group_success: bool = group_id.is_empty() or (
+			group_ready and tuning_engine.group_grade(group_id) != GameplayTypes.JudgmentGrade.MISS
 		)
-		var points: Array[Vector2] = []
-		if group_success:
-			points = carrier_engine.find_constructive_intersections(
-				event_us,
-				normalized_region,
-				requested_count
-			)
-		# count 是期望上限，不是“少一个就整次失败”的硬门槛；只要真实加强纹中
-		# 至少存在一个合法交点，就凝成实际找到的数量。完全没有交点才播失败魂影。
-		var manifested: bool = group_success and not points.is_empty()
-		var result: Dictionary = {
-			"event_id": str(event.get("event_id", event.get("id", ""))),
-			"group_id": group_id,
-			"tick": int(event.get("tick", 0)),
-			"time_us": event_us,
-			"requested_count": requested_count,
-			"points": points if manifested else [],
-			"candidate_points": points,
-			# 失败时没有真实交点可画，表现层仍应在谱师声明区域内显示“未凝实”，
-			# 不能退回屏幕正中央遮挡主要交互。
-			"spawn_region_normalized": normalized_region,
-			"success": manifested,
-			"visual_variant": StringName(event.get("visual_variant", &"default")),
-			"failure_reason": &"" if manifested else (
-				&"group_failed" if group_ready and not group_success
-				else &"group_not_finalized" if not group_ready
-				else &"no_constructive_intersection"
-			),
-		}
+		var result: Dictionary = event.duplicate(true)
+		var target: Dictionary = _su_prepared.get(event_id, {})
+		result["points"] = target.get("points", []).duplicate()
+		result["requested_count"] = int(event["count"])
+		result["success"] = group_success and not result["points"].is_empty()
+		result["failure_reason"] = &"" if result["success"] else (
+			&"group_not_finalized" if not group_ready
+			else &"group_failed" if not group_success
+			else &"no_constructive_intersection"
+		)
 		_su_manifestations.append(result)
+		_su_resolved_ids[event_id] = true
+		_su_pending.erase(event_id)
+		if not bool(result["success"]):
+			print("[SuManifestation] note_miss event=%s requested=%d actual=%d reason=%s uv=none" % [
+				event_id, int(event["count"]), result["points"].size(), result["failure_reason"]
+			])
 		_su_cursor += 1
 
 

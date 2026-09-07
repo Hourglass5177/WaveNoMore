@@ -154,6 +154,8 @@ func bind(clock: SongClock, session: StageSession, scheduler: ChartScheduler, _i
 	_disconnect_sources()
 	_clock = clock
 	_session = session
+	if not session.waves_reset.is_connected(_tuning_interference_visual.clear):
+		session.waves_reset.connect(_tuning_interference_visual.clear)
 	_note_visual_host.bind_scheduler(scheduler)
 	_wave_field_visual.bind(clock, session)
 	_rapid_interference_visual.bind(clock, session)
@@ -162,6 +164,8 @@ func bind(clock: SongClock, session: StageSession, scheduler: ChartScheduler, _i
 		clock.sample_published.connect(_on_clock_sample)
 	if not session.gameplay_snapshot_changed.is_connected(_on_gameplay_snapshot):
 		session.gameplay_snapshot_changed.connect(_on_gameplay_snapshot)
+	if not session.visual_frame_ready.is_connected(_on_visual_frame_ready):
+		session.visual_frame_ready.connect(_on_visual_frame_ready)
 	if not session.state_changed.is_connected(_on_stage_state_changed):
 		session.state_changed.connect(_on_stage_state_changed)
 	if not session.wave_launched.is_connected(_on_wave_launched):
@@ -194,6 +198,11 @@ func _on_clock_sample(sample: ClockSample) -> void:
 	_backdrop.set_song_progress(sample.song_time_sec / maxf(_song_duration_sec, 0.001))
 
 
+func _on_visual_frame_ready(sample: ClockSample) -> void:
+	## Gameplay 写入当前目标后推进身体；原始时钟信号仅设置视觉目标。
+	_note_visual_host.set_clock_sample(sample)
+
+
 func _on_gameplay_snapshot(snapshot: Dictionary) -> void:
 	_note_visual_host.set_gameplay_snapshot(snapshot)
 	_tuning_interference_visual.set_gameplay_snapshot(snapshot)
@@ -205,6 +214,10 @@ func _on_gameplay_snapshot(snapshot: Dictionary) -> void:
 
 func _on_stage_state_changed(_previous: int, current: int, _reason: StringName) -> void:
 	_backdrop.set_failed(current == GameplayTypes.StageState.FAILING)
+	if current == GameplayTypes.StageState.RESULT:
+		# 会话结束不保留动态链；正常收尾在 FINISHING/FAILING 阶段由时钟推进。
+		_note_visual_host.clear()
+		_tuning_interference_visual.clear()
 
 
 func _on_wave_launched(wave: Dictionary) -> void:
@@ -276,6 +289,10 @@ func _disconnect_sources() -> void:
 	if is_instance_valid(_clock) and _clock.sample_published.is_connected(_on_clock_sample):
 		_clock.sample_published.disconnect(_on_clock_sample)
 	if is_instance_valid(_session):
+		if _session.waves_reset.is_connected(_tuning_interference_visual.clear):
+			_session.waves_reset.disconnect(_tuning_interference_visual.clear)
+		if _session.visual_frame_ready.is_connected(_on_visual_frame_ready):
+			_session.visual_frame_ready.disconnect(_on_visual_frame_ready)
 		if _session.gameplay_snapshot_changed.is_connected(_on_gameplay_snapshot):
 			_session.gameplay_snapshot_changed.disconnect(_on_gameplay_snapshot)
 		if _session.state_changed.is_connected(_on_stage_state_changed):

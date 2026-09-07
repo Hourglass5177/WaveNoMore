@@ -1,111 +1,129 @@
 class_name SuManifestationOverlay
 extends Node2D
 
-## 素音凝现的轻量表现层。
-## 所有动画都由外部传入的绝对视觉时间重算，暂停、Seek 和不同帧率不会改变结果。
+## 素音目标及原地命中动画。存储坐标全部为 UV，只有绘制时转成画布像素。
+## 外部使用 Gameplay 判定时钟推进；查询和绘制不推进生命周期。
 
+@export var canvas_size: Vector2 = Vector2(1920.0, 1080.0)
 @export var bone_color: Color = Color("fff1d1")
 @export var failure_color: Color = Color("8c8790")
 @export_range(0.1, 2.0, 0.01) var lifetime_sec: float = 0.78
 
-# 当前绝对视觉时间，单位秒。
 var _visual_time_sec: float = 0.0
-# 每个事件记录创建时刻、候选点和成功状态；键使用谱面的稳定事件 ID。
+## 每个事件含多个独立圆形目标；已准备的位置不会被结果快照覆盖。
 var _entries: Dictionary[String, Dictionary] = {}
 
 
-func set_visual_time(value: float) -> void:
-	_visual_time_sec = value
-	var expired_ids: Array[String] = []
-	for event_id: String in _entries:
-		var entry: Dictionary = _entries[event_id]
-		if _visual_time_sec - float(entry.get("created_at_sec", 0.0)) > lifetime_sec:
-			expired_ids.append(event_id)
-	for event_id: String in expired_ids:
-		_entries.erase(event_id)
-	queue_redraw()
-
-
-func show_manifestation(
-	event_id: String,
-	points: PackedVector2Array,
-	fallback_center: Vector2,
-	successful: bool,
-	visual_variant: StringName = &"default"
-) -> void:
+func prepare_targets(event_data: Dictionary) -> void:
+	## 为首次预测成功的全部 UV 点创建固定目标；重复快照不重新生成。
+	var event_id: String = str(event_data["event_id"])
+	if _entries.has(event_id):
+		return
+	var points_uv := PackedVector2Array()
+	for point: Vector2 in event_data.get("points", []):
+		points_uv.append(point)
+	if points_uv.is_empty():
+		return
+	var variant: StringName = StringName(event_data.get("target_visual_variant", &""))
+	if variant == &"":
+		variant = StringName(event_data.get("visual_variant", &"default"))
 	_entries[event_id] = {
-		"created_at_sec": _visual_time_sec,
-		"points": points,
-		"fallback_center": fallback_center,
-		"successful": successful and not points.is_empty(),
-		"visual_variant": visual_variant,
+		"points": points_uv,
+		"target_time_sec": float(event_data["time_us"]) / 1_000_000.0,
+		"duration_sec": float(event_data.get("target_hold_duration_sec", lifetime_sec)),
+		"visual_variant": variant,
+		"resolved": false,
+		"success": false,
 	}
+	for index: int in range(points_uv.size()):
+		var uv: Vector2 = points_uv[index]
+		print("[SuManifestation] note_generated event=%s index=%d requested=%d actual=%d success=true uv=(%.4f, %.4f)" % [
+			event_id, index, int(event_data["requested_count"]), points_uv.size(), uv.x, uv.y
+		])
 	queue_redraw()
 
 
-func remove_manifestation(event_id: String) -> void:
-	_entries.erase(event_id)
+func resolve_targets(result: Dictionary) -> void:
+	## 在原目标位置播放一次结果；无合法目标的 Miss 不凭空创建中心 Note。
+	var event_id: String = str(result["event_id"])
+	if not _entries.has(event_id):
+		return
+	var entry: Dictionary = _entries[event_id]
+	if bool(entry["resolved"]):
+		return
+	entry["resolved"] = true
+	entry["success"] = bool(result["success"])
+	if bool(entry["success"]):
+		var points_uv: PackedVector2Array = entry["points"]
+		for index: int in range(points_uv.size()):
+			var uv: Vector2 = points_uv[index]
+			print("[SuManifestation] note_hit event=%s index=%d time_us=%d uv=(%.4f, %.4f)" % [
+				event_id, index, int(result["time_us"]), uv.x, uv.y
+			])
+	queue_redraw()
+
+
+func set_visual_time(time_sec: float) -> void:
+	## 使用绝对判定时间过期；等待目标时不回收，暂停不增长动画年龄。
+	_visual_time_sec = time_sec
+	for event_id: String in _entries.keys():
+		var entry: Dictionary = _entries[event_id]
+		if bool(entry["resolved"]) and time_sec >= float(entry["target_time_sec"]) + float(entry["duration_sec"]):
+			_entries.erase(event_id)
 	queue_redraw()
 
 
 func clear() -> void:
+	## Seek、重试和会话清场时释放全部图案和时钟状态。
 	_entries.clear()
+	_visual_time_sec = 0.0
 	queue_redraw()
 
 
 func has_active_entries() -> bool:
+	## 供父层判断可见性，不依赖当前是否还有载波或调频条。
 	return not _entries.is_empty()
 
 
 func debug_snapshot() -> Dictionary:
-	return {
-		"visual_time_sec": _visual_time_sec,
-		"active_count": _entries.size(),
-		"event_ids": _entries.keys(),
-	}
+	## 仅返回状态摘要，不推进动画。
+	return {"time_sec": _visual_time_sec, "active_count": _entries.size(), "event_ids": _entries.keys()}
 
 
 func _draw() -> void:
-	for event_id: String in _entries:
-		var entry: Dictionary = _entries[event_id]
-		var age_sec: float = maxf(_visual_time_sec - float(entry.get("created_at_sec", 0.0)), 0.0)
-		var progress: float = clampf(age_sec / maxf(lifetime_sec, 0.001), 0.0, 1.0)
-		if bool(entry.get("successful", false)):
-			var points: PackedVector2Array = entry.get("points", PackedVector2Array())
-			for point: Vector2 in points:
-				_draw_successful_knot(point, progress)
-		else:
-			_draw_failed_condensation(Vector2(entry.get("fallback_center", Vector2.ZERO)), progress)
-
-
-func _draw_successful_knot(center: Vector2, progress: float) -> void:
-	# 先迅速凝实，再像被白纹带走一样收束淡出；不加入屏幕震动等强反馈。
-	var appear: float = smoothstep(0.0, 0.20, progress)
-	var fade: float = 1.0 - smoothstep(0.62, 1.0, progress)
-	var alpha: float = appear * fade
-	var radius: float = lerpf(30.0, 16.0, smoothstep(0.0, 0.45, progress))
-	for petal_index: int in range(4):
-		var angle: float = PI * 0.25 + float(petal_index) * PI * 0.5
-		var direction := Vector2.from_angle(angle)
-		draw_circle(center + direction * radius * 0.48, radius * 0.34, Color(bone_color, alpha * 0.30))
-	draw_arc(center, radius, 0.0, TAU, 32, Color(bone_color, alpha * 0.94), 3.5, true)
-	draw_circle(center, radius * 0.30, Color(bone_color, alpha * 0.88))
-	draw_circle(center, radius * 0.10, Color(Color.WHITE, alpha))
-
-
-func _draw_failed_condensation(center: Vector2, progress: float) -> void:
-	# 失败只留下不能闭合的三段虚环，避免伪装成已经存在的骨白交点。
-	var fade: float = 1.0 - smoothstep(0.35, 1.0, progress)
-	var radius: float = lerpf(20.0, 54.0, progress)
-	for arc_index: int in range(3):
-		var start_angle: float = float(arc_index) * TAU / 3.0 + progress * 0.35
-		draw_arc(
-			center,
-			radius + float(arc_index) * 7.0,
-			start_angle,
-			start_angle + PI * 0.42,
-			18,
-			Color(failure_color, fade * (0.58 - float(arc_index) * 0.10)),
-			3.0,
-			true
+	for entry: Dictionary in _entries.values():
+		var progress: float = clampf(
+			(_visual_time_sec - float(entry["target_time_sec"])) / float(entry["duration_sec"]), 0.0, 1.0
 		)
+		for uv: Vector2 in entry["points"]:
+			var center: Vector2 = uv * canvas_size
+			if not bool(entry["resolved"]):
+				_draw_target(center)
+			elif bool(entry["success"]):
+				_draw_hit(center, progress)
+			else:
+				_draw_miss(center, progress)
+
+
+func _draw_target(center: Vector2) -> void:
+	## 高对比圆形目标：预读期间不移动、不渐隐，区别于载波背景。
+	draw_circle(center, 32.0, Color("111827"))
+	draw_circle(center, 25.0, bone_color)
+	draw_arc(center, 34.0, 0.0, TAU, 64, Color("36e6ff"), 5.0, true)
+	draw_circle(center, 7.0, Color.WHITE)
+
+
+func _draw_hit(center: Vector2, progress: float) -> void:
+	## 原地闪亮、收缩和外扩圆环；整个动画始终使用同一个中心。
+	var fade: float = 1.0 - progress
+	var radius: float = lerpf(30.0, 0.0, smoothstep(0.0, 1.0, progress))
+	draw_circle(center, radius, Color(bone_color.lerp(Color.WHITE, fade), fade))
+	draw_arc(center, lerpf(34.0, 78.0, progress), 0.0, TAU, 64, Color(0.2, 0.9, 1.0, fade), 5.0, true)
+
+
+func _draw_miss(center: Vector2, progress: float) -> void:
+	## 已有目标但调频组失败时，只在真实目标原位播放断裂圆环。
+	for index: int in range(3):
+		var start: float = float(index) * TAU / 3.0
+		draw_arc(center, lerpf(34.0, 52.0, progress), start, start + PI * 0.45,
+			24, Color(failure_color, 1.0 - progress), 4.0, true)

@@ -14,10 +14,6 @@ const DEFAULT_WAVE_SPEED_PX_SEC: float = 2400.0
 const DEFAULT_CANVAS_SIZE: Vector2 = Vector2(1920.0, 1080.0)
 const DEFAULT_LIFE_ORIGIN: Vector2 = Vector2(350.0, 280.0)
 const DEFAULT_DEATH_ORIGIN: Vector2 = Vector2(1570.0, 800.0)
-# Graybox HUD 的固定避让区：顶部魂火/分数，以及中央判定文字。正式美术若调整
-# HUD，只需把这两块改为由布局资源注入，素音的物理求交与排序逻辑无需变化。
-const HUD_TOP_EXCLUSION_NORMALIZED := Rect2(0.0, 0.0, 1.0, 0.115)
-const HUD_JUDGMENT_EXCLUSION_NORMALIZED := Rect2(0.40, 0.30, 0.20, 0.12)
 
 var _rules: GameplayRuleSet
 var _current_time_us: int = NEVER_TIME_US
@@ -254,6 +250,7 @@ func find_constructive_intersections(
 		count: int,
 		minimum_spacing_px: float = 120.0
 ) -> Array[Vector2]:
+	## 素音只受谱面显式区域约束，包含四条边界；HUD 和波源不构成隐藏禁区。
 	var life_fronts: Array[Dictionary] = []
 	var death_fronts: Array[Dictionary] = []
 	for front: Dictionary in visible_wavefronts(time_us):
@@ -274,7 +271,12 @@ func find_constructive_intersections(
 				life["origin"], float(life["radius_px"]),
 				death["origin"], float(death["radius_px"])
 			):
-				if not allowed.has_point(point) or _near_source(point) or _inside_hud_exclusion(point):
+				# Rect2.has_point 不包含右边和下边，因此显式比较闭区间。
+				# 不钳制坐标：屏幕外或谱面区域外的真实交点仍然拒绝。
+				if (
+					point.x < allowed.position.x or point.x > allowed.end.x
+					or point.y < allowed.position.y or point.y > allowed.end.y
+				):
 					continue
 				candidates.append({
 					"point": point,
@@ -298,6 +300,11 @@ func find_constructive_intersections(
 		if selected.size() >= maxi(0, count):
 			break
 	return selected
+
+
+func canvas_position_to_uv(position_px: Vector2) -> Vector2:
+	## 使用本局实际画布归一化交点；不裁剪坐标掩盖越界。
+	return position_px / _canvas_size
 
 
 func _new_source(affinity: int, origin: Vector2) -> Dictionary:
@@ -350,25 +357,6 @@ func _emit(source: Dictionary, launch_us: int) -> void:
 
 func _period_us(frequency_hz: float) -> int:
 	return maxi(1, roundi(USEC_PER_SEC / maxf(frequency_hz, 0.001)))
-
-
-func _near_source(point: Vector2) -> bool:
-	const EXCLUSION_RADIUS_PX: float = 150.0
-	return (
-		point.distance_squared_to(_sources[GameplayTypes.Affinity.ZHU]["origin"]) < EXCLUSION_RADIUS_PX * EXCLUSION_RADIUS_PX
-		or point.distance_squared_to(_sources[GameplayTypes.Affinity.XUAN]["origin"]) < EXCLUSION_RADIUS_PX * EXCLUSION_RADIUS_PX
-	)
-
-
-func _inside_hud_exclusion(point: Vector2) -> bool:
-	var normalized := Vector2(
-		point.x / maxf(_canvas_size.x, 1.0),
-		point.y / maxf(_canvas_size.y, 1.0)
-	)
-	return (
-		HUD_TOP_EXCLUSION_NORMALIZED.has_point(normalized)
-		or HUD_JUDGMENT_EXCLUSION_NORMALIZED.has_point(normalized)
-	)
 
 
 func _circle_intersections(c0: Vector2, r0: float, c1: Vector2, r1: float) -> Array[Vector2]:

@@ -215,10 +215,14 @@ static func _validate_su_manifestations(chart: SongChart, fields_by_id: Dictiona
 			report.add_error(&"su_manifestation.outside_chart", "Su manifestation must lie inside chart bounds.", manifestation.event_id, &"su_manifestations", manifestation.tick)
 		if manifestation.count < 1 or manifestation.count > 16:
 			report.add_error(&"su_manifestation.count", "Su manifestation count must be between 1 and 16.", manifestation.event_id, &"su_manifestations", manifestation.tick)
+		if manifestation.target_hold_duration_sec <= 0.0:
+			report.add_error(&"su_manifestation.target_hold_duration", "Target hold duration must be positive.", manifestation.event_id, &"su_manifestations", manifestation.tick)
 		if not _normalized_rect_is_valid(manifestation.spawn_region_normalized):
 			report.add_error(&"su_manifestation.spawn_region", "spawn_region_normalized must have positive size and stay inside the normalized canvas.", manifestation.event_id, &"su_manifestations", manifestation.tick)
-		if manifestation.group_id.is_empty() or not slider_groups.has(manifestation.group_id):
-			report.add_error(&"su_manifestation.group_missing", "Su manifestation must reference an existing paired tuning group.", manifestation.event_id, &"su_manifestations", manifestation.tick)
+		if manifestation.group_id.is_empty():
+			continue
+		if not slider_groups.has(manifestation.group_id):
+			report.add_error(&"su_manifestation.group_missing", "Su manifestation references a missing tuning group.", manifestation.event_id, &"su_manifestations", manifestation.tick)
 			continue
 		var members: Array = slider_groups[manifestation.group_id]
 		if members.size() != 2:

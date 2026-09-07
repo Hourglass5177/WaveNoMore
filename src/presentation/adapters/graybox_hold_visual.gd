@@ -1,34 +1,36 @@
 class_name GrayboxHoldVisual
 extends GrayboxNoteVisual
 
-## Hold 音符的程序绘制占位实现：头、身体、尾依次显露，按住后身体沿路径逐渐被消耗。
+## Hold 从屏幕外以完整头身尾入场，按住后身体从尾端逐渐被消耗。
 ##
 ## Hold 的局部原点始终是头部，局部 +X 指向玩家，身体沿 -X 拖尾。
-## 所有形变只由 approach_progress / hold_progress 计算，Seek、Replay 与不同
-## 帧率会得到完全相同的轮廓。
-
-# Hold 身体固定采样 36 个截面。固定数量可让暂停、回放和不同帧率得到同一轮廓。
-const BODY_SAMPLE_COUNT: int = 36
-# 以下比例都基于 approach_progress 的 0～1 进场进度，控制头、身体、尾依次出现。
-const HEAD_REVEAL_END: float = 0.10
-# Hold 身体在接近过程的 8% 处开始显现。
-const BODY_REVEAL_START: float = 0.08
-# Hold 身体到接近过程的 80% 时完全显现。
-const BODY_REVEAL_END: float = 0.80
-# Hold 尾部在接近过程的 76% 处开始显现，略早于身体完全展开。
-const TAIL_REVEAL_START: float = 0.76
-# Hold 尾部到接近过程的 96% 时完全显现。
-const TAIL_REVEAL_END: float = 0.96
+## 身体使用固定步长动态链；只有消耗进度改变有效长度，Seek 清空运动历史。
 
 # Hold 身体的目标长度，单位为像素；谱面持续时间越长，prepare() 算出的长度越大。
 var body_length: float = 420.0
 # 由稳定事件 ID 算出的摆动起始相位，避免所有 Hold 同步扭动。
 var _stable_phase: float = 0.0
-# Host 预先采样的世界路径转换为局部脊线；为空时退回直线身体。
+# 保存模拟后的画布坐标；绘制时才转局部坐标，反馈缩放不会牵动整条身体。
 var _path_spine := PackedVector2Array()
+var _dynamic_spine := DynamicHoldSpine.new()
+var _spine_initialized: bool = false
+var _target_length: float = 0.0
+var _spine_frozen: bool = false
+@export_group("Dynamic Body")
+## 每段目标长度（px），尾端允许不足一个整段。
+@export_range(1.0, 64.0) var segment_length_px: float = 16.0
+## 与前段的最大夹角；第一段相对头部后方向。
+@export_range(1.0, 90.0) var maximum_bend_deg: float = 15.0
+## 夹角达到阈值时的回正角加速度（rad/s²）。
+@export_range(0.0, 200.0) var restoring_acceleration: float = 30.0
+## 相对角速度阻尼（s⁻¹）。
+@export_range(0.0, 60.0) var angular_damping: float = 8.0
+## 固定积分步长（秒），默认每秒 120 次。
+@export_range(0.001, 0.033333, 0.000001) var integration_step_sec: float = 1.0 / 120.0
 
 
 func prepare(view_model: Dictionary) -> void:
+	## 由持续时间决定完整长度，重新生成时清空上一次动态链。
 	super(view_model)
 	var start_us: int = int(view_model.get("start_us", view_model.get("start_time_us", 0)))
 	var end_us: int = int(view_model.get("end_us", view_model.get("end_time_us", start_us)))
@@ -36,16 +38,51 @@ func prepare(view_model: Dictionary) -> void:
 	body_length = clampf(260.0 + float(duration_us) / 1_000_000.0 * 105.0, 300.0, 700.0)
 	_stable_phase = float(absi(event_id.hash()) % 4096) / 4096.0 * TAU
 	_path_spine.clear()
+	_dynamic_spine.clear()
+	_spine_initialized = false
+	_target_length = body_length
+	_spine_frozen = false
 	queue_redraw()
 
 
-func set_path_spine(points: PackedVector2Array) -> void:
-	_path_spine = points.duplicate()
+func set_approach_progress(value: float) -> void:
+	## 入场仅更新路线阶段相关表现，不执行基础 Note 的渐显或缩放；保留判定反馈缩放。
+	approach_progress = clampf(value, 0.0, 1.0)
+	queue_redraw()
+
+
+func set_body_target(length_px: float, frozen: bool = false) -> void:
+	## Host 设置身体长度和宽限冻结状态，不在快照更新中积分。
+	_target_length = length_px
+	_spine_frozen = frozen
+
+
+func advance_body(delta_sec: float) -> void:
+	## 仅由时钟调用；脊线在画布坐标中模拟，最后变换到本节点绘制坐标。
+	if _spine_frozen:
+		return
+	_dynamic_spine.segment_length = segment_length_px
+	_dynamic_spine.max_angle = deg_to_rad(maximum_bend_deg)
+	_dynamic_spine.stiffness = restoring_acceleration
+	_dynamic_spine.damping = angular_damping
+	_dynamic_spine.fixed_step = integration_step_sec
+	if not _spine_initialized:
+		_dynamic_spine.reset(position, rotation, _target_length)
+		_spine_initialized = true
+	_dynamic_spine.set_head_target(position, rotation)
+	_dynamic_spine.set_length(_target_length)
+	_dynamic_spine.advance(delta_sec)
+	_path_spine = _dynamic_spine.get_points()
 	queue_redraw()
 
 
 func reset_for_pool() -> void:
+	## 回收同时清除积分余量、身体目标、冻结状态和基础判定反馈。
 	_path_spine.clear()
+	_dynamic_spine.clear()
+	_spine_initialized = false
+	_target_length = 0.0
+	_spine_frozen = false
 	super()
 
 
@@ -56,8 +93,7 @@ func _draw() -> void:
 	elif judgment_grade == GameplayTypes.JudgmentGrade.PERFECT:
 		color = color.lightened(0.22)
 
-	# 进场时先显头，再从头部后方长出躯干，最后显露尾端。命中后不再
-	# 依赖进场动画，而是让剩余躯干随 Hold 进度持续送向头部并缩短。
+	# 从屏幕外带着完整身体进入；只有命中后的消耗和失败末端回收才收短。
 	var visual_state: Dictionary = visual_state_snapshot()
 	var head_alpha: float = float(visual_state["head_alpha"])
 	var body_reveal: float = float(visual_state["body_reveal"])
@@ -66,8 +102,8 @@ func _draw() -> void:
 
 	var spine := PackedVector2Array()
 	var half_widths := PackedFloat32Array()
-	if visible_length > 2.0:
-		_build_spine(spine, half_widths, visible_length)
+	if visible_length > 2.0 and _path_spine.size() >= 2:
+		_build_spine(spine, half_widths)
 		_draw_body(spine, half_widths, color, body_reveal)
 		_draw_body_marks(spine, color)
 
@@ -85,43 +121,24 @@ func _draw() -> void:
 
 func visual_state_snapshot() -> Dictionary:
 	# ArtLab 和自动化表现检查会读取这组只读状态；它只描述画面，绝不参与判定。
-	var head_alpha: float = smoothstep(0.0, HEAD_REVEAL_END, approach_progress)
-	var body_reveal: float = smoothstep(BODY_REVEAL_START, BODY_REVEAL_END, approach_progress)
-	var tail_alpha: float = smoothstep(TAIL_REVEAL_START, TAIL_REVEAL_END, approach_progress)
 	var remaining: float = clampf(1.0 - hold_progress, 0.0, 1.0)
 	return {
-		"head_alpha": head_alpha,
-		"body_reveal": body_reveal,
-		"tail_alpha": tail_alpha,
+		"head_alpha": 1.0,
+		"body_reveal": 1.0,
+		"tail_alpha": 1.0,
 		"remaining": remaining,
-		"visible_length": body_length * body_reveal * remaining,
+		"visible_length": body_length * remaining,
 	}
 
 
-func _build_spine(spine: PackedVector2Array, half_widths: PackedFloat32Array, visible_length: float) -> void:
-	# phase 只来自两个规范化进度和稳定 ID；它让飘带在进场与持续期间
-	# 看似游动，却不会因为累计 delta 而产生 Replay 漂移。
+func _build_spine(spine: PackedVector2Array, half_widths: PackedFloat32Array) -> void:
+	## 只沿模拟结果绘制宽度，不再移动脊线点或推进角速度。
 	var motion_phase: float = _stable_phase + approach_progress * TAU * 0.85 + hold_progress * TAU * 2.2
-	for index: int in range(BODY_SAMPLE_COUNT):
-		var ratio: float = float(index) / float(BODY_SAMPLE_COUNT - 1)
+	var canvas_to_local: Transform2D = transform.affine_inverse()
+	for index: int in range(_path_spine.size()):
+		var ratio: float = float(index) / float(_path_spine.size() - 1)
 		var envelope: float = sin(ratio * PI)
-		var center := Vector2(-visible_length * ratio, 0.0)
-		var tangent := Vector2.LEFT
-		if _path_spine.size() == BODY_SAMPLE_COUNT:
-			center = _path_spine[index]
-			if index == 0:
-				tangent = _path_spine[1] - _path_spine[0]
-			elif index == BODY_SAMPLE_COUNT - 1:
-				tangent = _path_spine[index] - _path_spine[index - 1]
-			else:
-				tangent = _path_spine[index + 1] - _path_spine[index - 1]
-		if tangent.is_zero_approx():
-			tangent = Vector2.LEFT
-		var normal := Vector2(-tangent.y, tangent.x).normalized()
-		# 大弧度由路线本身提供，这里只叠加克制且可重放的细小摆动，避免飘带难以辨认。
-		var primary_wave: float = sin(ratio * TAU * 1.65 + motion_phase) * (9.0 if not _path_spine.is_empty() else 25.0)
-		var secondary_wave: float = sin(ratio * TAU * 3.3 - motion_phase * 0.55) * (3.0 if not _path_spine.is_empty() else 6.0)
-		center += normal * (primary_wave + secondary_wave) * envelope
+		var center: Vector2 = canvas_to_local * _path_spine[index]
 		var width: float = lerpf(29.0, 10.0, pow(ratio, 0.82))
 		width += sin(ratio * TAU * 2.0 + motion_phase) * 3.5 * envelope
 		spine.append(center)

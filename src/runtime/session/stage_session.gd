@@ -37,6 +37,8 @@ signal note_arrived(arrival: Dictionary)
 signal waves_reset
 ## 每次玩法快照变化时发出，供表现和 HUD 读取。
 signal gameplay_snapshot_changed(snapshot: Dictionary)
+## 当前周期已完成判定、调度与快照；表现动态模拟在此统一推进。
+signal visual_frame_ready(sample: ClockSample)
 ## 魂火变化时发出；`current` 在无敌调试关中允许低于 0。
 signal health_changed(current: int, maximum: int)
 ## 分数或连击数变化时发出。
@@ -268,13 +270,14 @@ func step(clock_sample: ClockSample) -> void:
 	gameplay_coordinator.process_input_frame()
 	gameplay_coordinator.advance_to(judge_time_us, true)
 	input_router.end_frame()
-	chart_scheduler.advance(clock_sample.visual_time_sec)
+	chart_scheduler.advance(clock_sample.visual_time_sec, clock_sample.judge_time_sec)
 
 	if state == GameplayTypes.StageState.PREROLL and clock_sample.song_time_sec >= 0.0:
 		_transition_to(GameplayTypes.StageState.PLAYING, &"preroll_complete")
 
 	var gameplay_snapshot: Dictionary = gameplay_coordinator.snapshot()
 	_emit_snapshot_changes(gameplay_snapshot)
+	visual_frame_ready.emit(clock_sample)
 
 	if gameplay_coordinator.is_failed() and state in [
 		GameplayTypes.StageState.PREROLL,
@@ -374,6 +377,7 @@ func abort() -> void:
 	input_router.set_mode(InputEventBuffer.InputMode.DISABLED)
 	input_router.cancel_all(InputEventBuffer.CancelReason.SESSION_END, false)
 	chart_scheduler.reset()
+	gameplay_coordinator.clear_su_targets()
 	_complete_result(false, true)
 
 
@@ -381,6 +385,8 @@ func teardown() -> void:
 	if _teardown_done:
 		return
 	_teardown_done = true
+	if is_instance_valid(gameplay_coordinator):
+		gameplay_coordinator.clear_su_targets()
 	if get_tree() != null and get_tree().paused:
 		get_tree().paused = false
 	_resume_countdown_remaining = -1.0
@@ -428,8 +434,9 @@ func seek_song_time(target_song_time_sec: float) -> bool:
 	_clear_physical_note_state()
 	input_router.reset_for_run()
 	gameplay_coordinator.reset()
-	chart_scheduler.seek(target_song_time_sec + song_clock.visual_lead_sec)
 	var target_judge_us: int = roundi((target_song_time_sec - song_clock.input_compensation_sec) * 1_000_000.0)
+	gameplay_coordinator.reset_su_timeline(target_judge_us)
+	chart_scheduler.seek(target_song_time_sec + song_clock.visual_lead_sec, float(target_judge_us) / 1_000_000.0)
 	gameplay_coordinator.advance_to(target_judge_us, false)
 	song_clock.seek_song_time(target_song_time_sec)
 	_last_health = -1
@@ -441,6 +448,8 @@ func seek_song_time(target_song_time_sec: float) -> bool:
 			GameplayTypes.StageState.PREROLL if target_song_time_sec < 0.0 else GameplayTypes.StageState.PLAYING,
 			&"timeline_seek"
 		)
+	# Seek 已清空 Host 的时钟余量；即便暂停中跳转，也初始化新时间线的可见身体。
+	visual_frame_ready.emit(song_clock.sample())
 	timeline_seeked.emit(target_song_time_sec)
 	return true
 
@@ -514,6 +523,7 @@ func _complete_result(success: bool, aborted: bool = false) -> void:
 	result["stage_id"] = stage_definition.stage_id if stage_definition != null else ""
 	result["run_id"] = run_id
 	result["result_digest"] = gameplay_coordinator.result_digest()
+	gameplay_coordinator.clear_su_targets()
 	_transition_to(GameplayTypes.StageState.RESULT, &"result")
 	result_ready.emit(result)
 
@@ -814,6 +824,9 @@ func _resolve_components() -> void:
 
 
 func _connect_components() -> void:
+	if is_instance_valid(chart_scheduler):
+		if not chart_scheduler.su_preparation_requested.is_connected(_on_su_preparation_requested):
+			chart_scheduler.su_preparation_requested.connect(_on_su_preparation_requested)
 	if is_instance_valid(input_router):
 		if not input_router.cancelled.is_connected(_on_input_cancelled):
 			input_router.cancelled.connect(_on_input_cancelled)
@@ -836,6 +849,11 @@ func _connect_components() -> void:
 			gameplay_coordinator.waves_reset.connect(_on_waves_reset)
 		if not gameplay_coordinator.tuning_capture_changed.is_connected(_on_tuning_capture_changed):
 			gameplay_coordinator.tuning_capture_changed.connect(_on_tuning_capture_changed)
+
+
+func _on_su_preparation_requested(event_id: String) -> void:
+	## 调度器只打开预读窗口，由核心预测并通过快照发布合法目标。
+	gameplay_coordinator.request_su_preparation(event_id)
 
 
 func _components_are_ready() -> bool:

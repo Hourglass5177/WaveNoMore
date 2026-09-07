@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="StageDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/content/resources/stage_definition.gd" id="1_stage"]
+
+[resource]
+script = ExtResource("1_stage")
+stage_id = "s07"
+display_name = "07 素音目标点专测"
+description = "仅包含调频支持轨与素音目标点事件，用于观察目标 Note 的生成、停留和命中表现。"
+order_index = 7
+song_title = "素音目标点专测"
+song_artist = "原型测试节拍"
+unlocked_by_default = true
+debug_nonlethal = true
+song_resource_path = "res://content/stages/s07/song_definition.tres"
+chart_resource_path = "res://content/stages/s07/song_chart.tres"
+stage_show_resource_path = "res://content/stages/s07/stage_show.tres"
+visual_theme_resource_path = "res://content/stages/s07/stage_visual_theme.tres"
+reward_resource_path = "res://content/stages/s07/reward_definition.tres"
+rule_set_resource_path = "res://content/rules/default_gameplay_rules.tres"

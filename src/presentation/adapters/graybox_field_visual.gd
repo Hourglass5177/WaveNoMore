@@ -802,6 +802,17 @@ func _player_inside_guide() -> bool:
 	return _player_progress >= _guide_min_progress and _player_progress <= _guide_max_progress
 
 
+func update_hold_heading(visual: TuningHoldVisual) -> void:
+	## 从实际绘制曲线向中心灵体提供方向，不复制输入层的角度或镜像规则。
+	var progress: float = clampf(_player_progress, 0.0, 1.0)
+	var direction: Vector2 = _point_on_slider(progress) - canvas_size * 0.5
+	if visual.heading_mode == TuningHoldVisual.HeadingMode.TANGENT:
+		direction = _point_on_slider(minf(progress + 0.001, 1.0)) - _point_on_slider(maxf(progress - 0.001, 0.0))
+		if _current_traversal_index() % 2 == 1:
+			direction = -direction
+	visual.set_head_heading(direction.angle())
+
+
 func _slider_center() -> Vector2:
 	# FieldSlot 的局部坐标以设计画布左上角为原点。曲线采样点以弦中点为
 	# 基准，而不是圆心；因此先补偿弦中点到真实圆心的法向距离。

@@ -170,6 +170,8 @@ static func _compile_su_manifestations(chart: SongChart, tempo_map: TempoMap) ->
 			"count": manifestation.count,
 			"spawn_region_normalized": manifestation.spawn_region_normalized,
 			"visual_variant": manifestation.visual_variant,
+			"target_visual_variant": manifestation.target_visual_variant,
+			"target_hold_duration_sec": manifestation.target_hold_duration_sec,
 		})
 	result.sort_custom(_sort_time_then_id)
 	return result
