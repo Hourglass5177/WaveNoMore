@@ -41,8 +41,17 @@ var _wave_cancel: Array[bool] = [false]
 var _wave_request := 0
 var _wave_running := 0
 var backward_samples := 0
+var cues := StudioCueTrack.new()
+var cached_output_latency := 0.0
+var _cue_bus := -1
+var _output_device := ""
+var _start_delay := 0.0
+var _cue_restart_pending := false
+var _last_underrun_notice_usec := -10000000
 
 func _ready() -> void:
+	# 工作区父节点随后消费本帧时间；避免预览再使用上一帧位置。
+	process_priority = -100
 	var settings := ConfigFile.new()
 	if settings.load("user://chart_studio/settings.cfg") == OK: device_compensation_ms = float(settings.get_value("audio", "device_compensation_ms", 0))
 	_bus = AudioServer.bus_count
@@ -52,13 +61,54 @@ func _ready() -> void:
 	_effect.oversampling = 4
 	AudioServer.add_bus_effect(_bus, _effect)
 	AudioServer.set_bus_effect_enabled(_bus, 0, false)
+	_cue_bus = AudioServer.bus_count
+	AudioServer.add_bus(); AudioServer.set_bus_name(_cue_bus, &"StudioCues")
 	_player = AudioStreamPlayer.new()
 	_player.bus = "StudioMusic"
 	add_child(_player)
+	add_child(cues)
+	cues.underrun.connect(func() -> void: _cue_restart_pending = true)
+	refresh_output_latency()
+
+func refresh_output_latency() -> void:
+	cached_output_latency = maxf(0, AudioServer.get_output_latency())
+	_output_device = AudioServer.output_device
+
+func _cue_end_seconds(segment_origin: float) -> float:
+	var end := _player.stream.get_length() if _player.stream != null else INF
+	if loop_enabled and loop_end > loop_start: end = minf(end, loop_end)
+	# 预滚不能提前提交下一播放段的零点提示，否则跨零重启时会敲两次。
+	return minf(end, 0) if segment_origin < 0 else end
+
+func _start_streams() -> void:
+	refresh_output_latency()
+	processing_latency = 0.0 if is_equal_approx(rate, 1.0) else 512.0 / AudioServer.get_mix_rate()
+	# 先让样本 producer 停止接触旧 playback，随后才能进入双路启动的驱动锁。
+	cues.stop()
+	cues.end_seconds = _cue_end_seconds(position)
+	var first := cues.prepare_segment(position, rate, processing_latency)
+	var fresh_effect := AudioEffectPitchShift.new()
+	fresh_effect.fft_size = AudioEffectPitchShift.FFT_SIZE_1024; fresh_effect.oversampling = 4; fresh_effect.pitch_scale = 1.0 / rate
+	# 只在锁内注册/复位播放器，不计算 PCM 或等待下一帧。
+	AudioServer.lock()
+	_player.stop()
+	AudioServer.remove_bus_effect(_bus, 0)
+	_effect = fresh_effect
+	AudioServer.add_bus_effect(_bus, _effect, 0)
+	AudioServer.set_bus_effect_enabled(_bus, 0, not is_equal_approx(rate, 1.0))
+	_origin = position; _anchor = Time.get_ticks_usec()
+	_start_delay = AudioServer.get_time_to_next_mix() + cached_output_latency + processing_latency + device_compensation_ms / 1000.0
+	# 负时间也保留编钟提示；到音乐零点再建立两路共同起点。
+	if _player.stream != null and position >= 0: _player.play(position)
+	cues.start_prepared(first)
+	AudioServer.unlock()
+	_cue_restart_pending = false
 
 func _exit_tree() -> void:
 	_wave_cancel[0] = true
 	if _wave_thread != null: _wave_thread.wait_to_finish()
+	cues.stop(); _player.stop()
+	if _cue_bus >= 0: AudioServer.remove_bus(_cue_bus)
 	if _bus >= 0: AudioServer.remove_bus(_bus)
 	var settings := ConfigFile.new()
 	settings.load("user://chart_studio/settings.cfg")
@@ -76,18 +126,18 @@ func set_playing(value: bool) -> void:
 	playing = value
 	_origin = position
 	_anchor = Time.get_ticks_usec()
-	if playing and not suspended and _player.stream != null and position >= 0:
-		_player.play(position)
+	if playing and not suspended:
+		_start_streams()
 	else:
-		_player.stop()
+		_player.stop(); cues.stop(); _start_delay = 0.0
 	state_changed.emit()
 
 func seek(seconds: float, reason: StringName = &"seek") -> void:
 	position = seconds
 	_origin = seconds
 	_anchor = Time.get_ticks_usec()
-	_player.stop()
-	if playing and not suspended and _player.stream != null and seconds >= 0: _player.play(seconds)
+	_player.stop(); cues.stop(); _start_delay = 0.0
+	if playing and not suspended: _start_streams()
 	position_changed.emit(position)
 	discontinuity.emit(position, reason)
 
@@ -103,17 +153,35 @@ func set_rate(value: float) -> void:
 	seek(position, &"rate")
 	state_changed.emit()
 
+func _read_clock_position() -> float:
+	if _player.playing:
+		var audible := _player.get_playback_position() + AudioServer.get_time_since_last_mix() * rate
+		audible -= (cached_output_latency + processing_latency + device_compensation_ms / 1000.0) * rate
+		return maxf(_origin, audible)
+	return _origin + (float(Time.get_ticks_usec() - _anchor) / 1000000.0 - _start_delay) * rate
+
+func sample_position() -> float:
+	# 输入回调早于本帧 _process，录入必须当场取样，不能沿用上一帧播放头。
+	return maxf(position, _read_clock_position()) if playing and not suspended else position
+
 func _process(_delta: float) -> void:
 	if playing and not suspended:
 		var previous := position
-		position = _origin + float(Time.get_ticks_usec() - _anchor) / 1000000.0 * rate
-		if _player.playing:
-			var audible := _player.get_playback_position() + AudioServer.get_time_since_last_mix() * rate
-			audible -= (AudioServer.get_output_latency() + processing_latency + device_compensation_ms / 1000.0) * rate
-			position = maxf(_origin, audible)
+		position = _read_clock_position()
 		if position < previous: backward_samples += 1
 		position = maxf(previous, position)
-		if position >= 0 and not _player.playing and _player.stream != null: _player.play(position)
+		if position >= 0 and _origin < 0:
+			# 负时间预滚跨过零点时，从样本零开始，不能漏掉开头第一拍。
+			if previous < 0: position = 0.0
+			_start_streams()
+		cues.end_seconds = _cue_end_seconds(_origin)
+		cues.fill()
+		if _cue_restart_pending or AudioServer.output_device != _output_device:
+			# 欠载已填入静音，旧样本编号失效；重新对齐两路，不累计迟响。
+			if _cue_restart_pending and Time.get_ticks_usec() - _last_underrun_notice_usec > 2000000:
+				_last_underrun_notice_usec = Time.get_ticks_usec()
+				error_reported.emit("试听缓冲不足，已重新同步音乐与提示音")
+			_start_streams()
 		if loop_enabled and loop_end > loop_start and position >= loop_end:
 			loop_wrapping.emit(loop_end)
 			seek(loop_start, &"loop")
@@ -132,8 +200,8 @@ func set_suspended(value: bool) -> void:
 	if suspended == value: return
 	suspended = value
 	_origin = position; _anchor = Time.get_ticks_usec()
-	_player.stop()
-	if not suspended and playing and _player.stream != null and position >= 0: _player.play(position)
+	_player.stop(); cues.stop()
+	if not suspended and playing: _start_streams()
 
 func build_waveform(path: String) -> void:
 	_wave_request += 1

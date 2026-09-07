@@ -13,7 +13,7 @@
 
 ## 时间与预览
 
-`StudioAudio` 是 EditorTransport 的实现，唯一拥有歌曲播放器、源音频位置、倍率、循环、试听补偿和暂停意图。重建暂时挂起播放，不改变播放意图。内部 UI 使用音频秒坐标；预览公开定位入口使用音频整数微秒。
+`StudioAudio` 是 EditorTransport 的实现，唯一拥有歌曲播放器、源音频位置、倍率、循环、试听补偿和暂停意图。其处理优先级为 -100，工作区随后消费本帧时间。编辑引起的预览重建不暂停音乐；恢复后无声追上当前时间，不补播历史反馈。内部 UI 使用音频秒坐标；预览公开定位入口使用音频整数微秒。
 
 | 入口 | 用途 |
 |---|---|
@@ -46,6 +46,18 @@
 `StudioLaunch` 识别 `minghe_chart_editor` feature、`--chart-editor` 参数和工具场景。写谱器模式隔离游戏设置与玩家存档启动。独立预设为 `Chart Studio Windows`。
 
 测试入口是 `tests/editor/run.ps1`，包含协议／操作／恢复回归、Godot 键盘分发检查和工作区启动。`measure_audio.gd`、`measure_audio_longterm.gd`、`measure_performance.gd` 分别记录音频与密集谱面实测，不混入快速单元测试。
+
+## 编钟提示与校准
+
+`StudioCueEvents.build` 将正式 TempoMap、拍号、Tap／Hold 起手转换为内部秒事件。候选试听由 `StudioRhythmPanel.audition_changed` 通知，`audition_grid()` 只替换节拍器参照。事件不进入谱面 JSON。
+
+`StudioCueTrack` 独占一条 AudioStreamGenerator；`StudioCueMixer` 是常驻线程唯一操作的数据对象，按输出采样率填充约 100 ms 队列。音乐仍经过独立 PitchShift 总线，提示保持原音高。音符声音从正式关卡的生／死钟素材独立解码，预览设置 `AudioFeedbackDirector.preview_strikes_muted` 防止重复起手；持续和判定声由“游戏反馈”开关控制。正式游戏该标志默认为 false，仍由实际有效输入请求声音。
+
+定位、倍率、循环切换由 Transport 统一重建两路起点，音乐处理延迟只加在提示的样本位置上，共同设备输出延迟不重复加入。PCM 预填在音频锁外计算，锁内仅复位／注册播放；Generator 首块写入后重置内部重采样缓存。已提交队列保持不变，新编辑版本从未提交样本开始接管。欠载后重建两路基准并提示，避免持续错位。
+
+producer 仅操作 RefCounted 数据和 Generator playback，不访问 Node；事件排序在状态锁外完成，短锁内替换候选版本并二分定位。每约 5 ms 检查缓冲，使用短 AudioServer 锁同步原生 RingBuffer，PCM 渲染不持驱动锁。启动事务之前须在驱动锁外 detach 旧 producer；关闭节点前 shutdown 并等待线程结束。负预滚段只提交零点以前的事件，零点起手只属于音乐播放段。
+
+`CalibrationTapSession` 管理 4 拍准备和 24 次跟拍的本机输入补偿建议。校准窗口用固定样本参考音，中位早晚和离散程度来自实际回调取样；它不测纯设备输出延迟，输出／画面仍单独手调。结果经既有 SettingsService 保存，歌曲文件没有新增校准字段。
 # 自动节奏分析接入
 
 编辑器内部新增 `StudioRhythmJob`（任务及解码）、`StudioRhythmPanel`（候选 UI）、`StudioRhythmTools`（应用与草稿）。后台 JSON 接口包含 request_id、audio、model、start；结果包含 phase、beats、downbeats、fit、range、version、elapsed_seconds 或 error。时间以原歌曲秒数表达，选区起点由分析器补回。

@@ -18,6 +18,9 @@ var _frame_oldest_events: Array[PhysicalInputEvent] = []
 var _frame_time_us: int = 0
 var _input_enabled: bool = true
 var _session_active: bool = false
+## 游玩期间及时接收输入，菜单仍沿用原有积累设置；正式处理顺序仍由会话帧决定。
+var _previous_accumulated_input := true
+var _owns_accumulated_input := false
 
 const TUNING_ARC_GEOMETRY: GDScript = preload("res://src/domain/tuning/tuning_arc_geometry.gd")
 
@@ -175,6 +178,7 @@ func end_session() -> void:
 	cancel_all(CancelReason.SESSION_END, false)
 	_session_active = false
 	_input_enabled = false
+	_set_immediate_input(false)
 
 
 func clear() -> void:
@@ -239,6 +243,7 @@ func _process(_delta: float) -> void:
 
 
 func _exit_tree() -> void:
+	_set_immediate_input(false)
 	if Input.joy_connection_changed.is_connected(_on_joy_connection_changed):
 		Input.joy_connection_changed.disconnect(_on_joy_connection_changed)
 	_restore_mouse_mode()
@@ -282,6 +287,7 @@ func configure_from_rules(rules: GameplayRuleSet) -> void:
 
 
 func set_mode(next_mode: InputMode) -> void:
+	_set_immediate_input(next_mode in [InputMode.GAMEPLAY, InputMode.RESUME_REARM])
 	if mode == next_mode:
 		return
 	mode = next_mode
@@ -291,6 +297,17 @@ func set_mode(next_mode: InputMode) -> void:
 	# RESUME_REARM 期间的按住状态由 _process() 对账，不需要抢走按钮的点击事件。
 	_update_mouse_capture()
 	set_process_input(mode != InputMode.REPLAY)
+
+
+func _set_immediate_input(enabled: bool) -> void:
+	# 只缩短引擎到 _input 的等待，不提前敲钟、不跳过领域输入表或修改判定时间戳。
+	if enabled and not _owns_accumulated_input:
+		_previous_accumulated_input = Input.use_accumulated_input
+		_owns_accumulated_input = true
+		Input.use_accumulated_input = false
+	elif not enabled and _owns_accumulated_input:
+		Input.use_accumulated_input = _previous_accumulated_input
+		_owns_accumulated_input = false
 
 
 func set_tuning_capture_active(active: bool, _initial_value: Vector2 = Vector2.ZERO) -> void:

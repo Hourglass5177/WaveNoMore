@@ -35,6 +35,7 @@ func load_preview(stage: StageDefinition, viewport: SubViewport) -> bool:
 	stage_root.stage_session.set_process(false)
 	stage_root.song_clock.set_process(false)
 	stage_root.presentation.set_preview_time_driven()
+	stage_root.audio_feedback.preview_strikes_muted = true
 	stage_root.pause_overlay.hide()
 	stage_root.debug_hud.hide()
 	if not stage_root.load_stage(stage, false):

@@ -18,6 +18,17 @@ func _run() -> void:
 	var started := Time.get_ticks_usec()
 	document.execute("一万音符", [], notes)
 	var result := {"notes": count, "duration_seconds": 300, "insert_ms": (Time.get_ticks_usec() - started) / 1000.0, "engine": Engine.get_version_info().string, "cpu": OS.get_processor_name()}
+	started = Time.get_ticks_usec()
+	var cue_events := StudioCueEvents.build(document, true, true, {}, 300)
+	result.cue_events_ms = (Time.get_ticks_usec() - started) / 1000.0
+	var cues := StudioCueTrack.new(); root.add_child(cues)
+	started = Time.get_ticks_usec(); cues.set_events(cue_events); cues.prepare_segment(299, 1, 0)
+	result.cue_seek_ms = (Time.get_ticks_usec() - started) / 1000.0
+	started = Time.get_ticks_usec(); cues.render_frames(roundi(AudioServer.get_mix_rate() / 30))
+	result.cue_fill_ms = (Time.get_ticks_usec() - started) / 1000.0
+	cues.free()
+	if "--cues-only" in OS.get_cmdline_user_args():
+		print("CUE PERF ", JSON.stringify(result)); quit(); return
 	var view := SubViewport.new(); view.size = Vector2i(960, 540); root.add_child(view)
 	var preview = load("res://src/tools/chart_studio/preview_session.gd").new(); root.add_child(preview)
 	started = Time.get_ticks_usec()

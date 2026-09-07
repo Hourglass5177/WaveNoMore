@@ -1,7 +1,6 @@
 extends Control
 ## 工作区仅协调文档、控件和预览。文件格式与玩法均由独立模块负责。
 var rhythm: StudioRhythmPanel
-var _rhythm_last_beat := -2147483648
 var document := StudioDocument.new()
 var audio := StudioAudio.new()
 var preview := StudioPreviewSession.new()
@@ -10,10 +9,9 @@ var _updating := false
 var _input_starts := {}
 var _context := PopupMenu.new()
 var _autosave := Timer.new()
-var _metronome := AudioStreamPlayer.new()
 var _metronome_enabled := false
 var _note_sound_enabled := true
-var _last_beat := -1000000
+var _game_feedback_enabled := false
 var _candidate_timer := Timer.new()
 var _property_commits: Array[Callable] = []
 var recorder := StudioRecorder.new()
@@ -63,15 +61,16 @@ func _ready() -> void:
 	add_child(audio)
 	add_child(preview)
 	add_child(_context)
-	add_child(_metronome)
-	_metronome.stream = preload("res://src/presentation/audio/graybox_click_track_factory.gd").create_transient(1400, 0.035, 0.2)
-	for caption in ["节拍器", "音符提示音"]:
+	for caption in ["节拍器", "音符提示音", "游戏反馈"]:
 		var toggle := CheckButton.new(); toggle.text = caption
 		toggle.button_pressed = caption == "音符提示音"
 		transport.get_node("Sound").add_child(toggle)
 		toggle.toggled.connect(func(enabled: bool) -> void:
 			if caption == "节拍器": _metronome_enabled = enabled
-			else: _note_sound_enabled = enabled)
+			elif caption == "音符提示音": _note_sound_enabled = enabled
+			else: _game_feedback_enabled = enabled
+			_refresh_cues())
+		toggle.tooltip_text = "按谱面起手时刻敲钟" if caption == "音符提示音" else ("持续音与判定反馈，起手敲钟由音符提示音控制" if caption == "游戏反馈" else "按当前拍号打拍，小节第一拍加重")
 	document.new_project()
 	timeline.bind(document)
 	document.changed.connect(_on_document_changed)
@@ -87,6 +86,7 @@ func _ready() -> void:
 	timeline.context_requested.connect(func(at: Vector2) -> void: _context.position = Vector2i(at); _context.popup())
 	_setup_alignment_controls()
 	rhythm = StudioRhythmPanel.new(); rhythm.workspace = self; rhythm.theme = theme; add_child(rhythm)
+	rhythm.audition_changed.connect(_refresh_cues)
 	_alignment_button(_alignment_bar.get_node("Actions"), "分析节奏／生成草稿", "RhythmAnalysis", func() -> void:
 		_finish_recording(true); _finish_text_edit(); rhythm.popup_centered())
 	for label in ["删除", "复制", "粘贴", "生死互换", "组合双押", "解除组合", "量化起始位置", "量化起止位置", "重复乐句"]: _context.add_item(label)
@@ -152,13 +152,12 @@ func _process(_delta: float) -> void:
 		else:
 			timeline.recording_notes = recorder.display_notes(audio.position, Time.get_ticks_usec())
 			timeline._redraw_overlay()
-	audio.set_suspended(preview.rebuilding)
 	timeline.loop_range = Vector2(audio.loop_start, audio.loop_end)
 	timeline.loop_enabled = audio.loop_enabled
 	if _refresh_pending and not preview.rebuilding and not recorder.active and not timeline.is_aligning():
 		_refresh_pending = false
 		_rebuild_preview()
-	preview.sound_enabled = _note_sound_enabled
+	preview.sound_enabled = _game_feedback_enabled
 	preview.set_transport(roundi(audio.position * 1000000.0), audio.playing)
 
 func _setup_stability_controls() -> void:
@@ -370,7 +369,7 @@ func _section(title: String) -> void:
 	fields.add_child(label)
 
 func _field_hint(title: String) -> String:
-	return {"难度标识": "用于谱面文件名；同一歌曲内不能重复", "首拍偏移（ms）": "音乐开头到第一拍的时间，单位毫秒", "当前位置 BPM": "从当前位置开始应用该速度", "全谱偏移（tick）": "按音乐 tick 整体偏移谱面，保留原有时间语义", "起始位置（tick）": "修改后整体移动选区，保持相对间隔", "Hold 时长（tick）": "修改所选 Hold 的持续长度，Tap 不受影响", "外观标识": "对应音符外观预设的稳定标识", "试听补偿（ms）": "本机试听延迟补偿，不修改歌曲首拍偏移"}.get(title, title)
+	return {"难度标识": "用于谱面文件名；同一歌曲内不能重复", "首拍偏移（ms）": "音乐开头到第一拍的时间，单位毫秒", "当前位置 BPM": "从当前位置开始应用该速度", "全谱偏移（tick）": "按音乐 tick 整体偏移谱面，保留原有时间语义", "起始位置（tick）": "修改后整体移动选区，保持相对间隔", "Hold 时长（tick）": "修改所选 Hold 的持续长度，Tap 不受影响", "外观标识": "对应音符外观预设的稳定标识", "试听补偿（ms）": "本机画面和录入时间补偿：正值使播放头更晚，不改变音乐与提示的相对位置，也不修改歌曲首拍"}.get(title, title)
 
 func _issue_label(issue: ValidationIssue) -> String:
 	# 翻译工具当前支持的领域问题；原始诊断仍保留在悬停详情，不改共享校验规则。
@@ -447,6 +446,7 @@ func _on_document_changed() -> void:
 		_updating = false
 		if not get_viewport().gui_get_focus_owner() is LineEdit: _inspect.call_deferred()
 		return
+	if not recorder.active and kind != &"sections": _refresh_cues()
 	_refresh_pending = kind != &"sections"
 	_candidate_timer.stop()
 	if preview.rebuilding and _refresh_pending: preview.clear_preview()
@@ -503,10 +503,18 @@ func _rebuild_preview() -> void:
 		return
 	_preview_theme_id = theme_id
 	var stage := ChartProjectLoader.make_stage(document.song, draft)
-	audio.set_suspended(true)
 	if preview.load_preview(stage, viewport):
+		audio.cues.set_sample(&"life", preview.stage_root.audio_feedback.life_strike)
+		audio.cues.set_sample(&"death", preview.stage_root.audio_feedback.death_strike)
 		await preview.seek_preview(roundi(audio.position * 1000000.0))
-		if not preview.rebuilding: audio.set_suspended(false)
+		# 重建期间音乐继续走；无声补齐这段时间，不补播历史判定声。
+		if not preview.rebuilding: preview.set_transport(roundi(audio.position * 1000000.0), false)
+
+func _refresh_cues() -> void:
+	if not audio.is_node_ready() or document.charts.is_empty(): return
+	var duration := document.song.audio_stream.get_length() if document.song.audio_stream != null else 0.0
+	var candidate := rhythm.audition_grid() if rhythm != null else {}
+	audio.cues.set_events(StudioCueEvents.build(document, _note_sound_enabled, _metronome_enabled, candidate, duration))
 
 func _setup_alignment_controls() -> void:
 	# 独立于选区属性；选中音符或折叠侧栏时仍可调整音乐。
@@ -698,8 +706,12 @@ func _number(text: String, value: float, minimum: float, maximum: float, callbac
 	# 提交在文本确认或离焦时进行，输入过程中不重建控件。
 	var edit := spin.get_line_edit()
 	var committed := [value]
+	var displayed := [edit.text]
 	var commit := func() -> void:
+		# 控件显示的小数位少于谱面原值时，单纯进出焦点不应量化 BPM。
+		if edit.text == displayed[0]: return
 		spin.apply()
+		displayed[0] = edit.text
 		if spin.value != committed[0]: committed[0] = spin.value; callback.call(spin.value)
 	edit.text_submitted.connect(func(_text: String) -> void: _queue_property_commit(commit))
 	edit.focus_exited.connect(func() -> void: _queue_property_commit(commit))
@@ -805,15 +817,6 @@ func _position_changed(seconds: float) -> void:
 	if audio.playing and _follow.button_pressed and not _follow_suspended and (seconds < timeline.view_start or seconds > timeline.view_start + timeline.size.x / timeline.pixels_per_second * 0.85): timeline.view_start = seconds - timeline.size.x / timeline.pixels_per_second * 0.15
 	get_node("%Position").text = _time_label(seconds)
 	get_node("%TickPosition").text = "tick %d" % _cursor_tick()
-	var beat := floori(timeline._map.us_to_tick(roundi(seconds * 1000000)) / document.chart().ppq)
-	var candidate := rhythm.candidate_beat(seconds) if rhythm != null else Vector2i(-2147483648, 0)
-	if candidate.x != -2147483648:
-		if audio.playing and candidate.x == _rhythm_last_beat + 1:
-			_metronome.pitch_scale = 1.5 if candidate.y else 1.0; _metronome.play()
-	elif audio.playing and _metronome_enabled and beat == _last_beat + 1:
-		_metronome.pitch_scale = 1.0; _metronome.play()
-	_rhythm_last_beat = candidate.x
-	_last_beat = beat
 
 func _toggle_play() -> void:
 	_finish_text_edit()
@@ -1005,7 +1008,7 @@ func _help() -> void:
 	var dialog := AcceptDialog.new()
 	dialog.title = "写谱器帮助"
 	dialog.ok_button_text = "关闭"
-	var help_text := "编辑\n点击空白处：Tap；沿时间拖动：Hold\nShift：框选或增减选择；Esc：取消当前操作\nF／J：暂停时输入生钟／死钟音符，按住并用方向键延长\n中键：平移；Ctrl+滚轮：缩放；Alt：临时关闭吸附\nCtrl+C／V／D：复制／粘贴／重复乐句；Ctrl+M：生死互换\nQ：量化起始位置，保留时长；Shift+Q：量化起止位置\n\n播放\n空格：播放／暂停；Home：返回音乐开头\nI：将当前位置设为循环起点；O：设为循环终点\nL：开启／关闭循环播放\nR：开启／关闭实时录入，再播放并按 F／J\n短按为 Tap，按住超过 150 ms 为 Hold；跟随吸附\n暂停结束本段录制，整段可一步撤销；阈值可在试听设置调整\n拖动标尺或波形定位；拖动循环把手调整范围\n\n音乐对齐\n首拍偏移：有效 tick 0 的音频毫秒位置，正值表示更晚\n可选当前位置／波形右键设首拍，或拖动金色首拍把手\n开启「移动波形」后拖波形对齐，谱面网格固定；Shift 精细拖动\n调整时暂停试听；Esc 或失焦取消，松手一次提交，可撤销\n默认只改当前难度；「同步至全部难度」可一次撤销\n视图菜单：界面缩放、显示整曲／选区；跟随按钮恢复自动跟随\n\n文件\nCtrl+N／O：新建／打开；Ctrl+S：保存；Ctrl+Shift+S：另存为\nCtrl+Z：撤销；Ctrl+Shift+Z 或 Ctrl+Y：重做\n属性按 Enter 或离开输入框时提交，保存也会提交当前输入。"
+	var help_text := "编辑\n点击空白处：Tap；沿时间拖动：Hold\nShift：框选或增减选择；Esc：取消当前操作\nF／J：暂停时输入生钟／死钟音符，按住并用方向键延长\n双指横滑／滚轮／中键：浏览；Ctrl+上下滚轮：缩放；Alt：临时关闭吸附\nCtrl+C／V／D：复制／粘贴／重复乐句；Ctrl+M：生死互换\nQ：量化起始位置，保留时长；Shift+Q：量化起止位置\n\n播放\n空格：播放／暂停；Home：返回音乐开头\nI：将当前位置设为循环起点；O：设为循环终点\nL：开启／关闭循环播放\n音符提示音：起手敲钟；游戏反馈：持续音和判定声\nR：开启／关闭实时录入，再播放并按 F／J\n短按为 Tap，按住超过 150 ms 为 Hold；跟随吸附\n暂停结束本段录制，整段可一步撤销；阈值可在试听设置调整\n拖动标尺或波形定位；拖动循环把手调整范围\n\n音乐对齐\n首拍偏移：有效 tick 0 的音频毫秒位置，正值表示更晚\n可选当前位置／波形右键设首拍，或拖动金色首拍把手\n开启「移动波形」后拖波形对齐，谱面网格固定；Shift 精细拖动\n调整时暂停试听；Esc 或失焦取消，松手一次提交，可撤销\n默认只改当前难度；「同步至全部难度」可一次撤销\n视图菜单：界面缩放、显示整曲／选区；跟随按钮恢复自动跟随\n\n文件\nCtrl+N／O：新建／打开；Ctrl+S：保存；Ctrl+Shift+S：另存为\nCtrl+Z：撤销；Ctrl+Shift+Z 或 Ctrl+Y：重做\n属性按 Enter 或离开输入框时提交，保存也会提交当前输入。"
 	# 帮助随功能增长可滚动，最小窗口下仍能关闭和阅读全部操作。
 	help_text += "\n\n自动节奏识别\n音乐对齐 → 分析节奏／生成草稿，按分析、试听修正、应用、生成依次操作\n蓝色为原始拍点，紫色为检测重拍，绿色为修正网格\n拖动绿色标记整体对齐；右键可设为小节第一拍\n候选节拍器使用同一播放控制；输入框外空格可播放／暂停\n拍号需确认时请选择 3/4 或 4/4；偏差提示不是识别准确率\n应用只改当前难度的时间映射，已有音符保留 tick，可一步撤销\n草稿按正式网格生成；重复或冲突跳过，确认后可整批撤销\n草稿不超过谱面结束位置，生成前检查范围和数量"
 	var scroll := ScrollContainer.new(); scroll.custom_minimum_size = Vector2(660, 480)
@@ -1036,8 +1039,9 @@ func _input(event: InputEvent) -> void:
 		if record_armed:
 			if not recorder.active: recorder.begin(timeline._map, timeline.snap_ticks)
 			var side := 0 if key.keycode == KEY_F else 1
-			if key.pressed: recorder.press(side, audio.position, Time.get_ticks_usec())
-			else: recorder.release(side, audio.position, Time.get_ticks_usec()); _autosave.start()
+			var at := audio.sample_position()
+			if key.pressed: recorder.press(side, at, Time.get_ticks_usec())
+			else: recorder.release(side, at, Time.get_ticks_usec()); _autosave.start()
 		accept_event(); return
 	if key.keycode in [KEY_F, KEY_J] and not audio.playing:
 		if key.pressed: _input_starts[key.keycode] = _cursor_tick()

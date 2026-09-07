@@ -17,6 +17,9 @@ $studioSuites = @{
     'run_layout_tests' = 'LAYOUT TESTS: 0'
     'run_open_dialog_tests' = 'OPEN DIALOG TESTS: 0'
     'run_rhythm_tests' = 'RHYTHM TESTS: 0'
+    'run_touchpad_tests' = 'TOUCHPAD TESTS: 0'
+    'run_cue_tests' = 'CUE TESTS: 0'
+    'run_rhythm_fit_tests' = 'RHYTHM FIT TESTS: 0'
 }
 foreach ($studioSuite in $studioSuites.Keys) {
     $studioStdoutPath = Join-Path $studioLogDirectory ($studioSuite + '.log')

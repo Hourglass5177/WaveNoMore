@@ -46,6 +46,11 @@ var _base_frequency_hz: float = 3.0
 var _pool: Array[AudioStreamPlayer] = []
 # 下一个可用播放器的下标；每次播放后轮转，避免密集音效切断前一个声音。
 var _cursor: int = 0
+## 写谱器已经安排精确起手提示轨时，只关闭重复敲钟；正式游玩默认不受影响。
+var preview_strikes_muted := false
+## 调试时记录请求时刻与领域时刻，不在正常游玩输出高频日志。
+var diagnostics_enabled := false
+var diagnostic_requests: Array[Dictionary] = []
 ## 无声定位期间只恢复视觉和模拟，不补播历史音效。
 var preview_muted: bool = false:
 	set(value):
@@ -113,11 +118,20 @@ func play(stream: AudioStream, volume_db: float = 0.0, pitch_scale: float = 1.0)
 
 
 func _on_wave_launched(wave: Dictionary) -> void:
+	if preview_strikes_muted: return
+	_record_audio_request(&"strike", int(wave.get("launch_us", wave.get("emitted_at_us", 0))))
 	play(death_strike if int(wave.get("affinity", GameplayTypes.Affinity.ZHU)) == GameplayTypes.Affinity.XUAN else life_strike)
 
 
 func _on_judgment_recorded(record: JudgmentRecord) -> void:
+	_record_audio_request(&"judgment", record.finalized_at_us)
 	_play_judgment_grade(record.grade)
+
+
+func _record_audio_request(kind: StringName, event_time_us: int) -> void:
+	if not diagnostics_enabled or preview_muted: return
+	diagnostic_requests.append({"kind": kind, "requested_usec": Time.get_ticks_usec(), "event_time_us": event_time_us})
+	if diagnostic_requests.size() > 256: diagnostic_requests.pop_front()
 
 
 func _on_gameplay_snapshot_changed(snapshot: Dictionary) -> void:

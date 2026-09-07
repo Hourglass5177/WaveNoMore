@@ -1,6 +1,7 @@
 class_name StudioRhythmPanel
 extends Window
 ## 分析窗口只维护候选；应用和生成分别进入一次文档历史。
+signal audition_changed
 var workspace: Control
 var job := StudioRhythmJob.new()
 var raw := {}
@@ -9,6 +10,7 @@ var draft: Array[NoteEvent] = []
 var _box: VBoxContainer
 var _status: Label
 var _summary: Label
+var _comparison: Label
 var _replacement: Label
 var _issues: ItemList
 var _bpm: SpinBox
@@ -26,11 +28,12 @@ var _points: Label
 var _updating := false
 var candidate_enabled := false
 var _applied := false
+var _anchor_confirmed := false
 
 func _ready() -> void:
 	title = "节奏分析与 Tap 草稿"; size = Vector2i(740, 670); min_size = Vector2i(600, 480)
 	visible = false; transient = true; exclusive = false
-	close_requested.connect(func() -> void: hide(); _listen.button_pressed = false; _clear_overlay())
+	close_requested.connect(func() -> void: hide(); _listen.button_pressed = false; _clear_overlay(); audition_changed.emit())
 	add_child(job); job.updated.connect(func(text: String) -> void: _status.text = text)
 	job.completed.connect(_received)
 	var scroll := ScrollContainer.new(); add_child(scroll); scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -43,36 +46,46 @@ func _ready() -> void:
 	_button(row, "取消分析", job.cancel)
 	_status = _label("分析不会改变谱面。识别结果需要试听确认。")
 	row = _row()
-	_bpm = _number(row, "BPM", 120, 1, 1000, 0.001)
+	_bpm = _number(row, "BPM", 120, 1, 1000, 0)
+	_bpm.custom_arrow_step = 0.001
+	_bpm.tooltip_text = "修改 BPM 会保持参考小节的音频位置；检测值保留完整小数。"
 	_button(row, "÷2", func() -> void: _bpm.value /= 2)
 	_button(row, "×2", func() -> void: _bpm.value *= 2)
 	_button(row, "原始建议", func() -> void:
 		if raw.has("fit"): _bpm.value = raw.fit.bpm)
 	_meter = _options(row, ["拍号需确认", "3/4", "4/4"])
 	row = _row()
-	_anchor = _number(row, "小节起点（秒）", 0, -86400, 86400, 0.0001)
+	_anchor = _number(row, "参考小节起点（秒）", 0, -86400, 86400, 0)
+	_anchor.custom_arrow_step = 0.001
 	_button(row, "−1 拍", func() -> void: _anchor.value -= 60 / _bpm.value)
 	_button(row, "+1 拍", func() -> void: _anchor.value += 60 / _bpm.value)
 	row = _row()
 	_button(row, "−1 ms", func() -> void: _anchor.value -= 0.001)
 	_button(row, "+1 ms", func() -> void: _anchor.value += 0.001)
 	_button(row, "游标设为小节第一拍", func() -> void: _anchor.value = workspace.audio.position)
+	_button(row, "确认小节起点", func() -> void: _anchor_confirmed = true; _candidate_changed())
 	_listen = CheckButton.new(); _listen.text = "试听候选节拍"; row.add_child(_listen)
 	_listen.tooltip_text = "开启后使用播放栏播放音乐；高音表示小节第一拍。"
+	_listen.toggled.connect(func(_pressed: bool) -> void: audition_changed.emit())
 	row = _row()
 	_button(row, "记录拍点 A", func() -> void: _point_a = workspace.audio.position; _show_points())
 	_button(row, "记录拍点 B", func() -> void: _point_b = workspace.audio.position; _show_points())
 	var distance := _number(row, "间隔拍数", 16, 1, 4096, 1)
 	_button(row, "两拍校准", func() -> void:
 		if _point_b <= _point_a: _status.text = "请先记录先后两个拍点"; return
-		_updating = true; _bpm.value = 60 * distance.value / (_point_b - _point_a); _anchor.value = _point_a; _updating = false; _candidate_changed())
+		_bpm.value = 60 * distance.value / (_point_b - _point_a))
 	_points = _label("A、B 使用主窗口播放头位置；填入两点之间的拍数。")
+	row = _row()
+	_button(row, "用循环选区重新拟合", func() -> void: _refit(true))
+	_button(row, "用全部拍点重新拟合", func() -> void: _refit(false))
+	_label("重新拟合使用已有检测点，不重复识别音乐；选区应包含至少两小节的稳定节奏。")
 	_label("蓝色短线是原始拍点，紫色为检测重拍；绿色为修正网格。拖动绿色把手整体对齐；右键绿色候选拍可设为小节第一拍。")
+	_comparison = _label("")
 	_summary = _label("")
 	_replacement = _label("")
 	row = _row()
 	_apply = _button(row, "应用到当前难度", _apply_grid)
-	_button(row, "取消候选", func() -> void: candidate_enabled = false; _listen.button_pressed = false; _clear_overlay(); _applied = false; _refresh_replacement())
+	_button(row, "取消候选", func() -> void: candidate_enabled = false; _listen.button_pressed = false; _clear_overlay(); _applied = false; _refresh_replacement(); audition_changed.emit())
 	row = _row()
 	_density = _options(row, ["每小节第一拍", "每拍一个"])
 	_side = _options(row, ["生钟", "死钟", "生死交替"]); _side.select(2)
@@ -87,14 +100,17 @@ func _ready() -> void:
 	_issues = ItemList.new(); _issues.custom_minimum_size.y = 130; _box.add_child(_issues)
 	_issues.item_selected.connect(func(i: int) -> void: workspace._seek(float(_issues.get_item_metadata(i))))
 	_bpm.value_changed.connect(func(_v: float) -> void: _candidate_changed())
-	_anchor.value_changed.connect(func(_v: float) -> void: _candidate_changed())
+	_anchor.value_changed.connect(func(_v: float) -> void:
+		if not _updating: _anchor_confirmed = true
+		_candidate_changed())
 	_meter.item_selected.connect(func(_i: int) -> void: _candidate_changed())
 	for options in [_scope, _density, _side]: options.item_selected.connect(func(_i: int) -> void: _invalidate_draft())
 	workspace.document.changed.connect(_document_changed)
 	workspace.timeline.rhythm_anchor_changed.connect(func(seconds: float) -> void: _anchor.value = seconds)
 	_refresh_replacement()
 	visibility_changed.connect(func() -> void:
-		if visible and candidate_enabled: _show_overlay())
+		if visible and candidate_enabled: _show_overlay()
+		audition_changed.emit())
 
 func _unhandled_key_input(event: InputEvent) -> void:
 	var focus := gui_get_focus_owner()
@@ -102,11 +118,12 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_SPACE:
 		workspace._toggle_play(); set_input_as_handled()
 
-func _show_overlay() -> void:
+func _show_overlay(diagnostic: Dictionary = {}) -> void:
 	var meter: int = [0, 3, 4][_meter.selected]
+	if diagnostic.is_empty(): diagnostic = StudioRhythmTools.diagnose(raw, _bpm.value, _anchor.value, meter)
 	workspace.timeline.rhythm_raw = raw
 	workspace.timeline.rhythm_grid = {"bpm": _bpm.value, "anchor": _anchor.value, "meter": meter,
-		"regions": StudioRhythmTools.diagnose(raw, _bpm.value, _anchor.value, meter).regions}
+		"regions": diagnostic.regions}
 	workspace.timeline.queue_redraw()
 
 func _row() -> HFlowContainer:
@@ -139,9 +156,17 @@ func _analyze(force: bool) -> void:
 	var path: String = workspace.document.directory.path_join(str(workspace.document.song.get_meta("json_source", {}).get("audio", "")))
 	job.start(path, _span(), force)
 
+func _refit(selection: bool) -> void:
+	if raw.get("beats", []).is_empty(): _status.text = "请先分析音乐取得拍点"; return
+	var span: Array = raw.get("range", [raw.beats.front(), raw.beats.back()])
+	var scope := Vector2(workspace.audio.loop_start, workspace.audio.loop_end) if selection else Vector2(span[0], span[1])
+	if scope.y <= scope.x: _status.text = "请先设置有效循环选区"; return
+	_invalidate_draft(); job.refit(raw, scope)
+
 func _received(result: Dictionary) -> void:
 	raw = result; _updating = true
 	_bpm.value = result.fit.bpm; _anchor.value = result.fit.anchor
+	_anchor_confirmed = bool(result.fit.get("anchor_confirmed", int(result.fit.meter) > 0))
 	_meter.select({0: 0, 3: 1, 4: 2}.get(int(result.fit.meter), 0))
 	_updating = false; _candidate_changed()
 	if result.has("range"):
@@ -152,18 +177,32 @@ func _candidate_changed() -> void:
 	candidate_enabled = true; _applied = false; _invalidate_draft()
 	var meter: int = [0, 3, 4][_meter.selected]
 	var diagnostic := StudioRhythmTools.diagnose(raw, _bpm.value, _anchor.value, meter)
-	_summary.text = "拟合中位偏差：%.1f ms；可疑区域：%d%s" % [diagnostic.median_ms, diagnostic.regions.size(), "；请确认拍号" if meter == 0 else ""]
+	_summary.text = "相对检测点：网格中位偏差 %+.1f ms（正数偏晚）；绝对偏差 %.1f ms；可疑区域 %d。%s%s" % [diagnostic.signed_ms, diagnostic.median_ms, diagnostic.regions.size(), "请确认拍号。" if meter == 0 else "", "尚无可靠小节起点，请指定并确认。" if not _anchor_confirmed else ""]
+	if raw.has("fit") and bool(raw.fit.get("half_time_detected", false)):
+		_summary.text += " 检测中存在半速／倍速关系，可用 ÷2、×2 试听比较。"
+	if raw.has("fit") and raw.fit.has("reference_range"):
+		_summary.text += " 建议参考段：%.2f—%.2f 秒。" % [raw.fit.reference_range[0], raw.fit.reference_range[1]]
 	_issues.clear()
 	for issue: Dictionary in diagnostic.regions: _add_issue(issue)
-	_show_overlay(); _refresh_replacement()
+	for segment: Dictionary in diagnostic.segments:
+		_add_issue({"start": segment.start, "reason": "至 %.2f 秒：网格 %+.1f ms，趋势 %+.2f ms/秒，检测覆盖 %.0f%%" % [segment.end, segment.signed_ms, segment.trend_ms_per_sec, segment.coverage * 100]})
+	if visible: _show_overlay(diagnostic)
+	_refresh_replacement(); audition_changed.emit()
 
 func _refresh_replacement() -> void:
 	var chart: SongChart = workspace.document.chart()
+	var suggested := "%.6f" % float(raw.fit.bpm) if raw.has("fit") else "尚未分析"
+	var origin: float = workspace.document.tempo_map().tick_to_us(0) / 1000000.0
+	_comparison.text = "检测建议 BPM：%s　当前候选：%.6f　已应用初始 BPM：%.6f\n参考小节：%.6f 秒　当前谱面 tick 0：%.6f 秒。分段偏差仅与模型检测比较，不代表人工核对结果。" % [suggested, _bpm.value, workspace.document.tempo_map().bpm_at_tick(0), _anchor.value, origin]
 	_replacement.text = "将替换当前难度的 %d 个 BPM 事件和 %d 个拍号事件。已有 %d 个音符保留 tick／Hold 时长，音频时刻随新映射改变；可一步撤销。" % [chart.tempo_events.size(), chart.meter_events.size(), chart.note_events.size()]
-	_apply.disabled = not candidate_enabled or _meter.selected == 0
+	_apply.disabled = not candidate_enabled or _meter.selected == 0 or not _anchor_confirmed
+	_apply.tooltip_text = "请先分析或调整候选" if not candidate_enabled else ("请选择拍号" if _meter.selected == 0 else ("请指定并确认小节起点" if not _anchor_confirmed else "一次应用 BPM、拍号和首拍对齐，可一步撤销"))
 
 func _apply_grid() -> void:
+	if _bpm.get_line_edit().is_editing(): _bpm.apply()
+	if _anchor.get_line_edit().is_editing(): _anchor.apply()
 	if _meter.selected == 0: _status.text = "请确认拍号"; return
+	if not _anchor_confirmed: _status.text = "请指定并确认小节起点"; return
 	workspace._prepare_alignment()
 	StudioRhythmTools.apply_grid(workspace.document, _bpm.value, _anchor.value, [0, 3, 4][_meter.selected])
 	_applied = true; _status.text = "已应用对齐，可继续生成 Tap 草稿"
@@ -193,14 +232,18 @@ func _clear_overlay() -> void:
 
 func reset_analysis() -> void:
 	job.cancel(); raw = {}; exclusions.clear(); candidate_enabled = false; _applied = false
-	_listen.button_pressed = false; _clear_overlay(); _issues.clear(); _refresh_replacement()
+	_anchor_confirmed = false; _listen.button_pressed = false; _clear_overlay(); _issues.clear(); _refresh_replacement(); audition_changed.emit()
 
 func _document_changed() -> void:
 	_invalidate_draft(); _refresh_replacement()
 	if workspace.document.change_kind in [&"timing", &"project"]: _applied = false
 
 func candidate_beat(seconds: float) -> Vector2i:
-	if not visible or not candidate_enabled or not _listen.button_pressed: return Vector2i(-2147483648, 0)
+	if audition_grid().is_empty(): return Vector2i(-2147483648, 0)
 	var beat := floori((seconds - _anchor.value) * _bpm.value / 60.0)
 	var meter: int = [0, 3, 4][_meter.selected]
 	return Vector2i(beat, 1 if meter > 0 and posmod(beat, meter) == 0 else 0)
+
+func audition_grid() -> Dictionary:
+	if not visible or not candidate_enabled or not _listen.button_pressed: return {}
+	return {"bpm": _bpm.value, "anchor": _anchor.value, "meter": [0, 3, 4][_meter.selected]}

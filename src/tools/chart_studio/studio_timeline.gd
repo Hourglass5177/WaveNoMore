@@ -34,7 +34,7 @@ var selected := PackedStringArray()
 var candidates: Array[NoteEvent] = []
 var view_start := -2.0:
 	set(value):
-		if is_equal_approx(view_start, value): return
+		if view_start == value: return
 		view_start = value; queue_redraw(); _redraw_overlay(); view_changed.emit()
 var pixels_per_second := 160.0:
 	set(value):
@@ -55,6 +55,11 @@ var loop_enabled := false:
 		if loop_enabled == value: return
 		loop_enabled = value; queue_redraw()
 var _mode := ""
+var _browse_pending := false
+var _browse_pixels := Vector2.ZERO
+var _browse_horizontal := false
+var _browse_zoom := 0.0
+var _browse_anchor_x := 0.0
 var recording_notes: Array[NoteEvent] = []
 var _overlay: Control
 var _loop_before := Vector2.ZERO
@@ -206,8 +211,23 @@ func _hit(pos: Vector2) -> NoteEvent:
 
 func _gui_input(event: InputEvent) -> void:
 	if document == null: return
-	if event is InputEventMouseButton:
+	if event is InputEventPanGesture:
+		_queue_browse(event.delta * 32.0)
+		accept_event()
+	elif event is InputEventMouseButton:
 		var mouse := event as InputEventMouseButton
+		if mouse.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN, MOUSE_BUTTON_WHEEL_LEFT, MOUSE_BUTTON_WHEEL_RIGHT]:
+			if mouse.pressed:
+				var horizontal := mouse.button_index in [MOUSE_BUTTON_WHEEL_LEFT, MOUSE_BUTTON_WHEEL_RIGHT]
+				var direction := -1.0 if mouse.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_LEFT] else 1.0
+				var amount := direction * mouse.factor
+				if mouse.ctrl_pressed and not horizontal:
+					_queue_browse(Vector2.ZERO, -amount, mouse.position.x)
+				else:
+					_queue_browse(Vector2(amount * 100.0, 0) if horizontal else Vector2(0, amount * 100.0))
+			accept_event(); return
+		# 同一帧先滚动再开始拖动时，先落实浏览，避免拖动基准采用旧视口。
+		if mouse.pressed: _flush_browse()
 		if mouse.pressed and mouse.button_index == MOUSE_BUTTON_RIGHT and mouse.position.y >= 42 and mouse.position.y <= 56 and not rhythm_grid.is_empty():
 			var period: float = 60.0 / float(rhythm_grid.bpm)
 			var seconds := view_start + mouse.position.x / pixels_per_second
@@ -215,17 +235,6 @@ func _gui_input(event: InputEvent) -> void:
 			_rhythm_context.position = Vector2i(get_global_mouse_position()); _rhythm_context.popup(); accept_event(); return
 		if is_aligning() and mouse.button_index != MOUSE_BUTTON_LEFT:
 			accept_event(); return
-		if mouse.pressed and mouse.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
-			manual_browse.emit()
-			var direction := -1 if mouse.button_index == MOUSE_BUTTON_WHEEL_UP else 1
-			if mouse.ctrl_pressed:
-				var anchor := view_start + mouse.position.x / pixels_per_second
-				pixels_per_second = clampf(pixels_per_second * pow(1.2, -direction), 12, 3000)
-				view_start = anchor - mouse.position.x / pixels_per_second
-			else: view_start += direction * 100.0 / pixels_per_second
-			queue_redraw()
-			accept_event()
-			return
 		if mouse.button_index == MOUSE_BUTTON_RIGHT and mouse.pressed:
 			if mouse.position.y >= 55 and mouse.position.y < 95:
 				waveform_context_requested.emit(get_global_mouse_position(), view_start + mouse.position.x / pixels_per_second)
@@ -243,6 +252,33 @@ func _gui_input(event: InputEvent) -> void:
 		accept_event()
 	elif event is InputEventMouseMotion:
 		_motion(event as InputEventMouseMotion)
+
+func _queue_browse(pixels: Vector2, zoom := 0.0, anchor_x := 0.0) -> void:
+	# 编辑手势已有自己的边缘滚动；双指和滚轮不能改变其起手坐标。
+	if not _mode.is_empty() or (pixels == Vector2.ZERO and zoom == 0.0): return
+	if not _browse_pending: manual_browse.emit()
+	_browse_pending = true
+	_browse_pixels += pixels
+	_browse_horizontal = _browse_horizontal or pixels.x != 0.0
+	_browse_zoom += zoom
+	if zoom != 0.0: _browse_anchor_x = anchor_x
+
+func _flush_browse() -> void:
+	if not _browse_pending: return
+	# Windows 斜向双指滑动可拆成两轴滚轮事件；一帧只采用横轴，避免移动两次。
+	if _mode.is_empty():
+		if _browse_horizontal:
+			view_start += _browse_pixels.x / pixels_per_second
+		else:
+			view_start += _browse_pixels.y / pixels_per_second
+			if _browse_zoom != 0.0:
+				var anchor := view_start + _browse_anchor_x / pixels_per_second
+				pixels_per_second *= pow(1.2, _browse_zoom)
+				view_start = anchor - _browse_anchor_x / pixels_per_second
+	_browse_pending = false
+	_browse_pixels = Vector2.ZERO
+	_browse_horizontal = false
+	_browse_zoom = 0.0
 
 func _begin(event: InputEventMouseButton) -> void:
 	gesture_started.emit()
@@ -454,6 +490,7 @@ func _draw_overlay() -> void:
 	_overlay.draw_line(Vector2(x, 0), Vector2(x, size.y), Color("f6d493"), 2)
 
 func _process(delta: float) -> void:
+	_flush_browse()
 	if _mode not in ["draw", "move", "head", "tail", "box"]: return
 	var speed := -maxf(0, 28 - _current.x) if _current.x < 28 else maxf(0, _current.x - size.x + 28)
 	if is_zero_approx(speed): return

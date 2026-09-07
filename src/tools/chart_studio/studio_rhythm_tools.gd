@@ -12,25 +12,54 @@ static func apply_grid(doc: StudioDocument, bpm: float, anchor: float, numerator
 static func diagnose(raw: Dictionary, bpm: float, anchor: float, meter: int) -> Dictionary:
 	var period := 60.0 / bpm
 	var errors: Array[float] = []
+	var signed_errors: Array[float] = []
 	var regions: Array = []
-	var window_errors: Array[float] = []
-	var start := -1.0
+	var segments: Array = []
 	var previous := -1.0
 	for time: float in raw.get("beats", []):
-		var error := absf(time - (anchor + round((time - anchor) / period) * period))
-		errors.append(error); window_errors.append(error)
-		if start < 0: start = time
+		# 正数始终表示候选网格晚于检测点；检测结果只是参照，不是人工真值。
+		var error := anchor + roundf((time - anchor) / period) * period - time
+		signed_errors.append(error); errors.append(absf(error))
 		if previous >= 0 and time - previous > period * 4: regions.append({"start": previous, "end": time, "reason": "拍点缺失或静音"})
 		previous = time
-		if window_errors.size() >= 16:
-			window_errors.sort()
-			if window_errors[window_errors.size() / 2] > 0.04: regions.append({"start": start, "end": time, "reason": "网格偏差较大，可能变速"})
-			window_errors.clear(); start = -1
-	if not window_errors.is_empty():
-		window_errors.sort()
-		if window_errors[window_errors.size() / 2] > 0.04: regions.append({"start": start, "end": previous, "reason": "网格偏差较大"})
 	# 长前奏和尾奏也提示，由谱师决定是否排除；不静默删去生成范围。
 	var beats: Array = raw.get("beats", [])
+	for first in range(0, maxi(1, beats.size() - 7), 8):
+		var last := mini(first + 16, beats.size())
+		if last - first < 2: continue
+		var local: Array[float] = signed_errors.slice(first, last)
+		var median := _median(local)
+		var duration := float(beats[last - 1]) - float(beats[first])
+		var coverage := minf(1, (last - first) / (duration / period + 1))
+		# 连续展开相位再求局部趋势，避免半周期边界的换号伪造漂移。
+		var unwrapped := local.duplicate()
+		for i in range(1, unwrapped.size()):
+			unwrapped[i] = unwrapped[i - 1] + wrapf(local[i] - local[i - 1], -period / 2, period / 2)
+		var mean_time := 0.0
+		var mean_error := 0.0
+		for i in local.size(): mean_time += float(beats[first + i]); mean_error += unwrapped[i]
+		mean_time /= local.size(); mean_error /= local.size()
+		var variance := 0.0
+		var covariance := 0.0
+		for i in local.size():
+			var delta := float(beats[first + i]) - mean_time
+			variance += delta * delta; covariance += delta * (unwrapped[i] - mean_error)
+		var slope := covariance / maxf(variance, 0.000001)
+		var spread: Array[float] = []
+		for error in local: spread.append(absf(error - median))
+		spread.sort()
+		var reason := ""
+		if absf(slope * duration) > 0.02 and absf(slope) > 0.0005:
+			reason = "网格逐渐%s（%+.2f ms/秒）" % ["偏晚" if slope > 0 else "偏早", slope * 1000]
+		elif absf(median) > 0.02:
+			reason = "网格整体%s（%+.1f ms）" % ["偏晚" if median > 0 else "偏早", median * 1000]
+		if spread[mini(spread.size() - 1, floori(spread.size() * 0.95))] > 0.04:
+			reason = "局部节拍不一致，可能变速或检测不稳定"
+		if coverage < 0.7: reason += ("；" if not reason.is_empty() else "") + "检测覆盖较少，可能漏拍或半速识别"
+		var segment := {"start": beats[first], "end": beats[last - 1], "signed_ms": median * 1000,
+			"trend_ms_per_sec": slope * 1000, "coverage": coverage, "reason": reason}
+		segments.append(segment)
+		if not reason.is_empty(): regions.append(segment)
 	var span: Array = raw.get("range", [])
 	if not beats.is_empty() and span.size() == 2:
 		if float(beats.front()) - float(span[0]) > period * 4: regions.append({"start": span[0], "end": beats.front(), "reason": "开头缺少拍点或静音"})
@@ -39,7 +68,14 @@ static func diagnose(raw: Dictionary, bpm: float, anchor: float, meter: int) -> 
 		for time: float in raw.get("downbeats", []):
 			if posmod(roundi((time - anchor) / period), meter) != 0: regions.append({"start": time, "end": time + period, "reason": "小节重拍不一致"})
 	errors.sort()
-	return {"median_ms": 0.0 if errors.is_empty() else errors[errors.size() / 2] * 1000.0, "regions": regions}
+	return {"median_ms": _median(errors) * 1000.0, "signed_ms": _median(signed_errors) * 1000.0,
+		"regions": regions, "segments": segments}
+
+static func _median(values: Array[float]) -> float:
+	if values.is_empty(): return 0
+	var sorted := values.duplicate(); sorted.sort()
+	var middle := sorted.size() / 2
+	return sorted[middle] if sorted.size() % 2 else (sorted[middle - 1] + sorted[middle]) / 2
 
 static func generate(doc: StudioDocument, span: Vector2, every_beat: bool, side: int, exclusions: Array) -> Dictionary:
 	var chart := doc.chart()
