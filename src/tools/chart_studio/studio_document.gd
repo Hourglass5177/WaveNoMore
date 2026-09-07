@@ -88,6 +88,9 @@ func undo(redo := false) -> void:
 	if (redo and cursor >= history.size()) or (not redo and cursor == 0): return
 	var command: Dictionary = history[cursor if redo else cursor - 1]
 	_cursors[key] = cursor + (1 if redo else -1)
+	if command.has("offsets"):
+		_apply_offsets(command.after if redo else command.before)
+		return
 	if key == "song":
 		song.set(command.field, command.after if redo else command.before)
 		mark_changed(&"metadata")
@@ -138,6 +141,35 @@ func _apply_presentation(value: Dictionary) -> void:
 
 func change_metadata(data: Dictionary) -> void:
 	execute("修改谱面属性", [], [], ChartJsonCodec.encode_chart(chart()), data)
+
+func set_first_beat_offset_ms(value: float, all_difficulties := false) -> void:
+	# 对齐只改时间基准，不复制或重排音符；跨难度同步放入歌曲级历史。
+	if not is_finite(value): return
+	var before := {}
+	var after := {}
+	for item in charts:
+		if not all_difficulties and item != chart(): continue
+		var old := float(item.get_meta("json_source", {}).get("timing", {}).get("first_beat_offset_ms", 0))
+		if old == value: continue
+		before[item.chart_id] = old
+		after[item.chart_id] = value
+	if before.is_empty(): return
+	var key := "song" if all_difficulties else chart().chart_id
+	var history: Array = _histories.get(key, [])
+	history.resize(int(_cursors.get(key, 0)))
+	history.append({"offsets": true, "label": "同步全部难度首拍" if all_difficulties else "调整首拍", "before": before, "after": after})
+	_histories[key] = history; _cursors[key] = history.size(); _history_target = key
+	_apply_offsets(after)
+
+func _apply_offsets(values: Dictionary) -> void:
+	for item in charts:
+		if not values.has(item.chart_id): continue
+		var raw: Dictionary = item.get_meta("json_source", {}).duplicate()
+		var timing: Dictionary = raw.get("timing", {}).duplicate()
+		timing.first_beat_offset_ms = values[item.chart_id]
+		raw.timing = timing
+		item.set_meta("json_source", raw)
+	mark_changed(&"timing")
 
 func mark_changed(kind: StringName = &"project", ids: PackedStringArray = PackedStringArray()) -> void:
 	dirty = true

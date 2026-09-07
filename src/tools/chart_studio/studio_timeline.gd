@@ -1,6 +1,13 @@
 class_name StudioTimeline
 extends Control
 ## 秒坐标显示、音乐 tick 编辑；手势只更新候选集合，释放时提交增量命令。
+signal rhythm_anchor_changed(seconds: float)
+var rhythm_grid := {}
+var rhythm_raw := {}
+var rhythm_draft: Array[NoteEvent] = []
+var _rhythm_anchor_before := 0.0
+var _rhythm_context := PopupMenu.new()
+var _rhythm_pick := 0.0
 signal selection_changed
 signal seek_requested(seconds: float)
 signal candidate_changed
@@ -10,6 +17,18 @@ signal seek_finished(seconds: float)
 signal loop_changed(start: float, end: float)
 signal view_changed
 signal manual_browse
+## 对齐候选只存在于视图；松手由工作区写入一次文档命令。
+signal alignment_started
+signal alignment_preview(seconds: float)
+signal alignment_committed(seconds: float)
+signal alignment_cancelled
+signal waveform_context_requested(position: Vector2, seconds: float)
+var move_waveform := false:
+	set(value):
+		move_waveform = value; queue_redraw()
+var _alignment_before_offset := 0.0
+var _alignment_before_view := 0.0
+var _alignment_seconds := 0.0
 var document: StudioDocument
 var selected := PackedStringArray()
 var candidates: Array[NoteEvent] = []
@@ -54,6 +73,8 @@ var row_height: float:
 	get: return maxf(28.0, (size.y - RULER) / 2.0)
 
 func _ready() -> void:
+	add_child(_rhythm_context); _rhythm_context.add_item("设为小节第一拍")
+	_rhythm_context.id_pressed.connect(func(_i: int) -> void: rhythm_anchor_changed.emit(_rhythm_pick))
 	focus_mode = Control.FOCUS_ALL
 	clip_contents = true
 	custom_minimum_size = Vector2(320, 164)
@@ -98,6 +119,8 @@ func _draw() -> void:
 	var zero_x := -view_start * pixels_per_second
 	if zero_x > 0: draw_rect(Rect2(0, 0, minf(zero_x, size.x), size.y), Color(0.24, 0.22, 0.3, 0.2))
 	var end_sec := view_start + size.x / pixels_per_second
+	if move_waveform:
+		draw_rect(Rect2(0, 55, size.x, 40), Color(0.8, 0.58, 0.18, 0.18))
 	if loop_range.y > loop_range.x:
 		draw_rect(Rect2((loop_range.x - view_start) * pixels_per_second, 0, (loop_range.y - loop_range.x) * pixels_per_second, 24), Color(0.75, 0.58, 0.25, 0.3 if loop_enabled else 0.1))
 	for side in 2:
@@ -141,9 +164,12 @@ func _draw() -> void:
 	if zero_x >= 0 and zero_x <= size.x:
 		draw_line(Vector2(zero_x, 0), Vector2(zero_x, size.y), Color("a8cfdd"), 2)
 		draw_string(font, Vector2(zero_x + 4, 55), "音乐起点", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color("a8cfdd"))
-	var beat_x := (document.offset_sec() - view_start) * pixels_per_second
+	var beat_seconds := _alignment_seconds if is_aligning() else document.offset_sec()
+	var beat_x := (beat_seconds - view_start) * pixels_per_second
 	if beat_x >= 0 and beat_x <= size.x:
-		draw_string(font, Vector2(beat_x + 4, 88), "首拍", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color("ddc9a0"))
+		draw_line(Vector2(beat_x, 25), Vector2(beat_x, size.y), Color("e5b663"), 2)
+		draw_colored_polygon(PackedVector2Array([Vector2(beat_x - 8, 58), Vector2(beat_x + 8, 58), Vector2(beat_x, 70)]), Color("e5b663"))
+		draw_string(font, Vector2(beat_x + 10, 88), "首拍 " + format_time(beat_seconds), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color("ddc9a0"))
 	for endpoint in [loop_range.x, loop_range.y]:
 		var x: float = (endpoint - view_start) * pixels_per_second
 		draw_line(Vector2(x, 0), Vector2(x, 24), Color("d4ae70"), 3)
@@ -152,6 +178,8 @@ func _draw() -> void:
 	for note in visible_notes(0, size.x):
 		if not hidden.has(note.event_id): _draw_note(note, false)
 	for note in candidates: _draw_note(note, true)
+	_draw_rhythm()
+	for note in rhythm_draft: _draw_note(note, true)
 	if _mode == "box":
 		var rect := Rect2(_down, _current - _down).abs()
 		draw_rect(rect, Color(0.45, 0.65, 1, 0.15))
@@ -180,6 +208,13 @@ func _gui_input(event: InputEvent) -> void:
 	if document == null: return
 	if event is InputEventMouseButton:
 		var mouse := event as InputEventMouseButton
+		if mouse.pressed and mouse.button_index == MOUSE_BUTTON_RIGHT and mouse.position.y >= 42 and mouse.position.y <= 56 and not rhythm_grid.is_empty():
+			var period: float = 60.0 / float(rhythm_grid.bpm)
+			var seconds := view_start + mouse.position.x / pixels_per_second
+			_rhythm_pick = float(rhythm_grid.anchor) + round((seconds - float(rhythm_grid.anchor)) / period) * period
+			_rhythm_context.position = Vector2i(get_global_mouse_position()); _rhythm_context.popup(); accept_event(); return
+		if is_aligning() and mouse.button_index != MOUSE_BUTTON_LEFT:
+			accept_event(); return
 		if mouse.pressed and mouse.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
 			manual_browse.emit()
 			var direction := -1 if mouse.button_index == MOUSE_BUTTON_WHEEL_UP else 1
@@ -192,7 +227,10 @@ func _gui_input(event: InputEvent) -> void:
 			accept_event()
 			return
 		if mouse.button_index == MOUSE_BUTTON_RIGHT and mouse.pressed:
-			context_requested.emit(get_global_mouse_position())
+			if mouse.position.y >= 55 and mouse.position.y < 95:
+				waveform_context_requested.emit(get_global_mouse_position(), view_start + mouse.position.x / pixels_per_second)
+			else:
+				context_requested.emit(get_global_mouse_position())
 			return
 		if mouse.button_index == MOUSE_BUTTON_MIDDLE:
 			manual_browse.emit()
@@ -209,6 +247,8 @@ func _gui_input(event: InputEvent) -> void:
 func _begin(event: InputEventMouseButton) -> void:
 	gesture_started.emit()
 	_down = event.position
+	if _down.y >= 42 and _down.y <= 56 and not rhythm_grid.is_empty():
+		_rhythm_anchor_before = float(rhythm_grid.anchor); _mode = "rhythm"; return
 	_current = _down
 	_anchor_tick = tick_at(_down.x, event.alt_pressed)
 	candidates.clear()
@@ -220,6 +260,15 @@ func _begin(event: InputEventMouseButton) -> void:
 			if absf(_down.x - ((loop_range.x if index == 0 else loop_range.y) - view_start) * pixels_per_second) < 7:
 				_mode = "loop_start" if index == 0 else "loop_end"; return
 	if _down.y < RULER:
+		var marker_x := (document.offset_sec() - view_start) * pixels_per_second
+		if _down.y >= 55 and _down.y < 95 and (absf(_down.x - marker_x) <= 9 or (move_waveform and not peaks.is_empty())):
+			_mode = "align_marker" if absf(_down.x - marker_x) <= 9 else "align_wave"
+			_alignment_before_offset = document.offset_sec()
+			_alignment_before_view = view_start
+			_alignment_seconds = _alignment_before_offset
+			manual_browse.emit()
+			alignment_started.emit()
+			return
 		_mode = "seek"
 		seek_requested.emit(view_start + _down.x / pixels_per_second)
 		return
@@ -249,9 +298,23 @@ func _begin(event: InputEventMouseButton) -> void:
 	queue_redraw()
 
 func _motion(event: InputEventMouseMotion) -> void:
+	if is_aligning():
+		# 增量缩放让 Shift 可在拖动中切换，不会突然跳到另一个偏移。
+		var displacement := (event.position.x - _current.x) / pixels_per_second
+		if event.shift_pressed: displacement *= 0.1
+		_alignment_seconds += displacement * (-1.0 if _mode == "align_wave" else 1.0)
+		_current = event.position
+		_map.first_beat_offset_us = roundi(_alignment_seconds * 1000000.0)
+		if _mode == "align_wave":
+			# 平移视口抵消网格的偏移变化，屏幕上只有音频及秒尺移动。
+			view_start = _alignment_before_view + _alignment_seconds - _alignment_before_offset
+		queue_redraw(); _redraw_overlay()
+		alignment_preview.emit(_alignment_seconds)
+		return
 	_current = event.position
 	_last_alt = event.alt_pressed
-	if _mode == "pan": view_start -= event.relative.x / pixels_per_second
+	if _mode == "rhythm": rhythm_anchor_changed.emit(_rhythm_anchor_before + (_current.x - _down.x) / pixels_per_second)
+	elif _mode == "pan": view_start -= event.relative.x / pixels_per_second
 	elif _mode == "seek": seek_requested.emit(view_start + _current.x / pixels_per_second)
 	elif _mode in ["loop_start", "loop_end"]:
 		var seconds := view_start + _current.x / pixels_per_second
@@ -289,6 +352,16 @@ func _motion(event: InputEventMouseMotion) -> void:
 		if _mode in ["draw", "move", "head", "tail"]: candidate_changed.emit()
 
 func _finish(event: InputEventMouseButton) -> void:
+	if is_aligning():
+		var motion := InputEventMouseMotion.new()
+		motion.position = event.position; motion.shift_pressed = event.shift_pressed
+		_motion(motion)
+		var seconds := _alignment_seconds
+		_mode = ""
+		alignment_committed.emit(seconds)
+		_map = document.tempo_map()
+		queue_redraw(); _redraw_overlay()
+		return
 	if _mode == "seek": seek_finished.emit(view_start + event.position.x / pixels_per_second)
 	if _mode == "box":
 		var rect := Rect2(_down, event.position - _down).abs()
@@ -309,6 +382,12 @@ func _finish(event: InputEventMouseButton) -> void:
 	selection_changed.emit()
 
 func cancel_gesture(refresh_preview := true) -> void:
+	if refresh_preview and _mode == "rhythm": rhythm_anchor_changed.emit(_rhythm_anchor_before)
+	if is_aligning():
+		view_start = _alignment_before_view
+		_map = document.tempo_map()
+		alignment_cancelled.emit()
+		_redraw_overlay()
 	var had_candidates := not candidates.is_empty()
 	if refresh_preview and _mode in ["loop_start", "loop_end"]: loop_changed.emit(_loop_before.x, _loop_before.y)
 	_mode = ""
@@ -316,6 +395,9 @@ func cancel_gesture(refresh_preview := true) -> void:
 	_before.clear()
 	queue_redraw()
 	if refresh_preview and had_candidates: candidate_changed.emit()
+
+func is_aligning() -> bool:
+	return _mode in ["align_marker", "align_wave"]
 
 func music_label(tick: int) -> String:
 	var start := 0
@@ -379,3 +461,27 @@ func _process(delta: float) -> void:
 	manual_browse.emit()
 	var motion := InputEventMouseMotion.new(); motion.position = _current; motion.alt_pressed = _last_alt
 	_motion(motion)
+
+
+func _draw_rhythm() -> void:
+	for seconds: float in rhythm_raw.get("beats", []):
+		var x := (seconds - view_start) * pixels_per_second
+		if x >= 0 and x <= size.x: draw_line(Vector2(x, 92), Vector2(x, 99), Color("79b9ff"), 1)
+	for seconds: float in rhythm_raw.get("downbeats", []):
+		var x := (seconds - view_start) * pixels_per_second
+		if x >= 0 and x <= size.x: draw_line(Vector2(x, 86), Vector2(x, 100), Color("d89deb"), 2)
+	if rhythm_grid.is_empty(): return
+	for region: Dictionary in rhythm_grid.get("regions", []):
+		var left := maxf(0, (float(region.start) - view_start) * pixels_per_second)
+		var right := minf(size.x, (float(region.end) - view_start) * pixels_per_second)
+		if right > left: draw_rect(Rect2(left, 56, right - left, size.y - 56), Color(1, 0.6, 0.2, 0.12))
+	var period: float = 60.0 / float(rhythm_grid.bpm)
+	var anchor: float = rhythm_grid.anchor
+	var first := floori((view_start - anchor) / period)
+	var last := ceili((view_start + size.x / pixels_per_second - anchor) / period)
+	var stride := maxi(1, ceili(8.0 / (period * pixels_per_second)))
+	for index in range(first, last + 1, stride):
+		var x := (anchor + index * period - view_start) * pixels_per_second
+		var strong: bool = int(rhythm_grid.meter) > 0 and posmod(index, int(rhythm_grid.meter)) == 0
+		draw_line(Vector2(x, 42), Vector2(x, size.y), Color(0.3, 0.95, 0.65, 0.6 if strong else 0.18), 2 if strong else 1)
+		draw_rect(Rect2(x - 3, 44, 6, 8), Color("70e5a6"))

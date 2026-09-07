@@ -65,17 +65,17 @@ func _run() -> void:
 	workspace._inspect()
 	var conversions := 0
 	for control in workspace.fields.get_children():
-		if control is Button and control.text in ["转为长音", "转为单击"]: conversions += 1
+		if control is Button and control.text in ["转为 Hold", "转为 Tap"]: conversions += 1
 	check(conversions == 2, "混合选区给出两个明确转换目标")
 	workspace._convert_selected(GameplayTypes.NoteKind.HOLD)
-	check(workspace.document.find_note("n01").duration_ticks == 120 and workspace.document.find_note("n05").duration_ticks == 960, "批量转长音保留原长音时长")
+	check(workspace.document.find_note("n01").duration_ticks == 120 and workspace.document.find_note("n05").duration_ticks == 960, "批量转 Hold 保留原 Hold 时长")
 	workspace.document.undo()
 	check(workspace.document.find_note("n01").kind == GameplayTypes.NoteKind.TAP, "一次撤销恢复混合选区")
 	workspace.timeline.selected = PackedStringArray(["n01"]); workspace._inspect()
 	var has_duration := false
 	for control in workspace.fields.get_children():
-		if control is Label and control.text == "长音时长（tick）": has_duration = true
-	check(not has_duration, "单击选区不显示无效长音输入")
+		if control is Label and control.text == "Hold 时长（tick）": has_duration = true
+	check(not has_duration, "Tap 选区不显示无效 Hold 输入")
 	workspace.timeline.selected.clear(); workspace._inspect()
 	# 加入实际玩法冲突，验证问题面板展开、折叠和对象定位。
 	var copy: NoteEvent = workspace.document.find_note("n05").duplicate(true)
@@ -106,6 +106,14 @@ func _run() -> void:
 		var visible := root.get_visible_rect()
 		var valid := visible.encloses(workspace.get_node("Layout").get_global_rect())
 		var groups: Array[Node] = workspace.transport.get_children()
+		var alignment: Control = workspace._alignment_bar
+		valid = valid and visible.encloses(alignment.get_global_rect())
+		var align_groups: Array[Node] = alignment.get_node("Actions").get_children()
+		for group in align_groups:
+			valid = valid and visible.encloses(group.get_global_rect())
+		for i in align_groups.size():
+			for j in range(i + 1, align_groups.size()):
+				valid = valid and not align_groups[i].get_global_rect().intersects(align_groups[j].get_global_rect())
 		for i in groups.size():
 			valid = valid and visible.encloses(groups[i].get_global_rect())
 			for j in range(i + 1, groups.size()): valid = valid and not groups[i].get_global_rect().intersects(groups[j].get_global_rect())
@@ -118,6 +126,20 @@ func _run() -> void:
 			DirAccess.make_dir_recursive_absolute("res://builds/ui-review")
 			root.get_texture().get_image().save_png("res://builds/ui-review/" + name + ".png")
 	StudioProjectIO.write_json("res://builds/ui-review/layout-results.json", {"engine": Engine.get_version_info().string, "display": DisplayServer.get_name(), "system_scale": DisplayServer.screen_get_scale(), "cases": results})
+	workspace._wave_move_button.button_pressed = true
+	for frame in 3: await process_frame
+	check(workspace.timeline.move_waveform and workspace._wave_move_button.button_pressed, "移动波形模式同步高亮开关与时间线")
+	if DisplayServer.get_name() != "headless":
+		await RenderingServer.frame_post_draw
+		root.get_texture().get_image().save_png("res://builds/ui-review/move-waveform.png")
+	workspace._help()
+	for frame in 3: await process_frame
+	var help: AcceptDialog = workspace.get_child(workspace.get_child_count() - 1)
+	check(help.visible and Vector2(help.size).x <= root.get_visible_rect().size.x and Vector2(help.size).y <= root.get_visible_rect().size.y, "完整帮助可滚动且不超出紧凑窗口")
+	if DisplayServer.get_name() != "headless":
+		await RenderingServer.frame_post_draw
+		root.get_texture().get_image().save_png("res://builds/ui-review/alignment-help.png")
+	help.hide(); help.queue_free()
 	workspace.queue_free(); await process_frame
 	print("UI TESTS: ", failures)
 	quit(1 if failures else 0)

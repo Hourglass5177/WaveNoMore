@@ -302,7 +302,7 @@ static func _validate_rules(rules: GameplayRuleSet, report: ValidationReport) ->
 		report.add_error(&"rules.wave_contact", "Each bell origin must be separated from its note cue so a wave can meet the incoming note.")
 
 
-static func _validate_input_conflicts(chart: SongChart, rules: GameplayRuleSet, report: ValidationReport) -> void:
+static func input_intervals(chart: SongChart, rules: GameplayRuleSet) -> Array[Dictionary]:
 	var tempo_map := TempoMap.from_chart(chart)
 	var intervals: Array[Dictionary] = []
 	var pass_us: int = rules.pass_window_ms * 1000
@@ -345,6 +345,11 @@ static func _validate_input_conflicts(chart: SongChart, rules: GameplayRuleSet, 
 			"end": tempo_map.tick_to_us(region.tick + region.duration_ticks),
 			"tick": region.tick,
 		})
+	return intervals
+
+
+static func _validate_input_conflicts(chart: SongChart, rules: GameplayRuleSet, report: ValidationReport) -> void:
+	var intervals := input_intervals(chart, rules)
 	# 按起点扫描，超过当前区间尾点后不再比较；重叠判定和闭区间边界保持原样。
 	for index in intervals.size(): intervals[index]["source_order"] = index
 	intervals.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return int(a["start"]) < int(b["start"]))
@@ -353,25 +358,7 @@ static func _validate_input_conflicts(chart: SongChart, rules: GameplayRuleSet, 
 			var first: Dictionary = intervals[first_index]
 			var second: Dictionary = intervals[second_index]
 			if int(second["start"]) > int(first["end"]): break
-			if int(first["side"]) != -1 and int(second["side"]) != -1 and int(first["side"]) != int(second["side"]):
-				continue
-			var overlap_start: int = maxi(int(first["start"]), int(second["start"]))
-			var overlap_end: int = mini(int(first["end"]), int(second["end"]))
-			if overlap_start > overlap_end:
-				continue
-			# 两条调频滑条可以首尾相接：旧条在该 tick 先结算，新条随后建立
-			# 独立手势会话，因此共享边界点不属于输入区间重叠。其他机制的判定窗
-			# 仍保留闭区间语义，避免一次按键同时落入两个对象。
-			if (
-				overlap_start == overlap_end
-				and first["type"] == "tuning"
-				and second["type"] == "tuning"
-			):
-				continue
-			# 相邻 Tap 可由判定器按误差最近原则稳定匹配；区域机制或 Hold 一旦重叠，
-			# 同一次输入就会争夺所有权，因此必须在制谱阶段拒绝。
-			if first["type"] == "tap" and second["type"] == "tap":
-				continue
+			if not input_intervals_conflict(first, second): continue
 			if first["source_order"] > second["source_order"]:
 				var swap := first; first = second; second = swap
 			report.add_error(
@@ -415,3 +402,13 @@ static func _normalized_rect_is_valid(region: Rect2) -> bool:
 		and end.x <= 1.0
 		and end.y <= 1.0
 	)
+
+
+static func input_intervals_conflict(first: Dictionary, second: Dictionary) -> bool:
+	# 编辑器草稿查询和正式校验共用闭区间、异侧及 Tap 例外。
+	if int(first.side) != -1 and int(second.side) != -1 and int(first.side) != int(second.side): return false
+	var start := maxi(int(first.start), int(second.start))
+	var end := mini(int(first.end), int(second.end))
+	if start > end: return false
+	if start == end and first.type == "tuning" and second.type == "tuning": return false
+	return not (first.type == "tap" and second.type == "tap")

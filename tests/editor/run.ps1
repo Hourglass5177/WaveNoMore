@@ -9,11 +9,14 @@ $studioLogDirectory = Join-Path $studioProjectPath 'builds/test-results'
 New-Item -ItemType Directory -Force $studioLogDirectory | Out-Null
 $studioSuites = @{
     'run_studio_tests' = 'STUDIO TESTS: 0'
+    'run_alignment_tests' = 'ALIGNMENT TESTS: 0'
     'run_input_tests' = 'INPUT TESTS: 0'
     'run_workspace_smoke' = 'WORKSPACE SMOKE COMPLETE'
     'run_ui_tests' = 'UI TESTS: 0'
     'run_stability_tests' = 'STABILITY TESTS: 0'
     'run_layout_tests' = 'LAYOUT TESTS: 0'
+    'run_open_dialog_tests' = 'OPEN DIALOG TESTS: 0'
+    'run_rhythm_tests' = 'RHYTHM TESTS: 0'
 }
 foreach ($studioSuite in $studioSuites.Keys) {
     $studioStdoutPath = Join-Path $studioLogDirectory ($studioSuite + '.log')

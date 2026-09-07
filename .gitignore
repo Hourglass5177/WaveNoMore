@@ -8,3 +8,4 @@
 *.bak
 *.url
 /AGENTS.md
+__pycache__/
