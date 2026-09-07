@@ -16,6 +16,17 @@ var _dynamic_spine := DynamicHoldSpine.new()
 var _spine_initialized: bool = false
 var _target_length: float = 0.0
 var _spine_frozen: bool = false
+@export_group("Head Control")
+## 头部位置的指数响应率（s⁻¹）；沿控制圈的半径和角度平滑。
+@export_range(0.1, 60.0, 0.1) var head_position_response: float = 12.0
+## 头部朝向的指数响应率（s⁻¹）；总是采用最短转角。
+@export_range(0.1, 60.0, 0.1) var head_heading_response: float = 12.0
+var _head_control_center: Vector2 = Vector2.ZERO
+var _head_position_target: Vector2 = Vector2.ZERO
+var _head_heading_target: float = 0.0
+var _head_position_controlled: bool = false
+var _head_heading_controlled: bool = false
+
 @export_group("Dynamic Body")
 ## 每段目标长度（px），尾端允许不足一个整段。
 @export_range(1.0, 64.0) var segment_length_px: float = 16.0
@@ -25,6 +36,8 @@ var _spine_frozen: bool = false
 @export_range(0.0, 200.0) var restoring_acceleration: float = 30.0
 ## 相对角速度阻尼（s⁻¹）。
 @export_range(0.0, 60.0) var angular_damping: float = 8.0
+## 绝对角速度衰减率（s⁻¹）；越大越快停止甩动，0 关闭这一额外阻力。
+@export_range(0.0, 60.0, 0.1) var angular_drag: float = 8.0
 ## 固定积分步长（秒），默认每秒 120 次。
 @export_range(0.001, 0.033333, 0.000001) var integration_step_sec: float = 1.0 / 120.0
 
@@ -32,6 +45,8 @@ var _spine_frozen: bool = false
 func prepare(view_model: Dictionary) -> void:
 	## 由持续时间决定完整长度，重新生成时清空上一次动态链。
 	super(view_model)
+	release_head_control()
+	_head_control_center = Vector2.ZERO
 	var start_us: int = int(view_model.get("start_us", view_model.get("start_time_us", 0)))
 	var end_us: int = int(view_model.get("end_us", view_model.get("end_time_us", start_us)))
 	var duration_us: int = int(view_model.get("duration_us", end_us - start_us))
@@ -61,10 +76,12 @@ func advance_body(delta_sec: float) -> void:
 	## 仅由时钟调用；脊线在画布坐标中模拟，最后变换到本节点绘制坐标。
 	if _spine_frozen:
 		return
+	_advance_head_control(delta_sec)
 	_dynamic_spine.segment_length = segment_length_px
 	_dynamic_spine.max_angle = deg_to_rad(maximum_bend_deg)
 	_dynamic_spine.stiffness = restoring_acceleration
 	_dynamic_spine.damping = angular_damping
+	_dynamic_spine.angular_drag = angular_drag
 	_dynamic_spine.fixed_step = integration_step_sec
 	if not _spine_initialized:
 		_dynamic_spine.reset(position, rotation, _target_length)
@@ -78,6 +95,8 @@ func advance_body(delta_sec: float) -> void:
 
 func reset_for_pool() -> void:
 	## 回收同时清除积分余量、身体目标、冻结状态和基础判定反馈。
+	release_head_control()
+	_head_control_center = Vector2.ZERO
 	_path_spine.clear()
 	_dynamic_spine.clear()
 	_spine_initialized = false
@@ -241,3 +260,44 @@ func _draw_head(color: Color, alpha: float) -> void:
 	draw_circle(Vector2(16.0, 0.0), 3.2, eye_color, true, -1.0, true)
 	draw_line(Vector2(-14.0, -17.0), Vector2(7.0, -7.0), Color("eee3c7", alpha * 0.72), 2.0, true)
 	draw_line(Vector2(-14.0, 17.0), Vector2(7.0, 7.0), Color("eee3c7", alpha * 0.72), 2.0, true)
+
+
+## Host 在首次命中时设置设计画布坐标系中的控制圈心；不改变实际姿态。
+func set_head_control_center(center: Vector2) -> void:
+	_head_control_center = center
+
+
+## 只设置设计画布朝向目标；实际姿态只在 advance_body() 的时钟入口变化。
+func set_head_heading(angle_rad: float) -> void:
+	_head_heading_target = angle_rad
+	_head_heading_controlled = true
+
+
+## 只设置设计画布位置目标；位置采用绕圈心的极坐标插值而非弦上直线插值。
+func set_head_position(target_position: Vector2) -> void:
+	_head_position_target = target_position
+	_head_position_controlled = true
+
+
+## 忘记旧目标，保留当前插值后的实际位置和朝向；不返回命中锚点。
+func release_head_control() -> void:
+	_head_position_controlled = false
+	_head_heading_controlled = false
+	_head_position_target = position
+	_head_heading_target = rotation
+
+
+## 先平滑头部再推进脊线；宽限期由 advance_body() 的冻结入口整体阻止。
+func _advance_head_control(delta_sec: float) -> void:
+	if delta_sec <= 0.0:
+		return
+	if _head_heading_controlled:
+		rotation = lerp_angle(rotation, _head_heading_target, 1.0 - exp(-head_heading_response * delta_sec))
+	if _head_position_controlled:
+		var current_offset: Vector2 = position - _head_control_center
+		var target_offset: Vector2 = _head_position_target - _head_control_center
+		var alpha: float = 1.0 - exp(-head_position_response * delta_sec)
+		var current_angle: float = current_offset.angle() if not current_offset.is_zero_approx() else target_offset.angle()
+		var radius: float = lerpf(current_offset.length(), target_offset.length(), alpha)
+		var angle: float = lerp_angle(current_angle, target_offset.angle(), alpha)
+		position = _head_control_center + Vector2.from_angle(angle) * radius

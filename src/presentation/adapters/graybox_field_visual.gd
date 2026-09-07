@@ -802,15 +802,13 @@ func _player_inside_guide() -> bool:
 	return _player_progress >= _guide_min_progress and _player_progress <= _guide_max_progress
 
 
-func update_hold_heading(visual: TuningHoldVisual) -> void:
-	## 从实际绘制曲线向中心灵体提供方向，不复制输入层的角度或镜像规则。
-	var progress: float = clampf(_player_progress, 0.0, 1.0)
-	var direction: Vector2 = _point_on_slider(progress) - canvas_size * 0.5
-	if visual.heading_mode == TuningHoldVisual.HeadingMode.TANGENT:
-		direction = _point_on_slider(minf(progress + 0.001, 1.0)) - _point_on_slider(maxf(progress - 0.001, 0.0))
-		if _current_traversal_index() % 2 == 1:
-			direction = -direction
+func update_hold_control(visual: GrayboxHoldVisual, control_center: Vector2, radius_px: float) -> void:
+	## 使用实际绘制游标的方向，同时设置真 Hold 的朝向和反侧圆周目标。
+	## Host 仅在领域拖动为 true 时调用；此处不推进插值或动态尾部。
+	var cursor: Vector2 = _point_on_slider(clampf(_player_progress, 0.0, 1.0))
+	var direction: Vector2 = (cursor - control_center).normalized()
 	visual.set_head_heading(direction.angle())
+	visual.set_head_position(control_center - direction * radius_px)
 
 
 func _slider_center() -> Vector2:

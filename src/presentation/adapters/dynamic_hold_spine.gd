@@ -6,6 +6,8 @@ var segment_length: float = 16.0
 var max_angle: float = deg_to_rad(15.0)
 var stiffness: float = 30.0
 var damping: float = 8.0
+## 画布坐标中的绝对角速度衰减率（s⁻¹），耗散整链同向摆动。
+var angular_drag: float = 8.0
 var fixed_step: float = 1.0 / 120.0
 var _points := PackedVector2Array()
 var _angles := PackedFloat64Array()
@@ -48,6 +50,8 @@ func advance(delta_sec: float) -> void:
 	if count == 0:
 		return
 	_remainder -= float(count) * fixed_step
+	# 指数衰减不会因增大阻尼而把角速度反向；仅在固定模拟子步中生效。
+	var drag_factor: float = exp(-angular_drag * fixed_step)
 	var initial_head: Vector2 = _head
 	var initial_heading: float = _heading
 	for step_index: int in range(count):
@@ -69,6 +73,8 @@ func advance(delta_sec: float) -> void:
 			var x: float = theta / max_angle
 			var velocity: float = _velocities[index]
 			velocity += (-stiffness * x * x * x - damping * (velocity - reference_velocity)) * fixed_step
+			# 相对阻尼控制段间摆动，绝对阻力消耗整链的残余角速度。
+			velocity *= drag_factor
 			angle += velocity * fixed_step
 			theta = wrapf(angle - reference_angle, -PI, PI)
 			if absf(theta) > max_angle:

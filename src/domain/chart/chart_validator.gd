@@ -368,8 +368,11 @@ static func _validate_input_conflicts(chart: SongChart, rules: GameplayRuleSet, 
 				and second["type"] == "tuning"
 			):
 				continue
-			# 相邻 Tap 可由判定器按误差最近原则稳定匹配；区域机制或 Hold 一旦重叠，
-			# 同一次输入就会争夺所有权，因此必须在制谱阶段拒绝。
+			# Hold 保持与调频位移是联动关系，不再当作输入所有权冲突。
+			# 是否具备双 Hold 由运行时判断，不新增覆盖或起止对齐校验。
+			if (first["type"] == "hold" and second["type"] == "tuning") or (first["type"] == "tuning" and second["type"] == "hold"):
+				continue
+			# 相邻 Tap 按最近误差匹配；其他既有机制冲突仍然检查。
 			if first["type"] == "tap" and second["type"] == "tap":
 				continue
 			report.add_error(

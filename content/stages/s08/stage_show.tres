@@ -1,0 +1,74 @@
+[gd_resource type="Resource" script_class="StageShow" load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://src/content/resources/stage_show.gd" id="1_show"]
+[ext_resource type="Script" path="res://src/content/resources/show_cue.gd" id="2_cue"]
+
+[sub_resource type="Resource" id="Cue_intro"]
+script = ExtResource("2_cue")
+event_id = "show_s08_intro"
+tick = 0
+track = 5
+cue_id = &"tutorial_combined_intro"
+target_slot = &"hud"
+parameters = {"display_sec": 4.0, "text": "先观察普通 Hold 命中后平滑入圈；后续需同时保持生死 Hold 才能拖动调频条。"}
+
+[sub_resource type="Resource" id="Cue_life_counter"]
+script = ExtResource("2_cue")
+event_id = "show_s08_life_counter"
+tick = 19200
+track = 5
+cue_id = &"tutorial_combined_life_counter"
+target_slot = &"hud"
+parameters = {"display_sec": 3.5, "text": "先接生 Hold，一拍后接死 Hold；保持双侧，再旋转右摇杆。"}
+
+[sub_resource type="Resource" id="Cue_death_counter"]
+script = ExtResource("2_cue")
+event_id = "show_s08_death_counter"
+tick = 29760
+track = 5
+cue_id = &"tutorial_combined_death_counter"
+target_slot = &"hud"
+parameters = {"display_sec": 3.5, "text": "保持生死 Hold 的重叠状态，左摇杆控制死侧 Hold；生侧不接管。"}
+
+[sub_resource type="Resource" id="Cue_paired"]
+script = ExtResource("2_cue")
+event_id = "show_s08_paired"
+tick = 38400
+track = 5
+cue_id = &"tutorial_combined_paired"
+target_slot = &"hud"
+parameters = {"display_sec": 3.4, "text": "两侧调频各自控制对应真 Hold：保持双侧，分别旋转左右摇杆。"}
+
+[sub_resource type="Resource" id="Cue_switch"]
+script = ExtResource("2_cue")
+event_id = "show_s08_switch"
+tick = 55680
+track = 5
+cue_id = &"tutorial_combined_switch"
+target_slot = &"hud"
+parameters = {"display_sec": 3.2, "text": "单侧调频只接管对应 Hold；另一侧保持入圈后的姿态。"}
+
+[sub_resource type="Resource" id="Cue_pressure"]
+script = ExtResource("2_cue")
+event_id = "show_s08_pressure"
+tick = 74880
+track = 5
+cue_id = &"tutorial_combined_pressure"
+target_slot = &"hud"
+parameters = {"display_sec": 3.0, "text": "长跨度双侧调频；结束后继续 Hold，观察解除控制时没有跳回。"}
+
+[sub_resource type="Resource" id="Cue_rift"]
+script = ExtResource("2_cue")
+event_id = "show_s08_rift"
+tick = 75840
+duration_ticks = 3840
+track = 3
+cue_id = &"open_tuning_rift"
+target_slot = &"boundary"
+parameters = {"intensity": 1.0}
+
+[resource]
+script = ExtResource("1_show")
+schema_version = 1
+show_id = "s08_combined_show"
+cues = [SubResource("Cue_intro"), SubResource("Cue_life_counter"), SubResource("Cue_death_counter"), SubResource("Cue_paired"), SubResource("Cue_switch"), SubResource("Cue_pressure"), SubResource("Cue_rift")]

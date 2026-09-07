@@ -134,6 +134,16 @@ func reset() -> void:
 func advance_to(time_us: int, inclusive: bool = true) -> void:
 	if compiled == null or rules == null or time_us < current_time_us:
 		return
+	if not _paused_for_rearm and not health_engine.failed:
+		var boundary_us: int = note_engine.next_holding_transition_us()
+		while boundary_us < time_us and not health_engine.failed:
+			_advance_systems_to(boundary_us, true)
+			boundary_us = note_engine.next_holding_transition_us()
+	_advance_systems_to(time_us, inclusive)
+
+
+## 同刻先结算调频端点，再退出 Hold，最后同步拖动资格并应用频率变化。
+func _advance_systems_to(time_us: int, inclusive: bool) -> void:
 	current_time_us = time_us
 	if _paused_for_rearm:
 		return
@@ -146,8 +156,9 @@ func advance_to(time_us: int, inclusive: bool = true) -> void:
 		return
 	rapid_engine.advance_to(time_us, inclusive)
 	tuning_engine.advance_to(time_us, inclusive, life_held, death_held)
-	_apply_tuning_frequency_changes(time_us, inclusive)
 	note_engine.advance_to(time_us, inclusive)
+	tuning_engine.set_dual_holding_notes(note_engine.has_dual_holding_notes(), time_us)
+	_apply_tuning_frequency_changes(time_us, inclusive)
 	_process_su_manifestations(time_us, inclusive)
 	_collect_engine_records()
 	_collect_wave_events()
@@ -295,6 +306,10 @@ func _process_operation_table() -> void:
 				if operation_kind == GameplayOperationKind.LIFE_TUNING_DISPLACED
 				else GameplayTypes.Affinity.XUAN
 			)
+			var timestamp_us: int = int(entry["timestamp_us"])
+			if timestamp_us < current_time_us:
+				continue
+			advance_to(timestamp_us, false)
 			tuning_engine.apply_absolute_side(
 				affinity,
 				float(entry.get("angle_rad", NAN)),
@@ -335,7 +350,7 @@ func accept_input(sample: SemanticInputSample) -> int:
 	tuning_engine.handle_bell_input(sample)
 	var consumed: bool = false
 	# 输入所有权固定为：疾振 > 已起手或可起手的调频 > 普通 Tap/Hold。
-	# 谱面校验器会拒绝区域机制与 Hold 的冲突，避免同一输入存在两种解释。
+	# 调频只消费位移，A/B 敲击仍交给 Hold；双 Hold 条件由领域状态同步。
 	if rapid_engine.can_consume(sample):
 		consumed = rapid_engine.handle_input(sample)
 		_last_input_owner = GameplayTypes.InputOwner.RAPID
@@ -349,6 +364,7 @@ func accept_input(sample: SemanticInputSample) -> int:
 			consumed = note_engine.handle_release(sample)
 		#print("[NoteDispatch] consumed=%s owner=%d timestamp=%d" % [str(consumed), _last_input_owner, sample.timestamp_us])
 		_last_input_owner = GameplayTypes.InputOwner.NOTE if consumed else GameplayTypes.InputOwner.NONE
+	tuning_engine.set_dual_holding_notes(note_engine.has_dual_holding_notes(), sample.timestamp_us)
 	if not consumed and sample.is_press():
 		var stray := StrayInputRecord.create(sample, rules)
 		strays.append(stray)
@@ -474,6 +490,9 @@ func snapshot() -> Dictionary:
 		"rapid_ratio": rapid_engine.current_ratio(),
 		"life_held": life_held,
 		"death_held": death_held,
+		"dual_holding_notes": note_engine.has_dual_holding_notes(),
+		"life_holding_note_id": note_engine.holding_note_id(GameplayTypes.Affinity.ZHU),
+		"death_holding_note_id": note_engine.holding_note_id(GameplayTypes.Affinity.XUAN),
 		"active_hold_ids": note_engine.active_hold_ids(),
 		"held_hold_ids": note_engine.active_hold_ids(true),
 		"score": score_engine.total_score(),

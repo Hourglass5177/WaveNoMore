@@ -68,7 +68,7 @@ func advance_to(time_us: int, inclusive: bool = true) -> void:
 			# 大帧步可能同时越过尾点和断持期限。比较两者的绝对时间：尾点仍在
 			# 宽限内就先成功；宽限先耗尽则在第一个超时微秒失败，结果不依赖帧率。
 			var gap_expires_before_end: bool = gap_started_us >= 0 and gap_deadline_us < end_us
-			if gap_expires_before_end and time_us > gap_deadline_us:
+			if gap_expires_before_end and (time_us > gap_deadline_us + 1 or (inclusive and time_us == gap_deadline_us + 1)):
 				var failure_us: int = gap_deadline_us + 1
 				var gap_component := JudgmentComponentRecord.timing(
 					&"sustain", int(note["tick"]), int(note["start_us"]), failure_us,
@@ -160,11 +160,8 @@ func handle_release(sample: SemanticInputSample) -> bool:
 		var note: Dictionary = state["note"]
 		if int(note["affinity"]) != affinity or int(state["input_channel"]) != sample.input_channel():
 			continue
-		# 尾点不再判松键。恰好在尾点收到 RELEASE 时，advance_to(..., false)
-		# 尚未包含该端点，因此在这里仍按“已持续到尾点”自动完成。
-		if sample.timestamp_us >= int(note["end_us"]):
-			_finish_hold(state, int(note["end_us"]))
-			return true
+		# 同刻尾点由生命周期统一完成，先让释放参与调频端点结算。
+		# 此处只更新持续状态；不抢在同刻其他系统之前终结 Hold。
 		state["held"] = false
 		# 任何尾点前的松开都只开启持续宽限；不再把“接近尾点”误作一次松键判定。
 		if int(state["gap_started_us"]) < 0:
@@ -289,3 +286,29 @@ func _grade_tap_error(absolute_error_us: int) -> int:
 	if absolute_error_us <= _rules.pass_window_ms * 1000:
 		return GameplayTypes.JudgmentGrade.PASS
 	return GameplayTypes.JudgmentGrade.MISS
+
+
+## 只查询领域 holding 状态；松开宽限不排除，完成、Miss 和取消自然退出。
+func has_dual_holding_notes() -> bool:
+	return has_active_hold(GameplayTypes.Affinity.ZHU) and has_active_hold(GameplayTypes.Affinity.XUAN)
+
+
+## 返回指定阵营正在持续判定的 Hold ID；没有则返回空字符串。
+func holding_note_id(affinity: int) -> String:
+	for state: Dictionary in _states:
+		if state["status"] == &"holding" and int(state["note"]["affinity"]) == affinity:
+			return str(state["note"]["event_id"])
+	return ""
+
+
+## 核心推进时使用此边界，确保较早的 Hold 退出先于较晚的调频端点结算。
+func next_holding_transition_us() -> int:
+	var result: int = 9223372036854775807
+	for state: Dictionary in _states:
+		if state["status"] != &"holding":
+			continue
+		var end_us: int = int(state["note"]["end_us"])
+		result = mini(result, end_us)
+		if not bool(state["held"]) and int(state["gap_started_us"]) >= 0:
+			result = mini(result, int(state["gap_started_us"]) + _rules.hold_sustain_grace_ms * 1000 + 1)
+	return result
