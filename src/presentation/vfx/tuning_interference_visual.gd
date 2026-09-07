@@ -104,6 +104,7 @@ var _death_total_emitted: int = 0
 var _capacity_warning_emitted: bool = false
 # 已经播放过的素音事件，防止后续快照重复重启动画。
 var _presented_su_ids: Dictionary[String, bool] = {}
+var _prepared_su_ids: Dictionary[String, bool] = {}
 
 
 func _ready() -> void:
@@ -161,6 +162,7 @@ func configure_palette(p_life_color: Color, p_death_color: Color, p_overlap_colo
 	overlap_color = p_overlap_color
 	if is_instance_valid(_su_overlay):
 		_su_overlay.set("bone_color", overlap_color)
+		_su_overlay.set("canvas_size", canvas_size)
 	_push_configuration()
 
 
@@ -177,8 +179,6 @@ func set_visual_time(value: float) -> void:
 	_visual_time_sec = value
 	_previous_visual_time_sec = value
 	_prune_finished_wavefronts()
-	if is_instance_valid(_su_overlay):
-		_su_overlay.call("set_visual_time", value)
 	_push_runtime_state()
 
 
@@ -314,45 +314,6 @@ func resolve_su_candidate_points(
 	return selected
 
 
-func present_su_manifestation(
-	event_id: String,
-	spawn_region_normalized: Rect2,
-	count: int = 1,
-	successful: bool = true,
-	visual_variant: StringName = &"default",
-	exclusion_rects: Array = []
-) -> PackedVector2Array:
-	## 解析候选并立即交给覆盖层显示；返回点集方便测试和演出系统复用。
-	var points: PackedVector2Array = resolve_su_candidate_points(
-		spawn_region_normalized,
-		count,
-		su_candidate_spacing_px,
-		exclusion_rects
-	)
-	var has_real_point: bool = not points.is_empty()
-	var pixel_region := Rect2(
-		spawn_region_normalized.position * canvas_size,
-		spawn_region_normalized.size * canvas_size
-	)
-	_ensure_su_overlay()
-	_su_overlay.call(
-		"show_manifestation",
-		event_id,
-		points,
-		pixel_region.get_center(),
-		successful and has_real_point,
-		visual_variant
-	)
-	_push_runtime_state()
-	return points
-
-
-func remove_su_manifestation(event_id: String) -> void:
-	if is_instance_valid(_su_overlay):
-		_su_overlay.call("remove_manifestation", event_id)
-	_push_runtime_state()
-
-
 func debug_snapshot() -> Dictionary:
 	var life_display_times: Array[float] = _display_wavefront_times(_life_wavefront_times)
 	var death_display_times: Array[float] = _display_wavefront_times(_death_wavefront_times)
@@ -475,49 +436,25 @@ func _consume_authoritative_wavefronts(value: Variant) -> void:
 
 
 func _consume_su_manifestations(snapshot: Dictionary) -> void:
-	var value: Variant = snapshot.get("su_manifestations", [])
-	if value is not Array:
-		return
-	var current_time_us: int = int(snapshot.get("time_us", 0))
-	for entry: Variant in value:
-		if entry is not Dictionary:
+	## 准备与结算分别去重，先创建后结算；UV 直到 Overlay 绘制才转成像素。
+	_ensure_su_overlay()
+	var judge_time_sec: float = float(snapshot.get("time_us", 0)) / 1_000_000.0
+	_su_overlay.set("canvas_size", canvas_size)
+	_su_overlay.call("set_visual_time", judge_time_sec)
+	for target: Dictionary in snapshot.get("su_prepared_targets", []):
+		var event_id: String = str(target["event_id"])
+		if _prepared_su_ids.has(event_id):
 			continue
-		var manifestation: Dictionary = entry
-		var event_id: String = str(manifestation.get("event_id", manifestation.get("id", "")))
-		if event_id.is_empty() or _presented_su_ids.has(event_id):
+		_prepared_su_ids[event_id] = true
+		_su_overlay.call("prepare_targets", target)
+	for result: Dictionary in snapshot.get("su_manifestations", []):
+		var event_id: String = str(result["event_id"])
+		if _presented_su_ids.has(event_id):
 			continue
 		_presented_su_ids[event_id] = true
-		# Seek 后的快照可能含有很早以前的结果；登记但不把整关旧动画同时重播。
-		var event_time_us: int = int(manifestation.get("time_us", current_time_us))
-		if abs(event_time_us - current_time_us) > 120_000:
-			continue
-		var points := PackedVector2Array()
-		var point_values: Variant = manifestation.get("points", [])
-		if point_values is Array:
-			for point_value: Variant in point_values:
-				if point_value is Vector2:
-					points.append(point_value)
-		var normalized_region: Rect2 = manifestation.get(
-			"spawn_region_normalized",
-			Rect2(Vector2(0.2, 0.2), Vector2(0.6, 0.6))
-		)
-		var fallback_center: Vector2 = (
-			normalized_region.position + normalized_region.size * 0.5
-		) * canvas_size
-		var candidate_values: Variant = manifestation.get("candidate_points", [])
-		if points.is_empty() and candidate_values is Array and not candidate_values.is_empty():
-			var first_candidate: Variant = candidate_values[0]
-			if first_candidate is Vector2:
-				fallback_center = first_candidate
-		_ensure_su_overlay()
-		_su_overlay.call(
-			"show_manifestation",
-			event_id,
-			points,
-			fallback_center,
-			bool(manifestation.get("success", false)),
-			StringName(manifestation.get("visual_variant", &"default"))
-		)
+		_su_overlay.call("resolve_targets", result)
+	# 新建的终结条目也使用绝对时间过期，不靠固定帧延迟筛选。
+	_su_overlay.call("set_visual_time", judge_time_sec)
 
 
 func _authoritative_front_less(left: Dictionary, right: Dictionary) -> bool:
@@ -572,6 +509,8 @@ func _end_source_emission(life: bool) -> void:
 
 
 func _reset_emission() -> void:
+	_presented_su_ids.clear()
+	_prepared_su_ids.clear()
 	_life_emitting = false
 	_death_emitting = false
 	_life_phase_time_sec = _visual_time_sec

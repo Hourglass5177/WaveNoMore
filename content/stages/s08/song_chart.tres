@@ -1,0 +1,923 @@
+[gd_resource type="Resource" script_class="SongChart" load_steps=103 format=3]
+
+[ext_resource type="Script" path="res://src/content/resources/song_chart.gd" id="1_chart"]
+[ext_resource type="Script" path="res://src/content/resources/tempo_event.gd" id="2_tempo"]
+[ext_resource type="Script" path="res://src/content/resources/meter_event.gd" id="3_meter"]
+[ext_resource type="Script" path="res://src/content/resources/note_event.gd" id="4_note"]
+[ext_resource type="Script" path="res://src/content/resources/tuning_field_region.gd" id="5_field"]
+[ext_resource type="Script" path="res://src/content/resources/tuning_slider_event.gd" id="6_slider"]
+[ext_resource type="Script" path="res://src/content/resources/su_manifestation_event.gd" id="7_su"]
+[ext_resource type="Script" path="res://src/content/resources/section_marker.gd" id="8_section"]
+
+[sub_resource type="Resource" id="Tempo_0"]
+script = ExtResource("2_tempo")
+tick = 0
+bpm = 120.0
+
+[sub_resource type="Resource" id="Meter_0"]
+script = ExtResource("3_meter")
+tick = 0
+numerator = 4
+denominator = 4
+
+[sub_resource type="Resource" id="Note_s08_note_001"]
+script = ExtResource("4_note")
+event_id = "s08_note_001"
+damage_group_id = "s08_note_001"
+tick = 3840
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"tap"
+
+[sub_resource type="Resource" id="Note_s08_note_002"]
+script = ExtResource("4_note")
+event_id = "s08_note_002"
+damage_group_id = "s08_note_002"
+tick = 4320
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"tap"
+
+[sub_resource type="Resource" id="Note_s08_note_003"]
+script = ExtResource("4_note")
+event_id = "s08_note_003"
+damage_group_id = "s08_note_003"
+tick = 4800
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"tap"
+
+[sub_resource type="Resource" id="Note_s08_note_004"]
+script = ExtResource("4_note")
+event_id = "s08_note_004"
+damage_group_id = "s08_note_004"
+tick = 5280
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"tap"
+
+[sub_resource type="Resource" id="Note_s08_note_005"]
+script = ExtResource("4_note")
+event_id = "s08_note_005"
+damage_group_id = "s08_note_005"
+tick = 5760
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"tap"
+
+[sub_resource type="Resource" id="Note_s08_note_006"]
+script = ExtResource("4_note")
+event_id = "s08_note_006"
+damage_group_id = "s08_note_006"
+tick = 6240
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"tap"
+
+[sub_resource type="Resource" id="Note_s08_note_007"]
+script = ExtResource("4_note")
+event_id = "s08_note_007"
+damage_group_id = "s08_note_007"
+tick = 6720
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"tap"
+
+[sub_resource type="Resource" id="Note_s08_note_008"]
+script = ExtResource("4_note")
+event_id = "s08_note_008"
+damage_group_id = "s08_note_008"
+tick = 7200
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"tap"
+
+[sub_resource type="Resource" id="Note_s08_note_009"]
+script = ExtResource("4_note")
+event_id = "s08_note_009"
+damage_group_id = "s08_note_009"
+tick = 7680
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"same_side"
+
+[sub_resource type="Resource" id="Note_s08_note_010"]
+script = ExtResource("4_note")
+event_id = "s08_note_010"
+damage_group_id = "s08_note_010"
+tick = 8160
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"same_side"
+
+[sub_resource type="Resource" id="Note_s08_note_011"]
+script = ExtResource("4_note")
+event_id = "s08_note_011"
+damage_group_id = "s08_note_011"
+tick = 8640
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"same_side"
+
+[sub_resource type="Resource" id="Note_s08_note_012"]
+script = ExtResource("4_note")
+event_id = "s08_note_012"
+damage_group_id = "s08_note_012"
+tick = 9120
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"same_side"
+
+[sub_resource type="Resource" id="Note_s08_note_013"]
+script = ExtResource("4_note")
+event_id = "s08_note_013"
+group_id = "s08_chord_intro_1"
+damage_group_id = "s08_chord_intro_1"
+tick = 9600
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"chord"
+
+[sub_resource type="Resource" id="Note_s08_note_014"]
+script = ExtResource("4_note")
+event_id = "s08_note_014"
+group_id = "s08_chord_intro_1"
+damage_group_id = "s08_chord_intro_1"
+tick = 9600
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"chord"
+
+[sub_resource type="Resource" id="Note_s08_note_015"]
+script = ExtResource("4_note")
+event_id = "s08_note_015"
+group_id = "s08_chord_intro_2"
+damage_group_id = "s08_chord_intro_2"
+tick = 10560
+duration_ticks = 0
+kind = 0
+affinity = 0
+visual_variant = &"chord"
+
+[sub_resource type="Resource" id="Note_s08_note_016"]
+script = ExtResource("4_note")
+event_id = "s08_note_016"
+group_id = "s08_chord_intro_2"
+damage_group_id = "s08_chord_intro_2"
+tick = 10560
+duration_ticks = 0
+kind = 0
+affinity = 1
+visual_variant = &"chord"
+
+[sub_resource type="Resource" id="Note_s08_note_017"]
+script = ExtResource("4_note")
+event_id = "s08_note_017"
+damage_group_id = "s08_note_017"
+tick = 11520
+duration_ticks = 960
+kind = 1
+affinity = 0
+tail_requires_release = false
+visual_variant = &"hold"
+
+[sub_resource type="Resource" id="Note_s08_note_018"]
+script = ExtResource("4_note")
+event_id = "s08_note_018"
+damage_group_id = "s08_note_018"
+tick = 12480
+duration_ticks = 480
+kind = 1
+affinity = 1
+tail_requires_release = false
+visual_variant = &"hold"
+
+[sub_resource type="Resource" id="Note_s08_note_019"]
+script = ExtResource("4_note")
+event_id = "s08_note_019"
+damage_group_id = "s08_note_019"
+tick = 13440
+duration_ticks = 960
+kind = 1
+affinity = 1
+tail_requires_release = false
+visual_variant = &"hold"
+
+[sub_resource type="Resource" id="Note_s08_note_020"]
+script = ExtResource("4_note")
+event_id = "s08_note_020"
+damage_group_id = "s08_note_020"
+tick = 14400
+duration_ticks = 480
+kind = 1
+affinity = 0
+tail_requires_release = false
+visual_variant = &"hold"
+
+[sub_resource type="Resource" id="Note_s08_note_021"]
+script = ExtResource("4_note")
+event_id = "s08_note_021"
+group_id = "s08_hold_pair"
+damage_group_id = "s08_hold_pair"
+tick = 15360
+duration_ticks = 960
+kind = 1
+affinity = 0
+tail_requires_release = false
+visual_variant = &"dual_hold"
+
+[sub_resource type="Resource" id="Note_s08_note_022"]
+script = ExtResource("4_note")
+event_id = "s08_note_022"
+group_id = "s08_hold_pair"
+damage_group_id = "s08_hold_pair"
+tick = 15360
+duration_ticks = 960
+kind = 1
+affinity = 1
+tail_requires_release = false
+visual_variant = &"dual_hold"
+
+[sub_resource type="Resource" id="Note_s08_note_023"]
+script = ExtResource("4_note")
+event_id = "s08_note_023"
+damage_group_id = "s08_note_023"
+tick = 17280
+duration_ticks = 1440
+kind = 1
+affinity = 0
+tail_requires_release = false
+visual_variant = &"long_hold"
+
+[sub_resource type="Resource" id="Note_s08_note_024"]
+script = ExtResource("4_note")
+event_id = "s08_note_024"
+damage_group_id = "s08_note_024"
+tick = 17760
+duration_ticks = 960
+kind = 1
+affinity = 1
+tail_requires_release = false
+visual_variant = &"offset_hold"
+
+[sub_resource type="Resource" id="Note_s08_link_01_life"]
+script = ExtResource("4_note")
+event_id = "s08_link_01_life"
+damage_group_id = "s08_link_01_life"
+tick = 19200
+duration_ticks = 5760
+kind = 1
+affinity = 0
+visual_variant = &"hold"
+
+[sub_resource type="Resource" id="Note_s08_link_01_death"]
+script = ExtResource("4_note")
+event_id = "s08_link_01_death"
+damage_group_id = "s08_link_01_death"
+tick = 19680
+duration_ticks = 4800
+kind = 1
+affinity = 1
+visual_variant = &"hold"
+
+[sub_resource type="Resource" id="Note_s08_link_02_life"]
+script = ExtResource("4_note")
+event_id = "s08_link_02_life"
+damage_group_id = "s08_link_02_life"
+tick = 25920
+duration_ticks = 2880
+kind = 1
+affinity = 0
+visual_variant = &"hold"
+
+[sub_resource type="Resource" id="Note_s08_link_02_death"]
+script = ExtResource("4_note")
+event_id = "s08_link_02_death"
+damage_group_id = "s08_link_02_death"
+tick = 25440
+duration_ticks = 3840
+kind = 1
+affinity = 1
+visual_variant = &"hold"
+
+[sub_resource type="Resource" id="Note_s08_link_03_life"]
+script = ExtResource("4_note")
+event_id = "s08_link_03_life"
+damage_group_id = "s08_link_03_life"
+tick = 29760
+duration_ticks = 3840
+kind = 1
+affinity = 0
+visual_variant = &"hold"
+
+[sub_resource type="Resource" id="Note_s08_link_03_death"]
+script = ExtResource("4_note")
+event_id = "s08_link_03_death"
+damage_group_id = "s08_link_03_death"
+tick = 30240
+duration_ticks = 2880
+kind = 1
+affinity = 1
+visual_variant = &"hold"
+
+[sub_resource type="Resource" id="Note_s08_link_04_life"]
+script = ExtResource("4_note")
+event_id = "s08_link_04_life"
+damage_group_id = "s08_link_04_life"
+tick = 34560
+duration_ticks = 2880
+kind = 1
+affinity = 0
+visual_variant = &"hold"
+
+[sub_resource type="Resource" id="Note_s08_link_04_death"]
+script = ExtResource("4_note")
+event_id = "s08_link_04_death"
+damage_group_id = "s08_link_04_death"
+tick = 34080
+duration_ticks = 3840
+kind = 1
+affinity = 1
+visual_variant = &"hold"
+
+[sub_resource type="Resource" id="Note_s08_link_05_life"]
+script = ExtResource("4_note")
+event_id = "s08_link_05_life"
+damage_group_id = "s08_link_05_life"
+tick = 38400
+duration_ticks = 3840
+kind = 1
+affinity = 0
+visual_variant = &"hold"
+
+[sub_resource type="Resource" id="Note_s08_link_05_death"]
+script = ExtResource("4_note")
+event_id = "s08_link_05_death"
+damage_group_id = "s08_link_05_death"
+tick = 38880
+duration_ticks = 2880
+kind = 1
+affinity = 1
+visual_variant = &"hold"
+
+[sub_resource type="Resource" id="Note_s08_link_06_life"]
+script = ExtResource("4_note")
+event_id = "s08_link_06_life"
+damage_group_id = "s08_link_06_life"
+tick = 43200
+duration_ticks = 2880
+kind = 1
+affinity = 0
+visual_variant = &"hold"
+
+[sub_resource type="Resource" id="Note_s08_link_06_death"]
+script = ExtResource("4_note")
+event_id = "s08_link_06_death"
+damage_group_id = "s08_link_06_death"
+tick = 42720
+duration_ticks = 3840
+kind = 1
+affinity = 1
+visual_variant = &"hold"
+
+[sub_resource type="Resource" id="Note_s08_link_07_life"]
+script = ExtResource("4_note")
+event_id = "s08_link_07_life"
+damage_group_id = "s08_link_07_life"
+tick = 47040
+duration_ticks = 3840
+kind = 1
+affinity = 0
+visual_variant = &"hold"
+
+[sub_resource type="Resource" id="Note_s08_link_07_death"]
+script = ExtResource("4_note")
+event_id = "s08_link_07_death"
+damage_group_id = "s08_link_07_death"
+tick = 47520
+duration_ticks = 2880
+kind = 1
+affinity = 1
+visual_variant = &"hold"
+
+[sub_resource type="Resource" id="Note_s08_link_08_life"]
+script = ExtResource("4_note")
+event_id = "s08_link_08_life"
+damage_group_id = "s08_link_08_life"
+tick = 51840
+duration_ticks = 2880
+kind = 1
+affinity = 0
+visual_variant = &"hold"
+
+[sub_resource type="Resource" id="Note_s08_link_08_death"]
+script = ExtResource("4_note")
+event_id = "s08_link_08_death"
+damage_group_id = "s08_link_08_death"
+tick = 51360
+duration_ticks = 3840
+kind = 1
+affinity = 1
+visual_variant = &"hold"
+
+[sub_resource type="Resource" id="Note_s08_link_09_life"]
+script = ExtResource("4_note")
+event_id = "s08_link_09_life"
+damage_group_id = "s08_link_09_life"
+tick = 55680
+duration_ticks = 3840
+kind = 1
+affinity = 0
+visual_variant = &"hold"
+
+[sub_resource type="Resource" id="Note_s08_link_09_death"]
+script = ExtResource("4_note")
+event_id = "s08_link_09_death"
+damage_group_id = "s08_link_09_death"
+tick = 56160
+duration_ticks = 2880
+kind = 1
+affinity = 1
+visual_variant = &"hold"
+
+[sub_resource type="Resource" id="Note_s08_link_10_life"]
+script = ExtResource("4_note")
+event_id = "s08_link_10_life"
+damage_group_id = "s08_link_10_life"
+tick = 60480
+duration_ticks = 2880
+kind = 1
+affinity = 0
+visual_variant = &"hold"
+
+[sub_resource type="Resource" id="Note_s08_link_10_death"]
+script = ExtResource("4_note")
+event_id = "s08_link_10_death"
+damage_group_id = "s08_link_10_death"
+tick = 60000
+duration_ticks = 3840
+kind = 1
+affinity = 1
+visual_variant = &"hold"
+
+[sub_resource type="Resource" id="Note_s08_link_11_life"]
+script = ExtResource("4_note")
+event_id = "s08_link_11_life"
+damage_group_id = "s08_link_11_life"
+tick = 64320
+duration_ticks = 5760
+kind = 1
+affinity = 0
+visual_variant = &"hold"
+
+[sub_resource type="Resource" id="Note_s08_link_11_death"]
+script = ExtResource("4_note")
+event_id = "s08_link_11_death"
+damage_group_id = "s08_link_11_death"
+tick = 64800
+duration_ticks = 4800
+kind = 1
+affinity = 1
+visual_variant = &"hold"
+
+[sub_resource type="Resource" id="Note_s08_link_12_life"]
+script = ExtResource("4_note")
+event_id = "s08_link_12_life"
+damage_group_id = "s08_link_12_life"
+tick = 71040
+duration_ticks = 2880
+kind = 1
+affinity = 0
+visual_variant = &"hold"
+
+[sub_resource type="Resource" id="Note_s08_link_12_death"]
+script = ExtResource("4_note")
+event_id = "s08_link_12_death"
+damage_group_id = "s08_link_12_death"
+tick = 70560
+duration_ticks = 3840
+kind = 1
+affinity = 1
+visual_variant = &"hold"
+
+[sub_resource type="Resource" id="Note_s08_link_13_life"]
+script = ExtResource("4_note")
+event_id = "s08_link_13_life"
+damage_group_id = "s08_link_13_life"
+tick = 74880
+duration_ticks = 5760
+kind = 1
+affinity = 0
+visual_variant = &"hold"
+
+[sub_resource type="Resource" id="Note_s08_link_13_death"]
+script = ExtResource("4_note")
+event_id = "s08_link_13_death"
+damage_group_id = "s08_link_13_death"
+tick = 75360
+duration_ticks = 4800
+kind = 1
+affinity = 1
+visual_variant = &"hold"
+
+[sub_resource type="Resource" id="Field_life_counter"]
+script = ExtResource("5_field")
+event_id = "field_s08_life_counter"
+tick = 19200
+duration_ticks = 10080
+
+[sub_resource type="Resource" id="Field_death_counter"]
+script = ExtResource("5_field")
+event_id = "field_s08_death_counter"
+tick = 29760
+duration_ticks = 8160
+
+[sub_resource type="Resource" id="Field_paired_long"]
+script = ExtResource("5_field")
+event_id = "field_s08_paired_long"
+tick = 38400
+duration_ticks = 16800
+
+[sub_resource type="Resource" id="Field_switch_life"]
+script = ExtResource("5_field")
+event_id = "field_s08_switch_life"
+tick = 55680
+duration_ticks = 8160
+
+[sub_resource type="Resource" id="Field_switch_death"]
+script = ExtResource("5_field")
+event_id = "field_s08_switch_death"
+tick = 64320
+duration_ticks = 10080
+
+[sub_resource type="Resource" id="Field_pressure"]
+script = ExtResource("5_field")
+event_id = "field_s08_pressure"
+tick = 74880
+duration_ticks = 5760
+
+[sub_resource type="Resource" id="Slider_life_counter"]
+script = ExtResource("6_slider")
+event_id = "s08_slider_life_counter"
+field_id = "field_s08_life_counter"
+affinity = 0
+tick = 20160
+traversal_ticks = 1920
+traversal_count = 2
+start_value = 0.333333
+end_value = 0.666667
+
+[sub_resource type="Resource" id="Slider_life_counter_tail"]
+script = ExtResource("6_slider")
+event_id = "s08_slider_life_counter_tail"
+field_id = "field_s08_life_counter"
+affinity = 0
+tick = 26400
+traversal_ticks = 1920
+traversal_count = 1
+start_value = 0.333333
+end_value = 0.0
+
+[sub_resource type="Resource" id="Slider_death_counter"]
+script = ExtResource("6_slider")
+event_id = "s08_slider_death_counter"
+field_id = "field_s08_death_counter"
+affinity = 1
+tick = 30720
+traversal_ticks = 1920
+traversal_count = 1
+start_value = 0.333333
+end_value = 0.0
+
+[sub_resource type="Resource" id="Slider_death_counter_return"]
+script = ExtResource("6_slider")
+event_id = "s08_slider_death_counter_return"
+field_id = "field_s08_death_counter"
+affinity = 1
+tick = 35040
+traversal_ticks = 1920
+traversal_count = 1
+start_value = 0.0
+end_value = 0.333333
+
+[sub_resource type="Resource" id="Slider_paired_a_life"]
+script = ExtResource("6_slider")
+event_id = "s08_slider_paired_a_life"
+field_id = "field_s08_paired_long"
+group_id = "s08_group_paired_a"
+affinity = 0
+tick = 39360
+traversal_ticks = 1920
+traversal_count = 1
+start_value = 0.333333
+end_value = 0.666667
+
+[sub_resource type="Resource" id="Slider_paired_a_death"]
+script = ExtResource("6_slider")
+event_id = "s08_slider_paired_a_death"
+field_id = "field_s08_paired_long"
+group_id = "s08_group_paired_a"
+affinity = 1
+tick = 39360
+traversal_ticks = 1920
+traversal_count = 1
+start_value = 0.333333
+end_value = 0.0
+
+[sub_resource type="Resource" id="Slider_paired_b_life"]
+script = ExtResource("6_slider")
+event_id = "s08_slider_paired_b_life"
+field_id = "field_s08_paired_long"
+group_id = "s08_group_paired_b"
+affinity = 0
+tick = 43680
+traversal_ticks = 1920
+traversal_count = 1
+start_value = 0.666667
+end_value = 0.333333
+
+[sub_resource type="Resource" id="Slider_paired_b_death"]
+script = ExtResource("6_slider")
+event_id = "s08_slider_paired_b_death"
+field_id = "field_s08_paired_long"
+group_id = "s08_group_paired_b"
+affinity = 1
+tick = 43680
+traversal_ticks = 1920
+traversal_count = 1
+start_value = 0.0
+end_value = 0.333333
+
+[sub_resource type="Resource" id="Slider_paired_c_life"]
+script = ExtResource("6_slider")
+event_id = "s08_slider_paired_c_life"
+field_id = "field_s08_paired_long"
+group_id = "s08_group_paired_c"
+affinity = 0
+tick = 48000
+traversal_ticks = 1920
+traversal_count = 1
+start_value = 0.333333
+end_value = 0.0
+
+[sub_resource type="Resource" id="Slider_paired_c_death"]
+script = ExtResource("6_slider")
+event_id = "s08_slider_paired_c_death"
+field_id = "field_s08_paired_long"
+group_id = "s08_group_paired_c"
+affinity = 1
+tick = 48000
+traversal_ticks = 1920
+traversal_count = 1
+start_value = 0.333333
+end_value = 0.666667
+
+[sub_resource type="Resource" id="Slider_paired_d_life"]
+script = ExtResource("6_slider")
+event_id = "s08_slider_paired_d_life"
+field_id = "field_s08_paired_long"
+group_id = "s08_group_paired_d"
+affinity = 0
+tick = 52320
+traversal_ticks = 1920
+traversal_count = 1
+start_value = 0.0
+end_value = 0.333333
+
+[sub_resource type="Resource" id="Slider_paired_d_death"]
+script = ExtResource("6_slider")
+event_id = "s08_slider_paired_d_death"
+field_id = "field_s08_paired_long"
+group_id = "s08_group_paired_d"
+affinity = 1
+tick = 52320
+traversal_ticks = 1920
+traversal_count = 1
+start_value = 0.666667
+end_value = 0.333333
+
+[sub_resource type="Resource" id="Slider_switch_life"]
+script = ExtResource("6_slider")
+event_id = "s08_slider_switch_life"
+field_id = "field_s08_switch_life"
+affinity = 0
+tick = 56640
+traversal_ticks = 1920
+traversal_count = 1
+start_value = 0.333333
+end_value = 0.0
+
+[sub_resource type="Resource" id="Slider_switch_life_return"]
+script = ExtResource("6_slider")
+event_id = "s08_slider_switch_life_return"
+field_id = "field_s08_switch_life"
+affinity = 0
+tick = 60960
+traversal_ticks = 1920
+traversal_count = 1
+start_value = 0.0
+end_value = 0.333333
+
+[sub_resource type="Resource" id="Slider_switch_death"]
+script = ExtResource("6_slider")
+event_id = "s08_slider_switch_death"
+field_id = "field_s08_switch_death"
+affinity = 1
+tick = 65280
+traversal_ticks = 1920
+traversal_count = 2
+start_value = 0.333333
+end_value = 0.666667
+
+[sub_resource type="Resource" id="Slider_switch_death_tail"]
+script = ExtResource("6_slider")
+event_id = "s08_slider_switch_death_tail"
+field_id = "field_s08_switch_death"
+affinity = 1
+tick = 71520
+traversal_ticks = 1920
+traversal_count = 1
+start_value = 0.333333
+end_value = 0.666667
+
+[sub_resource type="Resource" id="Slider_pressure_life"]
+script = ExtResource("6_slider")
+event_id = "s08_slider_pressure_life"
+field_id = "field_s08_pressure"
+group_id = "s08_group_pressure"
+affinity = 0
+tick = 75840
+traversal_ticks = 3840
+traversal_count = 1
+start_value = 0.333333
+end_value = 1.0
+
+[sub_resource type="Resource" id="Slider_pressure_death"]
+script = ExtResource("6_slider")
+event_id = "s08_slider_pressure_death"
+field_id = "field_s08_pressure"
+group_id = "s08_group_pressure"
+affinity = 1
+tick = 75840
+traversal_ticks = 3840
+traversal_count = 1
+start_value = 0.333333
+end_value = 1.0
+
+[sub_resource type="Resource" id="Su_pressure"]
+script = ExtResource("7_su")
+event_id = "s08_su_pressure"
+group_id = "s08_group_pressure"
+tick = 80160
+count = 2
+spawn_region_normalized = Rect2(0.24, 0.16, 0.52, 0.68)
+visual_variant = &"white_knot_pair"
+
+[sub_resource type="Resource" id="Section_prepare"]
+script = ExtResource("8_section")
+event_id = "section_s08_prepare"
+tick = 0
+label = "准备"
+tutorial_key = &"combined_intro"
+
+[sub_resource type="Resource" id="Section_tap"]
+script = ExtResource("8_section")
+event_id = "section_s08_tap"
+tick = 3840
+label = "Tap"
+tutorial_key = &"combined_tap"
+
+[sub_resource type="Resource" id="Section_hold"]
+script = ExtResource("8_section")
+event_id = "section_s08_hold"
+tick = 11520
+label = "Hold"
+tutorial_key = &"combined_hold"
+
+[sub_resource type="Resource" id="Section_s08_link_1"]
+script = ExtResource("8_section")
+event_id = "section_s08_link_1"
+tick = 19200
+label = "01 双 Hold + 生侧调频"
+tutorial_key = &"s08_dual_hold_tuning"
+
+[sub_resource type="Resource" id="Section_s08_link_2"]
+script = ExtResource("8_section")
+event_id = "section_s08_link_2"
+tick = 25440
+label = "02 双 Hold + 生侧调频"
+tutorial_key = &"s08_dual_hold_tuning"
+
+[sub_resource type="Resource" id="Section_s08_link_3"]
+script = ExtResource("8_section")
+event_id = "section_s08_link_3"
+tick = 29760
+label = "03 双 Hold + 死侧调频"
+tutorial_key = &"s08_dual_hold_tuning"
+
+[sub_resource type="Resource" id="Section_s08_link_4"]
+script = ExtResource("8_section")
+event_id = "section_s08_link_4"
+tick = 34080
+label = "04 双 Hold + 死侧调频"
+tutorial_key = &"s08_dual_hold_tuning"
+
+[sub_resource type="Resource" id="Section_s08_link_5"]
+script = ExtResource("8_section")
+event_id = "section_s08_link_5"
+tick = 38400
+label = "05 双 Hold + 双侧调频"
+tutorial_key = &"s08_dual_hold_tuning"
+
+[sub_resource type="Resource" id="Section_s08_link_6"]
+script = ExtResource("8_section")
+event_id = "section_s08_link_6"
+tick = 42720
+label = "06 双 Hold + 双侧调频"
+tutorial_key = &"s08_dual_hold_tuning"
+
+[sub_resource type="Resource" id="Section_s08_link_7"]
+script = ExtResource("8_section")
+event_id = "section_s08_link_7"
+tick = 47040
+label = "07 双 Hold + 双侧调频"
+tutorial_key = &"s08_dual_hold_tuning"
+
+[sub_resource type="Resource" id="Section_s08_link_8"]
+script = ExtResource("8_section")
+event_id = "section_s08_link_8"
+tick = 51360
+label = "08 双 Hold + 双侧调频"
+tutorial_key = &"s08_dual_hold_tuning"
+
+[sub_resource type="Resource" id="Section_s08_link_9"]
+script = ExtResource("8_section")
+event_id = "section_s08_link_9"
+tick = 55680
+label = "09 双 Hold + 生侧调频"
+tutorial_key = &"s08_dual_hold_tuning"
+
+[sub_resource type="Resource" id="Section_s08_link_10"]
+script = ExtResource("8_section")
+event_id = "section_s08_link_10"
+tick = 60000
+label = "10 双 Hold + 生侧调频"
+tutorial_key = &"s08_dual_hold_tuning"
+
+[sub_resource type="Resource" id="Section_s08_link_11"]
+script = ExtResource("8_section")
+event_id = "section_s08_link_11"
+tick = 64320
+label = "11 双 Hold + 死侧调频"
+tutorial_key = &"s08_dual_hold_tuning"
+
+[sub_resource type="Resource" id="Section_s08_link_12"]
+script = ExtResource("8_section")
+event_id = "section_s08_link_12"
+tick = 70560
+label = "12 双 Hold + 死侧调频"
+tutorial_key = &"s08_dual_hold_tuning"
+
+[sub_resource type="Resource" id="Section_s08_link_13"]
+script = ExtResource("8_section")
+event_id = "section_s08_link_13"
+tick = 74880
+label = "13 双 Hold + 双侧调频"
+tutorial_key = &"s08_dual_hold_tuning"
+
+[sub_resource type="Resource" id="Section_s08_outro"]
+script = ExtResource("8_section")
+event_id = "section_s08_outro"
+tick = 80640
+label = "收尾"
+
+[resource]
+script = ExtResource("1_chart")
+schema_version = 2
+chart_id = "s08_combined_lab"
+difficulty_id = "experiment"
+ppq = 480
+chart_offset_ticks = 0
+end_tick = 81120
+tempo_events = [SubResource("Tempo_0")]
+meter_events = [SubResource("Meter_0")]
+note_events = [SubResource("Note_s08_note_001"), SubResource("Note_s08_note_002"), SubResource("Note_s08_note_003"), SubResource("Note_s08_note_004"), SubResource("Note_s08_note_005"), SubResource("Note_s08_note_006"), SubResource("Note_s08_note_007"), SubResource("Note_s08_note_008"), SubResource("Note_s08_note_009"), SubResource("Note_s08_note_010"), SubResource("Note_s08_note_011"), SubResource("Note_s08_note_012"), SubResource("Note_s08_note_013"), SubResource("Note_s08_note_014"), SubResource("Note_s08_note_015"), SubResource("Note_s08_note_016"), SubResource("Note_s08_note_017"), SubResource("Note_s08_note_018"), SubResource("Note_s08_note_019"), SubResource("Note_s08_note_020"), SubResource("Note_s08_note_021"), SubResource("Note_s08_note_022"), SubResource("Note_s08_note_023"), SubResource("Note_s08_note_024"), SubResource("Note_s08_link_01_life"), SubResource("Note_s08_link_01_death"), SubResource("Note_s08_link_02_life"), SubResource("Note_s08_link_02_death"), SubResource("Note_s08_link_03_life"), SubResource("Note_s08_link_03_death"), SubResource("Note_s08_link_04_life"), SubResource("Note_s08_link_04_death"), SubResource("Note_s08_link_05_life"), SubResource("Note_s08_link_05_death"), SubResource("Note_s08_link_06_life"), SubResource("Note_s08_link_06_death"), SubResource("Note_s08_link_07_life"), SubResource("Note_s08_link_07_death"), SubResource("Note_s08_link_08_life"), SubResource("Note_s08_link_08_death"), SubResource("Note_s08_link_09_life"), SubResource("Note_s08_link_09_death"), SubResource("Note_s08_link_10_life"), SubResource("Note_s08_link_10_death"), SubResource("Note_s08_link_11_life"), SubResource("Note_s08_link_11_death"), SubResource("Note_s08_link_12_life"), SubResource("Note_s08_link_12_death"), SubResource("Note_s08_link_13_life"), SubResource("Note_s08_link_13_death")]
+tuning_fields = [SubResource("Field_life_counter"), SubResource("Field_death_counter"), SubResource("Field_paired_long"), SubResource("Field_switch_life"), SubResource("Field_switch_death"), SubResource("Field_pressure")]
+tuning_sliders = [SubResource("Slider_life_counter"), SubResource("Slider_life_counter_tail"), SubResource("Slider_death_counter"), SubResource("Slider_death_counter_return"), SubResource("Slider_paired_a_life"), SubResource("Slider_paired_a_death"), SubResource("Slider_paired_b_life"), SubResource("Slider_paired_b_death"), SubResource("Slider_paired_c_life"), SubResource("Slider_paired_c_death"), SubResource("Slider_paired_d_life"), SubResource("Slider_paired_d_death"), SubResource("Slider_switch_life"), SubResource("Slider_switch_life_return"), SubResource("Slider_switch_death"), SubResource("Slider_switch_death_tail"), SubResource("Slider_pressure_life"), SubResource("Slider_pressure_death")]
+su_manifestations = [SubResource("Su_pressure")]
+rapid_regions = []
+sections = [SubResource("Section_prepare"), SubResource("Section_tap"), SubResource("Section_hold"), SubResource("Section_s08_link_1"), SubResource("Section_s08_link_2"), SubResource("Section_s08_link_3"), SubResource("Section_s08_link_4"), SubResource("Section_s08_link_5"), SubResource("Section_s08_link_6"), SubResource("Section_s08_link_7"), SubResource("Section_s08_link_8"), SubResource("Section_s08_link_9"), SubResource("Section_s08_link_10"), SubResource("Section_s08_link_11"), SubResource("Section_s08_link_12"), SubResource("Section_s08_link_13"), SubResource("Section_s08_outro")]

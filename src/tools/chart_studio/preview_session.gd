@@ -118,14 +118,22 @@ func _step_to(target: int) -> void:
 	while _cursor < _inputs.size() and _inputs[_cursor].timestamp_us <= target:
 		var at := _inputs[_cursor].timestamp_us
 		session.advance_preview(at, false)
+		# 新 Hold 在头判时记录实际姿态；先抵达输入时刻，再改变按住状态。
+		_publish_motion_frame(at)
 		var batch: Array[SemanticInputSample] = []
 		while _cursor < _inputs.size() and _inputs[_cursor].timestamp_us == at:
 			batch.append(_inputs[_cursor])
 			_cursor += 1
 		session.inject_preview_inputs(batch)
 		session.advance_preview(at, true)
+		_publish_motion_frame(at)
 	session.advance_preview(target, true)
-	if not already_batched:
-		coordinator.finish_preview_batch()
-		session.publish_preview_state(target)
+	_publish_motion_frame(target)
+	coordinator.defer_preview_snapshot = already_batched
 	_time_us = target
+
+func _publish_motion_frame(time_us: int) -> void:
+	# 动态身体需要输入边界的持续状态，不能把整段历史都合并成最后一张快照。
+	stage_root.gameplay_coordinator.finish_preview_batch()
+	stage_root.stage_session.publish_preview_state(time_us)
+	stage_root.gameplay_coordinator.defer_preview_snapshot = true

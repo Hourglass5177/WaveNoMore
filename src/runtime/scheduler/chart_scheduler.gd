@@ -1,7 +1,7 @@
 class_name ChartScheduler
 extends Node
 
-## 纯表现调度器：按 visual_time 提前生成、按物理结果回收视觉对象，
+## 纯表现调度器：普通音符按 visual_time、调频按 judge_time 提前生成，按结果回收视觉对象，
 ## 绝不判断输入是否合法，也不计算成绩。
 
 ## 某事件进入预见窗口时请求创建视觉对象；`kind` 区分普通音符、调频和疾振。
@@ -18,6 +18,8 @@ signal visual_wave_contacted(event_id: String, contact: Dictionary)
 signal visual_note_arrived(event_id: String, arrival: Dictionary)
 ## 重开或 Seek 清空所有调度状态时发出。
 signal scheduler_reset
+## 素音进入预读窗口时只请求预测，不直接创建未经求交的图形。
+signal su_preparation_requested(event_id: String)
 
 ## 普通 Tap/Hold 视觉轨的内部类型名。
 const KIND_NOTE: StringName = &"note"
@@ -25,6 +27,8 @@ const KIND_NOTE: StringName = &"note"
 const KIND_TUNING: StringName = &"tuning"
 ## 双钟疾振区域视觉轨的内部类型名。
 const KIND_RAPID: StringName = &"rapid"
+## 素音以判定时间预读，实际实例由目标快照管理。
+const KIND_SU: StringName = &"su"
 ## 一秒包含的微秒数，用于视觉秒时间和编译谱整数时间戳之间换算。
 const USEC_PER_SEC: float = 1_000_000.0
 
@@ -40,7 +44,7 @@ const USEC_PER_SEC: float = 1_000_000.0
 ## 调度器最近推进到的表现时间，单位为秒；它包含 Settings 中的画面提前量。
 var visual_time_sec: float = 0.0
 
-## 三类已编译事件轨，键为 KIND_*，数组按开始时间稳定排序。
+## 四类已编译事件轨；素音轨只发布预读请求，不进入普通视觉实例表。
 var _tracks: Dictionary[StringName, Array] = {}
 ## 各轨下一项尚未生成事件的索引。
 var _cursors: Dictionary[StringName, int] = {}
@@ -54,6 +58,7 @@ func configure(compiled_chart: Variant, approach_sec: float = 2.25) -> void:
 		KIND_NOTE: _read_array_member(compiled_chart, &"notes"),
 		KIND_TUNING: _read_array_member(compiled_chart, &"tuning_sliders"),
 		KIND_RAPID: _read_array_member(compiled_chart, &"rapid_regions"),
+		KIND_SU: _read_array_member(compiled_chart, &"su_manifestations"),
 	}
 	_sort_tracks()
 	reset()
@@ -68,17 +73,19 @@ func reset() -> void:
 		KIND_NOTE: 0,
 		KIND_TUNING: 0,
 		KIND_RAPID: 0,
+		KIND_SU: 0,
 	}
 	visual_time_sec = 0.0
 	scheduler_reset.emit()
 
 
-func seek(target_visual_time_sec: float) -> void:
+func seek(target_visual_time_sec: float, tuning_time_sec: float) -> void:
+	## 重建目标时间的表现；调频与其中心灵体共享输入开放的判定时钟。
 	# 跳转先彻底清场，再逐轨略过已经结束的事件，并重建仍应出现在目标时刻的对象。
 	reset()
 	visual_time_sec = target_visual_time_sec
-	var target_usec: int = roundi(target_visual_time_sec * USEC_PER_SEC)
 	for kind: StringName in _tracks.keys():
+		var target_usec: int = roundi((tuning_time_sec if kind in [KIND_TUNING, KIND_SU] else target_visual_time_sec) * USEC_PER_SEC)
 		var track: Array = _tracks[kind]
 		var cursor: int = 0
 		while cursor < track.size():
@@ -96,18 +103,21 @@ func seek(target_visual_time_sec: float) -> void:
 		_cursors[kind] = cursor
 
 
-func advance(target_visual_time_sec: float) -> void:
+func advance(target_visual_time_sec: float, tuning_time_sec: float) -> void:
+	## 调频视觉以输入开放的判定时间预读；普通音符仍使用视觉时间。
 	visual_time_sec = target_visual_time_sec
 	var target_usec: int = roundi(target_visual_time_sec * USEC_PER_SEC)
+	var tuning_usec: int = roundi(tuning_time_sec * USEC_PER_SEC)
 	var lookahead_usec: int = roundi(approach_duration_sec * USEC_PER_SEC)
 
 	# 第一阶段只向前移动各轨游标，把进入“当前时间 + 预见窗口”的事件生成出来。
 	for kind: StringName in _tracks.keys():
+		var spawn_usec: int = tuning_usec if kind in [KIND_TUNING, KIND_SU] else target_usec
 		var track: Array = _tracks[kind]
 		var cursor: int = int(_cursors.get(kind, 0))
 		while cursor < track.size():
 			var entry: Dictionary = track[cursor]
-			if _event_start_usec(entry) - lookahead_usec > target_usec:
+			if _event_start_usec(entry) - lookahead_usec > spawn_usec:
 				break
 			_spawn(kind, entry, cursor)
 			cursor += 1
@@ -120,9 +130,15 @@ func advance(target_visual_time_sec: float) -> void:
 		var event_data: Dictionary = active_entry["data"]
 		var expiry_usec: int = _event_end_usec(event_data) + _tail_usec_for(active_entry["kind"])
 		var resolved_usec: int = int(active_entry.get("resolved_us", -1))
+		if StringName(event_data.get("unit_kind", &"")) == &"hold":
+			# Hold 的失败尾部由 Host 沿实际视觉路线送完；成功仍保留结果展示时间。
+			if resolved_usec < 0:
+				continue
+			expiry_usec = resolved_usec + roundi(resolved_note_tail_sec * USEC_PER_SEC)
 		if resolved_usec >= 0:
 			expiry_usec = mini(expiry_usec, resolved_usec + roundi(resolved_note_tail_sec * USEC_PER_SEC))
-		if expiry_usec < target_usec:
+		var expiry_clock_usec: int = tuning_usec if active_entry["kind"] == KIND_TUNING else target_usec
+		if expiry_usec < expiry_clock_usec:
 			expired_ids.append(active_id)
 	for active_id: String in expired_ids:
 		var active_entry: Dictionary = _active[active_id]
@@ -134,6 +150,8 @@ func mark_judged(event_id: String, grade: int) -> void:
 	visual_judged.emit(event_id, grade)
 	if _active.has(event_id) and StringName(_active[event_id].get("kind", &"")) == KIND_NOTE:
 		var active_entry: Dictionary = _active[event_id]
+		if StringName(active_entry["data"].get("unit_kind", &"")) == &"hold" and grade == GameplayTypes.JudgmentGrade.MISS:
+			return
 		if int(active_entry.get("resolved_us", -1)) < 0:
 			active_entry["resolved_us"] = roundi(visual_time_sec * USEC_PER_SEC)
 
@@ -159,8 +177,22 @@ func mark_wave_contacted(event_id: String, contact: Dictionary) -> void:
 
 func mark_note_arrived(event_id: String, arrival: Dictionary) -> void:
 	if _active.has(event_id):
+		# 领域路线没有包含 Hold 视觉暂停，不能用它提前回收或播放视觉抵达。
+		if StringName(_active[event_id]["data"].get("unit_kind", &"")) == &"hold":
+			return
 		_active[event_id]["resolved_us"] = int(arrival.get("arrival_us", roundi(visual_time_sec * USEC_PER_SEC)))
 	visual_note_arrived.emit(event_id, arrival.duplicate(true))
+
+
+func finish_hold_visual(event_id: String) -> void:
+	## Host 确认失败 Hold 的尾部抵达路线末端后，请求统一回收。
+	if not _active.has(event_id):
+		return
+	var entry: Dictionary = _active[event_id]
+	if StringName(entry["data"].get("unit_kind", &"")) != &"hold":
+		return
+	_active.erase(event_id)
+	visual_despawn_requested.emit(entry["kind"], event_id)
 
 
 func get_active_events() -> Array[Dictionary]:
@@ -174,6 +206,9 @@ func _spawn(kind: StringName, source: Dictionary, fallback_index: int) -> void:
 	var entry: Dictionary = source.duplicate(true)
 	var event_id: String = _event_id(entry, kind, fallback_index)
 	entry["event_id"] = event_id
+	if kind == KIND_SU:
+		su_preparation_requested.emit(event_id)
+		return
 	if _active.has(event_id):
 		return
 	_active[event_id] = {"kind": kind, "data": entry}
@@ -222,6 +257,8 @@ func _read_array_member(source: Variant, member_name: StringName) -> Array:
 
 
 func _tail_usec_for(kind: StringName) -> int:
+	if kind == KIND_SU:
+		return 0
 	var tail_sec: float = note_visual_tail_sec if kind == KIND_NOTE else visual_tail_sec
 	return roundi(tail_sec * USEC_PER_SEC)
 

@@ -1,0 +1,394 @@
+[gd_resource type="Resource" script_class="SongChart" load_steps=47 format=3]
+
+[ext_resource type="Script" path="res://src/content/resources/song_chart.gd" id="1_chart"]
+[ext_resource type="Script" path="res://src/content/resources/tempo_event.gd" id="2_tempo"]
+[ext_resource type="Script" path="res://src/content/resources/meter_event.gd" id="3_meter"]
+[ext_resource type="Script" path="res://src/content/resources/su_manifestation_event.gd" id="7_su"]
+
+[sub_resource type="Resource" id="Tempo_0"]
+script = ExtResource("2_tempo")
+tick = 0
+bpm = 120.0
+
+[sub_resource type="Resource" id="Meter_0"]
+script = ExtResource("3_meter")
+tick = 0
+numerator = 4
+denominator = 4
+
+[sub_resource type="Resource" id="Su_beat_00"]
+script = ExtResource("7_su")
+event_id = "s07_beat_00"
+tick = 0
+count = 1
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+target_visual_variant = &"circle"
+target_hold_duration_sec = 0.78
+
+[sub_resource type="Resource" id="Su_beat_01"]
+script = ExtResource("7_su")
+event_id = "s07_beat_01"
+tick = 480
+count = 2
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+target_visual_variant = &"circle"
+target_hold_duration_sec = 0.78
+
+[sub_resource type="Resource" id="Su_beat_02"]
+script = ExtResource("7_su")
+event_id = "s07_beat_02"
+tick = 960
+count = 3
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+target_visual_variant = &"circle"
+target_hold_duration_sec = 0.78
+
+[sub_resource type="Resource" id="Su_beat_03"]
+script = ExtResource("7_su")
+event_id = "s07_beat_03"
+tick = 1440
+count = 1
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+target_visual_variant = &"circle"
+target_hold_duration_sec = 0.78
+
+[sub_resource type="Resource" id="Su_beat_04"]
+script = ExtResource("7_su")
+event_id = "s07_beat_04"
+tick = 1920
+count = 2
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+target_visual_variant = &"circle"
+target_hold_duration_sec = 0.78
+
+[sub_resource type="Resource" id="Su_beat_05"]
+script = ExtResource("7_su")
+event_id = "s07_beat_05"
+tick = 2400
+count = 3
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+target_visual_variant = &"circle"
+target_hold_duration_sec = 0.78
+
+[sub_resource type="Resource" id="Su_beat_06"]
+script = ExtResource("7_su")
+event_id = "s07_beat_06"
+tick = 2880
+count = 1
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+target_visual_variant = &"circle"
+target_hold_duration_sec = 0.78
+
+[sub_resource type="Resource" id="Su_beat_07"]
+script = ExtResource("7_su")
+event_id = "s07_beat_07"
+tick = 3360
+count = 2
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+target_visual_variant = &"circle"
+target_hold_duration_sec = 0.78
+
+[sub_resource type="Resource" id="Su_beat_08"]
+script = ExtResource("7_su")
+event_id = "s07_beat_08"
+tick = 3840
+count = 3
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+target_visual_variant = &"circle"
+target_hold_duration_sec = 0.78
+
+[sub_resource type="Resource" id="Su_beat_09"]
+script = ExtResource("7_su")
+event_id = "s07_beat_09"
+tick = 4320
+count = 1
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+target_visual_variant = &"circle"
+target_hold_duration_sec = 0.78
+
+[sub_resource type="Resource" id="Su_beat_10"]
+script = ExtResource("7_su")
+event_id = "s07_beat_10"
+tick = 4800
+count = 2
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+target_visual_variant = &"circle"
+target_hold_duration_sec = 0.78
+
+[sub_resource type="Resource" id="Su_beat_11"]
+script = ExtResource("7_su")
+event_id = "s07_beat_11"
+tick = 5280
+count = 3
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+target_visual_variant = &"circle"
+target_hold_duration_sec = 0.78
+
+[sub_resource type="Resource" id="Su_beat_12"]
+script = ExtResource("7_su")
+event_id = "s07_beat_12"
+tick = 5760
+count = 1
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+target_visual_variant = &"circle"
+target_hold_duration_sec = 0.78
+
+[sub_resource type="Resource" id="Su_beat_13"]
+script = ExtResource("7_su")
+event_id = "s07_beat_13"
+tick = 6240
+count = 2
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+target_visual_variant = &"circle"
+target_hold_duration_sec = 0.78
+
+[sub_resource type="Resource" id="Su_beat_14"]
+script = ExtResource("7_su")
+event_id = "s07_beat_14"
+tick = 6720
+count = 3
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+target_visual_variant = &"circle"
+target_hold_duration_sec = 0.78
+
+[sub_resource type="Resource" id="Su_beat_15"]
+script = ExtResource("7_su")
+event_id = "s07_beat_15"
+tick = 7200
+count = 1
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+target_visual_variant = &"circle"
+target_hold_duration_sec = 0.78
+
+[sub_resource type="Resource" id="Su_beat_16"]
+script = ExtResource("7_su")
+event_id = "s07_beat_16"
+tick = 7680
+count = 2
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+target_visual_variant = &"circle"
+target_hold_duration_sec = 0.78
+
+[sub_resource type="Resource" id="Su_beat_17"]
+script = ExtResource("7_su")
+event_id = "s07_beat_17"
+tick = 8160
+count = 3
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+target_visual_variant = &"circle"
+target_hold_duration_sec = 0.78
+
+[sub_resource type="Resource" id="Su_beat_18"]
+script = ExtResource("7_su")
+event_id = "s07_beat_18"
+tick = 8640
+count = 1
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+target_visual_variant = &"circle"
+target_hold_duration_sec = 0.78
+
+[sub_resource type="Resource" id="Su_beat_19"]
+script = ExtResource("7_su")
+event_id = "s07_beat_19"
+tick = 9120
+count = 2
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+target_visual_variant = &"circle"
+target_hold_duration_sec = 0.78
+
+[sub_resource type="Resource" id="Su_beat_20"]
+script = ExtResource("7_su")
+event_id = "s07_beat_20"
+tick = 9600
+count = 3
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+target_visual_variant = &"circle"
+target_hold_duration_sec = 0.78
+
+[sub_resource type="Resource" id="Su_beat_21"]
+script = ExtResource("7_su")
+event_id = "s07_beat_21"
+tick = 10080
+count = 1
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+target_visual_variant = &"circle"
+target_hold_duration_sec = 0.78
+
+[sub_resource type="Resource" id="Su_beat_22"]
+script = ExtResource("7_su")
+event_id = "s07_beat_22"
+tick = 10560
+count = 2
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+target_visual_variant = &"circle"
+target_hold_duration_sec = 0.78
+
+[sub_resource type="Resource" id="Su_beat_23"]
+script = ExtResource("7_su")
+event_id = "s07_beat_23"
+tick = 11040
+count = 3
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+target_visual_variant = &"circle"
+target_hold_duration_sec = 0.78
+
+[sub_resource type="Resource" id="Su_beat_24"]
+script = ExtResource("7_su")
+event_id = "s07_beat_24"
+tick = 11520
+count = 1
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+target_visual_variant = &"circle"
+target_hold_duration_sec = 0.78
+
+[sub_resource type="Resource" id="Su_beat_25"]
+script = ExtResource("7_su")
+event_id = "s07_beat_25"
+tick = 12000
+count = 2
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+target_visual_variant = &"circle"
+target_hold_duration_sec = 0.78
+
+[sub_resource type="Resource" id="Su_beat_26"]
+script = ExtResource("7_su")
+event_id = "s07_beat_26"
+tick = 12480
+count = 3
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+target_visual_variant = &"circle"
+target_hold_duration_sec = 0.78
+
+[sub_resource type="Resource" id="Su_beat_27"]
+script = ExtResource("7_su")
+event_id = "s07_beat_27"
+tick = 12960
+count = 1
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+target_visual_variant = &"circle"
+target_hold_duration_sec = 0.78
+
+[sub_resource type="Resource" id="Su_beat_28"]
+script = ExtResource("7_su")
+event_id = "s07_beat_28"
+tick = 13440
+count = 2
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+target_visual_variant = &"circle"
+target_hold_duration_sec = 0.78
+
+[sub_resource type="Resource" id="Su_beat_29"]
+script = ExtResource("7_su")
+event_id = "s07_beat_29"
+tick = 13920
+count = 3
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+target_visual_variant = &"circle"
+target_hold_duration_sec = 0.78
+
+[sub_resource type="Resource" id="Su_beat_30"]
+script = ExtResource("7_su")
+event_id = "s07_beat_30"
+tick = 14400
+count = 1
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+target_visual_variant = &"circle"
+target_hold_duration_sec = 0.78
+
+[sub_resource type="Resource" id="Su_beat_31"]
+script = ExtResource("7_su")
+event_id = "s07_beat_31"
+tick = 14880
+count = 2
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+target_visual_variant = &"circle"
+target_hold_duration_sec = 0.78
+
+[sub_resource type="Resource" id="Su_beat_32"]
+script = ExtResource("7_su")
+event_id = "s07_beat_32"
+tick = 15360
+count = 3
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+target_visual_variant = &"circle"
+target_hold_duration_sec = 0.78
+
+[sub_resource type="Resource" id="Su_beat_33"]
+script = ExtResource("7_su")
+event_id = "s07_beat_33"
+tick = 15840
+count = 1
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+target_visual_variant = &"circle"
+target_hold_duration_sec = 0.78
+
+[sub_resource type="Resource" id="Su_beat_34"]
+script = ExtResource("7_su")
+event_id = "s07_beat_34"
+tick = 16320
+count = 2
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+target_visual_variant = &"circle"
+target_hold_duration_sec = 0.78
+
+[sub_resource type="Resource" id="Su_beat_35"]
+script = ExtResource("7_su")
+event_id = "s07_beat_35"
+tick = 16800
+count = 3
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+target_visual_variant = &"circle"
+target_hold_duration_sec = 0.78
+
+[sub_resource type="Resource" id="Su_beat_36"]
+script = ExtResource("7_su")
+event_id = "s07_beat_36"
+tick = 17280
+count = 1
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+target_visual_variant = &"circle"
+target_hold_duration_sec = 0.78
+
+[sub_resource type="Resource" id="Su_beat_37"]
+script = ExtResource("7_su")
+event_id = "s07_beat_37"
+tick = 17760
+count = 2
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+target_visual_variant = &"circle"
+target_hold_duration_sec = 0.78
+
+[sub_resource type="Resource" id="Su_beat_38"]
+script = ExtResource("7_su")
+event_id = "s07_beat_38"
+tick = 18240
+count = 3
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+target_visual_variant = &"circle"
+target_hold_duration_sec = 0.78
+
+[sub_resource type="Resource" id="Su_beat_39"]
+script = ExtResource("7_su")
+event_id = "s07_beat_39"
+tick = 18720
+count = 1
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+target_visual_variant = &"circle"
+target_hold_duration_sec = 0.78
+
+[resource]
+script = ExtResource("1_chart")
+schema_version = 2
+chart_id = "s07_su_target_test"
+difficulty_id = "su_target_experiment"
+ppq = 480
+chart_offset_ticks = 0
+end_tick = 19200
+tempo_events = [SubResource("Tempo_0")]
+meter_events = [SubResource("Meter_0")]
+note_events = []
+tuning_fields = []
+tuning_sliders = []
+su_manifestations = [SubResource("Su_beat_00"), SubResource("Su_beat_01"), SubResource("Su_beat_02"), SubResource("Su_beat_03"), SubResource("Su_beat_04"), SubResource("Su_beat_05"), SubResource("Su_beat_06"), SubResource("Su_beat_07"), SubResource("Su_beat_08"), SubResource("Su_beat_09"), SubResource("Su_beat_10"), SubResource("Su_beat_11"), SubResource("Su_beat_12"), SubResource("Su_beat_13"), SubResource("Su_beat_14"), SubResource("Su_beat_15"), SubResource("Su_beat_16"), SubResource("Su_beat_17"), SubResource("Su_beat_18"), SubResource("Su_beat_19"), SubResource("Su_beat_20"), SubResource("Su_beat_21"), SubResource("Su_beat_22"), SubResource("Su_beat_23"), SubResource("Su_beat_24"), SubResource("Su_beat_25"), SubResource("Su_beat_26"), SubResource("Su_beat_27"), SubResource("Su_beat_28"), SubResource("Su_beat_29"), SubResource("Su_beat_30"), SubResource("Su_beat_31"), SubResource("Su_beat_32"), SubResource("Su_beat_33"), SubResource("Su_beat_34"), SubResource("Su_beat_35"), SubResource("Su_beat_36"), SubResource("Su_beat_37"), SubResource("Su_beat_38"), SubResource("Su_beat_39")]
+rapid_regions = []
+sections = []

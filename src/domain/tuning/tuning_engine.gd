@@ -36,6 +36,10 @@ var _last_life_held: bool = false
 var _last_death_held: bool = false
 var _life_input_channel: int = GameplayTypes.BellInputChannel.NONE
 var _death_input_channel: int = GameplayTypes.BellInputChannel.NONE
+## 由 Gameplay 核心从 NoteJudgeEngine 的 holding 状态同步，不读取物理键。
+var _dual_holding_notes: bool = false
+## 指针拖动和摇杆接合分开记录，避免指针伪造摇杆逻辑行程。
+var _pointer_drags: Dictionary[int, Dictionary] = {}
 var _paused_for_rearm: bool = false
 var _life_tuning_engaged: bool = false
 var _death_tuning_engaged: bool = false
@@ -72,6 +76,7 @@ func configure(compiled: CompiledChart, rules: GameplayRuleSet) -> void:
 	_life_input_channel = GameplayTypes.BellInputChannel.NONE
 	_death_input_channel = GameplayTypes.BellInputChannel.NONE
 	_paused_for_rearm = false
+	_dual_holding_notes = false
 	_clear_drag_state(GameplayTypes.Affinity.ZHU)
 	_clear_drag_state(GameplayTypes.Affinity.XUAN)
 	_reset_values_to_base()
@@ -122,7 +127,7 @@ func handle_input(sample: SemanticInputSample, life_held: bool, death_held: bool
 		return false
 	_last_life_held = life_held
 	_last_death_held = death_held
-	if not field_active():
+	if not _dual_holding_notes or not field_active():
 		return false
 
 	# 位移已由设备层换算成“整条频率轴的归一化增量”。滑条只限制本程
@@ -170,7 +175,7 @@ func apply_absolute_side(
 ) -> bool:
 	if stick_released:
 		return reset_side_progress(affinity, timestamp_us)
-	if not field_active() or not is_held or is_nan(angle_rad):
+	if not _dual_holding_notes or not field_active() or not is_held or is_nan(angle_rad):
 		return false
 	var changed: bool = _apply_absolute_angle(affinity, angle_rad, timestamp_us)
 	if changed:
@@ -323,6 +328,7 @@ func advance_to(time_us: int, inclusive: bool = true, life_held: bool = false, d
 
 
 func cancel_active(time_us: int) -> void:
+	_dual_holding_notes = false
 	_current_time_us = maxi(_current_time_us, time_us)
 	_last_life_held = false
 	_last_death_held = false
@@ -337,6 +343,7 @@ func is_active() -> bool:
 
 
 func _clear_drag_state(affinity: int) -> void:
+	_pointer_drags.erase(affinity)
 	if affinity == GameplayTypes.Affinity.ZHU:
 		_life_tuning_engaged = false
 		_life_last_progress = 0.0
@@ -402,6 +409,9 @@ func apply_resume_rearm(rearm_state: Dictionary) -> void:
 	_death_input_channel = _matching_rearm_channel(rearm_state, false, _death_input_channel)
 	_last_life_held = _life_input_channel != GameplayTypes.BellInputChannel.NONE
 	_last_death_held = _death_input_channel != GameplayTypes.BellInputChannel.NONE
+	# 暂停后的重臂不继承旧接合，下一次有效输入重新建立拖动与视觉控制。
+	reset_side_progress(GameplayTypes.Affinity.ZHU, _current_time_us)
+	reset_side_progress(GameplayTypes.Affinity.XUAN, _current_time_us)
 
 
 func _matching_rearm_channel(rearm_state: Dictionary, life: bool, required_channel: int) -> int:
@@ -459,6 +469,7 @@ func active_slider_snapshots() -> Array[Dictionary]:
 		var snapshot: Dictionary = slider.duplicate(true)
 		snapshot["phase"] = &"active" if input_open else &"preview"
 		snapshot["interaction_open"] = input_open
+		snapshot["dragging"] = input_open and _is_slider_dragging(slider)
 		snapshot["guide_progress"] = guide_progress
 		snapshot["guide_value"] = lerpf(float(slider["start_value"]), float(slider["end_value"]), guide_progress)
 		snapshot["guide_band_min"] = band.x
@@ -993,6 +1004,10 @@ func _apply_side_displacement(
 		return clampf(current_value + raw_delta, 0.0, 1.0)
 
 	var slider: Dictionary = _slider_states[state_index]["slider"]
+	_pointer_drags[affinity] = {
+		"event_id": str(slider["event_id"]),
+		"traversal": _slider_leg_at(slider, time_us),
+	}
 	var start_value: float = float(slider["start_value"])
 	var end_value: float = float(slider["end_value"])
 	var span: float = end_value - start_value
@@ -1142,3 +1157,29 @@ func _rule_property(property_name: StringName, fallback: Variant) -> Variant:
 		if StringName(property_data.get("name", &"")) == property_name:
 			return _rules.get(property_name)
 	return fallback
+
+
+## 同步双 Hold 运行时前置条件；失效只中断调频，不修改 Hold 判定。
+func set_dual_holding_notes(active: bool, timestamp_us: int) -> void:
+	if _dual_holding_notes == active:
+		return
+	_dual_holding_notes = active
+	if not active:
+		reset_side_progress(GameplayTypes.Affinity.ZHU, timestamp_us)
+		reset_side_progress(GameplayTypes.Affinity.XUAN, timestamp_us)
+
+
+## 拖动资格来源于实际接合/指针操作，保持静止仍为 true；换条换程不继承。
+func _is_slider_dragging(slider: Dictionary) -> bool:
+	if not _dual_holding_notes or _paused_for_rearm:
+		return false
+	var affinity: int = int(slider["affinity"])
+	var life: bool = affinity == GameplayTypes.Affinity.ZHU
+	var traversal: int = _slider_leg_at(slider, _current_time_us)
+	var pointer: Dictionary = _pointer_drags.get(affinity, {})
+	if str(pointer.get("event_id", "")) == str(slider["event_id"]) and int(pointer.get("traversal", -1)) == traversal:
+		return true
+	var index: int = _life_drag_state_index if life else _death_drag_state_index
+	var engaged: bool = _life_tuning_engaged if life else _death_tuning_engaged
+	var leg: int = _life_drag_traversal_index if life else _death_drag_traversal_index
+	return engaged and index >= 0 and str(_slider_states[index]["slider"]["event_id"]) == str(slider["event_id"]) and leg == traversal

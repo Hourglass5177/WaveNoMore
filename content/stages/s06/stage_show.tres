@@ -1,0 +1,74 @@
+[gd_resource type="Resource" script_class="StageShow" load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://src/content/resources/stage_show.gd" id="1_show"]
+[ext_resource type="Script" path="res://src/content/resources/show_cue.gd" id="2_cue"]
+
+[sub_resource type="Resource" id="Cue_intro"]
+script = ExtResource("2_cue")
+event_id = "show_s05_intro"
+tick = 0
+track = 5
+cue_id = &"tutorial_combined_intro"
+target_slot = &"hud"
+parameters = {"display_sec": 4.0, "text": "综合关会依次加入 Tap、Hold 和旋钮调频；每次只增加一个新的组合关系"}
+
+[sub_resource type="Resource" id="Cue_life_counter"]
+script = ExtResource("2_cue")
+event_id = "show_s05_life_counter"
+tick = 19200
+track = 5
+cue_id = &"tutorial_combined_life_counter"
+target_slot = &"hud"
+parameters = {"display_sec": 3.5, "text": "按住 R1 并旋转右摇杆调生钟；另一只手继续处理玄色 Tap"}
+
+[sub_resource type="Resource" id="Cue_death_counter"]
+script = ExtResource("2_cue")
+event_id = "show_s05_death_counter"
+tick = 26880
+track = 5
+cue_id = &"tutorial_combined_death_counter"
+target_slot = &"hud"
+parameters = {"display_sec": 3.5, "text": "现在交换双手：按住 L1 调死钟，生钟一侧只需处理不判松键的 Hold"}
+
+[sub_resource type="Resource" id="Cue_paired"]
+script = ExtResource("2_cue")
+event_id = "show_s05_paired"
+tick = 34560
+track = 5
+cue_id = &"tutorial_combined_paired"
+target_slot = &"hud"
+parameters = {"display_sec": 3.4, "text": "接下来连续完成四程双钟调频；每八拍折返一次，箭头会同步反向"}
+
+[sub_resource type="Resource" id="Cue_switch"]
+script = ExtResource("2_cue")
+event_id = "show_s05_switch"
+tick = 49920
+track = 5
+cue_id = &"tutorial_combined_switch"
+target_slot = &"hud"
+parameters = {"display_sec": 3.2, "text": "留出一小节换手后，先调生钟，再在下一段改调死钟"}
+
+[sub_resource type="Resource" id="Cue_pressure"]
+script = ExtResource("2_cue")
+event_id = "show_s05_pressure"
+tick = 65280
+track = 5
+cue_id = &"tutorial_combined_pressure"
+target_slot = &"hud"
+parameters = {"display_sec": 3.0, "text": "最后先完成一次双押，再完成八拍双钟调频，末尾还有一次双押收束"}
+
+[sub_resource type="Resource" id="Cue_rift"]
+script = ExtResource("2_cue")
+event_id = "show_s05_rift"
+tick = 67200
+duration_ticks = 3840
+track = 3
+cue_id = &"open_tuning_rift"
+target_slot = &"boundary"
+parameters = {"intensity": 1.0}
+
+[resource]
+script = ExtResource("1_show")
+schema_version = 1
+show_id = "s05_combined_show"
+cues = [SubResource("Cue_intro"), SubResource("Cue_life_counter"), SubResource("Cue_death_counter"), SubResource("Cue_paired"), SubResource("Cue_switch"), SubResource("Cue_pressure"), SubResource("Cue_rift")]

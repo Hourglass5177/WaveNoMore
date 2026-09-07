@@ -126,6 +126,26 @@ func snapshot() -> Dictionary:
 	return _last_snapshot.duplicate(true)
 
 
+func request_su_preparation(event_id: String) -> void:
+	## 传递预读请求；实际几何计算只在核心逻辑推进中执行。
+	if configured:
+		simulation.request_su_preparation(event_id)
+
+
+func reset_su_timeline(time_us: int) -> void:
+	## Seek/清场丢弃旧目标并跳过新时间之前的素音事件。
+	if configured:
+		simulation.reset_su_timeline(time_us)
+		_refresh_snapshot()
+
+
+func clear_su_targets() -> void:
+	## 会话终止后不再保留待生成目标或表现结果。
+	if configured:
+		simulation.clear_su_targets()
+		_refresh_snapshot()
+
+
 func get_input_owner() -> int:
 	return _last_owner
 

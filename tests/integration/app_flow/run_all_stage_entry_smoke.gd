@@ -1,8 +1,8 @@
 extends SceneTree
 
-## 依次走真实应用路由进入五张测试关，防止只测 s01 时漏掉某张正式谱的入口阻塞。
+## 依次走真实应用路由进入目录中的测试关；s06 未加入选关目录，不走此入口。
 
-const STAGE_IDS: PackedStringArray = ["s01", "s02", "s03", "s04", "s05"]
+const STAGE_IDS: PackedStringArray = ["s01", "s02", "s03", "s04", "s05", "s07", "s08"]
 
 
 func _init() -> void:

@@ -118,11 +118,11 @@ func _test_chart_scheduler_contract() -> void:
 		spawned.append({"kind": kind, "data": data})
 	)
 	scheduler.configure(compile_result["compiled"], 0.1)
-	scheduler.advance(0.41)
+	scheduler.advance(0.41, 0.41)
 	_expect(not spawned.is_empty(), "scheduler spawns canonical start_us events in lookahead")
 	if not spawned.is_empty():
 		_expect_equal(spawned[0]["data"].get("event_id"), "tap_zhu", "scheduler keeps stable event ID")
-	scheduler.advance(5.0)
+	scheduler.advance(5.0, 5.0)
 	var tuning_spawn_count: int = 0
 	var tuning_ids: Array[String] = []
 	for entry: Dictionary in spawned:

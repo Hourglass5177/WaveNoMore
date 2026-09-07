@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="StageDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/content/resources/stage_definition.gd" id="1_stage"]
+
+[resource]
+script = ExtResource("1_stage")
+stage_id = "s08"
+display_name = "08 双 Hold 调频联动"
+description = "先观察普通 Hold 入圈，再以 13 段错开起止的双 Hold 联动 18 条调频；不自动输入或模拟命中。"
+order_index = 8
+song_title = "双 Hold 调频联动"
+song_artist = "原型测试节拍"
+unlocked_by_default = true
+debug_nonlethal = true
+song_resource_path = "res://content/stages/s08/song_definition.tres"
+chart_resource_path = "res://content/stages/s08/song_chart.tres"
+stage_show_resource_path = "res://content/stages/s08/stage_show.tres"
+visual_theme_resource_path = "res://content/stages/s08/stage_visual_theme.tres"
+reward_resource_path = "res://content/stages/s08/reward_definition.tres"
+rule_set_resource_path = "res://content/rules/default_gameplay_rules.tres"
