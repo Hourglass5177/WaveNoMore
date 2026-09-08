@@ -82,6 +82,8 @@ func present(stage: StageDefinition, result: Dictionary) -> void:
 		int(counts.get("MISS", counts.get(3, 0))),
 		int(result.get("soul_fire", 0)),
 	]
+	if not str(result.get("pet_name", "")).is_empty():
+		_detail.text += "\n%s%s  ·  随从加分 %d" % [result.pet_name, " · 进阶" if result.get("pet_advanced", false) else "", int(result.get("bonus_score", 0))]
 
 
 func _unhandled_input(event: InputEvent) -> void:

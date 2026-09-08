@@ -14,6 +14,7 @@ signal pets_requested
 
 ## 关卡卡片的纵向容器；每次刷新会按内容目录重建。
 var _stage_list: VBoxContainer
+var _stage_scroll: ScrollContainer
 ## 标题栏中的当前装备随从摘要。
 var _pet_label: Label
 
@@ -64,14 +65,16 @@ func _ready() -> void:
 	settings.custom_minimum_size.x = 140
 	settings.pressed.connect(func() -> void: settings_requested.emit())
 	header.add_child(settings)
-	var scroll := ScrollContainer.new()
-	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	column.add_child(scroll)
+	_stage_scroll = ScrollContainer.new()
+	# 手柄切换歌曲时，焦点与目录滚动同步；更换美术布局时也保留这一行为。
+	_stage_scroll.follow_focus = true
+	_stage_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_stage_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	column.add_child(_stage_scroll)
 	_stage_list = VBoxContainer.new()
 	_stage_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_stage_list.add_theme_constant_override("separation", 18)
-	scroll.add_child(_stage_list)
+	_stage_scroll.add_child(_stage_list)
 	var back := Button.new()
 	back.text = "返回"
 	back.custom_minimum_size.x = 220
@@ -85,7 +88,8 @@ func _refresh() -> void:
 	for child: Node in _stage_list.get_children():
 		child.queue_free()
 	var equipped := SaveService.equipped_pet_id()
-	_pet_label.text = "随从：%s" % ("未装备" if equipped.is_empty() else equipped)
+	var pet := ContentCatalog.get_pet(equipped)
+	_pet_label.text = "随从：%s" % ("未装备" if pet == null else pet.display_name + (" · 进阶" if SaveService.equipped_pet_advanced() else ""))
 	var first_button: Button
 	for stage: StageDefinition in ContentCatalog.all_stages():
 		var unlocked := SaveService.is_stage_unlocked(stage)
@@ -129,6 +133,8 @@ func _refresh() -> void:
 		MingheUiStyle.style_button(play, unlocked)
 		play.pressed.connect(func() -> void: stage_selected.emit(stage.stage_id))
 		content.add_child(play)
+		# 焦点进入后露出整张歌曲卡片，包括歌曲名和成绩。
+		play.focus_entered.connect(func() -> void: _stage_scroll.ensure_control_visible.call_deferred(row))
 		if first_button == null and unlocked:
 			first_button = play
 	if first_button != null:

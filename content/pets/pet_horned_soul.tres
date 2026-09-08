@@ -4,10 +4,7 @@
 
 [resource]
 script = ExtResource("1_pet")
-effect_kind = 0
 pet_id = "horned_soul"
 display_name = "角魂"
 description = "栖于生死界缝的随从。灰模阶段仅验证收集、装备与结算流程，不改写原始判定。"
-base_effect_value = 0.02
-advanced_effect_value = 0.05
 

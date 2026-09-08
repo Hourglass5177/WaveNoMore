@@ -4,7 +4,7 @@ extends SceneTree
 ## 使用独立的 `user://tests` 路径，避免覆盖开发者自己的游戏进度。
 
 ## 被测脚本直接实例化而不使用 Autoload，便于注入隔离的测试路径。
-const SaveServiceScript := preload("res://src/services/save/save_service.gd")
+var SaveServiceScript: GDScript
 
 ## 已执行断言数，用于确认正常、损坏和版本过新等分支都跑到。
 var _checks := 0
@@ -25,10 +25,12 @@ func _initialize() -> void:
 
 
 func _run() -> void:
+	# 等待 Catalog 单例就绪，再编译依赖它的存档服务。
+	SaveServiceScript = load("res://src/services/save/save_service.gd")
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(_test_dir))
 	_cleanup_files()
 	# 不使用 Autoload 实例，这样可以给服务注入测试专用路径。
-	var service := SaveServiceScript.new()
+	var service = SaveServiceScript.new()
 	service.configure_storage_paths(_save_path, _temp_path, _backup_path)
 	root.add_child(service)
 	_expect(FileAccess.file_exists(_save_path), "first launch creates a validated save")
@@ -38,7 +40,7 @@ func _run() -> void:
 	# 五张玩法测试关都明确不发随从；存档测试在内存中装配奖励，不能反过来污染测试关内容。
 	var stage := authored_stage.duplicate(true) as StageDefinition
 	stage.reward = authored_stage.reward.duplicate(true) as RewardDefinition
-	stage.reward.pet = load("res://content/pets/pet_horned_soul.tres") as PetDefinition
+	stage.reward.pet = load("res://content/pets/pet_nu_tu_fu.tres") as PetDefinition
 	stage.reward.fc_grants_base_pet = true
 	stage.reward.ap_grants_advanced_pet = true
 	service.record_stage_result(stage, {
@@ -68,7 +70,7 @@ func _run() -> void:
 	var broken := FileAccess.open(_save_path, FileAccess.WRITE)
 	broken.store_string("{not valid json")
 	broken.close()
-	var recovered := SaveServiceScript.new()
+	var recovered = SaveServiceScript.new()
 	recovered.configure_storage_paths(_save_path, _temp_path, _backup_path)
 	root.add_child(recovered)
 	_expect_equal(int(recovered.data.get("schema_version", 0)), 1, "corrupt main save recovers a valid backup")
@@ -79,7 +81,7 @@ func _run() -> void:
 	var future_file := FileAccess.open(_save_path, FileAccess.WRITE)
 	future_file.store_string(JSON.stringify({"schema_version": 99, "future_field": "keep_me"}))
 	future_file.close()
-	var future_service := SaveServiceScript.new()
+	var future_service = SaveServiceScript.new()
 	future_service.configure_storage_paths(_save_path, _temp_path, _backup_path)
 	root.add_child(future_service)
 	_expect(future_service.writes_blocked_by_future_version, "future save version enters read-only protection")

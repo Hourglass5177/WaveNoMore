@@ -26,6 +26,11 @@ enum GameplayOperationKind {
 var compiled: CompiledChart
 ## 本局规则表；判定窗、计分、魂火和物理坐标均从此读取。
 var rules: GameplayRuleSet
+var pet_effect := PetEffectProfile.new()
+## 按实际发生时间记录伤害；last_pet_trigger_us 供视图按歌曲时间恢复短反馈。
+var damages: Array[DamageRecord] = []
+var last_pet_trigger_us: int = -9000000000000000
+var _notes_by_id: Dictionary = {}
 ## Tap/Hold 的头、持续、尾与乱按绑定判定器。
 var note_engine := NoteJudgeEngine.new()
 ## 调频开放段、每程端点卡拍及双侧成组结算判定器。
@@ -86,17 +91,22 @@ var _paused_for_rearm: bool = false
 var _debug_nonlethal: bool = false
 
 
-func configure(p_compiled: CompiledChart, p_rules: GameplayRuleSet, debug_nonlethal: bool = false) -> void:
+func configure(p_compiled: CompiledChart, p_rules: GameplayRuleSet, debug_nonlethal: bool = false, pet: PetEffectProfile = null) -> void:
 	compiled = p_compiled
 	rules = p_rules
 	_debug_nonlethal = debug_nonlethal
-	note_engine.configure(compiled, rules)
+	pet_effect = pet.duplicate(true) as PetEffectProfile if pet != null else PetEffectProfile.new()
+	damages.clear()
+	_notes_by_id.clear()
+	last_pet_trigger_us = -9000000000000000
+	for note: Dictionary in compiled.notes: _notes_by_id[str(note.id)] = note
+	note_engine.configure(compiled, rules, pet_effect)
 	tuning_engine.configure(compiled, rules)
 	rapid_engine.configure(compiled, rules)
 	wave_engine.configure(compiled, rules)
 	carrier_engine.configure(rules)
-	score_engine.configure(rules)
-	health_engine.configure(rules, _debug_nonlethal)
+	score_engine.configure(rules, pet_effect)
+	health_engine.configure(rules, _debug_nonlethal, pet_effect)
 	current_time_us = -9_000_000_000_000_000
 	life_held = false
 	death_held = false
@@ -128,17 +138,17 @@ func configure(p_compiled: CompiledChart, p_rules: GameplayRuleSet, debug_nonlet
 
 
 func reset() -> void:
-	configure(compiled, rules, _debug_nonlethal)
+	configure(compiled, rules, _debug_nonlethal, pet_effect)
 
 
 func advance_to(time_us: int, inclusive: bool = true) -> void:
 	if compiled == null or rules == null or time_us < current_time_us:
 		return
 	if not _paused_for_rearm and not health_engine.failed:
-		var boundary_us: int = note_engine.next_holding_transition_us()
+		var boundary_us: int = mini(note_engine.next_transition_us(), wave_engine.next_arrival_us())
 		while boundary_us < time_us and not health_engine.failed:
 			_advance_systems_to(boundary_us, true)
-			boundary_us = note_engine.next_holding_transition_us()
+			boundary_us = mini(note_engine.next_transition_us(), wave_engine.next_arrival_us())
 	_advance_systems_to(time_us, inclusive)
 
 
@@ -327,6 +337,7 @@ func accept_input(sample: SemanticInputSample) -> int:
 	if sample.timestamp_us > current_time_us:
 		# 先推进到端点之前，等输入处理完再由外层包含端点；否则同刻音符可能抢先过期。
 		advance_to(sample.timestamp_us, false)
+	if health_engine.failed: return GameplayTypes.InputOwner.NONE
 	current_time_us = sample.timestamp_us
 	if sample.kind == GameplayTypes.SemanticInputKind.FOCUS_CANCELLED:
 		carrier_engine.set_held(GameplayTypes.Affinity.ZHU, false, sample.timestamp_us)
@@ -366,7 +377,10 @@ func accept_input(sample: SemanticInputSample) -> int:
 		strays.append(stray)
 		_pending_strays.append(stray)
 		score_engine.apply_stray(stray)
-		health_engine.apply_stray(stray)
+		if stray.damages:
+			# 帧输入适配器可能复用 sequence；本局乱按记录序号区分每次独立受击。
+			var damage_id := "stray:%d" % (strays.size() - 1)
+			_apply_damage(DamageRecord.create(damage_id, damage_id, sample.timestamp_us, rules.miss_damage))
 	# 所有按下都会产生真实传播的波。机制认可时发红/黑彩波，乱按发灰波；
 	# 普通音符还会把唯一目标绑定给波，等待两者实际相遇。
 	if sample.is_press():
@@ -394,9 +408,8 @@ func force_finish() -> void:
 	if compiled == null:
 		return
 	# Hold 与调频都在谱面尾点完成；只有普通音符还需等待 Miss 窗。
-	var settle_us: int = rules.miss_window_ms * 1000 + 1
-	advance_to(compiled.end_time_us + settle_us, true)
-	wave_engine.force_finish()
+	var settle_us: int = (rules.miss_window_ms + pet_effect.hold_head_bonus_ms) * 1000 + 1
+	advance_to(maxi(compiled.end_time_us + settle_us, wave_engine.last_arrival_us()), true)
 	_collect_wave_events()
 
 
@@ -458,7 +471,9 @@ func drain_note_arrivals() -> Array[Dictionary]:
 
 
 func result_summary() -> ResultSummary:
-	return ResultEvaluator.evaluate(judgments, strays, score_engine, health_engine, compiled.theoretical_unit_count)
+	# 最后一条 Hold 可以先取得 Pass，再抵达角色；伤害未结清时不能宣布通关。
+	return ResultEvaluator.evaluate(judgments, strays, score_engine, health_engine,
+		compiled.theoretical_unit_count, wave_engine.next_arrival_us() == 9223372036854775807)
 
 
 func input_owner() -> int:
@@ -501,6 +516,7 @@ func snapshot() -> Dictionary:
 	var result := motion_snapshot()
 	result.merge({
 		"score": score_engine.total_score(),
+		"pet_trigger_us": last_pet_trigger_us,
 		"raw_score": score_engine.raw_score,
 		"combo": score_engine.combo,
 		"max_combo": score_engine.max_combo,
@@ -685,20 +701,29 @@ func _collect_engine_records() -> void:
 		return a.unit_id < b.unit_id
 	)
 	for record in collected:
-		# 判定记录一产生就立即计分、扣魂火。普通音符稍后被波击破只影响表现，
-		# 不会再次改判或重复计分。
+		if health_engine.failed: break
+		# 得分提档只发生一次，机械结果保留给受击和表现；未起手音符等待实际抵达。
 		record.sequence = _judgment_sequence
 		_judgment_sequence += 1
+		record.base_grade = record.grade
+		record.grade = pet_effect.promote(record.base_grade, record.unit_kind)
+		if record.grade != record.base_grade: last_pet_trigger_us = record.finalized_at_us
 		judgments.append(record)
 		_pending_judgments.append(record)
+		var old_bonus := score_engine.bonus_score
 		score_engine.apply_judgment(record)
-		health_engine.apply_judgment(record)
+		if score_engine.bonus_score > old_bonus: last_pet_trigger_us = record.finalized_at_us
+		if record.base_grade == GameplayTypes.JudgmentGrade.MISS and not record.missed_head():
+			_apply_damage(DamageRecord.create(record.unit_id, record.damage_group_id, record.finalized_at_us, rules.miss_damage))
 
 
 func _collect_wave_events() -> void:
 	_pending_wave_launches.append_array(wave_engine.drain_launches())
 	_pending_wave_contacts.append_array(wave_engine.drain_contacts())
-	_pending_note_arrivals.append_array(wave_engine.drain_arrivals())
+	for arrival: Dictionary in wave_engine.drain_arrivals():
+		_pending_note_arrivals.append(arrival)
+		var note: Dictionary = _notes_by_id[str(arrival.note_id)]
+		_apply_damage(DamageRecord.create(str(arrival.note_id), str(note.damage_group_id), int(arrival.arrival_us), rules.miss_damage))
 
 
 static func _unit_rank(kind: StringName) -> int:
@@ -708,3 +733,10 @@ static func _unit_rank(kind: StringName) -> int:
 		&"tuning": return 2
 		&"rapid": return 3
 	return 99
+
+
+func _apply_damage(record: DamageRecord) -> void:
+	if health_engine.failed or health_engine.has_damage_group(record.group_id): return
+	health_engine.apply_damage(record)
+	damages.append(record)
+	if pet_effect.damage_reduction > 0.0: last_pet_trigger_us = record.timestamp_us

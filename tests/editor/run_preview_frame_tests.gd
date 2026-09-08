@@ -14,6 +14,7 @@ func run() -> void:
 	var preview = load("res://src/tools/chart_studio/preview_session.gd").new(); root.add_child(preview)
 	if not preview.load_preview(ChartProjectLoader.make_stage(document.song, document.chart()), viewport):
 		check(false, "装入正式预览"); quit(1); return
+	check(preview.stage_root.active_pet == null and preview.stage_root.gameplay_coordinator.simulation.pet_effect.hold_head_bonus_ms == 0, "内嵌预览使用无随从的原始判定")
 	await preview.seek_preview(9_600_000)
 	var digest: String = preview.stage_root.gameplay_coordinator.result_digest()
 	var pixels := PackedByteArray()

@@ -71,6 +71,8 @@ signal debug_snapshot_ready(snapshot: Dictionary)
 ## 当前关卡生命周期状态，使用 GameplayTypes.StageState 枚举。
 ## 写谱器外部时间模式：不轮询物理输入，不执行玩家暂停和结算流程。
 var external_preview: bool = false
+## 由装配入口固定的本局配置，重试与定位始终复用。
+var pet_effect := PetEffectProfile.new()
 
 var state: int = GameplayTypes.StageState.LOADING
 ## 当前装载的关卡聚合资源，组合歌曲、谱面、演出、主题、奖励和规则。
@@ -224,7 +226,7 @@ func prepare() -> bool:
 	input_router.configure_from_rules(rule_set)
 	chart_scheduler.configure(compiled_chart, rule_set.approach_duration_sec)
 	chart_scheduler.note_visual_tail_sec = _maximum_post_cue_travel_sec() + chart_scheduler.resolved_note_tail_sec
-	if not gameplay_coordinator.configure(compiled_chart, rule_set, stage_definition.debug_nonlethal):
+	if not gameplay_coordinator.configure(compiled_chart, rule_set, stage_definition.debug_nonlethal, pet_effect):
 		return false
 
 	_end_song_time_sec = _calculate_end_song_time_sec()
@@ -556,16 +558,16 @@ func _emit_snapshot_changes(snapshot: Dictionary) -> void:
 
 
 func _on_judgment_recorded(record: JudgmentRecord) -> void:
-	# 进入这里前，玩法逻辑已经完成计分和扣魂火；下面的延迟队列只决定普通音符何时演出结果。
+	# 计分已经完成，抵达伤害由领域物理时间处理；视觉使用机械结果，HUD 使用得分等级。
 	if record.unit_kind in [&"tap", &"hold"]:
-		chart_scheduler.mark_timing_confirmed(record.unit_id, record.grade)
-		_deferred_note_grades[record.unit_id] = record.grade
+		chart_scheduler.mark_timing_confirmed(record.unit_id, record.mechanical_grade())
+		_deferred_note_grades[record.unit_id] = record.mechanical_grade()
 		_deferred_note_records[record.unit_id] = record
 		var should_present_now: bool = false
 		if record.unit_kind == &"hold":
 			# Hold 头的固定由快照驱动；最终持续结果必须立即驱动续行或收尾，不能等待领域波抵达。
 			should_present_now = true
-		elif record.grade == GameplayTypes.JudgmentGrade.MISS:
+		elif record.mechanical_grade() == GameplayTypes.JudgmentGrade.MISS:
 			# 头部 MISS 的音符没有对向波，会在抵达钟时解决。Hold 头即使已接触，
 			# 尾部仍可能 MISS；这种结果属于先前接触路径，不会再产生 arrival。
 			should_present_now = (
@@ -886,7 +888,7 @@ func _present_note_judgment(note_id: String) -> void:
 		return
 	var record: JudgmentRecord = _deferred_note_records[note_id]
 	_presented_note_ids[note_id] = true
-	chart_scheduler.mark_judged(note_id, record.grade)
+	chart_scheduler.mark_judged(note_id, record.mechanical_grade())
 	judgment_presented.emit(record)
 
 

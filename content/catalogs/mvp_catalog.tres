@@ -1,8 +1,8 @@
-[gd_resource type="Resource" script_class="ContentCatalogData" load_steps=11 format=3]
+[gd_resource type="Resource" script_class="ContentCatalogData" load_steps=13 format=3]
 
 [ext_resource type="Script" path="res://src/content/resources/content_catalog_data.gd" id="1_catalog"]
 [ext_resource type="Resource" path="res://content/stages/s01/stage_definition.tres" id="2_stage"]
-[ext_resource type="Resource" path="res://content/pets/pet_horned_soul.tres" id="3_pet"]
+[ext_resource type="Resource" path="res://content/pets/pet_nu_tu_fu.tres" id="3_pet"]
 [ext_resource type="Resource" path="res://content/rules/default_gameplay_rules.tres" id="4_rules"]
 [ext_resource type="Resource" path="res://content/stages/s02/stage_definition.tres" id="5_stage_tap"]
 [ext_resource type="Resource" path="res://content/stages/s03/stage_definition.tres" id="6_stage_hold"]
@@ -12,9 +12,12 @@
 
 [ext_resource type="Resource" path="res://content/stages/s08/stage_definition.tres" id="10_stage_dual_hold"]
 
+[ext_resource type="Resource" path="res://content/pets/pet_gui_jin_yang.tres" id="11_pet"]
+[ext_resource type="Resource" path="res://content/pets/pet_yi_huo_she.tres" id="12_pet"]
+
 [resource]
 script = ExtResource("1_catalog")
 catalog_version = 1
 stages = [ExtResource("2_stage"), ExtResource("5_stage_tap"), ExtResource("6_stage_hold"), ExtResource("7_stage_tuning"), ExtResource("8_stage_combined"), ExtResource("9_stage_su"), ExtResource("10_stage_dual_hold")]
-pets = [ExtResource("3_pet")]
+pets = [ExtResource("3_pet"), ExtResource("11_pet"), ExtResource("12_pet")]
 default_rule_set = ExtResource("4_rules")
