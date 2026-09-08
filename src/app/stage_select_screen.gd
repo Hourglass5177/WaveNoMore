@@ -85,7 +85,8 @@ func _refresh() -> void:
 	for child: Node in _stage_list.get_children():
 		child.queue_free()
 	var equipped := SaveService.equipped_pet_id()
-	_pet_label.text = "随从：%s" % ("未装备" if equipped.is_empty() else equipped)
+	var pet := ContentCatalog.get_pet(equipped)
+	_pet_label.text = "随从：%s" % ("未装备" if pet == null else pet.display_name + (" · 进阶" if SaveService.equipped_pet_advanced() else ""))
 	var first_button: Button
 	for stage: StageDefinition in ContentCatalog.all_stages():
 		var unlocked := SaveService.is_stage_unlocked(stage)

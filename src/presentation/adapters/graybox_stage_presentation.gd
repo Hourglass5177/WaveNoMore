@@ -150,6 +150,25 @@ func configure(stage: StageDefinition) -> void:
 	_song_duration_sec = _calculate_song_duration_sec()
 
 
+## 在 configure 清空旧主题之后装配；随从锚点继承角色的生死变换。
+func configure_pet(pet: PetDefinition, advanced: bool) -> Array[PetVisual]:
+	var views: Array[PetVisual] = []
+	if pet == null:
+		return views
+	for slot in [_life_actor_slot, _death_actor_slot]:
+		var anchor := Node2D.new()
+		anchor.name = "PetAnchor"
+		anchor.position = pet.world_offset
+		anchor.scale = Vector2.ONE * pet.world_scale
+		slot.add_child(anchor)
+		var scene := pet.visual_scene(advanced)
+		var view := scene.instantiate() as PetVisual if scene != null else PetVisual.new()
+		anchor.add_child(view)
+		view.bind(pet, advanced)
+		views.append(view)
+	return views
+
+
 func bind(clock: SongClock, session: StageSession, scheduler: ChartScheduler, _input_buffer: Node) -> void:
 	_disconnect_sources()
 	_clock = clock

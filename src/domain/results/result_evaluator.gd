@@ -9,7 +9,8 @@ static func evaluate(
 		strays: Array[StrayInputRecord],
 		score: ScoreEngine,
 		health: HealthEngine,
-		expected_judgment_count: int
+		expected_judgment_count: int,
+		damage_settled: bool = true
 ) -> ResultSummary:
 	var result := ResultSummary.new()
 	result.failed = health.failed
@@ -26,7 +27,7 @@ static func evaluate(
 	for stray in strays:
 		if stray.breaks_combo:
 			result.stray_break_count += 1
-	result.cleared = not result.failed and judgments.size() == expected_judgment_count
+	result.cleared = damage_settled and not result.failed and judgments.size() == expected_judgment_count
 	result.full_combo = result.cleared and result.miss_count == 0 and result.stray_break_count == 0
 	result.all_perfect = result.full_combo and every_perfect
 	result.raw_score = score.raw_score

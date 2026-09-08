@@ -1,5 +1,10 @@
 extends Control
 
+## 本次游玩固定的随从身份；重试沿用，返回选择页后重新解析。
+var _run_pet: PetDefinition
+var _run_pet_advanced := false
+var _run_pet_ready := false
+
 ## 应用层总入口。负责页面与弹窗的装卸，并把关卡结果送往存档和结算页。
 
 ## 标题页场景模板，进入应用或返回首页时实例化。
@@ -100,6 +105,7 @@ func _show_title() -> void:
 
 
 func _show_stage_select() -> void:
+	_run_pet_ready = false
 	MenuAudioService.stop_preview()
 	var screen := STAGE_SELECT_SCENE.instantiate()
 	_mount_screen(screen)
@@ -146,6 +152,12 @@ func _show_stage(stage: StageDefinition) -> void:
 		stage_root.call("set_debug_visible", SettingsService.debug_hud_enabled)
 	_connect_first_signal(stage_root, [&"stage_finished", &"result_ready", &"stage_result"], _on_stage_finished)
 	_connect_first_signal(stage_root, [&"exit_requested", &"quit_requested"], _on_stage_exit_requested)
+	# 本地游玩使用同一装备；编辑器临时试玩始终使用空配置。
+	if not _run_pet_ready:
+		_run_pet = ContentCatalog.get_pet(SaveService.equipped_pet_id()) if _run_context.get("origin", "") != "trial" else null
+		_run_pet_advanced = SaveService.equipped_pet_advanced() if _run_pet != null else false
+		_run_pet_ready = true
+	stage_root.set_pet(_run_pet, _run_pet_advanced)
 	var stage_started := false
 	if not _run_context.is_empty():
 		stage_started = stage_root.load_stage(stage, false)
@@ -195,7 +207,6 @@ func _on_stage_finished(result: Variant = {}) -> void:
 	if not result_dictionary.has("all_perfect"):
 		result_dictionary["all_perfect"] = bool(result_dictionary.get("ap", false))
 	if _run_context.is_empty():
-		_apply_pet_result_modifier(result_dictionary)
 		if _current_stage != null: SaveService.record_stage_result(_current_stage, result_dictionary)
 	elif _run_context.origin == "local":
 		result_dictionary.content_hash = _run_context.content_hash
@@ -204,26 +215,8 @@ func _on_stage_finished(result: Variant = {}) -> void:
 	AppRouter.navigate(AppRouter.ROUTE_RESULT, {"stage": _current_stage, "result": result_dictionary}, false)
 
 
-func _apply_pet_result_modifier(result: Dictionary) -> void:
-	var pet_id := SaveService.equipped_pet_id()
-	if pet_id.is_empty():
-		return
-	var pet := ContentCatalog.get_pet(pet_id)
-	if pet == null:
-		return
-	var pet_state := SaveService.pet_state(pet_id)
-	var effect_value := pet.advanced_effect_value if bool(pet_state.get("advanced", false)) else pet.base_effect_value
-	# 随从加分故意放在判定结束后：装备与否都不能改变 Replay、FC/AP 或原始判定。
-	if pet.effect_kind == PetDefinition.EffectKind.BONUS_SCORE:
-		var raw_score := int(result.get("score", 0))
-		var bonus := roundi(float(raw_score) * effect_value)
-		result["raw_score_before_pet"] = raw_score
-		result["pet_bonus"] = bonus
-		result["score"] = raw_score + bonus
-		result["equipped_pet_id"] = pet_id
-
-
 func _on_stage_exit_requested() -> void:
+	_run_pet_ready = false
 	if _run_context.get("origin") == "trial": get_tree().quit()
 	elif _run_context.get("origin") == "local": AppRouter.navigate(&"local_charts", {}, false)
 	else: AppRouter.navigate(AppRouter.ROUTE_STAGE_SELECT, {}, false)
@@ -296,6 +289,7 @@ func _show_error(message: String) -> void:
 	back.grab_focus()
 
 func _show_local_charts() -> void:
+	_run_pet_ready = false
 	MenuAudioService.stop_preview()
 	var screen := LOCAL_SCENE.instantiate()
 	screen.library = _library; screen.jobs = _jobs

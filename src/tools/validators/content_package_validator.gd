@@ -17,8 +17,6 @@ static func validate_catalog(catalog: ContentCatalogData) -> Array[Dictionary]:
 			continue
 		if pet.pet_id.is_empty() or pet_ids.has(pet.pet_id):
 			issues.append(_issue("error", "pet:%s" % pet.pet_id, "随从 ID 为空或重复。"))
-		if pet.effect_kind not in [PetDefinition.EffectKind.BONUS_SCORE, PetDefinition.EffectKind.NONE]:
-			issues.append(_issue("error", "pet:%s" % pet.pet_id, "使用了当前版本不支持的随从效果。"))
 		pet_ids[pet.pet_id] = true
 	for stage: StageDefinition in catalog.stages:
 		if stage == null:

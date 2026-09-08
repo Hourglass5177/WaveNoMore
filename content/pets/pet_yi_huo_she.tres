@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="PetDefinition" load_steps=7 format=3]
+[ext_resource type="Script" path="res://src/content/resources/pet_definition.gd" id="1"]
+[ext_resource type="Script" path="res://src/content/resources/pet_effect_profile.gd" id="2"]
+[ext_resource type="Texture2D" path="res://assets/pets/yi_huo_she.svg" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/presentation/pets/pet_visual.tscn" id="4"]
+
+[sub_resource type="Resource" id="base"]
+script = ExtResource("2")
+hold_head_bonus_ms = 10
+hold_sustain_bonus_ms = 20
+
+[sub_resource type="Resource" id="advanced"]
+script = ExtResource("2")
+hold_head_bonus_ms = 10
+hold_sustain_bonus_ms = 20
+hold_grade_boost = 1
+
+[resource]
+script = ExtResource("1")
+pet_id = "yi_huo_she"
+display_name = "翼火蛇"
+description = "只影响普通 Hold。进阶在整条 Hold 结算时提高一级，Miss 可升为 Pass；失误伤害仍按实际情况结算。"
+base_description = "Hold 起手窗口 +10 ms，断持宽限 +20 ms"
+advanced_description = "Hold 起手窗口 +10 ms，断持宽限 +20 ms，最终判定提高一级"
+base_effect = SubResource("base")
+advanced_effect = SubResource("advanced")
+base_icon = ExtResource("3")
+base_scene = ExtResource("4")

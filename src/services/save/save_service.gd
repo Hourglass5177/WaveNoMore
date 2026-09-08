@@ -20,6 +20,8 @@ const BACKUP_PATH := "user://player_save.backup.json"
 
 ## 当前内存中的规范化玩家数据；修改后需调用 `save_now()` 才会落盘。
 var data: Dictionary = {}
+## 开发测试形态不写入存档，不降低已经获得的进阶状态。
+var debug_pet_tiers: Dictionary = {}
 ## 实际使用的正式存档路径，可由隔离测试在 `_ready()` 前替换。
 var _save_path: String = SAVE_PATH
 ## 实际使用的临时存档路径。
@@ -200,14 +202,15 @@ func equip_pet(pet_id: String) -> bool:
 		data["equipped_pet_id"] = ""
 		return save_now()
 	var state: Dictionary = (data.get("pets", {}) as Dictionary).get(pet_id, {})
-	if not bool(state.get("owned", false)):
+	if ContentCatalog.get_pet(pet_id) == null or not bool(state.get("owned", false)):
 		return false
 	data["equipped_pet_id"] = pet_id
 	return save_now()
 
 
 func equipped_pet_id() -> String:
-	return str(data.get("equipped_pet_id", ""))
+	var id := str(data.get("equipped_pet_id", ""))
+	return id if ContentCatalog.get_pet(id) != null else ""
 
 
 func pet_state(pet_id: String) -> Dictionary:
@@ -224,3 +227,18 @@ func _fail(message: String) -> bool:
 	push_error(message)
 	save_failed.emit(message)
 	return false
+
+
+func equipped_pet_advanced() -> bool:
+	var id := equipped_pet_id()
+	if OS.is_debug_build() and debug_pet_tiers.has(id): return bool(debug_pet_tiers[id])
+	return bool(pet_state(id).get("advanced", false))
+
+func debug_grant_pet(id: String, advanced: bool) -> bool:
+	if not OS.is_debug_build() or ContentCatalog.get_pet(id) == null: return false
+	var state := pet_state(id)
+	state.owned = true
+	state.advanced = advanced or bool(state.get("advanced", false))
+	data.pets[id] = state
+	debug_pet_tiers[id] = advanced
+	return equip_pet(id)

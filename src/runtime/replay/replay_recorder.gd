@@ -32,7 +32,7 @@ var _session: StageSession
 var _input_buffer: Node
 ## 当前一局正在填充的 ReplayData；结算后转移到 `last_replay`。
 var _active_replay: ReplayData
-## 当前装备组合的哈希。随从不改判定，但必须写入日志以复现实验环境。
+## 旧录制链路预留的装备哈希；真人 Replay 暂停接入，领域重演使用显式随从配置。
 var _loadout_hash: String = EMPTY_LOADOUT_HASH.sha256_text()
 ## 当前时间线是否应整体丢弃，例如本局本身就是回放，或录制期间发生不连续操作。
 var _discard_current_run: bool = false

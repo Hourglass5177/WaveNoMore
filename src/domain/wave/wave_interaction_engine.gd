@@ -535,3 +535,16 @@ func _sort_arrivals(a: Dictionary, b: Dictionary) -> bool:
 	if int(a.get("affinity", GameplayTypes.Affinity.SU)) != int(b.get("affinity", GameplayTypes.Affinity.SU)):
 		return int(a.get("affinity", GameplayTypes.Affinity.SU)) < int(b.get("affinity", GameplayTypes.Affinity.SU))
 	return str(a.get("note_id", "")) < str(b.get("note_id", ""))
+
+
+func next_arrival_us() -> int:
+	for i in range(_arrival_cursor, _arrival_order.size()):
+		var state: Dictionary = _note_states[_arrival_order[i]]
+		if state.status == &"pending": return int(state.arrival.arrival_us)
+	return 9223372036854775807
+
+func last_arrival_us() -> int:
+	var last := 0
+	for state: Dictionary in _note_states.values():
+		last = maxi(last, int(state.arrival.arrival_us))
+	return last

@@ -18,8 +18,11 @@ var start_tick: int = 0
 var end_tick: int = 0
 ## 此记录最终生成时的歌曲微秒，不一定等于目标 tick 对应时间。
 var finalized_at_us: int = 0
-## 汇总后的 JudgmentGrade；通常取各必要分项中最差档。
+## 最终得分等级；统一结算入口可在机械判定基础上应用随从提档。
 var grade: int = GameplayTypes.JudgmentGrade.MISS
+## 提档前的机械判定；-1 用于尚未经过统一结算入口的记录。
+var base_grade: int = -1
+
 ## 谱面逻辑组 ID，例如双押组；空值表示无组合。
 var group_id: String = ""
 ## 扣血去重组 ID；相同值的多个 MISS 最多扣一次魂火。
@@ -28,6 +31,13 @@ var damage_group_id: String = ""
 var components: Array[JudgmentComponentRecord] = []
 ## 机制专属附加数据；不得依赖字典遍历顺序参与确定性结果。
 var metadata: Dictionary = {}
+
+
+func mechanical_grade() -> int:
+	return base_grade if base_grade >= 0 else grade
+
+func missed_head() -> bool:
+	return unit_kind in [&"tap", &"hold"] and not components.is_empty() and components[0].grade == GameplayTypes.JudgmentGrade.MISS
 
 
 func recompute_grade() -> int:
@@ -50,6 +60,7 @@ func to_dictionary() -> Dictionary:
 		"end_tick": end_tick,
 		"finalized_at_us": finalized_at_us,
 		"grade": grade,
+		"base_grade": mechanical_grade(),
 		"group_id": group_id,
 		"damage_group_id": damage_group_id,
 		"components": component_data,

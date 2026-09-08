@@ -8,16 +8,18 @@ static func run(
 		compiled: CompiledChart,
 		rules: GameplayRuleSet,
 		replay: ReplayData,
-		frame_step_us: int = 16_667
+		frame_step_us: int = 16_667,
+		pet: PetEffectProfile = null
 ) -> Dictionary:
-	return run_with_frame_steps(compiled, rules, replay, PackedInt64Array([maxi(1, frame_step_us)]))
+	return run_with_frame_steps(compiled, rules, replay, PackedInt64Array([maxi(1, frame_step_us)]), pet)
 
 
 static func run_with_frame_steps(
 		compiled: CompiledChart,
 		rules: GameplayRuleSet,
 		replay: ReplayData,
-		frame_steps_us: PackedInt64Array
+		frame_steps_us: PackedInt64Array,
+		pet: PetEffectProfile = null
 ) -> Dictionary:
 	if compiled == null or rules == null or replay == null:
 		return {"ok": false, "error": "ReplayRunner received a null dependency."}
@@ -37,7 +39,7 @@ static func run_with_frame_steps(
 	if frame_steps_us.is_empty():
 		frame_steps_us = PackedInt64Array([16_667])
 	var simulation := GameplaySimulation.new()
-	simulation.configure(compiled, rules)
+	simulation.configure(compiled, rules, false, pet)
 	var samples: Array[SemanticInputSample] = []
 	for source_sample in replay.sorted_inputs():
 		samples.append(SemanticInputSample.create(
@@ -61,7 +63,7 @@ static func run_with_frame_steps(
 		cursor_us = mini(cursor_us, samples[0].timestamp_us)
 	# Hold 与调频都在原定尾点完成；只有普通音符还需要 Miss 窗。
 	var settle_us: int = rules.miss_window_ms * 1000 + 1
-	var finish_us: int = compiled.end_time_us + settle_us
+	var finish_us: int = maxi(compiled.end_time_us + settle_us + simulation.pet_effect.hold_head_bonus_ms * 1000, simulation.wave_engine.last_arrival_us())
 	if not samples.is_empty():
 		finish_us = maxi(finish_us, samples[-1].timestamp_us + settle_us)
 	while cursor_us < finish_us and not simulation.health_engine.failed:

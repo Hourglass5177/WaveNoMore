@@ -6,9 +6,11 @@ extends RefCounted
 
 ## 当前关卡使用的只读规则引用。
 var _rules: GameplayRuleSet
-## 仅由 JudgmentRecord 累计的基础分，尚未包含随从等结算奖励。
+var _pet := PetEffectProfile.new()
+var _perfect_points: int = 0
+## 按最终得分等级及 Combo 累计的基础分，不包含 Perfect 百分比奖励。
 var raw_score: int = 0
-## 随从等外部系统追加的奖励分；不反向改变原始判定。
+## Perfect 百分比奖励实时累计；与基础分共同组成 HUD 和结算总分。
 var bonus_score: int = 0
 ## 当前连续非 MISS 判定数；MISS 或规则指定的乱按会清零。
 var combo: int = 0
@@ -18,12 +20,14 @@ var max_combo: int = 0
 var grade_counts: PackedInt32Array = PackedInt32Array([0, 0, 0, 0])
 
 
-func configure(rules: GameplayRuleSet) -> void:
+func configure(rules: GameplayRuleSet, pet: PetEffectProfile = null) -> void:
 	_rules = rules
+	_pet = pet if pet != null else PetEffectProfile.new()
 	reset()
 
 
 func reset() -> void:
+	_perfect_points = 0
 	raw_score = 0
 	bonus_score = 0
 	combo = 0
@@ -45,6 +49,11 @@ func apply_judgment(record: JudgmentRecord) -> int:
 	var multiplier: float = lerpf(1.0, _rules.max_combo_multiplier, progress)
 	var awarded: int = roundi(float(base) * multiplier)
 	raw_score += awarded
+	if record.grade == GameplayTypes.JudgmentGrade.PERFECT:
+		# 累计已含 Combo 倍率的整数分，再取整总奖励，不逐个音符丢失小数。
+		var previous_bonus := roundi(_perfect_points * _pet.perfect_score_bonus)
+		_perfect_points += awarded
+		bonus_score += roundi(_perfect_points * _pet.perfect_score_bonus) - previous_bonus
 	return awarded
 
 
