@@ -13,7 +13,7 @@ var full_combo: bool = false
 var all_perfect: bool = false
 ## 由各 JudgmentRecord 和 Combo 倍率累计的原始分。
 var raw_score: int = 0
-## 随从等结算侧效果追加的分数，不改变判定。
+## 计分器实时累计的 Perfect 奖励分，结算不再重复计算。
 var bonus_score: int = 0
 ## 最终分数，等于 raw_score + bonus_score。
 var total_score: int = 0

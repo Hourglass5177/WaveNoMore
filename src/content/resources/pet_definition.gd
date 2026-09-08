@@ -1,30 +1,28 @@
-## 随从的身份、数值和两阶段美术资源配置。随从效果作用在结算侧，不改写原始节奏判定。
 @tool
 class_name PetDefinition
 extends Resource
-
-enum EffectKind {
-	BONUS_SCORE,
-	NONE,
-}
-
-## 随从效果类型；Bonus Score 只加结算奖励，None 表示纯收藏。
-@export_enum("Bonus Score", "None") var effect_kind: int = EffectKind.NONE
-## 随从稳定 ID；存档和奖励配置靠它识别，发布后不应随意改名。
+## 身份、两阶技能和美术入口。技能参数与局内场景各自替换，互不依赖。
 @export var pet_id: String = ""
-## 面向玩家显示的随从名称。
 @export var display_name: String = ""
-## 面向玩家显示的多行说明，可描述文化出处和效果。
 @export_multiline var description: String = ""
-## 普通形态的效果数值，范围 0～10；含义由 effect_kind 决定，越大加成越强。
-@export_range(0.0, 10.0, 0.01) var base_effect_value: float = 0.0
-## 进阶形态的效果数值，范围 0～10；越大加成越强，通常不低于普通形态。
-@export_range(0.0, 10.0, 0.01) var advanced_effect_value: float = 0.0
-## 普通形态在菜单与奖励弹窗使用的图标。
+@export_multiline var base_description: String = ""
+@export_multiline var advanced_description: String = ""
+@export var base_effect: PetEffectProfile
+@export var advanced_effect: PetEffectProfile
 @export var base_icon: Texture2D
-## 进阶形态在菜单与奖励弹窗使用的图标。
 @export var advanced_icon: Texture2D
-## 普通形态的关卡内可实例化场景。
 @export var base_scene: PackedScene
-## 进阶形态的关卡内可实例化场景。
 @export var advanced_scene: PackedScene
+## 1920×1080 设计坐标中相对生界角色的偏移；死界由父级中心对称变换。
+@export var world_offset := Vector2(-96, 70)
+@export var world_scale: float = 1.0
+
+func effect(advanced: bool) -> PetEffectProfile:
+	var profile := advanced_effect if advanced else base_effect
+	return profile.duplicate(true) as PetEffectProfile if profile != null else PetEffectProfile.new()
+
+func icon(advanced: bool) -> Texture2D:
+	return advanced_icon if advanced and advanced_icon != null else base_icon
+
+func visual_scene(advanced: bool) -> PackedScene:
+	return advanced_scene if advanced and advanced_scene != null else base_scene

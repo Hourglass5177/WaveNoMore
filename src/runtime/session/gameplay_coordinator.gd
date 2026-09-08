@@ -38,7 +38,7 @@ var _last_owner: int = GameplayTypes.InputOwner.NONE
 var _tuning_capture_active: bool = false
 
 
-func configure(compiled_chart: CompiledChart, rule_set: GameplayRuleSet, debug_nonlethal: bool = false) -> bool:
+func configure(compiled_chart: CompiledChart, rule_set: GameplayRuleSet, debug_nonlethal: bool = false, pet: PetEffectProfile = null) -> bool:
 	configured = false
 	if compiled_chart == null:
 		fatal_configuration_error.emit("GameplayCoordinator requires a CompiledChart.")
@@ -52,7 +52,7 @@ func configure(compiled_chart: CompiledChart, rule_set: GameplayRuleSet, debug_n
 		fatal_configuration_error.emit("GameplaySimulation.configure() is unavailable.")
 		return false
 
-	simulation.configure(compiled_chart, rule_set, debug_nonlethal)
+	simulation.configure(compiled_chart, rule_set, debug_nonlethal, pet)
 	configured = true
 	_refresh_snapshot()
 	return true

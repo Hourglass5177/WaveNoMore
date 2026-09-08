@@ -6,6 +6,7 @@ extends RefCounted
 
 ## 本局判定规则；读取头部时间窗与 Hold 断持宽限。
 var _rules: GameplayRuleSet
+var _pet := PetEffectProfile.new()
 ## 每个编译音符的运行时状态，按 start_us、类型和稳定 ID 排序。
 var _states: Array[Dictionary] = []
 ## 已编译事件保持原顺序；只把进入判定窗口的状态放入热循环。
@@ -21,9 +22,10 @@ var _current_time_us: int = -9_000_000_000_000_000
 var _last_press_binding: Dictionary = {}
 
 
-func configure(compiled: CompiledChart, rules: GameplayRuleSet) -> void:
+func configure(compiled: CompiledChart, rules: GameplayRuleSet, pet: PetEffectProfile = null) -> void:
 	#print("[NoteJudge] configure")
 	_rules = rules
+	_pet = pet if pet != null else PetEffectProfile.new()
 	_states.clear()
 	_future_states.clear()
 	_future_cursor = 0
@@ -44,7 +46,7 @@ func configure(compiled: CompiledChart, rules: GameplayRuleSet) -> void:
 
 
 func reset(compiled: CompiledChart, rules: GameplayRuleSet) -> void:
-	configure(compiled, rules)
+	configure(compiled, rules, _pet)
 
 
 func advance_to(time_us: int, inclusive: bool = true) -> void:
@@ -58,8 +60,8 @@ func advance_to(time_us: int, inclusive: bool = true) -> void:
 	for state in _states:
 		var note: Dictionary = state["note"]
 		if state["status"] == &"pending":
-			var head_deadline: int = int(note["start_us"]) + _rules.miss_window_ms * 1000
-			if time_us > head_deadline:
+			var head_deadline: int = int(note["start_us"]) + _window_ms(note, _rules.miss_window_ms) * 1000
+			if time_us > head_deadline + 1 or (inclusive and time_us == head_deadline + 1):
 				var component := JudgmentComponentRecord.timing(
 					&"head" if note["unit_kind"] == &"hold" else &"tap",
 					int(note["tick"]), int(note["start_us"]), head_deadline + 1,
@@ -70,7 +72,7 @@ func advance_to(time_us: int, inclusive: bool = true) -> void:
 			var end_us: int = int(note["end_us"])
 			var reaches_end: bool = end_us < time_us or (inclusive and end_us == time_us)
 			var gap_started_us: int = int(state["gap_started_us"])
-			var gap_deadline_us: int = gap_started_us + _rules.hold_sustain_grace_ms * 1000
+			var gap_deadline_us: int = gap_started_us + (_rules.hold_sustain_grace_ms + _pet.hold_sustain_bonus_ms) * 1000
 			# 大帧步可能同时越过尾点和断持期限。比较两者的绝对时间：尾点仍在
 			# 宽限内就先成功；宽限先耗尽则在第一个超时微秒失败，结果不依赖帧率。
 			var gap_expires_before_end: bool = gap_started_us >= 0 and gap_deadline_us < end_us
@@ -102,7 +104,7 @@ func handle_press(sample: SemanticInputSample) -> bool:
 		var note: Dictionary = state["note"]
 		if int(note["affinity"]) != affinity or int(state["gap_started_us"]) < 0:
 			continue
-		if sample.timestamp_us - int(state["gap_started_us"]) <= _rules.hold_sustain_grace_ms * 1000:
+		if sample.timestamp_us - int(state["gap_started_us"]) <= (_rules.hold_sustain_grace_ms + _pet.hold_sustain_bonus_ms) * 1000:
 			state["gap_started_us"] = -1
 			state["held"] = true
 			state["input_channel"] = sample.input_channel()
@@ -111,7 +113,6 @@ func handle_press(sample: SemanticInputSample) -> bool:
 	# 主动按下只会匹配 PASS 窗内的音符；更宽的 MISS 窗只负责无人命中时自动过期。
 	# 因此太晚的按下会先记为乱按，该音符随后仍会产生自己的 Miss。
 	var candidates: Array[Dictionary] = []
-	var pass_us: int = _rules.pass_window_ms * 1000
 	for state in _states:
 		if state["status"] != &"pending":
 			continue
@@ -119,7 +120,7 @@ func handle_press(sample: SemanticInputSample) -> bool:
 		if int(note["affinity"]) != affinity:
 			continue
 		var error_us: int = sample.timestamp_us - int(note["start_us"])
-		if absi(error_us) <= pass_us:
+		if absi(error_us) <= _window_ms(note, _rules.pass_window_ms) * 1000:
 			candidates.append({"state": state, "absolute_error": absi(error_us), "error": error_us})
 	if candidates.is_empty():
 		#print("[NoteJudge] press no_candidate")
@@ -135,7 +136,7 @@ func handle_press(sample: SemanticInputSample) -> bool:
 	)
 	var chosen: Dictionary = candidates[0]["state"]
 	var chosen_note: Dictionary = chosen["note"]
-	var grade: int = _grade_tap_error(absi(int(candidates[0]["error"])))
+	var grade: int = _grade_tap_error(absi(int(candidates[0]["error"])), chosen_note)
 	var component_kind: StringName = &"head" if chosen_note["unit_kind"] == &"hold" else &"tap"
 	var component := JudgmentComponentRecord.timing(component_kind, int(chosen_note["tick"]), int(chosen_note["start_us"]), sample.timestamp_us, grade)
 	_last_press_binding = chosen_note.duplicate(true)
@@ -297,20 +298,20 @@ func _finalize_state(state: Dictionary, components: Array[JudgmentComponentRecor
 	_pending_records.append(record)
 
 
-func _grade_tap_error(absolute_error_us: int) -> int:
-	if absolute_error_us <= _rules.perfect_window_ms * 1000:
+func _grade_tap_error(absolute_error_us: int, note: Dictionary = {}) -> int:
+	if absolute_error_us <= _window_ms(note, _rules.perfect_window_ms) * 1000:
 		return GameplayTypes.JudgmentGrade.PERFECT
 
-	if absolute_error_us <= _rules.good_window_ms * 1000:
+	if absolute_error_us <= _window_ms(note, _rules.good_window_ms) * 1000:
 		return GameplayTypes.JudgmentGrade.GOOD
-	if absolute_error_us <= _rules.pass_window_ms * 1000:
+	if absolute_error_us <= _window_ms(note, _rules.pass_window_ms) * 1000:
 		return GameplayTypes.JudgmentGrade.PASS
 	return GameplayTypes.JudgmentGrade.MISS
 
 
 func _prepare_window(time_us: int) -> void:
 	_states = _states.filter(func(state: Dictionary) -> bool: return state["status"] != &"judged")
-	var horizon := time_us + maxi(_rules.pass_window_ms, _rules.miss_window_ms) * 1000
+	var horizon := time_us + (maxi(_rules.pass_window_ms, _rules.miss_window_ms) + _pet.hold_head_bonus_ms) * 1000
 	while _future_cursor < _future_states.size():
 		var state := _future_states[_future_cursor]
 		if int(state["note"]["start_us"]) > horizon: break
@@ -340,5 +341,21 @@ func next_holding_transition_us() -> int:
 		var end_us: int = int(state["note"]["end_us"])
 		result = mini(result, end_us)
 		if not bool(state["held"]) and int(state["gap_started_us"]) >= 0:
-			result = mini(result, int(state["gap_started_us"]) + _rules.hold_sustain_grace_ms * 1000 + 1)
+			result = mini(result, int(state["gap_started_us"]) + (_rules.hold_sustain_grace_ms + _pet.hold_sustain_bonus_ms) * 1000 + 1)
+	return result
+
+
+func _window_ms(note: Dictionary, window: int) -> int:
+	return window + (_pet.hold_head_bonus_ms if note.get("unit_kind") == &"hold" else 0)
+
+func next_transition_us() -> int:
+	# 将头部超时也列为边界，避免大帧步把抵达受伤之后的判定提前计入。
+	var result := next_holding_transition_us()
+	for state in _states:
+		if state.status == &"pending":
+			result = mini(result, int(state.note.start_us) + _window_ms(state.note, _rules.miss_window_ms) * 1000 + 1)
+	for i in range(_future_cursor, _future_states.size()):
+		var note: Dictionary = _future_states[i].note
+		if int(note.start_us) > result: break
+		result = mini(result, int(note.start_us) + _window_ms(note, _rules.miss_window_ms) * 1000 + 1)
 	return result

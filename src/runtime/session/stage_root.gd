@@ -19,7 +19,7 @@ signal exit_requested
 @export var initial_stage: StageDefinition
 ## `initial_stage` 存在时是否在准备完成后立即起播；关闭可供编辑器和测试手动控制。
 @export var auto_start_initial_stage: bool = true
-## 当前随从/装备组合的稳定哈希，只写入 Replay 环境信息，不改变玩法判定。
+## 旧录制链路预留的装备标识；现行领域重演显式注入本局随从配置。
 @export var active_loadout_hash: String = ""
 
 @export_group("Scene Wiring")
@@ -88,6 +88,25 @@ var note_haptics_feedback: NoteHapticsFeedback
 var controller_haptics: ControllerHaptics
 ## 最近一次录制完成的 Replay，供开发工具或外部调用读取。
 var last_replay: ReplayData
+## 装配时复制技能参数；表现持有定义资源，只读美术配置。
+var active_pet: PetDefinition
+var pet_advanced: bool = false
+var _pet_views: Array[PetVisual] = []
+
+func set_pet(pet: PetDefinition, advanced: bool = false) -> void:
+	active_pet = pet
+	pet_advanced = advanced
+	stage_session.pet_effect = pet.effect(advanced) if pet != null else PetEffectProfile.new()
+
+func _setup_pet_views() -> void:
+	_pet_views = presentation.configure_pet(active_pet, pet_advanced)
+
+func _update_pet_views(sample: ClockSample) -> void:
+	if active_pet == null: return
+	var simulation := gameplay_coordinator.simulation
+	for view in _pet_views:
+		view.set_state(sample.song_time_sec, simulation.last_pet_trigger_us)
+
 
 
 func _exit_tree() -> void:
@@ -132,6 +151,7 @@ func _ready() -> void:
 	stage_session.run_started.connect(_on_haptics_run_started)
 	note_haptics_feedback.bind(stage_session, controller_haptics)
 	stage_session.result_ready.connect(_on_stage_result_ready)
+	stage_session.visual_frame_ready.connect(_update_pet_views)
 	pause_overlay.exit_requested.connect(_on_exit_requested)
 
 	if initial_stage != null:
@@ -149,6 +169,7 @@ func load_stage(stage: StageDefinition, start_after_prepare: bool = true) -> boo
 	if not stage_session.prepare():
 		stage_load_failed.emit("Stage validation or compilation failed.")
 		return false
+	_setup_pet_views()
 	stage_show_director.call("configure", stage.stage_show, stage_session.compiled_chart.tempo_map)
 	presentation.set_song_duration(stage_session.get_end_song_time_sec())
 	hud.set_song_duration(stage_session.get_end_song_time_sec())
@@ -259,7 +280,11 @@ func _on_exit_requested() -> void:
 
 
 func _on_stage_result_ready(result: Dictionary) -> void:
-	stage_finished.emit(result.duplicate(true))
+	var final := result.duplicate(true)
+	final.equipped_pet_id = active_pet.pet_id if active_pet != null else ""
+	final.pet_name = active_pet.display_name if active_pet != null else ""
+	final.pet_advanced = pet_advanced
+	stage_finished.emit(final)
 
 
 func _on_replay_saved(path: String, replay: ReplayData, _run_log: Dictionary) -> void:

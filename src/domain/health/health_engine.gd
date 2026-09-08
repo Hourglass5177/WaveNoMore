@@ -6,6 +6,7 @@ extends RefCounted
 
 ## 当前规则引用；读取满魂火、MISS 伤害和乱按伤害开关。
 var _rules: GameplayRuleSet
+var _pet := PetEffectProfile.new()
 ## 当前魂火整数值；正常关最低为 0，非致死调试关允许继续降为负数。
 var soul_fire: int = 0
 ## 是否已因魂火耗尽失败；一旦为 true，本局不再接收玩法输入。
@@ -16,8 +17,9 @@ var _damaged_groups: Dictionary = {}
 var _nonlethal: bool = false
 
 
-func configure(rules: GameplayRuleSet, nonlethal: bool = false) -> void:
+func configure(rules: GameplayRuleSet, nonlethal: bool = false, pet: PetEffectProfile = null) -> void:
 	_rules = rules
+	_pet = pet if pet != null else PetEffectProfile.new()
 	_nonlethal = nonlethal
 	reset()
 
@@ -29,7 +31,7 @@ func reset() -> void:
 
 
 func apply_judgment(record: JudgmentRecord) -> int:
-	if record.grade != GameplayTypes.JudgmentGrade.MISS:
+	if record.mechanical_grade() != GameplayTypes.JudgmentGrade.MISS:
 		return 0
 	var damage_group: String = record.damage_group_id if not record.damage_group_id.is_empty() else record.unit_id
 	return _apply_damage_group(damage_group, _rules.miss_damage)
@@ -67,7 +69,7 @@ func _apply_damage_group(group_id: String, damage: int) -> int:
 	if _damaged_groups.has(group_id):
 		return 0
 	_damaged_groups[group_id] = true
-	var requested_damage: int = maxi(0, damage)
+	var requested_damage: int = maxi(0, roundi(damage * (1.0 - _pet.damage_reduction)))
 	if _nonlethal:
 		soul_fire -= requested_damage
 		failed = false
@@ -78,3 +80,9 @@ func _apply_damage_group(group_id: String, damage: int) -> int:
 		soul_fire = 0
 		failed = true
 	return actual
+
+
+func apply_damage(record: DamageRecord) -> int:
+	if failed and not _nonlethal: return 0
+	record.actual_damage = _apply_damage_group(record.group_id, record.base_damage)
+	return record.actual_damage
