@@ -1,5 +1,6 @@
 extends Control
 ## 工作区仅协调文档、控件和预览。文件格式与玩法均由独立模块负责。
+const VERSION := "0.1.2"
 var rhythm: StudioRhythmPanel
 var playtest := StudioPlaytest.new()
 var document := StudioDocument.new()
@@ -53,7 +54,9 @@ const PAUSE_ICON = preload("res://assets/chart_studio/pause.svg")
 @onready var problems: ItemList = $Layout/Problems
 
 func _ready() -> void:
-	get_window().title = "冥河 · 写谱器"
+	get_window().title = "冥河 · 写谱器 v" + VERSION
+	# 手柄默认会同时送达后台窗口；在输入源处隔离，连原生弹窗也不能误收试玩操作。
+	Input.ignore_joypad_on_unfocused_application = true
 	get_window().content_scale_mode = Window.CONTENT_SCALE_MODE_CANVAS_ITEMS
 	get_window().content_scale_size = Vector2i.ZERO
 	get_window().min_size = Vector2i(1024, 720)
@@ -68,9 +71,6 @@ func _ready() -> void:
 		$Layout/Toolbar/Playtest.tooltip_text = "关闭试玩窗口后可再次启动" if busy else "使用当前难度，包括未保存修改")
 	playtest.notice.connect(_message)
 	playtest.executable_needed.connect(_choose_trial_game)
-	playtest.finished.connect(func() -> void:
-		# 以当前编辑文档恢复显示，不能载入旧试玩快照覆盖试玩期间的修改。
-		timeline.rebuild_index())
 	add_child(_context)
 	for caption in ["节拍器", "音符提示音", "游戏反馈"]:
 		var toggle := CheckButton.new(); toggle.text = caption
@@ -479,11 +479,15 @@ func _meter_controls(tick: int) -> void:
 		presets.add_child(button)
 		button.pressed.connect(func() -> void: _finish_text_edit(); _set_meter(pair[0], pair[1], tick))
 
+func _update_window_title() -> void:
+	# 保存、切换歌曲和撤销均保留工具版本及未保存标记。
+	get_window().title = "冥河 · 写谱器 v%s · %s%s" % [VERSION, document.song.title, " *" if document.dirty else ""]
+
 func _on_document_changed() -> void:
 	if not is_node_ready(): return
 	_update_alignment_controls()
 	if _recovery_ready and document.dirty: _autosave.start()
-	get_window().title = "冥河 · %s%s" % [document.song.title, " *" if document.dirty else ""]
+	_update_window_title()
 	var kind := document.change_kind
 	# 暂停时也刷新游标 tick 和节拍器基准，继续试听时沿用新映射。
 	if kind == &"timing" and not audio.playing: _position_changed(audio.position)
@@ -521,7 +525,7 @@ func _on_document_changed() -> void:
 	for section in document.chart().sections: sections.add_item(section.label)
 	_updating = false
 	_inspect()
-	get_window().title = "冥河 · %s%s" % [document.song.title, " *" if document.dirty else ""]
+	_update_window_title()
 
 func _rebuild_preview() -> void:
 	var draft := document.chart().duplicate(true) as SongChart
@@ -1084,7 +1088,7 @@ func _save() -> void:
 	_message(error if not error.is_empty() else "已保存", document.directory)
 	if error.is_empty(): _save_workspace()
 	if error.is_empty(): DirAccess.remove_absolute(recovery_path)
-	if error.is_empty(): get_window().title = "冥河 · " + document.song.title
+	if error.is_empty(): _update_window_title()
 
 func _save_as() -> void:
 	_finish_recording()
@@ -1092,7 +1096,7 @@ func _save_as() -> void:
 		var error := StudioProjectIO.save_project(document, path); _message(error if not error.is_empty() else "项目已保存，可以导入音乐")
 		if error.is_empty():
 			_save_workspace(); DirAccess.remove_absolute(recovery_path)
-			get_window().title = "冥河 · " + document.song.title)
+			_update_window_title())
 
 func _import_audio() -> void:
 	if rhythm != null: rhythm.reset_analysis()
@@ -1224,7 +1228,7 @@ func _save_then(callback: Callable) -> void:
 		var error := StudioProjectIO.save_project(document, path)
 		if not error.is_empty(): _message(error); return
 		_save_workspace(); DirAccess.remove_absolute(recovery_path)
-		get_window().title = "冥河 · " + document.song.title
+		_update_window_title()
 		callback.call()
 	if document.directory.is_empty(): _file_dialog(FileDialog.FILE_MODE_OPEN_DIR, PackedStringArray(), save_at)
 	else: save_at.call(document.directory)
@@ -1256,6 +1260,11 @@ func _help() -> void:
 	add_child(dialog); dialog.popup_centered(Vector2i(700, 600))
 
 func _input(event: InputEvent) -> void:
+	# 专用试玩期间手柄属于游戏；也覆盖启动/退出的焦点交接和已经排队的事件。
+	# 谱师切回本窗口仍可用鼠标、键盘继续编辑，不能停掉整个工作区。
+	if playtest.busy and (event is InputEventJoypadMotion or event is InputEventJoypadButton):
+		accept_event()
+		return
 	if not event is InputEventKey: return
 	if timeline.is_aligning():
 		if event.pressed and event.keycode == KEY_ESCAPE: timeline.cancel_gesture()

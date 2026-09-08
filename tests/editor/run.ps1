@@ -11,6 +11,7 @@ $studioSuites = @{
     'run_local_chart_tests' = 'LOCAL CHART TESTS: 0'
     'run_trial_launcher_tests' = 'TRIAL LAUNCHER TESTS: 0'
     'run_trial_flow_tests' = 'TRIAL FLOW TESTS: 0'
+    'run_background_input_tests' = 'BACKGROUND INPUT TESTS: 0'
     'run_studio_tests' = 'STUDIO TESTS: 0'
     'run_alignment_tests' = 'ALIGNMENT TESTS: 0'
     'run_input_tests' = 'INPUT TESTS: 0'

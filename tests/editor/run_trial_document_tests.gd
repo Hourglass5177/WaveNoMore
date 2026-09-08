@@ -40,9 +40,15 @@ func run() -> void:
 	original = ChartJsonCodec.encode_chart(workspace.document.chart())
 	var revision: int = workspace.document.revision
 	var cursors: Dictionary = workspace.document._cursors.duplicate(true)
-	# 模拟静态显示缓存失效，返回流程应从当前文档恢复，而不是依赖旧绘制结果。
-	workspace.timeline._indexed_notes.clear()
-	workspace.timeline._prefix_end.clear()
+	# 真实手柄 GUI 事件必须被隔离，不能只模拟损坏缓存后再检查重建。
+	var first_beat: Button = workspace._alignment_bar.get_node("Actions/SetFirstBeat")
+	first_beat.grab_focus()
+	workspace.audio.seek(60.0)
+	for pressed in [true, false]:
+		var event := InputEventJoypadButton.new(); event.button_index = JOY_BUTTON_A; event.pressed = pressed
+		Input.parse_input_event(event)
+		await process_frame
+	check(ChartJsonCodec.encode_chart(workspace.document.chart()) == original, "真实试玩进程运行时，手柄不能误触后台首拍按钮")
 	if workspace.playtest.pid > 0: OS.kill(workspace.playtest.pid)
 	while workspace.playtest.pid > 0: await process_frame
 	workspace._notification(Node.NOTIFICATION_APPLICATION_FOCUS_IN)
@@ -56,4 +62,5 @@ func run() -> void:
 		root.get_texture().get_image().save_png("res://builds/trial-document.png")
 	workspace.queue_free()
 	await process_frame
+	print("TRIAL DOCUMENT TESTS: ", failures)
 	quit(1 if failures else 0)

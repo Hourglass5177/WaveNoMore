@@ -154,7 +154,7 @@ func refresh() -> void:
 	if document.change_kind in [&"metadata", &"presentation"]: return
 	rebuild_index()
 
-## 返回外部试玩后可独立恢复显示缓存，不伪造文档修改或重演玩法。
+## 按当前谱面重建时间索引；选择、焦点及外部试玩退出不改变谱面内容。
 func rebuild_index() -> void:
 	_map = document.tempo_map()
 	_indexed_notes.assign(document.chart().note_events)
