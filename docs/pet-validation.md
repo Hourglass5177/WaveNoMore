@@ -33,3 +33,9 @@
 | `tests/unit/domain/test_carrier_wave_engine.gd` | 同样 2 项失败：s04 / s05 素音事件数量预期仍为 2 / 1，实际为 0 / 0 |
 
 领域、波传播、旧关卡和旧应用入口在改动前记录了基线。载波套件另在临时的干净 develop 工作树复现两项失败，核对后已移除临时工作树。本轮没有恢复旧输入接口来迁就这些测试；新增随从套件通过现行 A/B 输入和真实 StageRoot 验证波接触、抵达伤害及玩法生命周期。
+
+## 手柄菜单修正
+
+`tests/integration/pets/run_menu_navigation_tests.gd` 通过真实 `InputEventJoypadButton` 覆盖长目录上下滚动、完整露出当前歌曲、弹窗四向寻焦、卡片重建、开发区展开、B 键关闭后恢复原焦点、关闭后继续操作目录及六条技能原文。此次共 49 项检查通过；截图输出为 `builds/pet-review/menu-scroll.png` 和 `modal-focus.png`。
+
+菜单技能描述恢复为用户确认的原文，移除了后加的细则悬停文案；程序数值仍见规则配置。列表跟随焦点滚动、弹窗隔离焦点的原则同时记录在根目录 `AGENTS.md`，供后续美术改版沿用。

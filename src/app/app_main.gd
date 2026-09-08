@@ -240,6 +240,8 @@ func _show_modal(scene: PackedScene) -> void:
 	var previous_focus: Control = get_viewport().gui_get_focus_owner()
 	for child: Node in modal_host.get_children():
 		child.queue_free()
+	# 鼠标遮罩不会阻止方向键寻焦；弹窗期间整棵底层页面退出焦点导航。
+	screen_host.focus_behavior_recursive = Control.FOCUS_BEHAVIOR_DISABLED
 	var modal := scene.instantiate()
 	modal_host.add_child(modal)
 	# 平时 ModalHost 必须放过鼠标，关卡的左右鼠标点击才能进入输入单例；
@@ -249,6 +251,7 @@ func _show_modal(scene: PackedScene) -> void:
 		modal.connect("close_requested", func() -> void:
 			modal.queue_free()
 			modal_host.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			screen_host.focus_behavior_recursive = Control.FOCUS_BEHAVIOR_INHERITED
 			# 纯手柄操作时，弹窗关闭后把焦点还给打开弹窗前的按钮。
 			if is_instance_valid(previous_focus) and previous_focus.is_visible_in_tree():
 				previous_focus.grab_focus.call_deferred()
