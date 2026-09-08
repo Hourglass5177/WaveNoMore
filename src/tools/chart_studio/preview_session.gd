@@ -19,6 +19,16 @@ var rebuild_count := 0
 var load_count := 0
 var _frozen_viewport: SubViewport
 var _render_mode_before := SubViewport.UPDATE_ALWAYS
+var suspended := false
+
+func set_suspended(value: bool) -> void:
+	if suspended == value: return
+	suspended = value
+	if not is_instance_valid(stage_root): return
+	# 后台试玩保留整场状态与最后画面，切回时无需重新装谱或重演。
+	stage_root.process_mode = Node.PROCESS_MODE_DISABLED if suspended else Node.PROCESS_MODE_INHERIT
+	if suspended: _freeze_frame()
+	elif not rebuilding: _release_frame()
 
 func _freeze_frame() -> void:
 	# 历史重演仍更新正式表现状态，但不能把中途的调频/Hold 画面提交到屏幕。
@@ -27,7 +37,9 @@ func _freeze_frame() -> void:
 	_render_mode_before = _frozen_viewport.render_target_update_mode
 	_frozen_viewport.render_target_update_mode = SubViewport.UPDATE_DISABLED
 
-func _release_frame() -> void:
+func _release_frame(force := false) -> void:
+	# 重演与后台休眠共用纹理冻结，任一尚未结束都不能重新开启持续渲染。
+	if suspended and not force: return
 	if is_instance_valid(_frozen_viewport): _frozen_viewport.render_target_update_mode = _render_mode_before
 	_frozen_viewport = null
 
@@ -35,7 +47,7 @@ func clear_preview() -> void:
 	_request += 1
 	rebuilding = false
 	loading_changed.emit(false)
-	_release_frame()
+	_release_frame(true)
 	if is_instance_valid(stage_root):
 		stage_root.get_parent().remove_child(stage_root)
 		stage_root.queue_free()
@@ -71,6 +83,9 @@ func load_preview(stage: StageDefinition, viewport: SubViewport) -> bool:
 	_inputs = StudioPreviewInputs.build(stage_root.stage_session.compiled_chart, stage.rule_set)
 	_cursor = 0
 	_time_us = -1000000000
+	if suspended:
+		stage_root.process_mode = Node.PROCESS_MODE_DISABLED
+		_freeze_frame()
 	status_changed.emit("自动演示")
 	return true
 
@@ -94,6 +109,9 @@ func seek_preview(audio_us: int) -> void:
 	loading_changed.emit(true)
 	_freeze_frame()
 	status_changed.emit("定位中")
+	while suspended:
+		await tree.process_frame
+		if request != _request or not is_inside_tree(): return
 	stage_root.audio_feedback.preview_muted = true
 	stage_root.gameplay_coordinator.defer_preview_snapshot = false
 	stage_root.stage_session.reset_preview()
@@ -105,7 +123,13 @@ func seek_preview(audio_us: int) -> void:
 	stage_root.song_clock.publish_external_time(float(_time_us) / 1000000.0)
 	# 8ms 批次限制的是场景树恢复工作，不改变模拟的精确事件时间。
 	var batch_start := Time.get_ticks_usec()
-	while _cursor < _inputs.size() and _inputs[_cursor].timestamp_us <= target:
+	while true:
+		# 已在进行的跨帧定位也让出 CPU；恢复后从原输入游标继续，仍可被新请求取消。
+		while suspended:
+			await tree.process_frame
+			if request != _request or not is_inside_tree(): return
+			batch_start = Time.get_ticks_usec()
+		if _cursor >= _inputs.size() or _inputs[_cursor].timestamp_us > target: break
 		_step_to(_inputs[_cursor].timestamp_us)
 		if Time.get_ticks_usec() - batch_start > 8000:
 			await tree.process_frame
@@ -132,7 +156,7 @@ func get_preview_state() -> Dictionary:
 	return {"rebuilding": rebuilding, "time_us": _time_us, "input_cursor": _cursor, "snapshot": stage_root.gameplay_coordinator.snapshot() if is_instance_valid(stage_root) else {}}
 
 func advance(audio_sec: float, playing: bool) -> void:
-	if not is_instance_valid(stage_root) or rebuilding: return
+	if not is_instance_valid(stage_root) or rebuilding or suspended: return
 	stage_root.audio_feedback.preview_muted = not playing or not sound_enabled
 	var target := roundi((audio_sec - offset_sec) * 1000000.0)
 	# 真正的定位和循环由 Transport 明确通知；普通采样的抖动不能触发重演。
@@ -144,7 +168,7 @@ func apply_palette(theme: StageVisualTheme) -> void:
 
 func _exit_tree() -> void:
 	_request += 1
-	_release_frame()
+	_release_frame(true)
 
 func _step_to(target: int) -> void:
 	var session := stage_root.stage_session

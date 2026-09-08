@@ -20,6 +20,7 @@ var _started_ms := 0
 var _last_stage := ""
 var _timeout_reported := false
 var _failure_message := ""
+var _poll_elapsed := 0.25
 
 func _ready() -> void:
 	var settings := ConfigFile.new()
@@ -61,7 +62,7 @@ func _package() -> void:
 	_task = WorkerThreadPool.add_task(func():
 		_packed.error = ChartPackageWriter.write(_snapshot_song, _snapshot_charts, _source_directory, _folder.path_join("chart.zip")))
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if _task >= 0 and WorkerThreadPool.is_task_completed(_task):
 		WorkerThreadPool.wait_for_task_completion(_task)
 		_task = -1
@@ -69,6 +70,10 @@ func _process(_delta: float) -> void:
 			notice.emit(_packed.error); _remove_trial(_folder); _set_state(false, "在游戏中试玩")
 		else: _launch()
 	if pid <= 0: return
+	# 状态文件和系统进程查询无需每个渲染帧重复；退出反馈最多延后四分之一秒。
+	_poll_elapsed += delta
+	if _poll_elapsed < 0.25: return
+	_poll_elapsed = 0.0
 	_read_status()
 	if not OS.is_process_running(pid):
 		pid = -1
@@ -93,6 +98,7 @@ func _launch() -> void:
 	var owner_file := FileAccess.open(_folder.path_join("owner.json"), FileAccess.WRITE)
 	if owner_file != null: owner_file.store_string(JSON.stringify({"pid": pid})); owner_file.close()
 	_started_ms = Time.get_ticks_msec(); _last_stage = ""; _timeout_reported = false; _failure_message = ""
+	_poll_elapsed = 0.25
 	_set_state(true, "正在启动游戏…")
 
 func _read_status() -> void:

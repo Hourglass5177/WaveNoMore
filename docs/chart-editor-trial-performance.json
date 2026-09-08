@@ -1,0 +1,333 @@
+{
+  "date": "2026-09-09",
+  "engine": "4.7.2",
+  "base_commit": "39cb28c8",
+  "cpu": "Intel Core Ultra 9 185H",
+  "gpu": "NVIDIA RTX 4060 Laptop GPU",
+  "driver": "610.88",
+  "renderer": "OpenGL Compatibility",
+  "measurement": "Godot process_frame 之间单调时钟间隔，单位 ms；不是屏幕采集的实际呈现时间",
+  "cases": [
+    {
+      "draws": {
+        "max": 195.0,
+        "mean": 123.479296875,
+        "p95": 168.0
+      },
+      "duration": 16.003831,
+      "frames": {
+        "max": 14.407,
+        "mean": 6.251496484375,
+        "p95": 9.148
+      },
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "haptics": {
+        "advanced_unavailable_reason": "Generic SDL effects do not prove independent actuator frequency control or continuous mixed waveform playback.",
+        "continuous_mixed_waveform": false,
+        "device_id": 1,
+        "dual_independent_frequency": false,
+        "dual_strength": true,
+        "mono_periodic": false,
+        "mono_strength": false,
+        "raw_custom_effect_reported": false,
+        "rejected_backends": [],
+        "reported_backends": [
+          "sdl_joystick_rumble"
+        ]
+      },
+      "input_count": 28,
+      "screen": "(2560, 1440)",
+      "sample_count": 2560,
+      "frames_over_16_667_ms": 0,
+      "case": "strikes-alone"
+    },
+    {
+      "draws": {
+        "max": 195.0,
+        "mean": 120.31786862655,
+        "p95": 168.0
+      },
+      "duration": 16.006894,
+      "frames": {
+        "max": 28.312,
+        "mean": 7.35273036288469,
+        "p95": 13.09
+      },
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "haptics": {
+        "advanced_unavailable_reason": "Generic SDL effects do not prove independent actuator frequency control or continuous mixed waveform playback.",
+        "continuous_mixed_waveform": false,
+        "device_id": 1,
+        "dual_independent_frequency": false,
+        "dual_strength": true,
+        "mono_periodic": false,
+        "mono_strength": false,
+        "raw_custom_effect_reported": false,
+        "rejected_backends": [],
+        "reported_backends": [
+          "sdl_joystick_rumble"
+        ]
+      },
+      "input_count": 28,
+      "screen": "(2560, 1440)",
+      "sample_count": 2177,
+      "frames_over_16_667_ms": 26,
+      "case": "strikes-paired"
+    },
+    {
+      "draws": {
+        "max": 191.0,
+        "mean": 123.293789808917,
+        "p95": 168.0
+      },
+      "duration": 16.004242,
+      "frames": {
+        "max": 18.211,
+        "mean": 6.37111544585986,
+        "p95": 9.79
+      },
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "haptics": {
+        "advanced_unavailable_reason": "Generic SDL effects do not prove independent actuator frequency control or continuous mixed waveform playback.",
+        "continuous_mixed_waveform": false,
+        "device_id": 1,
+        "dual_independent_frequency": false,
+        "dual_strength": true,
+        "mono_periodic": false,
+        "mono_strength": false,
+        "raw_custom_effect_reported": false,
+        "rejected_backends": [],
+        "reported_backends": [
+          "sdl_joystick_rumble"
+        ]
+      },
+      "input_count": 28,
+      "screen": "(2560, 1440)",
+      "sample_count": 2512,
+      "frames_over_16_667_ms": 3,
+      "case": "strikes-frozen"
+    },
+    {
+      "draws": {
+        "max": 195.0,
+        "mean": 150.875347360064,
+        "p95": 184.0
+      },
+      "duration": 16.000842,
+      "frames": {
+        "max": 57.684,
+        "mean": 6.35206113537118,
+        "p95": 12.068
+      },
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "haptics": {
+        "advanced_unavailable_reason": "Generic SDL effects do not prove independent actuator frequency control or continuous mixed waveform playback.",
+        "continuous_mixed_waveform": false,
+        "device_id": 1,
+        "dual_independent_frequency": false,
+        "dual_strength": true,
+        "mono_periodic": false,
+        "mono_strength": false,
+        "raw_custom_effect_reported": false,
+        "rejected_backends": [],
+        "reported_backends": [
+          "sdl_joystick_rumble"
+        ]
+      },
+      "input_count": 20,
+      "screen": "(2560, 1440)",
+      "sample_count": 2519,
+      "frames_over_16_667_ms": 14,
+      "case": "strikes-final"
+    },
+    {
+      "draws": {
+        "max": 195.0,
+        "mean": 120.566173361522,
+        "p95": 168.0
+      },
+      "duration": 16.008874,
+      "frames": {
+        "max": 19.494,
+        "mean": 6.7690799154334,
+        "p95": 10.692
+      },
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "haptics": {
+        "advanced_unavailable_reason": "Generic SDL effects do not prove independent actuator frequency control or continuous mixed waveform playback.",
+        "continuous_mixed_waveform": false,
+        "device_id": -1,
+        "dual_independent_frequency": false,
+        "dual_strength": false,
+        "mono_periodic": false,
+        "mono_strength": false,
+        "raw_custom_effect_reported": false,
+        "rejected_backends": [],
+        "reported_backends": []
+      },
+      "input_count": 28,
+      "paused_frames": 0,
+      "screen": "(2560, 1440)",
+      "song_end": 16.1454979999967,
+      "song_start": 0.136625999996694,
+      "sample_count": 2365,
+      "frames_over_16_667_ms": 2,
+      "case": "verified-alone"
+    },
+    {
+      "draws": {
+        "max": 195.0,
+        "mean": 120.87035472973,
+        "p95": 167.0
+      },
+      "duration": 16.000388,
+      "frames": {
+        "max": 27.917,
+        "mean": 6.7569206081081,
+        "p95": 11.853
+      },
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "haptics": {
+        "advanced_unavailable_reason": "Generic SDL effects do not prove independent actuator frequency control or continuous mixed waveform playback.",
+        "continuous_mixed_waveform": false,
+        "device_id": 1,
+        "dual_independent_frequency": false,
+        "dual_strength": true,
+        "mono_periodic": false,
+        "mono_strength": false,
+        "raw_custom_effect_reported": false,
+        "rejected_backends": [],
+        "reported_backends": [
+          "sdl_joystick_rumble"
+        ]
+      },
+      "input_count": 28,
+      "paused_frames": 0,
+      "screen": "(2560, 1440)",
+      "song_end": 16.0948289999967,
+      "song_start": 0.0944399999966941,
+      "sample_count": 2368,
+      "frames_over_16_667_ms": 18,
+      "case": "verified-paired"
+    },
+    {
+      "draws": {
+        "max": 195.0,
+        "mean": 122.054525014053,
+        "p95": 168.0
+      },
+      "duration": 16.001623,
+      "frames": {
+        "max": 24.536,
+        "mean": 8.99472906127037,
+        "p95": 14.559
+      },
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "haptics": {
+        "advanced_unavailable_reason": "Generic SDL effects do not prove independent actuator frequency control or continuous mixed waveform playback.",
+        "continuous_mixed_waveform": false,
+        "device_id": 1,
+        "dual_independent_frequency": false,
+        "dual_strength": true,
+        "mono_periodic": false,
+        "mono_strength": false,
+        "raw_custom_effect_reported": false,
+        "rejected_backends": [],
+        "reported_backends": [
+          "sdl_joystick_rumble"
+        ]
+      },
+      "input_count": 28,
+      "paused_frames": 0,
+      "screen": "(2560, 1440)",
+      "song_end": 16.1560479999967,
+      "song_start": 0.154426999996694,
+      "sample_count": 1779,
+      "frames_over_16_667_ms": 31,
+      "case": "verified-suspended"
+    },
+    {
+      "draws": {
+        "max": 195.0,
+        "mean": 120.769348659004,
+        "p95": 168.0
+      },
+      "duration": 16.001066,
+      "focused_frames": 2610,
+      "frames": {
+        "max": 17.876,
+        "mean": 6.13067662835249,
+        "p95": 9.546
+      },
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "haptics": {
+        "advanced_unavailable_reason": "Generic SDL effects do not prove independent actuator frequency control or continuous mixed waveform playback.",
+        "continuous_mixed_waveform": false,
+        "device_id": 1,
+        "dual_independent_frequency": false,
+        "dual_strength": true,
+        "mono_periodic": false,
+        "mono_strength": false,
+        "raw_custom_effect_reported": false,
+        "rejected_backends": [],
+        "reported_backends": [
+          "sdl_joystick_rumble"
+        ]
+      },
+      "input_count": 28,
+      "paused_frames": 0,
+      "screen": "(2560, 1440)",
+      "song_end": 16.1265939999967,
+      "song_start": 0.125525999996694,
+      "sample_count": 2610,
+      "frames_over_16_667_ms": 1,
+      "case": "suspended-repeat"
+    },
+    {
+      "draws": {
+        "max": 191.0,
+        "mean": 123.81905961377,
+        "p95": 168.0
+      },
+      "duration": 16.005487,
+      "frames": {
+        "max": 17.259,
+        "mean": 6.71934802686817,
+        "p95": 9.543
+      },
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "haptics": {
+        "advanced_unavailable_reason": "Generic SDL effects do not prove independent actuator frequency control or continuous mixed waveform playback.",
+        "continuous_mixed_waveform": false,
+        "device_id": 1,
+        "dual_independent_frequency": false,
+        "dual_strength": true,
+        "mono_periodic": false,
+        "mono_strength": false,
+        "raw_custom_effect_reported": false,
+        "rejected_backends": [],
+        "reported_backends": [
+          "sdl_joystick_rumble"
+        ]
+      },
+      "haptics_work": {
+        "max": 0.601,
+        "mean": 0.100921914357683,
+        "p95": 0.164
+      },
+      "input_count": 28,
+      "paused_frames": 0,
+      "screen": "(2560, 1440)",
+      "session_work": {
+        "max": 7.621,
+        "mean": 2.86138748950462,
+        "p95": 4.209
+      },
+      "song_end": 16.0868439999967,
+      "song_start": 0.081352999996694,
+      "sample_count": 2382,
+      "frames_over_16_667_ms": 2,
+      "case": "work-cost"
+    }
+  ]
+}

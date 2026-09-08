@@ -30,6 +30,11 @@ func run() -> void:
 	launcher._started_ms = Time.get_ticks_msec() - 16000
 	launcher._process(0)
 	check(notices.size() == 1 and notices[0].contains("不支持一键试玩"), "进程存在但无握手时明确提示")
+	StudioProjectIO.write_json(launcher._folder.path_join("status.json"), {"request_id": "latest", "interface_version": 1, "stage": "ready"})
+	launcher._process(0.1)
+	check(launcher._last_stage.is_empty(), "未到轮询间隔时不重新读取状态文件")
+	launcher._process(0.15)
+	check(launcher._last_stage == "ready", "四分之一秒后正常接收试玩就绪通知")
 	launcher.pid = -1
 	StudioProjectIO.write_json(launcher._folder.path_join("status.json"), {"request_id": "latest", "interface_version": 1, "stage": "error", "message": "难度 hard：缺少音乐"})
 	launcher._read_status()

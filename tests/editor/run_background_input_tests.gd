@@ -30,13 +30,17 @@ func run() -> void:
 	var target: Button = workspace._alignment_bar.get_node("Actions/SetFirstBeat")
 	target.grab_focus()
 	# 覆盖从点击试玩到游戏取得焦点，以及返回编辑器但试玩尚未退出的两个窗口。
+	var original_fps := Engine.max_fps
+	var loads: int = workspace.preview.load_count
 	workspace.playtest._set_state(true, "试玩进行中")
 	workspace._notification(Node.NOTIFICATION_APPLICATION_FOCUS_OUT)
+	check(workspace.preview.suspended and Engine.max_fps <= 15, "后台试玩预览休眠，工具降频")
 	await joy_button(JOY_BUTTON_A, true)
 	await joy_button(JOY_BUTTON_A, false)
 	check(ChartJsonCodec.encode_chart(workspace.document.chart()) == before, "后台手柄不能误触首拍或改写谱面")
 	check(workspace.timeline.visible_notes(120, workspace.timeline.size.x).size() == visible, "后台输入后音符仍在原位置，波形时间基准不变")
 	workspace._notification(Node.NOTIFICATION_APPLICATION_FOCUS_IN)
+	check(not workspace.preview.suspended and Engine.max_fps == original_fps and workspace.preview.load_count == loads, "切回恢复原帧率，不重新装谱")
 	var motion := InputEventJoypadMotion.new(); motion.axis = JOY_AXIS_LEFT_X; motion.axis_value = 1.0
 	Input.parse_input_event(motion)
 	await process_frame
@@ -53,7 +57,10 @@ func run() -> void:
 	check(workspace.document.chart().note_events.size() == count + 1, "试玩期间切回仍可用 F 输入 Tap")
 	workspace.document.undo()
 	check(ChartJsonCodec.encode_chart(workspace.document.chart()) == before, "正常编辑可以独立撤销")
+	workspace._notification(Node.NOTIFICATION_APPLICATION_FOCUS_OUT)
 	workspace.playtest._set_state(false, "在游戏中试玩")
+	check(not workspace.preview.suspended and Engine.max_fps == original_fps, "试玩退出即解除休眠，不依赖焦点事件顺序")
+	workspace._notification(Node.NOTIFICATION_APPLICATION_FOCUS_IN)
 	target.grab_focus()
 	var key := InputEventKey.new(); key.keycode = KEY_ENTER; key.pressed = true
 	Input.parse_input_event(key)

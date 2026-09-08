@@ -7,6 +7,9 @@ var document := StudioDocument.new()
 var audio := StudioAudio.new()
 var preview := StudioPreviewSession.new()
 var _refresh_pending := false
+var _application_focused := true
+var _trial_background := false
+var _foreground_max_fps := 0
 var _updating := false
 var _input_starts := {}
 var _context := PopupMenu.new()
@@ -68,7 +71,8 @@ func _ready() -> void:
 	playtest.changed.connect(func(busy: bool, caption: String):
 		$Layout/Toolbar/Playtest.disabled = busy
 		$Layout/Toolbar/Playtest.text = caption
-		$Layout/Toolbar/Playtest.tooltip_text = "关闭试玩窗口后可再次启动" if busy else "使用当前难度，包括未保存修改")
+		$Layout/Toolbar/Playtest.tooltip_text = "关闭试玩窗口后可再次启动" if busy else "使用当前难度，包括未保存修改"
+		_sync_trial_background())
 	playtest.notice.connect(_message)
 	playtest.executable_needed.connect(_choose_trial_game)
 	add_child(_context)
@@ -173,6 +177,7 @@ func _ready() -> void:
 	_setup_stability_controls()
 	_on_document_changed()
 	audio.state_changed.connect(_sync_transport)
+	audio.state_changed.connect(_sync_trial_background)
 	_sync_transport()
 	get_window().close_requested.connect(_close)
 	get_tree().auto_accept_quit = false
@@ -187,11 +192,26 @@ func _process(_delta: float) -> void:
 			timeline._redraw_overlay()
 	timeline.loop_range = Vector2(audio.loop_start, audio.loop_end)
 	timeline.loop_enabled = audio.loop_enabled
+	if _trial_background: return
 	if _refresh_pending and not preview.rebuilding and not recorder.active and not timeline.is_aligning():
 		_refresh_pending = false
 		_rebuild_preview()
 	preview.sound_enabled = _game_feedback_enabled
 	preview.set_transport(roundi(audio.position * 1000000.0), audio.playing)
+
+func _sync_trial_background() -> void:
+	var background := playtest.busy and not _application_focused and not audio.playing
+	if background == _trial_background: return
+	_trial_background = background
+	# 仅让正在后台等待试玩的工具降频；任务轮询、自动保存仍运行，前台编辑不受影响。
+	if background:
+		_foreground_max_fps = Engine.max_fps
+		Engine.max_fps = mini(15, _foreground_max_fps) if _foreground_max_fps > 0 else 15
+	else: Engine.max_fps = _foreground_max_fps
+	preview.set_suspended(background)
+
+func _exit_tree() -> void:
+	if _trial_background: Engine.max_fps = _foreground_max_fps
 
 func _setup_stability_controls() -> void:
 	var settings := ConfigFile.new()
@@ -1179,10 +1199,14 @@ func _activate_project(state: Dictionary) -> void:
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT and is_node_ready():
+		_application_focused = false
 		_finish_recording(true)
 		timeline.cancel_gesture()
 		_input_starts.clear()
+		_sync_trial_background()
 	elif what == NOTIFICATION_APPLICATION_FOCUS_IN and is_node_ready():
+		_application_focused = true
+		_sync_trial_background()
 		# 独立游戏可能切换全屏或最小化工具；重新取得焦点时刷新静态轨道和播放头。
 		timeline.queue_redraw()
 		timeline._redraw_overlay()
