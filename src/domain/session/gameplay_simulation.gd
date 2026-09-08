@@ -493,6 +493,8 @@ func motion_snapshot() -> Dictionary:
 		"dual_holding_notes": note_engine.has_dual_holding_notes(),
 		"life_holding_note_id": note_engine.holding_note_id(GameplayTypes.Affinity.ZHU),
 		"death_holding_note_id": note_engine.holding_note_id(GameplayTypes.Affinity.XUAN),
+		"life_perfect_holding": note_engine.has_perfect_holding_note(GameplayTypes.Affinity.ZHU),
+		"death_perfect_holding": note_engine.has_perfect_holding_note(GameplayTypes.Affinity.XUAN),
 		"active_hold_ids": note_engine.active_hold_ids(),
 		"held_hold_ids": note_engine.active_hold_ids(true),
 	}

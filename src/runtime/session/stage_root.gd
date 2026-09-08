@@ -49,6 +49,10 @@ signal exit_requested
 @export var debug_hud_path: NodePath = ^"DebugLayer"
 ## 敲钟、判定和失败等听觉反馈导演的节点路径。
 @export var audio_feedback_path: NodePath = ^"Presentation/AudioFeedbackDirector"
+## 仅 Tap 命中触发短震动的独立反馈节点路径。
+@export var note_haptics_feedback_path: NodePath = ^"Presentation/NoteHapticsFeedback"
+## 关卡共享的多源震动管理节点，不归某一种反馈独占。
+@export var controller_haptics_path: NodePath = ^"Presentation/ControllerHaptics"
 
 ## 从 `song_player_path` 解析出的歌曲播放器，供会话和时钟共用。
 var song_player: AudioStreamPlayer
@@ -78,6 +82,10 @@ var pause_overlay: PauseOverlay
 var debug_hud: StageDebugHud
 ## 当前关卡的声音反馈导演。
 var audio_feedback: AudioFeedbackDirector
+## 通过共享管理层请求单次震动的 Tap 反馈节点，生左死右。
+var note_haptics_feedback: NoteHapticsFeedback
+## 供其他模块申请句柄或单次震动的关卡共享节点。
+var controller_haptics: ControllerHaptics
 ## 最近一次录制完成的 Replay，供开发工具或外部调用读取。
 var last_replay: ReplayData
 
@@ -101,6 +109,9 @@ func _ready() -> void:
 	pause_overlay = get_node(pause_path) as PauseOverlay
 	debug_hud = get_node(debug_hud_path) as StageDebugHud
 	audio_feedback = get_node(audio_feedback_path) as AudioFeedbackDirector
+	note_haptics_feedback = get_node(note_haptics_feedback_path) as NoteHapticsFeedback
+	controller_haptics = get_node(controller_haptics_path) as ControllerHaptics
+	controller_haptics.set_output_enabled(false)
 
 	stage_session.bind_components(
 		song_player,
@@ -116,6 +127,10 @@ func _ready() -> void:
 	pause_overlay.bind(stage_session)
 	debug_hud.bind(stage_session)
 	audio_feedback.bind(stage_session, input_buffer)
+	stage_session.state_changed.connect(_on_haptics_stage_state_changed)
+	stage_session.timeline_seeked.connect(_on_haptics_timeline_seeked)
+	stage_session.run_started.connect(_on_haptics_run_started)
+	note_haptics_feedback.bind(stage_session, controller_haptics)
 	stage_session.result_ready.connect(_on_stage_result_ready)
 	pause_overlay.exit_requested.connect(_on_exit_requested)
 
@@ -192,6 +207,16 @@ func retry() -> bool:
 
 
 func teardown() -> void:
+	if is_instance_valid(controller_haptics):
+		controller_haptics.set_output_enabled(false)
+		controller_haptics.clear()
+	if is_instance_valid(stage_session):
+		if stage_session.state_changed.is_connected(_on_haptics_stage_state_changed):
+			stage_session.state_changed.disconnect(_on_haptics_stage_state_changed)
+			stage_session.timeline_seeked.disconnect(_on_haptics_timeline_seeked)
+			stage_session.run_started.disconnect(_on_haptics_run_started)
+	if is_instance_valid(note_haptics_feedback):
+		note_haptics_feedback.unbind()
 	if is_instance_valid(replay_input_driver):
 		# 先停止 Replay 注入，再让 StageSession 禁用输入；活动回放的 stop() 可能恢复真人模式。
 		replay_input_driver.stop()
@@ -203,6 +228,29 @@ func teardown() -> void:
 
 func set_debug_visible(value: bool) -> void:
 	debug_hud.set_debug_visible(value)
+
+
+func get_controller_haptics() -> ControllerHaptics:
+	## 返回本关唯一管理节点；调用方保存句柄，不直接访问 C++ 四参数输出。
+	return controller_haptics
+
+
+func _on_haptics_stage_state_changed(_previous: int, current: int, _reason: StringName) -> void:
+	## 暂停仅屏蔽输出；新局准备/结束永久清理。预览始终不选设备、不输出。
+	var active: bool = current in [GameplayTypes.StageState.PREROLL, GameplayTypes.StageState.PLAYING]
+	controller_haptics.set_output_enabled(active and not stage_session.external_preview)
+	if not active and current != GameplayTypes.StageState.PAUSED:
+		controller_haptics.clear()
+
+
+func _on_haptics_timeline_seeked(_song_time_sec: float) -> void:
+	## Seek 建立新时间线，旧句柄不能恢复。
+	controller_haptics.clear()
+
+
+func _on_haptics_run_started(_run_id: int) -> void:
+	## 重试不得复用旧局句柄，暂停恢复不经过此入口。
+	controller_haptics.clear()
 
 
 func _on_exit_requested() -> void:

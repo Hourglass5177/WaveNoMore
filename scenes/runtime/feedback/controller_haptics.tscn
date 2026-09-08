@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/runtime/feedback/controller_haptics.gd" id="1_haptics"]
+
+[node name="ControllerHaptics" type="Node"]
+script = ExtResource("1_haptics")
+frequency_multiplier = 1.0
+strength_multiplier = 1.0

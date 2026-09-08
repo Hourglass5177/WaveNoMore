@@ -212,6 +212,18 @@ func active_hold_ids(held_only: bool = false) -> PackedStringArray:
 	return result
 
 
+func has_perfect_holding_note(affinity: int) -> bool:
+	## 只读当前 holding 的原始头判；续按造成的 sustain 降级不改变头判。
+	## 同侧重叠时任意一个 Perfect 头判即可，结束、Miss、取消自然退出。
+	for state: Dictionary in _states:
+		if state["status"] != &"holding" or int(state["note"]["affinity"]) != affinity:
+			continue
+		for component: JudgmentComponentRecord in state["components"]:
+			if component.kind == &"head" and component.grade == GameplayTypes.JudgmentGrade.PERFECT:
+				return true
+	return false
+
+
 func begin_pause_rearm() -> Dictionary:
 	_paused_for_rearm = true
 	var state := {

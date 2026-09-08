@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=16 format=3]
 
 [ext_resource type="Script" path="res://src/runtime/session/stage_root.gd" id="1_root"]
 [ext_resource type="Script" path="res://src/runtime/clock/song_clock.gd" id="2_clock"]
@@ -8,6 +8,8 @@
 [ext_resource type="Script" path="res://src/runtime/director/stage_show_director.gd" id="14_director"]
 [ext_resource type="PackedScene" path="res://scenes/presentation/worlds/graybox_stage_presentation.tscn" id="8_presentation"]
 [ext_resource type="Script" path="res://src/presentation/audio/audio_feedback_director.gd" id="9_audio"]
+[ext_resource type="PackedScene" path="res://scenes/runtime/feedback/note_haptics_feedback.tscn" id="15_haptics"]
+[ext_resource type="PackedScene" path="res://scenes/runtime/feedback/controller_haptics.tscn" id="16_haptics_manager"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud/stage_hud.tscn" id="10_hud"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud/pause_overlay.tscn" id="11_pause"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud/debug_hud.tscn" id="12_debug"]
@@ -42,6 +44,10 @@ script = ExtResource("14_director")
 
 [node name="AudioFeedbackDirector" type="Node" parent="Presentation"]
 script = ExtResource("9_audio")
+
+[node name="NoteHapticsFeedback" parent="Presentation" instance=ExtResource("15_haptics")]
+
+[node name="ControllerHaptics" parent="Presentation" instance=ExtResource("16_haptics_manager")]
 
 [node name="HudLayer" parent="." instance=ExtResource("10_hud")]
 

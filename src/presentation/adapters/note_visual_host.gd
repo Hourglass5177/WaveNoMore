@@ -15,6 +15,8 @@ const DEFAULT_RAPID_SCENE: PackedScene = preload("res://scenes/presentation/fiel
 const DEFAULT_TIMING_RING_SCENE: PackedScene = preload("res://scenes/presentation/notes/default_timing_ring.tscn")
 # 判定进度环在对象池中的固定分类键，供创建和回收时找到同一池。
 const TIMING_RING_POOL_KEY: StringName = &"timing_ring"
+## 中断 Hold 的离场曲线仅在 Miss 时采样一次，之后按绝对时间查询弧长。
+const HOLD_EXIT_SEGMENT_COUNT: int = 96
 
 @export_group("Scene Wiring")
 ## 生音符活动节点的父级路径；只负责分组，不决定其世界坐标。
@@ -271,11 +273,19 @@ func _on_visual_judged(event_id: String, grade: int) -> void:
 	var visual: Node2D = active_entry["node"]
 	if StringName(active_entry["data"].get("unit_kind", &"")) == &"hold":
 		if grade == GameplayTypes.JudgmentGrade.MISS:
-			active_entry["hold_failed"] = true
-			active_entry["hold_resume_time"] = visual_time_sec
-			if active_entry.has("hold_anchor_distance"):
-				active_entry["hold_exit_position"] = visual.position
-				active_entry["hold_exit_heading"] = visual.rotation
+			# 重复结果不得重置离场时间、起点或已冻结的路线。
+			if not bool(active_entry.get("hold_failed", false)):
+				active_entry["hold_failed"] = true
+				active_entry["hold_resume_time"] = visual_time_sec
+				if active_entry.has("hold_anchor_distance"):
+					var data: Dictionary = active_entry["data"]
+					var affinity: int = int(data.get("affinity", GameplayTypes.Affinity.ZHU))
+					var bell: Vector2 = death_wave_origin if affinity == GameplayTypes.Affinity.XUAN else life_wave_origin
+					active_entry["hold_exit_position"] = visual.position
+					active_entry["hold_exit_heading"] = visual.rotation
+					active_entry["hold_exit_target"] = bell
+					active_entry["hold_exit_speed"] = _approach_distance_px(data) / approach_duration_sec
+					active_entry["hold_exit_profile"] = _build_hold_exit_profile(visual.position, visual.rotation, bell, affinity)
 			if visual is GrayboxHoldVisual:
 				visual.release_head_control()
 		else:
@@ -533,6 +543,45 @@ func _pin_hold_visual(entry: Dictionary) -> void:
 	visual.call("set_approach_progress", 1.0)
 
 
+func _build_hold_exit_profile(start: Vector2, heading: float, target: Vector2, affinity: int) -> Dictionary:
+	## 以实际头朝向为起始切线，建立本实例的三次贝塞尔弧长表；不修改普通 Note 路线。
+	## 空表表示已经到钟位，由调用方保持原朝向并直接裁短尾端。
+	var distance: float = start.distance_to(target)
+	if distance <= NoteApproachPath.EPSILON:
+		return {}
+	var forward: Vector2 = Vector2.from_angle(heading)
+	var toward_target: Vector2 = (target - start) / distance
+	var normal := Vector2(-toward_target.y, toward_target.x)
+	var handle_length: float = distance * 0.35
+	var cross_value: float = forward.cross(toward_target)
+	var turn_sign: float = signf(cross_value)
+	if is_zero_approx(cross_value):
+		turn_sign = -1.0 if affinity == GameplayTypes.Affinity.XUAN else 1.0
+	var reverse_weight: float = maxf(0.0, -forward.dot(toward_target))
+	var first_handle: Vector2 = start + forward * handle_length
+	var second_handle: Vector2 = target - toward_target * handle_length + normal * turn_sign * handle_length * reverse_weight
+	var controls := PackedVector2Array([start, first_handle, second_handle, target])
+	var samples := PackedVector2Array([start])
+	var cumulative_lengths := PackedFloat32Array([0.0])
+	var total_length: float = 0.0
+	var previous: Vector2 = start
+	for index: int in range(1, HOLD_EXIT_SEGMENT_COUNT + 1):
+		var parameter: float = float(index) / float(HOLD_EXIT_SEGMENT_COUNT)
+		var point: Vector2 = start.bezier_interpolate(first_handle, second_handle, target, parameter)
+		total_length += previous.distance_to(point)
+		samples.append(point)
+		cumulative_lengths.append(total_length)
+		previous = point
+	# 复用现有公共查询接口所需的 profile 格式，不把这条视觉离场曲线交给领域层。
+	return {
+		"controls": controls,
+		"samples": samples,
+		"cumulative_lengths": cumulative_lengths,
+		"segment_count": HOLD_EXIT_SEGMENT_COUNT,
+		"length_px": total_length,
+	}
+
+
 func _update_hold_visual(
 		event_id: String, entry: Dictionary, approach: float, region_progress: float,
 		hold_active: bool, hold_held: bool
@@ -552,12 +601,18 @@ func _update_hold_visual(
 	if pinned:
 		# 命中后姿态由视觉时钟插值，快照不再重写节点 transform。
 		if failed:
-			var exit_start: Vector2 = entry["hold_exit_position"]
-			var bell: Vector2 = death_wave_origin if affinity == GameplayTypes.Affinity.XUAN else life_wave_origin
-			var travelled: float = maxf(visual_time_sec - float(entry["hold_resume_time"]), 0.0) * route_length / approach_duration_sec
-			visual.position = exit_start.move_toward(bell, travelled)
-			visual.rotation = float(entry["hold_exit_heading"])
-			exit_overshoot = maxf(travelled - exit_start.distance_to(bell), 0.0)
+			var exit_profile: Dictionary = entry["hold_exit_profile"]
+			var exit_length: float = NoteApproachPath.length(exit_profile)
+			var travelled: float = maxf(visual_time_sec - float(entry["hold_resume_time"]), 0.0) * float(entry["hold_exit_speed"])
+			if exit_profile.is_empty():
+				visual.position = entry["hold_exit_target"]
+				visual.rotation = float(entry["hold_exit_heading"])
+			else:
+				var exit_ratio: float = clampf(travelled / exit_length, 0.0, 1.0)
+				visual.position = NoteApproachPath.point_at_ratio(exit_profile, exit_ratio)
+				# 位置和朝向使用同一弧长位置；不叠加受控头部插值或进场定向开关。
+				visual.rotation = NoteApproachPath.tangent_at_ratio(exit_profile, exit_ratio).angle()
+			exit_overshoot = maxf(travelled - exit_length, 0.0)
 	else:
 		visual.call("set_approach_progress", approach)
 		visual.rotation = _sample_approach_tangent(data, distance / maxf(route_length, 0.001)).angle() if orient_notes_along_path else 0.0

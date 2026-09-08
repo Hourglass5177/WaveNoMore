@@ -1,7 +1,21 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://dvpgckb4f7po3"]
 
-[ext_resource type="Script" path="res://src/presentation/adapters/graybox_hold_visual.gd" id="1_hold"]
+[ext_resource type="Script" uid="uid://rr3m5bmlwi7d" path="res://src/presentation/adapters/graybox_hold_visual.gd" id="1_hold"]
+[ext_resource type="Texture2D" uid="uid://bcyuex067y6pr" path="res://assets/image/fish.png" id="2_xyo17"]
+[ext_resource type="Shader" path="res://scenes/presentation/notes/hold_body.gdshader" id="3_body_shader"]
 
-[node name="GrayboxHoldVisual" type="Node2D"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_hold_body"]
+shader = ExtResource("3_body_shader")
+
+[node name="GrayboxHoldVisual" type="Node2D" unique_id=1805135047]
 script = ExtResource("1_hold")
+body_texture = ExtResource("2_xyo17")
+body_material = SubResource("ShaderMaterial_hold_body")
+body_texture_repeat_px = 96.0
+body_edge_softness = 0.08
+body_flow_speed = 0.0
 
+[node name="BodyMesh" type="MeshInstance2D" parent="."]
+visible = false
+show_behind_parent = true
+texture_repeat = 2

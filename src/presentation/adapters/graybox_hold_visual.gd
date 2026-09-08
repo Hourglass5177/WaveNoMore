@@ -6,6 +6,8 @@ extends GrayboxNoteVisual
 ## Hold 的局部原点始终是头部，局部 +X 指向玩家，身体沿 -X 拖尾。
 ## 身体使用固定步长动态链；只有消耗进度改变有效长度，Seek 清空运动历史。
 
+const DEFAULT_BODY_SHADER: Shader = preload("res://scenes/presentation/notes/hold_body.gdshader")
+
 # Hold 身体的目标长度，单位为像素；谱面持续时间越长，prepare() 算出的长度越大。
 var body_length: float = 420.0
 # 由稳定事件 ID 算出的摆动起始相位，避免所有 Hold 同步扭动。
@@ -16,6 +18,31 @@ var _dynamic_spine := DynamicHoldSpine.new()
 var _spine_initialized: bool = false
 var _target_length: float = 0.0
 var _spine_frozen: bool = false
+var _body_mesh: ArrayMesh
+var _body_renderer: MeshInstance2D
+## 每个 Hold 独占可变材质参数；Inspector 资源只作为模板，不在运行时回写。
+var _runtime_body_material: ShaderMaterial
+var _body_material_source: ShaderMaterial
+var _body_distances := PackedFloat32Array()
+var _body_visual_time_sec: float = 0.0
+
+@export_group("Hold Textures")
+## 可选头部贴图，局部 +X 朝前；为空时保留程序化头部。
+@export var head_texture: Texture2D
+## 可沿横向无缝重复的身体贴图；为空时保留程序化身体与纹样。
+@export var body_texture: Texture2D
+## 可选尾部贴图，局部 +X 指向尾尖；为空时保留程序化尾部。
+@export var tail_texture: Texture2D
+@export_group("Hold Material")
+## 身体纹理沿动态脊线累计弧长重复的像素间距。
+@export_range(1.0, 512.0, 1.0, "or_greater") var body_texture_repeat_px: float = 96.0
+## 可选身体材质模板；有身体贴图且此项为空时使用内置 Shader。
+@export var body_material: ShaderMaterial
+## 纹理每秒流过的重复次数；只由视觉时钟推进，暂停和宽限期间冻结。
+@export_range(-4.0, 4.0, 0.01) var body_flow_speed: float = 0.0
+## 横向柔边的 UV 宽度；也用于尾端一个纹理周期内的淡出，0 关闭柔边。
+@export_range(0.0, 0.5, 0.01) var body_edge_softness: float = 0.08
+
 @export_group("Head Control")
 ## 头部位置的指数响应率（s⁻¹）；沿控制圈的半径和角度平滑。
 @export_range(0.1, 60.0, 0.1) var head_position_response: float = 12.0
@@ -57,6 +84,7 @@ func prepare(view_model: Dictionary) -> void:
 	_spine_initialized = false
 	_target_length = body_length
 	_spine_frozen = false
+	_clear_body_render_state()
 	queue_redraw()
 
 
@@ -68,7 +96,7 @@ func set_approach_progress(value: float) -> void:
 
 func set_body_target(length_px: float, frozen: bool = false) -> void:
 	## Host 设置身体长度和宽限冻结状态，不在快照更新中积分。
-	_target_length = length_px
+	_target_length = maxf(length_px, 0.0)
 	_spine_frozen = frozen
 
 
@@ -76,6 +104,7 @@ func advance_body(delta_sec: float) -> void:
 	## 仅由时钟调用；脊线在画布坐标中模拟，最后变换到本节点绘制坐标。
 	if _spine_frozen:
 		return
+	_body_visual_time_sec += maxf(delta_sec, 0.0)
 	_advance_head_control(delta_sec)
 	_dynamic_spine.segment_length = segment_length_px
 	_dynamic_spine.max_angle = deg_to_rad(maximum_bend_deg)
@@ -89,7 +118,9 @@ func advance_body(delta_sec: float) -> void:
 	_dynamic_spine.set_head_target(position, rotation)
 	_dynamic_spine.set_length(_target_length)
 	_dynamic_spine.advance(delta_sec)
-	_path_spine = _dynamic_spine.get_points()
+	_update_visible_spine()
+	_rebuild_body_mesh()
+	_update_body_material()
 	queue_redraw()
 
 
@@ -98,6 +129,7 @@ func reset_for_pool() -> void:
 	release_head_control()
 	_head_control_center = Vector2.ZERO
 	_path_spine.clear()
+	_clear_body_render_state()
 	_dynamic_spine.clear()
 	_spine_initialized = false
 	_target_length = 0.0
@@ -106,36 +138,39 @@ func reset_for_pool() -> void:
 
 
 func _draw() -> void:
-	var color: Color = _affinity_color()
-	if missed:
-		color = Color("575b66")
-	elif judgment_grade == GameplayTypes.JudgmentGrade.PERFECT:
-		color = color.lightened(0.22)
+	var color: Color = _hold_color()
 
 	# 从屏幕外带着完整身体进入；只有命中后的消耗和失败末端回收才收短。
 	var visual_state: Dictionary = visual_state_snapshot()
 	var head_alpha: float = float(visual_state["head_alpha"])
 	var body_reveal: float = float(visual_state["body_reveal"])
 	var tail_alpha: float = float(visual_state["tail_alpha"])
-	var visible_length: float = float(visual_state["visible_length"])
 
 	var spine := PackedVector2Array()
 	var half_widths := PackedFloat32Array()
-	if visible_length > 2.0 and _path_spine.size() >= 2:
+	if _path_spine.size() >= 2:
 		_build_spine(spine, half_widths)
-		_draw_body(spine, half_widths, color, body_reveal)
-		_draw_body_marks(spine, color)
+		# 贴图身体由独立 CanvasItem 绘制，其 Shader 不会覆盖头部与尾部。
+		if body_texture == null:
+			_draw_body(spine, half_widths, color, body_reveal)
+			_draw_body_marks(spine, color)
 
 	# 尾部始终挂在剩余身体的末端，因此按住时会一路向头部靠近，最终
 	# 在谱面尾点（持续段结束）抵达头部，而不是把整条 Hold 原地缩放或突然抹除。
-	if tail_alpha > 0.0 and body_reveal > 0.0:
-		var tail_center: Vector2 = spine[-1] if not spine.is_empty() else Vector2.ZERO
-		var tail_direction := Vector2.LEFT
-		if spine.size() >= 2:
-			tail_direction = (spine[-1] - spine[-2]).normalized()
-		_draw_tail(tail_center, tail_direction, color, tail_alpha)
+	if tail_alpha > 0.0 and body_reveal > 0.0 and spine.size() >= 2:
+		var tail_center: Vector2 = spine[-1]
+		var tail_direction: Vector2 = (spine[-1] - spine[-2]).normalized()
+		if tail_texture != null:
+			draw_set_transform(tail_center, tail_direction.angle(), Vector2.ONE)
+			draw_texture_rect(tail_texture, Rect2(-24.0, -24.0, 48.0, 48.0), false, Color(color, tail_alpha))
+			draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+		else:
+			_draw_tail(tail_center, tail_direction, color, tail_alpha)
 
-	_draw_head(color, head_alpha)
+	if head_texture != null:
+		draw_texture_rect(head_texture, Rect2(-48.0, -48.0, 96.0, 96.0), false, Color(color, head_alpha))
+	else:
+		_draw_head(color, head_alpha)
 
 
 func visual_state_snapshot() -> Dictionary:
@@ -150,12 +185,164 @@ func visual_state_snapshot() -> Dictionary:
 	}
 
 
+func _update_visible_spine() -> void:
+	## 截取绘制用副本；末段不足固定步长时仍精确裁短，不修改动态链的状态。
+	var source: PackedVector2Array = _dynamic_spine.get_points()
+	_path_spine.clear()
+	_body_distances.clear()
+	if source.size() < 2 or _target_length <= 0.0:
+		return
+	_path_spine.append(source[0])
+	_body_distances.append(0.0)
+	var distance: float = 0.0
+	for index: int in range(1, source.size()):
+		var segment: Vector2 = source[index] - source[index - 1]
+		var segment_length: float = segment.length()
+		if segment_length <= 0.0:
+			continue
+		var remaining: float = _target_length - distance
+		if segment_length >= remaining:
+			_path_spine.append(source[index - 1] + segment * (remaining / segment_length))
+			_body_distances.append(_target_length)
+			return
+		distance += segment_length
+		_path_spine.append(source[index])
+		_body_distances.append(distance)
+
+
+func _ensure_body_renderer() -> void:
+	## 场景节点与直接 new() 共用同一渲染入口。材质仅属于身体子节点。
+	if _body_renderer == null:
+		_body_renderer = get_node_or_null(^"BodyMesh") as MeshInstance2D
+		if _body_renderer == null:
+			_body_renderer = MeshInstance2D.new()
+			_body_renderer.name = "BodyMesh"
+			add_child(_body_renderer)
+		_body_renderer.show_behind_parent = true
+		_body_renderer.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
+	if _runtime_body_material == null or _body_material_source != body_material:
+		_body_material_source = body_material
+		if body_material != null:
+			_runtime_body_material = body_material.duplicate() as ShaderMaterial
+		else:
+			_runtime_body_material = ShaderMaterial.new()
+		if _runtime_body_material.shader == null:
+			_runtime_body_material.shader = DEFAULT_BODY_SHADER
+		_body_renderer.material = _runtime_body_material
+	if _runtime_body_material.shader == DEFAULT_BODY_SHADER:
+		if not RenderingServer.frame_pre_draw.is_connected(_sync_body_self_modulate):
+			RenderingServer.frame_pre_draw.connect(_sync_body_self_modulate)
+		_sync_body_self_modulate()
+	_body_renderer.texture = body_texture
+
+
+func _rebuild_body_mesh() -> void:
+	## 一个 surface 共用相邻截面的顶点。局部几何与画布弧长分别计算，不混用坐标。
+	if body_texture == null or _path_spine.size() < 2:
+		if _body_renderer != null:
+			_body_renderer.visible = false
+		if _body_mesh != null and _body_mesh.get_surface_count() > 0:
+			_body_mesh.clear_surfaces()
+		return
+	_ensure_body_renderer()
+	var spine := PackedVector2Array()
+	var half_widths := PackedFloat32Array()
+	_build_spine(spine, half_widths)
+	var vertices := PackedVector2Array()
+	var uvs := PackedVector2Array()
+	var indices := PackedInt32Array()
+	for index: int in range(spine.size()):
+		var normal: Vector2 = _spine_normal(spine, index)
+		vertices.append(spine[index] + normal * half_widths[index])
+		vertices.append(spine[index] - normal * half_widths[index])
+		var u: float = _body_distances[index] / maxf(body_texture_repeat_px, 1.0)
+		uvs.append(Vector2(u, 0.0))
+		uvs.append(Vector2(u, 1.0))
+	for index: int in range(spine.size() - 1):
+		var base: int = index * 2
+		indices.append_array(PackedInt32Array([base, base + 1, base + 2, base + 1, base + 3, base + 2]))
+	var arrays: Array = []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = vertices
+	arrays[Mesh.ARRAY_TEX_UV] = uvs
+	arrays[Mesh.ARRAY_INDEX] = indices
+	if _body_mesh == null:
+		_body_mesh = ArrayMesh.new()
+	else:
+		_body_mesh.clear_surfaces()
+	_body_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	_body_renderer.mesh = _body_mesh
+	_body_renderer.visible = true
+
+
+func _update_body_material() -> void:
+	## 只同步本实例视觉状态；流动时钟来自 advance_body()，不用 Shader 的全局 TIME。
+	if _runtime_body_material == null:
+		return
+	var color: Color = _hold_color()
+	color.a = 0.42 if missed else 1.0
+	var visible_length: float = _body_distances[-1] if not _body_distances.is_empty() else 0.0
+	_runtime_body_material.set_shader_parameter(&"body_texture", body_texture)
+	_runtime_body_material.set_shader_parameter(&"hold_progress", hold_progress)
+	_runtime_body_material.set_shader_parameter(&"remaining_ratio", clampf(visible_length / body_length, 0.0, 1.0))
+	_runtime_body_material.set_shader_parameter(&"body_flow_speed", body_flow_speed)
+	_runtime_body_material.set_shader_parameter(&"body_edge_softness", body_edge_softness)
+	_runtime_body_material.set_shader_parameter(&"affinity_color", color)
+	_runtime_body_material.set_shader_parameter(&"visual_time_sec", _body_visual_time_sec)
+	_runtime_body_material.set_shader_parameter(&"body_uv_length", visible_length / maxf(body_texture_repeat_px, 1.0))
+
+
+func _sync_body_self_modulate() -> void:
+	## 渲染前读取 Tween 更新后的自身调制，宽限冻结时也同步；不推进任何视觉时间或几何。
+	## 只服务内置 Shader，不向用户自定义 Shader 强加自身染色抵消。
+	if _runtime_body_material != null and _runtime_body_material.shader == DEFAULT_BODY_SHADER:
+		_runtime_body_material.set_shader_parameter(&"hold_self_modulate", modulate)
+
+
+func _clear_body_render_state() -> void:
+	## 回收/重新 prepare 清空几何、材质副本和局部时钟；保留 Inspector 的素材模板。
+	if RenderingServer.frame_pre_draw.is_connected(_sync_body_self_modulate):
+		RenderingServer.frame_pre_draw.disconnect(_sync_body_self_modulate)
+	_body_distances.clear()
+	_body_visual_time_sec = 0.0
+	_body_mesh = null
+	_runtime_body_material = null
+	_body_material_source = null
+	if _body_renderer != null:
+		_body_renderer.mesh = null
+		_body_renderer.material = null
+		_body_renderer.texture = null
+		_body_renderer.visible = false
+
+
+func _hold_color() -> Color:
+	## Mesh 与灰盒头身尾共用判定色；不影响领域状态。
+	if missed:
+		return Color("575b66")
+	var color: Color = _affinity_color()
+	return color.lightened(0.22) if judgment_grade == GameplayTypes.JudgmentGrade.PERFECT else color
+
+
+func _spine_normal(spine: PackedVector2Array, index: int) -> Vector2:
+	## 两种身体绘制共用截面法线；所有相减的点均属于同一个局部坐标系。
+	var tangent: Vector2
+	if index == 0:
+		tangent = spine[1] - spine[0]
+	elif index == spine.size() - 1:
+		tangent = spine[index] - spine[index - 1]
+	else:
+		tangent = spine[index + 1] - spine[index - 1]
+	if tangent.is_zero_approx():
+		tangent = Vector2.LEFT
+	return Vector2(-tangent.y, tangent.x).normalized()
+
+
 func _build_spine(spine: PackedVector2Array, half_widths: PackedFloat32Array) -> void:
 	## 只沿模拟结果绘制宽度，不再移动脊线点或推进角速度。
 	var motion_phase: float = _stable_phase + approach_progress * TAU * 0.85 + hold_progress * TAU * 2.2
 	var canvas_to_local: Transform2D = transform.affine_inverse()
 	for index: int in range(_path_spine.size()):
-		var ratio: float = float(index) / float(_path_spine.size() - 1)
+		var ratio: float = _body_distances[index] / _body_distances[-1]
 		var envelope: float = sin(ratio * PI)
 		var center: Vector2 = canvas_to_local * _path_spine[index]
 		var width: float = lerpf(29.0, 10.0, pow(ratio, 0.82))
@@ -168,16 +355,7 @@ func _draw_body(spine: PackedVector2Array, half_widths: PackedFloat32Array, colo
 	var upper := PackedVector2Array()
 	var lower := PackedVector2Array()
 	for index: int in range(spine.size()):
-		var tangent: Vector2
-		if index == 0:
-			tangent = spine[1] - spine[0]
-		elif index == spine.size() - 1:
-			tangent = spine[index] - spine[index - 1]
-		else:
-			tangent = spine[index + 1] - spine[index - 1]
-		if tangent.is_zero_approx():
-			tangent = Vector2.LEFT
-		var normal := Vector2(-tangent.y, tangent.x).normalized()
+		var normal: Vector2 = _spine_normal(spine, index)
 		upper.append(spine[index] + normal * half_widths[index])
 		lower.append(spine[index] - normal * half_widths[index])
 

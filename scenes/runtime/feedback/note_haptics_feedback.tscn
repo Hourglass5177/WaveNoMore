@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/runtime/feedback/note_haptics_feedback.gd" id="1_feedback"]
+
+[node name="NoteHapticsFeedback" type="Node"]
+script = ExtResource("1_feedback")
+pulse_duration_ms = 80.0
+pulse_strength = 0.35
+pulse_frequency_hz = 120.0
+hold_frequency_multiplier = 1.0
