@@ -62,6 +62,7 @@ var visual_time_sec: float = 0.0
 var visual_theme: StageVisualTheme
 # 最近一份玩法快照，提供 Hold、双钟独立滑条和疾振等显示数据。
 var gameplay_snapshot: Dictionary = {}
+var _restoring_motion := false
 # 当前关卡共用规则；调频视觉从中读取 Hz 范围、像素换算与引导宽容。
 var gameplay_rules: GameplayRuleSet
 ## 编辑预览由音乐时间推进反馈 Tween，暂停时不会继续消耗动画。
@@ -169,6 +170,15 @@ func set_visual_time(value: float) -> void:
 func set_gameplay_snapshot(snapshot: Dictionary) -> void:
 	gameplay_snapshot = snapshot.duplicate(true)
 	_update_active_visuals()
+
+
+func restore_preview_motion(snapshot: Dictionary, sample: ClockSample) -> void:
+	## Tap 的位置和动画可在目标时刻求值；只有 Hold 身体与其调频控制需要逐步恢复。
+	_restoring_motion = true
+	set_gameplay_snapshot(snapshot)
+	set_visual_time(sample.visual_time_sec)
+	set_clock_sample(sample)
+	_restoring_motion = false
 
 
 func clear() -> void:
@@ -334,6 +344,10 @@ func _on_visual_note_arrived(event_id: String, arrival: Dictionary) -> void:
 func _update_active_visuals() -> void:
 	_update_tuning_preview_presentation()
 	for event_id: String in _active.keys():
+		if _restoring_motion:
+			var entry: Dictionary = _active[event_id]
+			if entry["kind"] != ChartScheduler.KIND_TUNING and StringName(entry["data"].get("unit_kind", &"tap")) != &"hold":
+				continue
 		_update_visual(event_id, _active[event_id])
 
 

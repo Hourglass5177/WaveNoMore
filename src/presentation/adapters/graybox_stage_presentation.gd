@@ -201,6 +201,11 @@ func set_preview_time_driven() -> void:
 	_note_visual_host.preview_time_driven = true
 
 
+func restore_preview_motion(snapshot: Dictionary, sample: ClockSample) -> void:
+	## 保留身体恢复的状态→目标→积分顺序；历史中间帧无需刷新 HUD、背景与相纹。
+	_note_visual_host.restore_preview_motion(snapshot, sample)
+
+
 func _on_visual_frame_ready(sample: ClockSample) -> void:
 	## Gameplay 写入当前目标后推进身体；原始时钟信号仅设置视觉目标。
 	_note_visual_host.set_clock_sample(sample)

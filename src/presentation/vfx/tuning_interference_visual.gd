@@ -786,7 +786,10 @@ func _ensure_su_overlay() -> void:
 		return
 	_su_overlay = SU_OVERLAY_SCRIPT.new() as Node2D
 	_su_overlay.name = "SuManifestationOverlay"
-	_su_overlay.z_index = 1
+	# Ghost 是可判分目标，不能继承背景波纹层而被前景 Tuning（最高 Z=35）盖住。
+	# 使用画布绝对层级；HUD 的独立 CanvasLayer 仍在其上方。
+	_su_overlay.z_as_relative = false
+	_su_overlay.z_index = 50
 	_su_overlay.set("bone_color", overlap_color)
 	add_child(_su_overlay)
 

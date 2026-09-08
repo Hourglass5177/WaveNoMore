@@ -31,7 +31,7 @@ var writes_blocked_by_future_version: bool = false
 
 
 func _ready() -> void:
-	if StudioLaunch.is_active(): return
+	if StudioLaunch.is_active() or ChartTrialLaunch.arguments().has("path"): return
 	load_or_create()
 
 

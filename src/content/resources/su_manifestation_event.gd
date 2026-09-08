@@ -15,7 +15,7 @@ extends Resource
 @export var tick: int = 0
 
 @export_group("Manifestation")
-## 本次最多凝成的素音数量；候选交点不足时允许少于该数。
+## 本次要求凝成的素音数量；预读等待足量交点，到时不足会报告实际数量。
 @export_range(1, 16, 1) var count: int = 1
 ## 设计画布上的归一化允许区域，左上和尺寸均以 0～1 表示。
 @export var spawn_region_normalized: Rect2 = Rect2(0.25, 0.2, 0.5, 0.6)

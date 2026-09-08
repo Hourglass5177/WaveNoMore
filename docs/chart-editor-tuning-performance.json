@@ -1,0 +1,21 @@
+{
+  "compile_ms": 1674.828,
+  "copy_200_ms": 6.007,
+  "cpu": "Intel(R) Core(TM) Ultra 9 185H",
+  "duration_seconds": 300,
+  "edit_and_index_ms": 191.996,
+  "engine": "4.7.2-stable (official)",
+  "notes": 10000,
+  "rendering": "headless",
+  "tuning_paths": 10,
+  "visible_query_ms": 0.05783,
+  "seek_ms": {
+    "150": 363091.519,
+    "4": 899.228
+  },
+  "seek_299": {
+    "elapsed_lower_bound_ms": 978000.0,
+    "status": "terminated_after_timeout",
+    "explanation": "尾部完整恢复长时间未完成；减去前序测量并向下取整的耗时下界，不当作通过结果。"
+  }
+}

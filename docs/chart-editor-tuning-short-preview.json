@@ -1,0 +1,17 @@
+{
+  "notes": 10000,
+  "tuning_paths": 10,
+  "duration_seconds": 300,
+  "engine": "4.7.2-stable (official)",
+  "cpu": "Intel(R) Core(TM) Ultra 9 185H",
+  "rendering": "headless",
+  "visible_query_ms": 0.05421,
+  "edit_and_index_ms": 10.448,
+  "copy_200_ms": 5.28,
+  "compile_ms": 1512.759,
+  "seek_ms": {
+    "4": 901.878
+  },
+  "advance_average_ms": 2.94603333333333,
+  "advance_start_seconds": 4.0
+}

@@ -5,6 +5,9 @@ extends CanvasLayer
 
 ## 玩家点击退出时触发，由上层应用切回选关页。
 signal exit_requested
+signal external_retry_requested
+signal add_local_requested
+var _external := false
 
 ## 整个暂停界面根 Control 的路径；切换暂停状态时只需显隐这个节点。
 @export var root_path: NodePath = ^"Root"
@@ -76,12 +79,15 @@ func _on_continue_pressed() -> void:
 
 
 func _on_retry_pressed() -> void:
+	if _external:
+		external_retry_requested.emit()
+		return
 	if is_instance_valid(_session):
 		_session.retry()
 
 
 func _on_exit_pressed() -> void:
-	if is_instance_valid(_session):
+	if not _external and is_instance_valid(_session):
 		_session.abort()
 	exit_requested.emit()
 
@@ -91,3 +97,13 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		if is_instance_valid(_session):
 			_session.request_resume()
+
+func configure_external(temporary: bool) -> void:
+	_external = true
+	_exit_button.text = "结束试玩" if temporary else "返回本地谱面"
+	if temporary:
+		var button := Button.new()
+		button.text = "加入本地谱面"
+		MingheUiStyle.style_button(button)
+		_retry_button.get_parent().add_child(button)
+		button.pressed.connect(func(): add_local_requested.emit())

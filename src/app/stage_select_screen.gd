@@ -9,6 +9,7 @@ signal back_requested
 ## 玩家请求打开设置弹窗时发出。
 signal settings_requested
 ## 玩家请求打开随从弹窗时发出。
+signal local_charts_requested
 signal pets_requested
 
 ## 关卡卡片的纵向容器；每次刷新会按内容目录重建。
@@ -40,17 +41,27 @@ func _ready() -> void:
 	header.add_child(title)
 	_pet_label = Label.new()
 	MingheUiStyle.style_body(_pet_label, 20)
+	_pet_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	_pet_label.custom_minimum_size.x = 240
 	header.add_child(_pet_label)
+	var local := Button.new()
+	local.text = "本地谱面"
+	MingheUiStyle.style_button(local)
+	local.custom_minimum_size.x = 220
+	local.pressed.connect(func(): local_charts_requested.emit())
+	header.add_child(local)
 	var pets := Button.new()
 	pets.text = "随从"
 	pets.custom_minimum_size.x = 140
 	MingheUiStyle.style_button(pets)
+	pets.custom_minimum_size.x = 140
 	pets.pressed.connect(func() -> void: pets_requested.emit())
 	header.add_child(pets)
 	var settings := Button.new()
 	settings.text = "设置"
 	settings.custom_minimum_size.x = 140
 	MingheUiStyle.style_button(settings)
+	settings.custom_minimum_size.x = 140
 	settings.pressed.connect(func() -> void: settings_requested.emit())
 	header.add_child(settings)
 	var scroll := ScrollContainer.new()

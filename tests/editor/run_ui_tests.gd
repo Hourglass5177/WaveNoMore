@@ -77,6 +77,7 @@ func _run() -> void:
 		if control is Label and control.text == "Hold 时长（tick）": has_duration = true
 	check(not has_duration, "Tap 选区不显示无效 Hold 输入")
 	workspace.timeline.selected.clear(); workspace._inspect()
+	check(not workspace.get_node("Layout/ProblemToggle").visible and not workspace.problems.visible, "无问题时整个问题区域隐藏")
 	# 加入实际玩法冲突，验证问题面板展开、折叠和对象定位。
 	var copy: NoteEvent = workspace.document.find_note("n05").duplicate(true)
 	copy.event_id = "ui_conflict"
@@ -84,6 +85,11 @@ func _run() -> void:
 	workspace.document.execute("冲突草稿", [], [copy])
 	for frame in 5: await process_frame
 	check(workspace.problems.item_count > 0 and workspace.problems.visible, "新问题自动展开")
+	check(workspace.get_node("Layout/ProblemToggle").visible and workspace.problems.custom_minimum_size.y <= 64, "问题入口按需显示，列表高度不超过两行区域")
+	if DisplayServer.get_name() != "headless":
+		await RenderingServer.frame_post_draw
+		DirAccess.make_dir_recursive_absolute("res://builds/ui-review")
+		root.get_texture().get_image().save_png("res://builds/ui-review/compact-problems.png")
 	workspace.problems.item_selected.emit(0)
 	check(is_equal_approx(workspace.audio.position, 3.5), "问题点击定位音符")
 	workspace.get_node("Layout/ProblemToggle").button_pressed = false
@@ -91,7 +97,7 @@ func _run() -> void:
 	workspace.document.undo()
 	for frame in 20: await process_frame
 	while workspace.preview.rebuilding: await process_frame
-	check(workspace.problems.item_count == 0 and not workspace.problems.visible and not "无法预览" in workspace.status.text, "问题消失后收起列表并清除过期提示")
+	check(workspace.problems.item_count == 0 and not workspace.problems.visible and not workspace.get_node("Layout/ProblemToggle").visible and not "无法预览" in workspace.status.text, "问题消失后隐藏整个区域并清除过期提示")
 	workspace._seek(4.2)
 	while workspace.preview.rebuilding: await process_frame
 	workspace.timeline.view_start = 0

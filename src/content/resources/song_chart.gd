@@ -32,6 +32,9 @@ const DEFAULT_PPQ: int = 480
 @export_group("Gameplay Tracks")
 ## Tap/Hold 音符轨；事件时间均使用本谱 PPQ 的绝对 tick。
 @export var note_events: Array[NoteEvent] = []
+## 写谱器 v2 的正式编排轨；旧运行数据由适配器临时派生。
+@export var tuning_paths: Array[TuningPathEvent] = []
+@export var ghost_events: Array[GhostEvent] = []
 ## 调频开放区域轨；区域只决定何时允许改变频率，本身不计分。
 @export var tuning_fields: Array[TuningFieldRegion] = []
 ## 生、死两钟各自的粗滑条轨；同 group_id 的双侧滑条合并为一次判定。

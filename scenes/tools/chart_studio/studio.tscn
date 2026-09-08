@@ -1,10 +1,17 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://src/tools/chart_studio/studio_workspace.gd" id="1"]
 [ext_resource type="Script" path="res://src/tools/chart_studio/studio_timeline.gd" id="2"]
 [ext_resource type="Theme" path="res://assets/chart_studio/studio_theme.tres" id="3"]
 
 [ext_resource type="Script" path="res://src/tools/chart_studio/studio_preview_surface.gd" id="4"]
+[ext_resource type="Script" path="res://src/tools/chart_studio/studio_loading_overlay.gd" id="5"]
+
+[sub_resource type="StyleBoxEmpty" id="ProblemCompact"]
+content_margin_left = 4.0
+content_margin_top = 2.0
+content_margin_right = 4.0
+content_margin_bottom = 2.0
 
 [node name="ChartStudio" type="Control"]
 layout_mode = 3
@@ -71,6 +78,11 @@ focus_mode = 0
 layout_mode = 2
 text = "导出谱面"
 focus_mode = 0
+
+[node name="Playtest" type="Button" parent="Layout/Toolbar"]
+layout_mode = 2
+text = "在游戏中试玩"
+tooltip_text = "用当前难度的编辑版本，从音乐开头进行真人试玩"
 
 [node name="Undo" type="Button" parent="Layout/Toolbar"]
 layout_mode = 2
@@ -183,6 +195,33 @@ size_2d_override = Vector2i(1920, 1080)
 size_2d_override_stretch = true
 render_target_update_mode = 4
 
+[node name="Loading" type="ColorRect" parent="Layout/Split/Top/Main/PreviewColumn/Aspect/Preview"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 0.65)
+script = ExtResource("5")
+
+[node name="Message" type="Label" parent="Layout/Split/Top/Main/PreviewColumn/Aspect/Preview/Loading"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 28.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 24
+text = "正在加载和定位"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="Inspector" type="ScrollContainer" parent="Layout/Split/Top/Main"]
 custom_minimum_size = Vector2(190, 100)
 layout_mode = 2
@@ -289,13 +328,21 @@ text = "导入音乐，开始制作谱面。"
 autowrap_mode = 2
 
 [node name="ProblemToggle" type="Button" parent="Layout"]
+visible = false
 layout_mode = 2
+size_flags_horizontal = 0
+custom_minimum_size = Vector2(0, 24)
+theme_override_styles/normal = SubResource("ProblemCompact")
+theme_override_styles/hover = SubResource("ProblemCompact")
+theme_override_styles/pressed = SubResource("ProblemCompact")
+theme_override_styles/disabled = SubResource("ProblemCompact")
 text = "问题（0）"
+tooltip_text = "展开／收起问题列表；点击具体问题定位"
 toggle_mode = true
 alignment = 0
 focus_mode = 0
 
 [node name="Problems" type="ItemList" parent="Layout"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 96)
+custom_minimum_size = Vector2(0, 32)
 visible = false

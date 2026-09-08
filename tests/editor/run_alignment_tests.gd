@@ -89,26 +89,26 @@ func _test_workspace() -> void:
 	var original_x := t.x_at(960)
 	var stage_id: int = w.preview.stage_root.get_instance_id()
 	var notes: Array = ChartJsonCodec.encode_chart(w.document.chart()).notes
-	mouse(t, Vector2(800, 75), true); move(t, Vector2(880, 75))
+	mouse(t, Vector2(800, 48), true); move(t, Vector2(880, 48))
 	check(not w.audio.playing and near(w.audio.position, 3), "开始对齐暂停音乐并保留源位置")
 	check(near(w.document.offset_sec(), 2) and near(t.x_at(960), original_x), "波形右移时固定谱面，候选不写文档")
 	check(near(t.view_start, -0.5), "右拖波形半秒，视口补偿方向正确")
 	await process_frame
 	check(w.preview.stage_root.get_instance_id() == stage_id, "候选拖动不重建正式预览")
-	mouse(t, Vector2(880, 75), false)
+	mouse(t, Vector2(880, 48), false)
 	check(near(w.document.offset_sec(), 1.5), "松手提交半秒波形对齐")
 	await settle(w)
 	check(near(w.preview.stage_root.stage_session.stage_definition.song.first_beat_offset_sec, 1.5), "内嵌正式预览读取新首拍")
 	w.document.undo(); check(near(w.document.offset_sec(), 2), "完整波形拖动一次撤销")
 	# 首拍标记拖动保持波形坐标；中途按 Shift 不跳变。
 	w._wave_move_button.button_pressed = false; t.view_start = 0
-	var start := Vector2(320, 64)
+	var start := Vector2(320, 42)
 	mouse(t, start, true); move(t, start + Vector2(32, 0)); move(t, start + Vector2(48, 0), true)
 	mouse(t, start + Vector2(48, 0), false, MOUSE_BUTTON_LEFT, true)
 	check(near(w.document.offset_sec(), 2.21) and near(t.view_start, 0), "拖首拍时波形固定，Shift 增量精细调整")
 	for scale in [12.0, 3000.0]:
 		t.pixels_per_second = scale; t.view_start = w.document.offset_sec() - 1
-		var at := Vector2(scale, 64)
+		var at := Vector2(scale, 42)
 		var old: float = w.document.offset_sec()
 		mouse(t, at, true); move(t, at + Vector2(scale * 0.1, 0)); mouse(t, at + Vector2(scale * 0.1, 0), false)
 		check(near(w.document.offset_sec(), old + 0.1), "不同缩放下标记对齐 100 ms：%s" % scale)
@@ -116,18 +116,18 @@ func _test_workspace() -> void:
 	w._wave_move_button.button_pressed = true
 	var before_cancel: float = w.document.offset_sec()
 	var revision: int = w.document.revision
-	mouse(t, Vector2(800, 75), true); move(t, Vector2(850, 75))
+	mouse(t, Vector2(800, 48), true); move(t, Vector2(850, 48))
 	w._notification(NOTIFICATION_APPLICATION_FOCUS_OUT)
 	check(near(w.document.offset_sec(), before_cancel) and near(t.view_start, 0) and not t.is_aligning(), "失焦取消候选并恢复视口")
-	mouse(t, Vector2(800, 75), true); move(t, Vector2(850, 75))
+	mouse(t, Vector2(800, 48), true); move(t, Vector2(850, 48))
 	t.grab_focus()
 	var escape := InputEventKey.new(); escape.keycode = KEY_ESCAPE; escape.pressed = true
 	Input.parse_input_event(escape); await process_frame
 	check(not t.is_aligning() and w.document.revision == revision, "Esc 取消不产生历史")
 	w._wave_move_button.button_pressed = false
-	mouse(t, Vector2(640, 75), true); mouse(t, Vector2(640, 75), false)
+	mouse(t, Vector2(640, 48), true); mouse(t, Vector2(640, 48), false)
 	check(near(w.audio.position, 4) and near(w.document.offset_sec(), before_cancel), "默认拖波形仍定位播放头")
-	mouse(t, Vector2(400, 75), true, MOUSE_BUTTON_RIGHT)
+	mouse(t, Vector2(400, 48), true, MOUSE_BUTTON_RIGHT)
 	w._wave_context.hide(); w._wave_context.id_pressed.emit(0)
 	check(near(w.document.offset_sec(), 2.5) and near(w.audio.position, 4), "波形右键设首拍不改变播放位置")
 	w._alignment_bar.get_node("Actions/SetFirstBeat").pressed.emit()

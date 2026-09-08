@@ -1,10 +1,10 @@
 class_name ChartJsonCodec
 extends RefCounted
-## 工具和游戏共用的 JSON v1 转换。原对象附在 Resource 元数据中，编辑已知字段时保留兼容扩展。
+## 工具和游戏共用的 JSON v2 转换，仍可读 v1；未知字段附在各自对象上。
 
 static func decode_chart(data: Dictionary) -> Dictionary:
 	var errors: PackedStringArray = []
-	if data.get("format") != "minghe-chart" or data.get("format_version") != 1:
+	if data.get("format") != "minghe-chart" or (data.get("format_version") != 1 and data.get("format_version") != 2):
 		return {"chart": null, "errors": PackedStringArray(["不支持的谱面格式或版本"])}
 	var structure_error := _check_chart_structure(data)
 	if not structure_error.is_empty(): return {"chart": null, "errors": PackedStringArray([structure_error])}
@@ -48,6 +48,7 @@ static func decode_chart(data: Dictionary) -> Dictionary:
 		item.visual_variant = StringName(raw.get("visual_variant", "default"))
 		item.set_meta("json_source", raw.duplicate(true))
 		chart.note_events.append(item)
+		item.boss = bool(raw.get("boss", false))
 	for raw: Dictionary in data.get("sections", []):
 		var item := SectionMarker.new()
 		item.event_id = str(raw.get("id", ""))
@@ -56,6 +57,11 @@ static func decode_chart(data: Dictionary) -> Dictionary:
 		item.set_meta("json_source", raw.duplicate(true))
 		chart.sections.append(item)
 	chart.set_meta("unknown_notes", unknown)
+	var path_error := ChartPathCodec.decode(data, chart)
+	if not path_error.is_empty(): return {"chart": null, "errors": PackedStringArray([path_error])}
+	# 入口一次排序，后续增量命令通过二分插入维护时间顺序。
+	for events in [chart.note_events, chart.tuning_paths, chart.ghost_events]:
+		events.sort_custom(func(a, b): return a.tick < b.tick if a.tick != b.tick else a.event_id < b.event_id)
 	return {"chart": chart, "errors": errors}
 
 ## 这里只拒绝无法建立时间映射的数据；重叠、负长音等玩法冲突仍可作为草稿打开。
@@ -99,7 +105,7 @@ static func _integer(value: Variant) -> bool:
 
 static func encode_chart(chart: SongChart) -> Dictionary:
 	var data: Dictionary = chart.get_meta("json_source", {}).duplicate(true)
-	data.merge({"format": "minghe-chart", "format_version": 1, "chart_id": chart.chart_id, "difficulty_id": chart.difficulty_id}, true)
+	data.merge({"format": "minghe-chart", "format_version": 2, "chart_id": chart.chart_id, "difficulty_id": chart.difficulty_id}, true)
 	var timing: Dictionary = data.get("timing", {}).duplicate(true)
 	timing.merge({"ppq": chart.ppq, "chart_offset_ticks": chart.chart_offset_ticks, "end_tick": chart.end_tick}, true)
 	timing["tempo_events"] = []
@@ -128,10 +134,12 @@ static func encode_chart(chart: SongChart) -> Dictionary:
 			else:
 				raw[key] = str(item.get(key))
 		data.notes.append(raw)
+		raw.boss = item.boss
 	data.notes.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
 		if a.get("tick", 0) != b.get("tick", 0): return a.get("tick", 0) < b.get("tick", 0)
 		if a.get("affinity", "") != b.get("affinity", ""): return a.get("affinity") == "zhu"
 		return str(a.get("id", "")) < str(b.get("id", "")))
+	ChartPathCodec.encode(chart, data)
 	return data
 
 static func decode_song(data: Dictionary) -> Dictionary:

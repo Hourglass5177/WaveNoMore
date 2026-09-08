@@ -4,6 +4,9 @@ extends Node
 signal status_changed(message: String)
 signal rebuilt
 signal state_changed(state: Dictionary)
+signal ghost_results_changed(results: Dictionary)
+signal loading_changed(active: bool)
+var ghost_results := {}
 var stage_root: StageRoot
 var rebuilding := false
 var _inputs: Array[SemanticInputSample] = []
@@ -14,18 +17,35 @@ var offset_sec := 0.0
 var sound_enabled := true
 var rebuild_count := 0
 var load_count := 0
+var _frozen_viewport: SubViewport
+var _render_mode_before := SubViewport.UPDATE_ALWAYS
+
+func _freeze_frame() -> void:
+	# 历史重演仍更新正式表现状态，但不能把中途的调频/Hold 画面提交到屏幕。
+	if is_instance_valid(_frozen_viewport): return
+	_frozen_viewport = stage_root.get_viewport() as SubViewport
+	_render_mode_before = _frozen_viewport.render_target_update_mode
+	_frozen_viewport.render_target_update_mode = SubViewport.UPDATE_DISABLED
+
+func _release_frame() -> void:
+	if is_instance_valid(_frozen_viewport): _frozen_viewport.render_target_update_mode = _render_mode_before
+	_frozen_viewport = null
 
 func clear_preview() -> void:
 	_request += 1
 	rebuilding = false
+	loading_changed.emit(false)
+	_release_frame()
 	if is_instance_valid(stage_root):
 		stage_root.get_parent().remove_child(stage_root)
 		stage_root.queue_free()
 	stage_root = null
+	ghost_results.clear(); ghost_results_changed.emit(ghost_results)
 
 func load_preview(stage: StageDefinition, viewport: SubViewport) -> bool:
 	load_count += 1
 	clear_preview()
+	loading_changed.emit(true)
 	stage_root = load("res://scenes/stage/stage_root.tscn").instantiate() as StageRoot
 	stage_root.auto_start_initial_stage = false
 	stage_root.initial_stage = null
@@ -38,19 +58,30 @@ func load_preview(stage: StageDefinition, viewport: SubViewport) -> bool:
 	stage_root.audio_feedback.preview_strikes_muted = true
 	stage_root.pause_overlay.hide()
 	stage_root.debug_hud.hide()
+	stage_root.gameplay_coordinator.snapshot_changed.connect(_collect_ghost_results)
 	if not stage_root.load_stage(stage, false):
+		loading_changed.emit(false)
 		status_changed.emit("内容不可预览：请检查谱面")
 		return false
 	var physical_input := get_tree().root.get_node("InputEventBuffer")
 	physical_input.set_mode(physical_input.InputMode.DISABLED)
 	physical_input.set_process_input(false)
 	offset_sec = stage.song.first_beat_offset_sec
-	# 复用正式理想输入发生器；JSON 首版编译结果只有 Tap/Hold。
-	_inputs = ReplayRunner.build_perfect_replay(stage_root.stage_session.compiled_chart, stage.rule_set).sorted_inputs()
+	# 只从真实 Tap/Hold 生成敲钟输入，Tuning 追加频率姿态采样。
+	_inputs = StudioPreviewInputs.build(stage_root.stage_session.compiled_chart, stage.rule_set)
 	_cursor = 0
 	_time_us = -1000000000
 	status_changed.emit("自动演示")
 	return true
+
+func _collect_ghost_results(snapshot: Dictionary) -> void:
+	var results: Array = snapshot.get("su_manifestations", [])
+	# 复用正式发布的快照，不为属性标签额外拷贝整场历史。
+	if results.size() == ghost_results.size(): return
+	ghost_results.clear()
+	for result in results:
+		ghost_results[result.event_id] = {"actual": result.get("points", []).size(), "requested": result.get("requested_count", 0), "generation_issue": str(result.get("generation_issue", ""))}
+	ghost_results_changed.emit(ghost_results)
 
 func seek_preview(audio_us: int) -> void:
 	if not is_instance_valid(stage_root): return
@@ -60,6 +91,8 @@ func seek_preview(audio_us: int) -> void:
 	var request := _request
 	var target := audio_us - roundi(offset_sec * 1000000.0)
 	rebuilding = true
+	loading_changed.emit(true)
+	_freeze_frame()
 	status_changed.emit("定位中")
 	stage_root.audio_feedback.preview_muted = true
 	stage_root.gameplay_coordinator.defer_preview_snapshot = false
@@ -83,6 +116,8 @@ func seek_preview(audio_us: int) -> void:
 	stage_root.stage_session.publish_preview_state(target)
 	stage_root.stage_show_director.call("seek", float(target) / 1000000.0)
 	rebuilding = false
+	_release_frame()
+	loading_changed.emit(false)
 	status_changed.emit("自动演示 · 已定位")
 	rebuilt.emit()
 	state_changed.emit(get_preview_state())
@@ -109,6 +144,7 @@ func apply_palette(theme: StageVisualTheme) -> void:
 
 func _exit_tree() -> void:
 	_request += 1
+	_release_frame()
 
 func _step_to(target: int) -> void:
 	var session := stage_root.stage_session
@@ -134,6 +170,13 @@ func _step_to(target: int) -> void:
 
 func _publish_motion_frame(time_us: int) -> void:
 	# 动态身体需要输入边界的持续状态，不能把整段历史都合并成最后一张快照。
+	if rebuilding:
+		var sample := ClockSample.new()
+		sample.song_time_sec = float(time_us) / 1000000.0
+		sample.judge_time_sec = sample.song_time_sec
+		sample.visual_time_sec = sample.song_time_sec
+		stage_root.presentation.restore_preview_motion(stage_root.gameplay_coordinator.simulation.motion_snapshot(), sample)
+		return
 	stage_root.gameplay_coordinator.finish_preview_batch()
 	stage_root.stage_session.publish_preview_state(time_us)
 	stage_root.gameplay_coordinator.defer_preview_snapshot = true

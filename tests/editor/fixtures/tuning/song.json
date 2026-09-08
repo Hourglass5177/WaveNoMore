@@ -1,0 +1,15 @@
+{
+  "format": "minghe-song",
+  "format_version": 1,
+  "song_id": "editor_tuning_example",
+  "title": "Tuning 与 Ghost 示例",
+  "artist": "测试节拍",
+  "audio": "audio/song.wav",
+  "charts": [
+    {
+      "chart_id": "tuning_normal",
+      "difficulty_id": "normal",
+      "path": "charts/normal.json"
+    }
+  ]
+}

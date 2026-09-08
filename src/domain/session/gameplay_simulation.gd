@@ -475,8 +475,8 @@ func input_owner() -> int:
 	return _last_input_owner
 
 
-func snapshot() -> Dictionary:
-	var evaluated: ResultSummary = result_summary()
+func motion_snapshot() -> Dictionary:
+	## 重演身体只依赖当前控制状态，无需反复扫描整场成绩和载波历史。
 	return {
 		"time_us": current_time_us,
 		"input_owner": input_owner(),
@@ -495,6 +495,13 @@ func snapshot() -> Dictionary:
 		"death_holding_note_id": note_engine.holding_note_id(GameplayTypes.Affinity.XUAN),
 		"active_hold_ids": note_engine.active_hold_ids(),
 		"held_hold_ids": note_engine.active_hold_ids(true),
+	}
+
+
+func snapshot() -> Dictionary:
+	var evaluated: ResultSummary = result_summary()
+	var result := motion_snapshot()
+	result.merge({
 		"score": score_engine.total_score(),
 		"raw_score": score_engine.raw_score,
 		"combo": score_engine.combo,
@@ -517,7 +524,8 @@ func snapshot() -> Dictionary:
 		"miss_count": evaluated.miss_count,
 		"expected_judgment_count": compiled.theoretical_unit_count,
 		"content_hash": compiled.content_hash,
-	}
+	})
+	return result
 
 
 func _update_held_state(sample: SemanticInputSample) -> void:
@@ -603,10 +611,14 @@ func _try_prepare_su(event: Dictionary, prepared_at_us: int) -> void:
 	if _su_prepared.has(event_id):
 		return
 	var points: Array[Vector2] = carrier_engine.find_constructive_intersections(
-		int(event["time_us"]), event["spawn_region_normalized"], int(event["count"])
+		int(event["time_us"]), event["spawn_region_normalized"], int(event["count"]),
+		120.0, hash("%s:%d" % [event_id, int(event["time_us"])]), true
 	)
 	if points.is_empty():
 		return
+	# 只有足量时才冻结整批目标；旧逻辑会把第一次找到的一个交点永久当成整批。
+	# 到时仍不足则保留真实可用点并报告，不能重复坐标或越过区域凑数。
+	if points.size() < int(event["count"]) and prepared_at_us < int(event["time_us"]): return
 	var points_uv: Array[Vector2] = []
 	for point: Vector2 in points:
 		points_uv.append(carrier_engine.canvas_position_to_uv(point))
@@ -640,6 +652,9 @@ func _process_su_manifestations(time_us: int, inclusive: bool) -> void:
 		var target: Dictionary = _su_prepared.get(event_id, {})
 		result["points"] = target.get("points", []).duplicate()
 		result["requested_count"] = int(event["count"])
+		result["generation_issue"] = &"insufficient_constructive_intersections" if result["points"].size() < int(event["count"]) else &""
+		if not String(result["generation_issue"]).is_empty():
+			print("[SuManifestation] target_shortage event=%s requested=%d actual=%d reason=%s" % [event_id, int(event["count"]), result["points"].size(), result["generation_issue"]])
 		result["success"] = group_success and not result["points"].is_empty()
 		result["failure_reason"] = &"" if result["success"] else (
 			&"group_not_finalized" if not group_ready

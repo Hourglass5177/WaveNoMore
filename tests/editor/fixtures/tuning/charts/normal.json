@@ -1,0 +1,126 @@
+{
+  "format": "minghe-chart",
+  "format_version": 2,
+  "chart_id": "tuning_normal",
+  "song_id": "editor_tuning_example",
+  "difficulty_id": "normal",
+  "difficulty_name": "Tuning 示例",
+  "mapper": "谱师",
+  "timing": {
+    "ppq": 480,
+    "first_beat_offset_ms": 0,
+    "chart_offset_ticks": 0,
+    "end_tick": 11520,
+    "tempo_events": [
+      {
+        "tick": 0,
+        "bpm": 120
+      }
+    ],
+    "meter_events": [
+      {
+        "tick": 0,
+        "numerator": 4,
+        "denominator": 4
+      }
+    ]
+  },
+  "notes": [
+    {
+      "id": "life_hold",
+      "kind": "hold",
+      "affinity": "zhu",
+      "tick": 1920,
+      "duration_ticks": 5760
+    },
+    {
+      "id": "death_hold",
+      "kind": "hold",
+      "affinity": "xuan",
+      "tick": 2880,
+      "duration_ticks": 5760
+    }
+  ],
+  "tuning_paths": [
+    {
+      "id": "life_tuning",
+      "affinity": "zhu",
+      "hold_id": "life_hold",
+      "support_hold_id": "death_hold",
+      "tick": 3360,
+      "points": [
+        {
+          "id": "life_p0",
+          "offset_ticks": 0,
+          "angle_deg": -90.642246
+        },
+        {
+          "id": "life_p1",
+          "offset_ticks": 1440,
+          "angle_deg": -30.642246
+        },
+        {
+          "id": "life_p2",
+          "offset_ticks": 3360,
+          "angle_deg": -90.642246
+        }
+      ]
+    },
+    {
+      "id": "death_tuning",
+      "affinity": "xuan",
+      "hold_id": "death_hold",
+      "support_hold_id": "life_hold",
+      "tick": 3840,
+      "points": [
+        {
+          "id": "death_p0",
+          "offset_ticks": 0,
+          "angle_deg": 89.357754
+        },
+        {
+          "id": "death_p1",
+          "offset_ticks": 1440,
+          "angle_deg": 149.357754
+        },
+        {
+          "id": "death_p2",
+          "offset_ticks": 3360,
+          "angle_deg": 89.357754
+        }
+      ]
+    }
+  ],
+  "ghost_events": [
+    {
+      "id": "ghost_45",
+      "tick": 4320,
+      "count": 2,
+      "tuning_ids": [
+        "life_tuning",
+        "death_tuning"
+      ],
+      "boss": false
+    },
+    {
+      "id": "ghost_60",
+      "tick": 5760,
+      "count": 3,
+      "tuning_ids": [
+        "life_tuning",
+        "death_tuning"
+      ],
+      "boss": true
+    }
+  ],
+  "sections": [
+    {
+      "id": "phrase",
+      "tick": 1920,
+      "name": "双 Hold 与往返 Tuning"
+    }
+  ],
+  "presentation": {
+    "theme_id": "default"
+  }
+}

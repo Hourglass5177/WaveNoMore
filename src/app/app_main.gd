@@ -3,6 +3,7 @@ extends Control
 ## 应用层总入口。负责页面与弹窗的装卸，并把关卡结果送往存档和结算页。
 
 ## 标题页场景模板，进入应用或返回首页时实例化。
+const LOCAL_SCENE := preload("res://scenes/screens/local_charts_screen.tscn")
 const TITLE_SCENE := preload("res://scenes/screens/title_screen.tscn")
 ## 选关页场景模板，集中展示 ContentCatalog 中的可用关卡。
 const STAGE_SELECT_SCENE := preload("res://scenes/screens/stage_select_screen.tscn")
@@ -28,6 +29,14 @@ const STAGE_ROOT_PATH := "res://scenes/stage/stage_root.tscn"
 var _current_screen: Node
 ## 最近启动的关卡定义。关卡结束后仍需保留到结算页和重试流程使用。
 var _current_stage: StageDefinition
+# 来源上下文贯穿重试和结算；不借用 Catalog 的内置关卡路径。
+var _run_context := {}
+var _library := LocalChartLibrary.new()
+var _jobs := ChartReadJobs.new()
+var _load_request := -1
+var _local_selection := {}
+var _load_message: Label
+
 
 
 func _ready() -> void:
@@ -37,7 +46,15 @@ func _ready() -> void:
 	# AppRouter 记录页面和返回历史；具体实例化哪个场景仍由这个宿主统一完成。
 	AppRouter.route_requested.connect(_on_route_requested)
 	AppRouter.clear_history()
-	AppRouter.navigate(AppRouter.ROUTE_TITLE, {}, false)
+	_library.open()
+	add_child(_jobs)
+	_jobs.completed.connect(_external_loaded)
+	var trial := ChartTrialLaunch.arguments()
+	if trial.has("path"):
+		ChartTrialLaunch.report(trial, "recognized")
+		AppRouter.navigate(&"external_loading", trial, false)
+	else:
+		AppRouter.navigate(AppRouter.ROUTE_TITLE, {}, false)
 
 
 func _on_route_requested(route: StringName, context: Dictionary) -> void:
@@ -55,6 +72,10 @@ func _on_route_requested(route: StringName, context: Dictionary) -> void:
 	# 其余路由都代表完整页面切换，同一时间只保留一个 ScreenHost 子节点。
 	_clear_screen()
 	match route:
+		&"local_charts":
+			_show_local_charts()
+		&"external_loading":
+			_show_external_loading(context)
 		AppRouter.ROUTE_TITLE:
 			_show_title()
 		AppRouter.ROUTE_STAGE_SELECT:
@@ -87,10 +108,12 @@ func _show_stage_select() -> void:
 	)
 	screen.back_requested.connect(func() -> void: AppRouter.navigate(AppRouter.ROUTE_TITLE))
 	screen.settings_requested.connect(func() -> void: _show_modal(SETTINGS_MODAL))
+	screen.local_charts_requested.connect(func(): AppRouter.navigate(&"local_charts"))
 	screen.pets_requested.connect(func() -> void: _show_modal(PET_SELECT_MODAL))
 
 
 func _show_loading(stage_id: String) -> void:
+	_run_context = {}
 	var screen := LOADING_SCENE.instantiate()
 	_mount_screen(screen)
 	screen.stage_ready.connect(func(stage: StageDefinition) -> void:
@@ -124,7 +147,17 @@ func _show_stage(stage: StageDefinition) -> void:
 	_connect_first_signal(stage_root, [&"stage_finished", &"result_ready", &"stage_result"], _on_stage_finished)
 	_connect_first_signal(stage_root, [&"exit_requested", &"quit_requested"], _on_stage_exit_requested)
 	var stage_started := false
-	if stage_root.has_method("configure_stage"):
+	if not _run_context.is_empty():
+		stage_started = stage_root.load_stage(stage, false)
+		if stage_started:
+			_run_context.content_hash = stage_root.stage_session.compiled_chart.content_hash
+			var pause: PauseOverlay = stage_root.get_node("PauseLayer")
+			pause.configure_external(_run_context.origin == "trial")
+			pause.external_retry_requested.connect(_retry_external)
+			pause.add_local_requested.connect(_add_trial_to_library)
+			ChartTrialLaunch.report(_run_context, "ready")
+			_start_countdown(stage_root)
+	elif stage_root.has_method("configure_stage"):
 		stage_started = bool(stage_root.call("configure_stage", stage))
 	elif stage_root.has_method("start_stage"):
 		stage_started = bool(stage_root.call("start_stage", stage))
@@ -134,6 +167,7 @@ func _show_stage(stage: StageDefinition) -> void:
 	# 关卡节点已经挂上树，并不代表编译、音频和会话真的准备成功。
 	# 失败时必须立刻撤下空壳关卡；否则歌曲时间永远停在 0，看起来像程序卡死。
 	if not stage_started:
+		ChartTrialLaunch.report(_run_context, "error", "谱面编译或关卡准备失败")
 		_show_error("关卡载入失败：谱面或运行配置无效。")
 
 
@@ -141,12 +175,15 @@ func _show_result(stage: StageDefinition, result: Dictionary) -> void:
 	var screen := RESULT_SCENE.instantiate()
 	_mount_screen(screen)
 	screen.present(stage, result)
+	if result.has("local_save_error"): screen.show_notice(str(result.local_save_error))
+	if not _run_context.is_empty():
+		screen.configure_external(_run_context.origin == "trial")
+		screen.add_local_requested.connect(_add_trial_to_library)
 	screen.retry_requested.connect(func(stage_id: String) -> void:
-		AppRouter.navigate(AppRouter.ROUTE_LOADING, {"stage_id": stage_id}, false)
+		if not _run_context.is_empty(): _retry_external()
+		else: AppRouter.navigate(AppRouter.ROUTE_LOADING, {"stage_id": stage_id}, false)
 	)
-	screen.stage_select_requested.connect(func() -> void:
-		AppRouter.navigate(AppRouter.ROUTE_STAGE_SELECT, {}, false)
-	)
+	screen.stage_select_requested.connect(_on_stage_exit_requested)
 
 
 func _on_stage_finished(result: Variant = {}) -> void:
@@ -157,9 +194,13 @@ func _on_stage_finished(result: Variant = {}) -> void:
 		result_dictionary["full_combo"] = bool(result_dictionary.get("fc", false))
 	if not result_dictionary.has("all_perfect"):
 		result_dictionary["all_perfect"] = bool(result_dictionary.get("ap", false))
-	_apply_pet_result_modifier(result_dictionary)
-	if _current_stage != null:
-		SaveService.record_stage_result(_current_stage, result_dictionary)
+	if _run_context.is_empty():
+		_apply_pet_result_modifier(result_dictionary)
+		if _current_stage != null: SaveService.record_stage_result(_current_stage, result_dictionary)
+	elif _run_context.origin == "local":
+		result_dictionary.content_hash = _run_context.content_hash
+		var error := _library.record_result(_run_context, result_dictionary)
+		if not error.is_empty(): result_dictionary.local_save_error = error
 	AppRouter.navigate(AppRouter.ROUTE_RESULT, {"stage": _current_stage, "result": result_dictionary}, false)
 
 
@@ -183,7 +224,9 @@ func _apply_pet_result_modifier(result: Dictionary) -> void:
 
 
 func _on_stage_exit_requested() -> void:
-	AppRouter.navigate(AppRouter.ROUTE_STAGE_SELECT, {}, false)
+	if _run_context.get("origin") == "trial": get_tree().quit()
+	elif _run_context.get("origin") == "local": AppRouter.navigate(&"local_charts", {}, false)
+	else: AppRouter.navigate(AppRouter.ROUTE_STAGE_SELECT, {}, false)
 
 
 func _connect_first_signal(source: Object, names: Array[StringName], callback: Callable) -> void:
@@ -225,6 +268,8 @@ func _mount_screen(screen: Node) -> void:
 
 
 func _clear_screen() -> void:
+	_jobs.cancel_request(_load_request)
+	_load_request = -1
 	_current_stage = null if AppRouter.current_route != AppRouter.ROUTE_RESULT else _current_stage
 	for child: Node in screen_host.get_children():
 		screen_host.remove_child(child)
@@ -241,3 +286,90 @@ func _show_error(message: String) -> void:
 	label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	MingheUiStyle.style_title(label, 30)
 	screen_host.add_child(label)
+	var back := Button.new()
+	back.text = "结束试玩" if _run_context.get("origin") == "trial" else "返回"
+	MingheUiStyle.style_button(back)
+	back.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
+	back.position = Vector2((size.x - 360) / 2, size.y * 0.75)
+	screen_host.add_child(back)
+	back.pressed.connect(_on_stage_exit_requested)
+	back.grab_focus()
+
+func _show_local_charts() -> void:
+	MenuAudioService.stop_preview()
+	var screen := LOCAL_SCENE.instantiate()
+	screen.library = _library; screen.jobs = _jobs
+	screen.selected_song = _local_selection.get("song_id", "")
+	screen.selected_chart = _local_selection.get("chart_id", "")
+	_mount_screen(screen)
+	screen.play_requested.connect(func(context: Dictionary):
+		_local_selection = context.duplicate()
+		AppRouter.navigate(&"external_loading", context))
+	screen.back_requested.connect(func(): AppRouter.navigate(AppRouter.ROUTE_STAGE_SELECT))
+
+func _show_external_loading(context: Dictionary) -> void:
+	_run_context = context.duplicate(true)
+	MenuAudioService.stop_preview()
+	var control := Control.new()
+	control.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_mount_screen(control)
+	MingheUiStyle.add_backdrop(control)
+	var center := CenterContainer.new()
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	control.add_child(center)
+	var column := VBoxContainer.new()
+	column.custom_minimum_size.x = 760
+	center.add_child(column)
+	_load_message = Label.new()
+	_load_message.text = "正在加载谱面和音乐…"
+	_load_message.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	MingheUiStyle.style_body(_load_message, 28)
+	column.add_child(_load_message)
+	var cancel := Button.new()
+	cancel.text = "结束试玩" if context.origin == "trial" else "取消并返回本地谱面"
+	MingheUiStyle.style_button(cancel)
+	cancel.pressed.connect(_on_stage_exit_requested)
+	column.add_child(cancel)
+	cancel.grab_focus()
+	_load_request = _jobs.request(str(context.path), str(context.get("difficulty_id", "")))
+
+func _external_loaded(id: int, result: Dictionary) -> void:
+	if id != _load_request: return
+	_load_request = -1
+	if result.stage == null:
+		var message := ChartProjectLoader.describe_issues(result.errors)
+		_load_message.text = message
+		ChartTrialLaunch.report(_run_context, "error", message)
+		return
+	AppRouter.navigate(AppRouter.ROUTE_STAGE, {"stage": result.stage}, false)
+
+func _retry_external() -> void:
+	AppRouter.navigate(&"external_loading", _run_context.duplicate(true), false)
+
+func _start_countdown(stage_root: Node) -> void:
+	InputEventBuffer.set_mode(InputEventBuffer.InputMode.DISABLED)
+	var countdown := ChartReadyCountdown.new()
+	stage_root.add_child(countdown)
+	countdown.finished.connect(stage_root.stage_session.start)
+
+func _add_trial_to_library() -> void:
+	# 复用同一导入页面和更新确认；不自动改变本次临时试玩的成绩策略。
+	var modal := LOCAL_SCENE.instantiate()
+	modal.library = _library; modal.jobs = _jobs; modal.import_only = true
+	var layer := CanvasLayer.new()
+	layer.layer = 100
+	layer.process_mode = Node.PROCESS_MODE_ALWAYS
+	modal_host.add_child(layer)
+	layer.add_child(modal)
+	modal.close_requested.connect(func():
+		layer.queue_free()
+		if is_instance_valid(_current_screen):
+			var pause := _current_screen.get_node_or_null("PauseLayer")
+			if pause != null: pause._continue_button.grab_focus()
+			elif _current_screen.has_method("configure_external"): _current_screen._retry.grab_focus())
+	modal.import_path(str(_run_context.path))
+
+func _unhandled_input(event: InputEvent) -> void:
+	if AppRouter.current_route == &"external_loading" and event.is_action_pressed("ui_cancel"):
+		get_viewport().set_input_as_handled()
+		_on_stage_exit_requested()

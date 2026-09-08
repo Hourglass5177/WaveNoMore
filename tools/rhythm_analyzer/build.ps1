@@ -1,9 +1,10 @@
 param(
     [Parameter(Mandatory=$true)][string]$PythonExe,
     [Parameter(Mandatory=$true)][string]$GodotExe,
-    [switch]$InstallDependencies
+    [switch]$InstallDependencies,
+    [switch]$WithGame
 )
-# 仅制作写谱器。下载和安装发生在开发机，谱师运行时全部使用随包文件。
+# 默认仅制作写谱器；-WithGame 同时导出配套试玩游戏。下载和安装发生在开发机，谱师运行时全部使用随包文件。
 $ErrorActionPreference = 'Stop'
 $rhythmRoot = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
 Push-Location $rhythmRoot
@@ -30,6 +31,13 @@ try {
     Copy-Item -LiteralPath builds/rhythm-models/final0.ckpt -Destination builds/chart-studio/rhythm_analyzer/models/final0.ckpt
     & $GodotExe --headless --path . --export-release 'Chart Studio Windows' builds/chart-studio/minghe-chart-studio.exe
     if ($LASTEXITCODE -ne 0) { throw '写谱器导出失败' }
-    & $rhythmPython tools/rhythm_analyzer/package.py
+    $packageArguments = @('tools/rhythm_analyzer/package.py')
+    if ($WithGame) {
+        New-Item -ItemType Directory -Force builds/chart-studio/game | Out-Null
+        & $GodotExe --headless --path . --export-release 'Windows x86_64 Release' builds/chart-studio/game/minghe.exe
+        if ($LASTEXITCODE -ne 0) { throw '配套游戏导出失败' }
+        $packageArguments += '--with-game'
+    }
+    & $rhythmPython @packageArguments
     if ($LASTEXITCODE -ne 0) { throw '开发包打包失败' }
 } finally { Pop-Location }

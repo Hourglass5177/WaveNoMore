@@ -4,12 +4,12 @@
 
 ## 文件与领域对象
 
-- `ChartJsonCodec`：JSON v1 与 `SongDefinition`／`SongChart` 双向转换，兼容未知内容存在 Resource 元数据中，不进入判定状态。
+- `ChartJsonCodec`：歌曲 JSON v1、谱面 JSON v2（兼读 v1）与 `SongDefinition`／`SongChart` 双向转换，兼容未知内容存在 Resource 元数据中，不进入判定状态。
 - `ChartProjectLoader.load_stage(song_json_or_zip, difficulty_id)`：游戏和工具的共同装配入口，返回 `stage` 与 `errors`。ZIP 音频直接从字节加载。
 - `ChartProjectLoader.make_stage(song, chart)`：装配未保存的编辑版本，复用正式规则与主题。
 - `StudioProjectIO`：项目文件、资源复制、工作区、迁移归档及 ZIP 管理。
 
-新 JSON `format_version=1` 与 `SongChart.schema_version=2` 是不同版本体系。新增玩法需要同时补充编解码、工具表现和正式游戏语义；不能把未支持的字段静默解释成 Tap。
+歌曲 `format_version=1`、谱面 `format_version=2` 与 `SongChart.schema_version=2` 是不同版本体系。新增玩法需要同时补充编解码、工具表现和正式游戏语义；不能把未支持的字段静默解释成 Tap。
 
 ## 时间与预览
 
@@ -63,3 +63,20 @@ producer 仅操作 RefCounted 数据和 Generator playback，不访问 Node；�
 编辑器内部新增 `StudioRhythmJob`（任务及解码）、`StudioRhythmPanel`（候选 UI）、`StudioRhythmTools`（应用与草稿）。后台 JSON 接口包含 request_id、audio、model、start；结果包含 phase、beats、downbeats、fit、range、version、elapsed_seconds 或 error。时间以原歌曲秒数表达，选区起点由分析器补回。
 
 候选标记和分析缓存不进入共同协议。对齐提交通过现有 `change_metadata`；草稿通过现有 `execute`。`ChartValidator.input_intervals` 与 `input_intervals_conflict` 暴露正式输入冲突查询，编辑器不复制判定窗口。详见 [节奏分析记录](chart-editor-rhythm-analysis.md)。
+
+## 新编排与过渡适配（2026-09-08）
+
+`SongChart.tuning_paths` 和 `ghost_events` 保存唯一的新编排数据。类型为 `TuningPathEvent`、`TuningPathPoint`、`GhostEvent`，Tap/Hold 的 `NoteEvent.boss` 与 Ghost 的 bool 字段仅为来源。`ChartPathCodec` 显式编码 v2，未知扩展字段附着对应 Resource 与节点。
+
+`ChartEditEvents` 统一 ID、范围、复制和关系；`ChartPathAdapter.validate` 返回对象/节点约束，`project` 生成临时旧频率资源。`ChartProjectLoader` 和编辑预览共用投影，不把投影写回 JSON。`StudioPreviewInputs.build` 从真实普通音符生成按键，为 Tuning 增加位移；不改主游戏 Replay 理想生成器。
+
+`StudioDocument.execute` 的 annotation 用途只更新 BOSS 界面和保存状态。`StudioPreviewSession.ghost_results_changed` 复用已发布快照提供旧预览实际生成数量，不代表共同等级或独立计分。字段表、时间示例与完整样例见 [新编排说明](chart-editor-tuning.md)。
+
+Ghost 共享运行时已由写谱器分支补充候选池随机抽取、足量冻结和不足诊断：运行时结果增加 `generation_issue`，不写入 JSON。新版编排默认全画布候选区，旧资源的显式区域保留。合并边界和限制见 [游戏侧交接](tuning-su-game-editor-handoff-2026-09-08.md)。
+
+
+## 2026-09-08：本地谱面与独立真人试玩
+
+新增游戏“本地谱面”固定入口、写谱器“在游戏中试玩”和匹配的游戏 EXE。共有加载器补充全难度检查；`ChartPackageWriter` 从内存纯打包，正式导出也取消隐式保存。应用层用外部来源上下文贯穿加载、暂停、重试、结算；本地成绩独立，临时试玩不写成绩、不触发正式奖励。
+
+详细接线、CLI、`-WithGame` 构建方式见 [导入与试玩接口](local-chart-playtest.md)，实测范围见 [验证记录](local-chart-validation.md)。本轮涉及 `app_main`、选关/结算/暂停页面、SaveService 的临时入口启动分流及共用 JSON 包加载；未改 Tap/Hold/Tuning/Ghost 判定、预测和计分规则。队友合并时需一并带上新来源上下文和暂停重试出口，不能退回仅凭 stage_id 重试。

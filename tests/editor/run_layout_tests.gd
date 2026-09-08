@@ -23,10 +23,18 @@ func _run() -> void:
 	w.get_node("Layout/Split").split_offset = 100000
 	await settle()
 	check(w.timeline.size.y <= 166 and surface.size.y >= before, "时间线可收至紧凑高度，把空间交给预览")
-	for side in 2:
-		var n := NoteEvent.new(); n.affinity = side
-		var rect: Rect2 = w.timeline.note_rect(n)
-		check(rect.size.y >= 16 and rect.end.y <= w.timeline.size.y, "压缩后轨道 %d 的音符仍可见可点" % side)
+	check(w.timeline._vscroll.visible, "紧凑时间线显示轨道滚动条")
+	for track in 5:
+		w.timeline.track_scroll = w.timeline.track_y(track) + w.timeline.track_scroll - w.timeline.RULER
+		w.timeline._update_track_scroll()
+		var y: float = w.timeline.track_y(track)
+		check(y + w.timeline.track_height(track) > w.timeline.RULER and y < w.timeline.size.y, "压缩后可滚动访问轨道 %d" % track)
+	w._apply_workspace({"track_folded": [false,false,false,false,false]})
+	check(w.timeline.folded.all(func(value): return value), "旧版工作区首次改用可编辑紧凑轨道")
+	w.timeline.folded[2] = false
+	var track_state: Dictionary = w._capture_workspace()
+	w.timeline.folded.fill(true); w._apply_workspace(track_state)
+	check(not w.timeline.folded[2] and w.timeline.folded[0], "新版工作区保存并恢复单轨展开选择")
 	var layout: Dictionary = w._capture_layout()
 	w._layout_action(23); await settle()
 	check(not w.timeline.visible and not w.get_node("Layout/Split/Top/LibraryScroll").visible and surface.size.y > before, "专注预览隐藏两侧栏及时间线，保留播放栏")

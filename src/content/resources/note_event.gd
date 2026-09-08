@@ -10,6 +10,8 @@ extends Resource
 @export var group_id: String = ""
 ## 共用一次扣血资格的组 ID；相同值的多个 MISS 只伤害一次，空值会由编译器回退到事件 ID。
 @export var damage_group_id: String = ""
+## 来源标记；当前仅供写谱器编排，正式计分与表现暂不读取。
+@export var boss: bool = false
 
 @export_group("Timing")
 ## 音符头的绝对谱面 tick；数值越大，出现时间越晚。

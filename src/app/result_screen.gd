@@ -6,6 +6,8 @@ extends Control
 signal retry_requested(stage_id: String)
 ## 玩家选择离开结算页、返回选关页时发出。
 signal stage_select_requested
+signal add_local_requested
+var _select: Button
 
 ## 显示“渡河已毕”或“魂火已熄”的结算标题。
 var _title: Label
@@ -53,6 +55,7 @@ func _ready() -> void:
 	)
 	column.add_child(_retry)
 	var select := Button.new()
+	_select = select
 	select.text = "返回选关"
 	MingheUiStyle.style_button(select)
 	select.pressed.connect(func() -> void: stage_select_requested.emit())
@@ -85,3 +88,15 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
 		get_viewport().set_input_as_handled()
 		stage_select_requested.emit()
+
+func configure_external(temporary: bool) -> void:
+	_select.text = "结束试玩" if temporary else "返回本地谱面"
+	if temporary:
+		var button := Button.new()
+		button.text = "加入本地谱面"
+		MingheUiStyle.style_button(button)
+		_select.get_parent().add_child(button)
+		button.pressed.connect(func(): add_local_requested.emit())
+
+func show_notice(message: String) -> void:
+	_detail.text += "\n" + message

@@ -88,37 +88,13 @@ static func import_audio(path: String, doc: StudioDocument) -> String:
 	return ""
 
 static func export_zip(doc: StudioDocument, path: String, selected: PackedInt32Array = PackedInt32Array()) -> String:
-	var error := save_project(doc)
-	if not error.is_empty(): return error
-	var song_data := ChartJsonCodec.encode_song(doc.song)
-	var files: Array[String] = [str(song_data.get("audio", ""))]
-	var entries: Array = []
-	for index in doc.charts.size():
-		if not selected.is_empty() and not selected.has(index): continue
-		var chart := doc.charts[index]
-		var theme_id := str(chart.get_meta("json_source", {}).get("presentation", {}).get("theme_id", "default"))
-		if not ChartProjectLoader.THEMES.has(theme_id): return "难度 %s 使用未知主题：%s" % [chart.difficulty_id, theme_id]
-		if ChartValidator.validate(chart, load("res://content/rules/default_gameplay_rules.tres")).has_errors() or not chart.get_meta("unknown_notes", []).is_empty(): return "难度 %s 含不可玩内容" % chart.difficulty_id
-		var relative := "charts/%s.json" % chart.difficulty_id
-		files.append(relative)
-		entries.append({"chart_id": chart.chart_id, "difficulty_id": chart.difficulty_id, "path": relative})
-	song_data.charts = entries
-	for relative in files:
-		if relative.is_empty() or not FileAccess.file_exists(doc.directory.path_join(relative)): return "缺少交付文件：" + relative
-	var pack := ZIPPacker.new()
-	if pack.open(path) != OK: return "无法创建 ZIP"
-	pack.start_file("song.json")
-	pack.write_file((JSON.stringify(song_data, "  ", false) + "\n").to_utf8_buffer())
-	pack.close_file()
-	for relative in files:
-		if relative.is_empty() or not FileAccess.file_exists(doc.directory.path_join(relative)):
-			pack.close()
-			return "缺少交付文件：" + relative
-		pack.start_file(relative)
-		pack.write_file(FileAccess.get_file_as_bytes(doc.directory.path_join(relative)))
-		pack.close_file()
-	pack.close()
-	return ""
+	return package_snapshot(doc, path, selected)
+
+static func package_snapshot(doc: StudioDocument, path: String, selected: PackedInt32Array = PackedInt32Array()) -> String:
+	var charts: Array[SongChart] = []
+	for i in doc.charts.size():
+		if selected.is_empty() or selected.has(i): charts.append(doc.charts[i].duplicate(true))
+	return ChartPackageWriter.write(doc.song.duplicate(true), charts, doc.directory, path)
 
 static func copy_directory(source: String, target: String) -> String:
 	DirAccess.make_dir_recursive_absolute(target)
