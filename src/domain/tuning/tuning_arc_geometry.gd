@@ -257,6 +257,28 @@ static func angle_at_progress(
 	return start_angle + float(sign_value) * maxf(sweep, 0.0) * clampf(progress, 0.0, 1.0)
 
 
+static func transform_curve_relative(relative: Vector2, affinity: int, rotation_rad: float) -> Vector2:
+	## 曲线、圆心补偿和切线共享设计画布旋转/中心反演；不反转采样顺序。
+	var rotated: Vector2 = relative.rotated(rotation_rad)
+	return -rotated if affinity == GameplayTypes.Affinity.XUAN else rotated
+
+
+static func slider_tangent(progress: float, affinity: int, start_value: float, end_value: float, sweep: float, rotation_rad: float) -> Vector2:
+	## 对 normalized_chord_arc_point 求导，再应用视觉层相同的采样顺序与变换。
+	## 方向始终表示事件 start_value → end_value，不随 traversal 重复反转。
+	var increasing: bool = end_value >= start_value
+	var frequency_t: float = clampf(progress, 0.0, 1.0) if increasing else 1.0 - clampf(progress, 0.0, 1.0)
+	var death: bool = affinity == GameplayTypes.Affinity.XUAN
+	var sample_t: float = 1.0 - frequency_t if death else frequency_t
+	var angle: float = (sample_t - 0.5) * clampf(sweep, GEOMETRY_EPSILON, PI - GEOMETRY_EPSILON)
+	var tangent := Vector2(cos(angle), sin(angle))
+	if death:
+		tangent = -tangent # 死侧反向采样的导数。
+	if not increasing:
+		tangent = -tangent # 频率递减时事件点列反序。
+	return transform_curve_relative(tangent, affinity, rotation_rad)
+
+
 static func normalized_chord_arc_point(t: float, sweep: float) -> Vector2:
 	## 返回弦长严格为 1 的上拱圆弧。表现层乘以 chord_length_px() 后，
 	## 屏幕端点距离就与谱面频率跨度严格一致。

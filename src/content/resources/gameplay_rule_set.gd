@@ -24,6 +24,8 @@ extends Resource
 @export_range(1, 500, 1) var chord_tolerance_ms: int = 75
 
 @export_group("Tuning")
+## 摇杆满幅沿游标切线拨动时的最大设计画布速度，单位 px/s；零值停止速度推进。
+@export_range(0.0, 3000.0, 1.0, "or_greater") var tuning_stick_max_speed_px_sec: float = 600.0
 ## 理想 Replay 生成调频位移的采样间隔，单位 tick；不参与玩家评分。
 @export_range(1, 240, 1) var tuning_sample_interval_ticks: int = 30
 ## 点状时间引导前后展开的时间余量，单位毫秒；只影响视觉提示。

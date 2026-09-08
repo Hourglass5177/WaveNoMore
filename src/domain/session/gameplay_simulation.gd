@@ -194,9 +194,8 @@ func _reset_operation_table() -> void:
 		GameplayOperationKind.DEATH_TUNING_DISPLACED,
 	]:
 		_operation_table[kind].merge({
-			"angle_rad": NAN,
+			"control_vector": Vector2.ZERO,
 			"raw_vector": Vector2.ZERO,
-			"stick_released": false,
 		})
 
 
@@ -215,8 +214,8 @@ func _set_operation_from_semantic(semantic_kind: int, source: PhysicalInputEvent
 			_set_operation(GameplayOperationKind.TUNING_DISPLACED, source.timestamp_us, source.relative)
 			return
 		InputSemanticConverter.GameplayEvent.LIFE_TUNING_DISPLACED, InputSemanticConverter.GameplayEvent.DEATH_TUNING_DISPLACED:
-			var angle_data: Dictionary = InputSemanticConverter.to_tuning_angle(source)
-			if not bool(angle_data.get("exists", false)):
+			var control_data: Dictionary = InputSemanticConverter.to_tuning_control(source)
+			if not bool(control_data.get("exists", false)):
 				return
 			operation_kind = (
 				GameplayOperationKind.LIFE_TUNING_DISPLACED
@@ -225,9 +224,8 @@ func _set_operation_from_semantic(semantic_kind: int, source: PhysicalInputEvent
 			)
 			_set_operation(operation_kind, source.timestamp_us)
 			var tuning_entry: Dictionary = _operation_table[operation_kind]
-			tuning_entry["angle_rad"] = float(angle_data["angle_rad"])
-			tuning_entry["raw_vector"] = angle_data["raw_vector"]
-			tuning_entry["stick_released"] = bool(angle_data.get("released", false))
+			tuning_entry["control_vector"] = control_data["control_vector"]
+			tuning_entry["raw_vector"] = control_data["raw_vector"]
 			return
 		InputSemanticConverter.GameplayEvent.INPUT_CANCELLED: operation_kind = GameplayOperationKind.INPUT_CANCELLED
 	if operation_kind >= 0:
@@ -310,12 +308,10 @@ func _process_operation_table() -> void:
 			if timestamp_us < current_time_us:
 				continue
 			advance_to(timestamp_us, false)
-			tuning_engine.apply_absolute_side(
+			tuning_engine.set_stick_control(
 				affinity,
-				float(entry.get("angle_rad", NAN)),
-				int(entry["timestamp_us"]),
-				life_held if affinity == GameplayTypes.Affinity.ZHU else death_held,
-				bool(entry.get("stick_released", false))
+				entry["control_vector"],
+				timestamp_us
 			)
 			continue
 		accept_input(SemanticInputSample.create(int(entry["timestamp_us"]), 0, semantic_kind, vector))

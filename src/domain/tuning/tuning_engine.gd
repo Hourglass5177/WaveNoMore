@@ -4,15 +4,15 @@ extends RefCounted
 ## 双钟独立调频滑条的确定性判定器。
 ##
 ## 调频段只决定“什么时候允许改变频率”；滑条不负责开启波源。
-## 玩家旋转多少，频率就真实改变多少。点状引导只提示节奏，不会吞掉或延迟输入。
+## 摇杆控制二维速度在游标切线上的分量，指针仍使用位移；点状引导只提示节奏。
 
 const NEVER_TIME_US: int = -9_000_000_000_000_000
 const TUNING_ARC_GEOMETRY: GDScript = preload("res://src/domain/tuning/tuning_arc_geometry.gd")
-const DESIGN_WIDTH_PX: float = 1920.0
 ## Replay 的双路输入会量化为 Q15；连续位移累加后可能留下万分位误差。
 ## 这里只放宽边界比较，不钳制玩家位置，以免越过滑条端点也被误算为命中。
 const TRACKING_EPSILON: float = 0.001
-const STICK_INPUT_WINDOW_HALF_RAD: float = PI / 6.0
+## 整数微秒子步严格不超过 1/240 秒；边界处使用剩余时长，不丢时间。
+const STICK_MAX_STEP_US: int = 4166
 
 ## 时间窗外没有输入时，端点判定使用这个哨兵值表示“尚未到达”。
 const NO_ENDPOINT_OBSERVATION_US: int = 9_000_000_000_000_000
@@ -38,21 +38,14 @@ var _life_input_channel: int = GameplayTypes.BellInputChannel.NONE
 var _death_input_channel: int = GameplayTypes.BellInputChannel.NONE
 ## 由 Gameplay 核心从 NoteJudgeEngine 的 holding 状态同步，不读取物理键。
 var _dual_holding_notes: bool = false
-## 指针拖动和摇杆接合分开记录，避免指针伪造摇杆逻辑行程。
+## 指针拖动和摇杆接合分开记录，不互相伪造输入状态。
 var _pointer_drags: Dictionary[int, Dictionary] = {}
 var _paused_for_rearm: bool = false
 var _life_tuning_engaged: bool = false
 var _death_tuning_engaged: bool = false
-var _life_last_progress: float = 0.0
-var _death_last_progress: float = 0.0
-var _life_engage_angle_rad: float = 0.0
-var _death_engage_angle_rad: float = 0.0
-var _life_logical_start_offset: float = 0.0
-var _death_logical_start_offset: float = 0.0
-var _life_logical_end_offset: float = 0.0
-var _death_logical_end_offset: float = 0.0
-var _life_logical_half_sweep: float = 0.0
-var _death_logical_half_sweep: float = 0.0
+## 最新标准化向量跨帧保存；没有新事件不等于停速，只有回中或中断才清零。
+var _life_stick_control: Vector2 = Vector2.ZERO
+var _death_stick_control: Vector2 = Vector2.ZERO
 var _life_drag_state_index: int = -1
 var _death_drag_state_index: int = -1
 var _life_drag_traversal_index: int = -1
@@ -165,22 +158,16 @@ func handle_input(sample: SemanticInputSample, life_held: bool, death_held: bool
 	return true
 
 
-## 使用单侧摇杆的绝对角度更新对应滑条，不读取或修改另一侧拖动状态。
-func apply_absolute_side(
-		affinity: int,
-		angle_rad: float,
-		timestamp_us: int,
-		is_held: bool,
-		stick_released: bool
-) -> bool:
-	if stick_released:
-		return reset_side_progress(affinity, timestamp_us)
-	if not _dual_holding_notes or not field_active() or not is_held or is_nan(angle_rad):
-		return false
-	var changed: bool = _apply_absolute_angle(affinity, angle_rad, timestamp_us)
-	if changed:
-		_queue_frequency_change(timestamp_us)
-	return changed
+## 设置该侧最新速度控制目标；回中只停速，已接合状态与进度保持。
+## 调用方必须先 advance_to(timestamp_us, false)，不能把新向量应用于过去时间。
+func set_stick_control(affinity: int, control_vector: Vector2, timestamp_us: int) -> void:
+	if _paused_for_rearm or timestamp_us < _current_time_us:
+		return
+	if affinity == GameplayTypes.Affinity.ZHU:
+		_life_stick_control = control_vector
+	else:
+		_death_stick_control = control_vector
+	_try_engage_stick(affinity, timestamp_us)
 
 
 ## 中断当前一侧的调频操作，并将活动滑条恢复到其声明的起点值。
@@ -207,98 +194,98 @@ func reset_side_progress(affinity: int, timestamp_us: int) -> bool:
 	return changed
 
 
-func _apply_absolute_angle(affinity: int, angle_rad: float, timestamp_us: int) -> bool:
-	var state_index := _active_slider_state_index(affinity, timestamp_us)
+func _try_engage_stick(affinity: int, timestamp_us: int) -> bool:
+	## 无角度窗口；资格满足后从本程起点接合。零向量不新建接合，但不解除旧接合。
+	var life: bool = affinity == GameplayTypes.Affinity.ZHU
+	var held: bool = _last_life_held if life else _last_death_held
+	if not _dual_holding_notes or not held or not field_active() or _paused_for_rearm:
+		return false
+	var state_index: int = _active_slider_state_index(affinity, timestamp_us)
 	if state_index < 0:
 		return false
-	var slider: Dictionary = _slider_states[state_index]["slider"]
-	var start_value: float = float(slider.get("start_value", 0.0))
-	var end_value: float = float(slider.get("end_value", 1.0))
-	var sweep: float = TUNING_ARC_GEOMETRY.equivalent_sweep_rad(
-		start_value,
-		end_value,
-		_rule_float(&"tuning_min_frequency_hz", 1.0),
-		_rule_float(&"tuning_max_frequency_hz", 7.0),
-		_rule_float(&"tuning_pixels_per_hz", 160.0),
-		DESIGN_WIDTH_PX
-	)
-	if sweep <= 0.0:
+	var state: Dictionary = _slider_states[state_index]
+	if not bool(state["started"]) or float(state["arc_length_px"]) <= 0.000001:
 		return false
-	var frequency_sign: int = 1 if end_value > start_value else -1
-	var visual_mirror: int = -1 if affinity == GameplayTypes.Affinity.XUAN else 1
-	var leg_index: int = _slider_leg_at(slider, timestamp_us)
-	var leg_sign: int = 1 if leg_index % 2 == 0 else -1
-	var rotation_sign: int = frequency_sign * visual_mirror * leg_sign
-	var offset := deg_to_rad(float(slider.get("arc_rotation_deg", 0.0)))
-	var state_is_life: bool = affinity == GameplayTypes.Affinity.ZHU
-	var previous_state_index: int = _life_drag_state_index if state_is_life else _death_drag_state_index
-	var previous_leg_index: int = _life_drag_traversal_index if state_is_life else _death_drag_traversal_index
-	if previous_state_index != state_index or previous_leg_index != leg_index:
-		_clear_drag_state(affinity)
-		if state_is_life:
-			_life_drag_state_index = state_index
-			_life_drag_traversal_index = leg_index
-		else:
-			_death_drag_state_index = state_index
-			_death_drag_traversal_index = leg_index
-	var start_angle: float = TUNING_ARC_GEOMETRY.symmetric_directed_angles(
-		affinity,
-		rotation_sign,
-		sweep,
-		offset
-	).x
-	var directed_offset: float = wrapf(angle_rad - start_angle, -PI, PI) * float(rotation_sign)
-	var midpoint_offset: float = sweep * 0.5
-	var engaged: bool = _life_tuning_engaged if state_is_life else _death_tuning_engaged
-	if not engaged:
-		var window_end: float = minf(STICK_INPUT_WINDOW_HALF_RAD, midpoint_offset)
-		if directed_offset < -STICK_INPUT_WINDOW_HALF_RAD or directed_offset > window_end:
-			return false
-		var logical_half_sweep: float = midpoint_offset - directed_offset
-		if logical_half_sweep <= 0.0:
-			return false
-		if state_is_life:
-			_life_tuning_engaged = true
-			_life_engage_angle_rad = angle_rad
-			_life_logical_start_offset = directed_offset
-			_life_logical_half_sweep = logical_half_sweep
-			_life_logical_end_offset = midpoint_offset + logical_half_sweep
-			_life_last_progress = 0.0
-		else:
-			_death_tuning_engaged = true
-			_death_engage_angle_rad = angle_rad
-			_death_logical_start_offset = directed_offset
-			_death_logical_half_sweep = logical_half_sweep
-			_death_logical_end_offset = midpoint_offset + logical_half_sweep
-			_death_last_progress = 0.0
-		var initial_value: float = start_value if leg_index % 2 == 0 else end_value
-		return _set_absolute_side_value(affinity, initial_value, timestamp_us)
-	var logical_start: float = _life_logical_start_offset if state_is_life else _death_logical_start_offset
-	var logical_end: float = _life_logical_end_offset if state_is_life else _death_logical_end_offset
-	# 先求输入角度在逻辑行程中的归一化位置，再直接映射到本程调频条
-	# 的起终频率位置。圆心角只描述输入行程，不参与第二次视觉角度换算。
-	var normalized_progress: float = clampf(inverse_lerp(
-		logical_start,
-		logical_end,
-		directed_offset
-	), 0.0, 1.0)
-	if state_is_life:
-		_life_last_progress = normalized_progress
+	var leg: int = int(state["traversal_index"])
+	var engaged: bool = _life_tuning_engaged if life else _death_tuning_engaged
+	var previous_index: int = _life_drag_state_index if life else _death_drag_state_index
+	var previous_leg: int = _life_drag_traversal_index if life else _death_drag_traversal_index
+	if engaged and previous_index == state_index and previous_leg == leg:
+		return true
+	var control: Vector2 = _life_stick_control if life else _death_stick_control
+	if control == Vector2.ZERO:
+		return false
+	if life:
+		_life_tuning_engaged = true
+		_life_drag_state_index = state_index
+		_life_drag_traversal_index = leg
 	else:
-		_death_last_progress = normalized_progress
-	var traversal_start_value: float = start_value if leg_index % 2 == 0 else end_value
-	var traversal_end_value: float = end_value if leg_index % 2 == 0 else start_value
-	var next_value: float = lerpf(
-		traversal_start_value,
-		traversal_end_value,
-		normalized_progress
+		_death_tuning_engaged = true
+		_death_drag_state_index = state_index
+		_death_drag_traversal_index = leg
+	var slider: Dictionary = state["slider"]
+	var initial_value: float = float(slider["start_value"] if leg % 2 == 0 else slider["end_value"])
+	if _set_stick_side_value(affinity, initial_value, timestamp_us):
+		_queue_frequency_change(timestamp_us)
+	return true
+
+
+func _advance_stick_motion_to(time_us: int) -> void:
+	## 时间线边界之间用中点法推进；两侧共享时间步但各自计算控制、几何和进度。
+	var life_active: bool = _try_engage_stick(GameplayTypes.Affinity.ZHU, _current_time_us)
+	var death_active: bool = _try_engage_stick(GameplayTypes.Affinity.XUAN, _current_time_us)
+	var speed: float = maxf(_rules.tuning_stick_max_speed_px_sec, 0.0)
+	if speed == 0.0 or not (
+		(life_active and _life_stick_control != Vector2.ZERO)
+		or (death_active and _death_stick_control != Vector2.ZERO)
+	):
+		# 没有运动时直接跨过空窗，不能从 NEVER_TIME_US 循环几万亿个子步。
+		_current_time_us = time_us
+		return
+	while _current_time_us < time_us:
+		var next_us: int = mini(time_us, _current_time_us + STICK_MAX_STEP_US)
+		var delta_sec: float = float(next_us - _current_time_us) / 1_000_000.0
+		var changed: bool = false
+		if life_active:
+			changed = _integrate_stick_side(GameplayTypes.Affinity.ZHU, delta_sec, next_us, speed)
+		if death_active:
+			changed = _integrate_stick_side(GameplayTypes.Affinity.XUAN, delta_sec, next_us, speed) or changed
+		_current_time_us = next_us
+		if changed:
+			_queue_frequency_change(next_us)
+
+
+func _integrate_stick_side(affinity: int, delta_sec: float, timestamp_us: int, speed: float) -> bool:
+	## p 属于 start_value → end_value；真实圆弧单位切线只投影一次，不乘往返方向。
+	var life: bool = affinity == GameplayTypes.Affinity.ZHU
+	var control: Vector2 = _life_stick_control if life else _death_stick_control
+	if control == Vector2.ZERO:
+		return false
+	var index: int = _life_drag_state_index if life else _death_drag_state_index
+	var state: Dictionary = _slider_states[index]
+	var slider: Dictionary = state["slider"]
+	var length_px: float = float(state["arc_length_px"])
+	var progress: float = clampf(_value_to_slider_progress(slider, _value_for_affinity(affinity)), 0.0, 1.0)
+	var velocity: Vector2 = control * speed
+	var tangent: Vector2 = TUNING_ARC_GEOMETRY.slider_tangent(
+		progress, affinity, float(slider["start_value"]), float(slider["end_value"]),
+		float(state["sweep_rad"]), float(state["rotation_rad"])
 	)
-	return _set_absolute_side_value(affinity, next_value, timestamp_us)
+	var midpoint: float = clampf(progress + velocity.dot(tangent) * delta_sec * 0.5 / length_px, 0.0, 1.0)
+	var midpoint_tangent: Vector2 = TUNING_ARC_GEOMETRY.slider_tangent(
+		midpoint, affinity, float(slider["start_value"]), float(slider["end_value"]),
+		float(state["sweep_rad"]), float(state["rotation_rad"])
+	)
+	var next_progress: float = clampf(progress + velocity.dot(midpoint_tangent) * delta_sec / length_px, 0.0, 1.0)
+	var next_value: float = lerpf(float(slider["start_value"]), float(slider["end_value"]), next_progress)
+	return _set_stick_side_value(affinity, next_value, timestamp_us)
 
 
-func _set_absolute_side_value(affinity: int, next_value: float, timestamp_us: int) -> bool:
+func _set_stick_side_value(affinity: int, next_value: float, timestamp_us: int) -> bool:
+	## 只提交真实频率位置和端点观察，不锁存成绩、不读取视觉磁吸进度。
 	var previous_value: float = _value_for_affinity(affinity)
-	if is_equal_approx(previous_value, next_value):
+	# 低速积分不能每步用近似相等截掉，否则刚离开死区时永远不积累位移。
+	if previous_value == next_value:
 		return false
 	if affinity == GameplayTypes.Affinity.ZHU:
 		_life_value = next_value
@@ -322,9 +309,10 @@ func advance_to(time_us: int, inclusive: bool = true, life_held: bool = false, d
 		var event_us: int = int(event["time_us"])
 		if event_us > time_us or (event_us == time_us and not inclusive):
 			break
+		_advance_stick_motion_to(event_us)
 		_process_timeline_event(event)
 		_timeline_cursor += 1
-	_current_time_us = time_us
+	_advance_stick_motion_to(time_us)
 
 
 func cancel_active(time_us: int) -> void:
@@ -342,26 +330,26 @@ func is_active() -> bool:
 	return field_active()
 
 
-func _clear_drag_state(affinity: int) -> void:
+func _clear_drag_state(affinity: int, clear_control: bool = true) -> void:
+	## 中断清除持续速度；换条/换程只清接合，当前物理向量可用于重新接合。
 	_pointer_drags.erase(affinity)
+	_clear_stick_drag_state(affinity, clear_control)
+
+
+func _clear_stick_drag_state(affinity: int, clear_control: bool = true) -> void:
+	## 摇杆换程只清理摇杆接合，不抹掉同刻指针刚建立的新程拖动。
 	if affinity == GameplayTypes.Affinity.ZHU:
 		_life_tuning_engaged = false
-		_life_last_progress = 0.0
-		_life_engage_angle_rad = 0.0
-		_life_logical_start_offset = 0.0
-		_life_logical_end_offset = 0.0
-		_life_logical_half_sweep = 0.0
 		_life_drag_state_index = -1
 		_life_drag_traversal_index = -1
+		if clear_control:
+			_life_stick_control = Vector2.ZERO
 	else:
 		_death_tuning_engaged = false
-		_death_last_progress = 0.0
-		_death_engage_angle_rad = 0.0
-		_death_logical_start_offset = 0.0
-		_death_logical_end_offset = 0.0
-		_death_logical_half_sweep = 0.0
 		_death_drag_state_index = -1
 		_death_drag_traversal_index = -1
+		if clear_control:
+			_death_stick_control = Vector2.ZERO
 
 
 func field_active() -> bool:
@@ -394,6 +382,8 @@ func active_field_id() -> String:
 
 func begin_pause_rearm() -> Dictionary:
 	_paused_for_rearm = true
+	_life_stick_control = Vector2.ZERO
+	_death_stick_control = Vector2.ZERO
 	return {
 		"tuning_required": field_active(),
 		"life_required": field_active() and _last_life_held,
@@ -570,6 +560,16 @@ func _build_slider_states() -> void:
 		var group_key: String = str(slider.get("group_id", ""))
 		if group_key.is_empty():
 			group_key = event_id
+		# 仅缓存运行时几何，不写入 CompiledChart 或谱面字段。
+		var chord_px: float = TUNING_ARC_GEOMETRY.chord_length_px(
+			float(slider["start_value"]), float(slider["end_value"]),
+			_rule_float(&"tuning_min_frequency_hz", 1.0), _rule_float(&"tuning_max_frequency_hz", 7.0),
+			_rule_float(&"tuning_pixels_per_hz", 160.0)
+		)
+		var sweep: float = TUNING_ARC_GEOMETRY.equivalent_sweep_from_chord_rad(
+			chord_px, TUNING_ARC_GEOMETRY.equivalent_center_distance_px(_rules.wave_canvas_size.x)
+		)
+		var radius: float = TUNING_ARC_GEOMETRY.equivalent_radius_from_chord_px(chord_px, sweep)
 		var endpoint_states: Array[Dictionary] = _build_endpoint_states(slider)
 		var judgment_end_us: int = (
 			int(endpoint_states[-1]["deadline_us"])
@@ -582,6 +582,12 @@ func _build_slider_states() -> void:
 			"group_key": group_key,
 			"grade": GameplayTypes.JudgmentGrade.MISS,
 			"finished": false,
+			"started": false,
+			# 由精确微秒时间线推进，不用四舍五入后的 tick 提前切换积分方向。
+			"traversal_index": 0,
+			"sweep_rad": sweep,
+			"arc_length_px": radius * sweep,
+			"rotation_rad": deg_to_rad(float(slider.get("arc_rotation_deg", 0.0))),
 			"endpoint_states": endpoint_states,
 			"judgment_end_us": judgment_end_us,
 		}
@@ -688,7 +694,8 @@ func _begin_slider(state_index: int, time_us: int) -> void:
 	if state_index < 0 or state_index >= _slider_states.size():
 		return
 	var slider: Dictionary = _slider_states[state_index]["slider"]
-	_clear_drag_state(int(slider["affinity"]))
+	_slider_states[state_index]["started"] = true
+	_clear_drag_state(int(slider["affinity"]), false)
 	var start_value: float = clampf(float(slider["start_value"]), 0.0, 1.0)
 	if int(slider["affinity"]) == GameplayTypes.Affinity.XUAN:
 		_death_value = start_value
@@ -705,9 +712,16 @@ func _open_endpoint(state_index: int, endpoint_index: int) -> void:
 	if endpoint_index < 0 or endpoint_index >= endpoints.size():
 		return
 	var endpoint: Dictionary = endpoints[endpoint_index]
+	var slider: Dictionary = state["slider"]
+	state["traversal_index"] = int(endpoint["leg_index"])
+	if endpoint_index > 0:
+		# 旧程 endpoint_finalize 优先执行；此后才解除旧接合，再由当前向量接合新程。
+		# 不在这里强行改频率；若摇杆为零，保留现有位置等待新的非零控制。
+		_clear_stick_drag_state(int(slider["affinity"]), false)
+	# _record_endpoint_entries 可能在边界输入时提前建立 inside 观察。
+	# 观察是否已打开不能阻止微秒时间线切换 traversal 和清理旧接合。
 	if bool(endpoint["opened"]):
 		return
-	var slider: Dictionary = state["slider"]
 	var player_progress: float = _value_to_slider_progress(
 		slider,
 		_value_for_affinity(int(slider["affinity"]))
@@ -848,7 +862,7 @@ func _finish_slider(state_index: int, finalized_at_us: int) -> void:
 		var endpoint: Dictionary = endpoint_value
 		state["grade"] = maxi(int(state["grade"]), int(endpoint["grade"]))
 	state["finished"] = true
-	_clear_drag_state(int(state["slider"]["affinity"]))
+	_clear_drag_state(int(state["slider"]["affinity"]), false)
 	_try_finalize_group(str(state["group_key"]), finalized_at_us)
 	if _active_field_ids.is_empty() and not _has_pending_slider_window(finalized_at_us):
 		_reset_values_to_base()
@@ -1182,4 +1196,4 @@ func _is_slider_dragging(slider: Dictionary) -> bool:
 	var index: int = _life_drag_state_index if life else _death_drag_state_index
 	var engaged: bool = _life_tuning_engaged if life else _death_tuning_engaged
 	var leg: int = _life_drag_traversal_index if life else _death_drag_traversal_index
-	return engaged and index >= 0 and str(_slider_states[index]["slider"]["event_id"]) == str(slider["event_id"]) and leg == traversal
+	return engaged and index >= 0 and str(_slider_states[index]["slider"]["event_id"]) == str(slider["event_id"]) and leg == int(_slider_states[index]["traversal_index"])

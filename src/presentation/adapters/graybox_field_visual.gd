@@ -913,8 +913,7 @@ func _relative_curve_point(t: float) -> Vector2:
 
 func _transform_curve_relative(standard_relative: Vector2) -> Vector2:
 	## 曲线采样点与圆心偏移必须共享同一坐标变换，避免圆心补偿方向分叉。
-	var transformed: Vector2 = standard_relative.rotated(_arc_rotation_rad)
-	return -transformed if affinity == GameplayTypes.Affinity.XUAN else transformed
+	return TUNING_ARC_GEOMETRY.transform_curve_relative(standard_relative, affinity, _arc_rotation_rad)
 
 
 func _resample_polyline(source: PackedVector2Array, target_count: int) -> PackedVector2Array:
