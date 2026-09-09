@@ -13,6 +13,7 @@ hold_release_good_ms = 110
 hold_release_pass_ms = 170
 hold_sustain_grace_ms = 100
 chord_tolerance_ms = 75
+tuning_speed_tolerance_ms = 500
 tuning_sample_interval_ticks = 30
 tuning_guide_time_window_ms = 250
 tuning_spatial_margin = 0.12

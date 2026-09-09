@@ -265,19 +265,31 @@ func _integrate_stick_side(affinity: int, delta_sec: float, timestamp_us: int, s
 	var state: Dictionary = _slider_states[index]
 	var slider: Dictionary = state["slider"]
 	var length_px: float = float(state["arc_length_px"])
-	var progress: float = clampf(_value_to_slider_progress(slider, _value_for_affinity(affinity)), 0.0, 1.0)
+	var traversal_index: int = int(state["traversal_index"])
+	var ticks: int = maxi(1, int(slider["traversal_ticks"]))
+	var leg_start_us: int = _compiled.tempo_map.tick_to_us(int(slider["tick"]) + traversal_index * ticks)
+	var leg_end_us: int = _compiled.tempo_map.tick_to_us(int(slider["tick"]) + (traversal_index + 1) * ticks)
+	var duration_sec: float = float(leg_end_us - leg_start_us) / 1000000.0
+	var tolerance_sec: float = float(_rule_int(&"tuning_speed_tolerance_ms", 500)) / 1000.0
+	speed = length_px / maxf(duration_sec - tolerance_sec, 0.001)
+	var global_progress: float = clampf(_value_to_slider_progress(slider, _value_for_affinity(affinity)), 0.0, 1.0)
+	var progress: float = global_progress if traversal_index % 2 == 0 else 1.0 - global_progress
 	var velocity: Vector2 = control * speed
 	var tangent: Vector2 = TUNING_ARC_GEOMETRY.slider_tangent(
 		progress, affinity, float(slider["start_value"]), float(slider["end_value"]),
 		float(state["sweep_rad"]), float(state["rotation_rad"])
 	)
+	var traversal_sign: float = 1.0 if traversal_index % 2 == 0 else -1.0
+	tangent *= traversal_sign
 	var midpoint: float = clampf(progress + velocity.dot(tangent) * delta_sec * 0.5 / length_px, 0.0, 1.0)
 	var midpoint_tangent: Vector2 = TUNING_ARC_GEOMETRY.slider_tangent(
 		midpoint, affinity, float(slider["start_value"]), float(slider["end_value"]),
 		float(state["sweep_rad"]), float(state["rotation_rad"])
 	)
+	midpoint_tangent *= traversal_sign
 	var next_progress: float = clampf(progress + velocity.dot(midpoint_tangent) * delta_sec / length_px, 0.0, 1.0)
-	var next_value: float = lerpf(float(slider["start_value"]), float(slider["end_value"]), next_progress)
+	var next_global_progress: float = next_progress if traversal_index % 2 == 0 else 1.0 - next_progress
+	var next_value: float = lerpf(float(slider["start_value"]), float(slider["end_value"]), next_global_progress)
 	return _set_stick_side_value(affinity, next_value, timestamp_us)
 
 
@@ -479,7 +491,10 @@ func active_slider_snapshots() -> Array[Dictionary]:
 			maxi(_current_time_us, start_us)
 		)
 		snapshot["current_endpoint_index"] = endpoint_index
-		snapshot["current_traversal_index"] = endpoint_index
+		# 视觉填充的奇偶方向必须与领域换程在同一时刻切换，因此这里直接使用
+		# 精确微秒时间线维护的 traversal_index，不再用四舍五入 tick 反推，
+		# 避免折返点前后一帧把填充画在错误的一端。
+		snapshot["current_traversal_index"] = int(state["traversal_index"])
 		snapshot["turnaround_pending"] = (
 			input_open
 			and endpoint_index >= 0
@@ -503,6 +518,8 @@ func active_slider_snapshots() -> Array[Dictionary]:
 			if magnetized:
 				# 磁吸只修饰最后几格填充，不改真实频率值。松键会立刻露出真实
 				# 位置，反向旋转离开端点区后也能自然把填充拉回来。
+				# target_progress 与 player_progress 同为曲线坐标；奇数程的
+				# 反向换算由视觉层按本程方向完成。
 				snapshot["player_progress"] = float(endpoint["target_progress"])
 		result.append(snapshot)
 	result.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
@@ -716,8 +733,11 @@ func _open_endpoint(state_index: int, endpoint_index: int) -> void:
 	state["traversal_index"] = int(endpoint["leg_index"])
 	if endpoint_index > 0:
 		# 旧程 endpoint_finalize 优先执行；此后才解除旧接合，再由当前向量接合新程。
-		# 不在这里强行改频率；若摇杆为零，保留现有位置等待新的非零控制。
+		# 每程等价于独立条：频率值重置到本程起点，进度从 0 重新开始；摇杆为零
+		# 时保持未接合，非零向量可立即接合新程，不要求先回中。
 		_clear_stick_drag_state(int(slider["affinity"]), false)
+		var traversal_start_value: float = float(slider["start_value"]) if int(endpoint["leg_index"]) % 2 == 0 else float(slider["end_value"])
+		_set_stick_side_value(int(slider["affinity"]), traversal_start_value, int(endpoint["leg_start_us"]))
 	# _record_endpoint_entries 可能在边界输入时提前建立 inside 观察。
 	# 观察是否已打开不能阻止微秒时间线切换 traversal 和清理旧接合。
 	if bool(endpoint["opened"]):

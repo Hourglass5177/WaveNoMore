@@ -404,7 +404,7 @@ func visual_state_snapshot() -> Dictionary:
 		"curve_sample_count": _event_curve_points.size(),
 		"curve_points": _event_curve_points,
 		"player_progress": _player_progress,
-		"fill_progress": clampf(_player_progress, 0.0, 1.0),
+		"fill_progress": _leg_fill_progress(),
 		"guide_progress": _guide_progress,
 		"guide_dot_count": _guide_dot_count(),
 		"guide_min_progress": _guide_min_progress,
@@ -477,11 +477,13 @@ func _draw_tuning_slider() -> void:
 	)
 	_draw_round_polyline(_event_curve_points, rail_color, tuning_rail_width)
 
-	var fill_progress: float = clampf(_player_progress, 0.0, 1.0)
-	if _interaction_open and fill_progress > 0.0001:
+	# 填充按本程计量：换程时领域把频率值重置到新程起点，本程填充前沿
+	# 自然归零；奇数程从曲线终点反向回填，不再沿整条事件曲线续画。
+	var leg_fill_progress: float = _leg_fill_progress()
+	if _interaction_open and leg_fill_progress > 0.0001:
 		var fill_color := side_color.lightened(0.16 + 0.08 * _alignment_strength)
 		fill_color.a = lerpf(0.80, 0.98, _alignment_strength)
-		_draw_round_polyline(_partial_event_curve(fill_progress), fill_color, tuning_rail_width)
+		_draw_round_polyline(_partial_leg_fill_curve(leg_fill_progress), fill_color, tuning_rail_width)
 
 	if _interaction_open:
 		_draw_guide_dots()
@@ -938,6 +940,40 @@ func _resample_polyline(source: PackedVector2Array, target_count: int) -> Packed
 		var segment_length: float = maxf(cumulative[source_index] - segment_start, 0.0001)
 		var ratio: float = (target_distance - segment_start) / segment_length
 		result.append(source[source_index - 1].lerp(source[source_index], ratio))
+	return result
+
+
+func _leg_fill_progress() -> float:
+	## 填充前沿按本程计量：0 是本程起点、1 是本程终点。
+	## 偶数程从曲线起点（start_value）向外增长；奇数程从曲线终点反向回填，
+	## 因此上一程结束后填充归零，并从本程起点重新接受输入增长。
+	var curve_progress: float = clampf(_player_progress, 0.0, 1.0)
+	return curve_progress if _current_traversal_index() % 2 == 0 else 1.0 - curve_progress
+
+
+func _partial_leg_fill_curve(leg_fill: float) -> PackedVector2Array:
+	## 偶数程取曲线起点一侧，奇数程取曲线终点一侧；填充始终从本程起点长出。
+	if _current_traversal_index() % 2 == 0:
+		return _partial_event_curve(leg_fill)
+	return _partial_event_curve_from_end(leg_fill)
+
+
+func _partial_event_curve_from_end(fill_progress: float) -> PackedVector2Array:
+	## _partial_event_curve 的镜像：保留曲线末端 fill_progress 比例的一段，
+	## 供奇数程从本程起点（曲线终点）反向回填使用。
+	var clamped_progress: float = clampf(fill_progress, 0.0, 1.0)
+	if _event_curve_points.size() < 2 or clamped_progress <= 0.0:
+		return PackedVector2Array()
+	var scaled_index: float = (1.0 - clamped_progress) * float(_event_curve_points.size() - 1)
+	var first_whole_index: int = ceili(scaled_index)
+	var result := PackedVector2Array()
+	for index: int in range(first_whole_index, _event_curve_points.size()):
+		result.append(_event_curve_points[index])
+	if first_whole_index > 0 and not is_equal_approx(scaled_index, float(first_whole_index)):
+		result.insert(0, _event_curve_points[first_whole_index - 1].lerp(
+			_event_curve_points[first_whole_index],
+			scaled_index - float(first_whole_index - 1)
+		))
 	return result
 
 
