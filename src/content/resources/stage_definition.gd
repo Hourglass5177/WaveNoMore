@@ -36,6 +36,8 @@ extends Resource
 @export var stage_show: StageShow
 ## 已解析的本关美术装配表；与下方路径二选一。
 @export var visual_theme: StageVisualTheme
+## 本关背景/前景视差素材；为空表示不添加视差对象。
+@export var background: StageBackgroundDefinition
 ## 已解析的结算奖励；与下方路径二选一。
 @export var reward: RewardDefinition
 ## 已解析的判定与物理规则；为空时可由目录默认规则补入。
@@ -50,6 +52,8 @@ extends Resource
 @export_file("*.tres") var stage_show_resource_path: String = ""
 ## StageVisualTheme 的 `.tres` 路径；仅在 visual_theme 尚未装入时使用。
 @export_file("*.tres") var visual_theme_resource_path: String = ""
+## StageBackgroundDefinition 的 `.tres` 路径；空路径与空资源表示无配置。
+@export_file("*.tres") var background_resource_path: String = ""
 ## RewardDefinition 的 `.tres` 路径；仅在 reward 尚未装入时使用。
 @export_file("*.tres") var reward_resource_path: String = ""
 ## GameplayRuleSet 的 `.tres` 路径；通常指向共享规则，仅在 rule_set 为空时使用。
@@ -67,6 +71,8 @@ func dependency_paths() -> Dictionary:
 		result["stage_show"] = stage_show_resource_path
 	if visual_theme == null and not visual_theme_resource_path.is_empty():
 		result["visual_theme"] = visual_theme_resource_path
+	if background == null and not background_resource_path.is_empty():
+		result["background"] = background_resource_path
 	if reward == null and not reward_resource_path.is_empty():
 		result["reward"] = reward_resource_path
 	if rule_set == null and not rule_set_resource_path.is_empty():
@@ -96,6 +102,10 @@ func assign_dependency(slot: String, resource: Resource) -> bool:
 			if resource is RewardDefinition:
 				reward = resource as RewardDefinition
 				return true
+		"background":
+			if resource is StageBackgroundDefinition:
+				background = resource as StageBackgroundDefinition
+				return true
 		"rule_set":
 			if resource is GameplayRuleSet:
 				rule_set = resource as GameplayRuleSet
@@ -104,7 +114,7 @@ func assign_dependency(slot: String, resource: Resource) -> bool:
 
 
 func dependencies_resolved() -> bool:
-	return song != null and chart != null and stage_show != null and visual_theme != null and reward != null and rule_set != null
+	return song != null and chart != null and stage_show != null and visual_theme != null and reward != null and rule_set != null and (background != null or background_resource_path.is_empty())
 
 
 func resolve_dependencies_sync(cache_mode: ResourceLoader.CacheMode = ResourceLoader.CACHE_MODE_REUSE) -> bool:

@@ -149,6 +149,7 @@ func _ready() -> void:
 	stage_session.state_changed.connect(_on_haptics_stage_state_changed)
 	stage_session.timeline_seeked.connect(_on_haptics_timeline_seeked)
 	stage_session.run_started.connect(_on_haptics_run_started)
+	stage_session.run_started.connect(_reset_parallax)
 	note_haptics_feedback.bind(stage_session, controller_haptics)
 	stage_session.result_ready.connect(_on_stage_result_ready)
 	stage_session.visual_frame_ready.connect(_update_pet_views)
@@ -163,6 +164,10 @@ func load_stage(stage: StageDefinition, start_after_prepare: bool = true) -> boo
 		stage_load_failed.emit("StageDefinition configuration failed.")
 		return false
 	presentation.configure(stage)
+	var background_error := get_parallax_controller().configure(stage.background)
+	if not background_error.is_empty():
+		stage_load_failed.emit(background_error)
+		return false
 	audio_feedback.configure_from_rules(stage.rule_set)
 	presentation.clear()
 	hud.configure(stage)
@@ -227,7 +232,19 @@ func retry() -> bool:
 	return stage_session.retry()
 
 
+## 其他对象通过此入口注册视差或驱动模拟摄像头，不接触内部深度层。
+func get_parallax_controller() -> ParallaxController:
+	return presentation.parallax_controller
+
+
+func _reset_parallax(_run_id: int) -> void:
+	get_parallax_controller().set_camera_position(Vector2.ZERO)
+	get_parallax_controller().set_song_time(0.0)
+
+
 func teardown() -> void:
+	if is_instance_valid(presentation) and is_instance_valid(presentation.parallax_controller) and presentation.parallax_controller.is_inside_tree():
+		presentation.parallax_controller.clear()
 	if is_instance_valid(controller_haptics):
 		controller_haptics.set_output_enabled(false)
 		controller_haptics.clear()

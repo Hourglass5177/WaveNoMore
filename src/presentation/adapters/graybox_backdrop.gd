@@ -100,7 +100,20 @@ func set_failed(value: bool) -> void:
 
 
 func _draw() -> void:
-	draw_rect(Rect2(Vector2.ZERO, canvas_size), ink_color, true)
+	var boundary: PackedVector2Array = _boundary_points()
+	if draw_placeholder_boundary:
+		_draw_boundary(boundary)
+	if draw_placeholder_life_actor:
+		_draw_actor_silhouette(Vector2(270.0, 235.0), false)
+	if draw_placeholder_death_actor:
+		_draw_actor_silhouette(canvas_size - Vector2(270.0, 235.0), true)
+	_draw_strike_ripples(life_bell_origin, _life_strikes, life_color.lightened(0.48))
+	_draw_strike_ripples(death_bell_origin, _death_strikes, bone_color)
+
+
+## 仅在目标 CanvasItem 的绘制回调中调用；共享原颜色、尺寸和失败状态。
+func draw_background(target: CanvasItem) -> void:
+	target.draw_rect(Rect2(Vector2.ZERO, canvas_size), ink_color, true)
 
 	var life_tint: Color = life_color.darkened(0.30 if failed else 0.0)
 	var death_tint: Color = death_color.darkened(0.22 if failed else 0.0)
@@ -113,25 +126,17 @@ func _draw() -> void:
 	])
 	for index: int in range(boundary.size() - 2, -1, -1):
 		life_polygon.append(boundary[index])
-	draw_colored_polygon(life_polygon, life_tint)
+	target.draw_colored_polygon(life_polygon, life_tint)
 
 	var death_polygon := PackedVector2Array([boundary[0]])
 	for index: int in range(1, boundary.size()):
 		death_polygon.append(boundary[index])
 	death_polygon.append(Vector2(canvas_size.x, canvas_size.y))
 	death_polygon.append(Vector2(0.0, canvas_size.y))
-	draw_colored_polygon(death_polygon, death_tint)
+	target.draw_colored_polygon(death_polygon, death_tint)
 
-	_draw_scratches(true)
-	_draw_scratches(false)
-	if draw_placeholder_boundary:
-		_draw_boundary(boundary)
-	if draw_placeholder_life_actor:
-		_draw_actor_silhouette(Vector2(270.0, 235.0), false)
-	if draw_placeholder_death_actor:
-		_draw_actor_silhouette(canvas_size - Vector2(270.0, 235.0), true)
-	_draw_strike_ripples(life_bell_origin, _life_strikes, life_color.lightened(0.48))
-	_draw_strike_ripples(death_bell_origin, _death_strikes, bone_color)
+	_draw_scratches(target, true)
+	_draw_scratches(target, false)
 
 
 func _advance_strikes(strikes: Array[float], delta: float) -> void:
@@ -181,7 +186,7 @@ func _draw_boundary(points: PackedVector2Array) -> void:
 		)
 
 
-func _draw_scratches(life_side: bool) -> void:
+func _draw_scratches(target: CanvasItem, life_side: bool) -> void:
 	var color: Color = Color(bone_color, 0.055 if life_side else 0.045)
 	var boundary_y: float = canvas_size.y * 0.5
 	for index: int in range(24):
@@ -194,7 +199,7 @@ func _draw_scratches(life_side: bool) -> void:
 			continue
 		var length: float = 80.0 + fmod(seed * 37.0, 150.0)
 		var direction := Vector2(1.0, -0.14 if life_side else 0.14).normalized()
-		draw_line(Vector2(base_x, base_y), Vector2(base_x, base_y) + direction * length, color, 2.0, true)
+		target.draw_line(Vector2(base_x, base_y), Vector2(base_x, base_y) + direction * length, color, 2.0, true)
 
 
 func _draw_actor_silhouette(center: Vector2, rotated: bool) -> void:

@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://src/presentation/adapters/graybox_stage_presentation.gd" id="1_stage"]
 [ext_resource type="Script" path="res://src/presentation/adapters/graybox_backdrop.gd" id="2_backdrop"]
@@ -8,6 +8,8 @@
 [ext_resource type="Script" path="res://src/presentation/vfx/twin_gate_cue_visual.gd" id="6_gate"]
 [ext_resource type="Script" path="res://src/presentation/vfx/tuning_interference_visual.gd" id="7_tuning_wave"]
 [ext_resource type="Script" path="res://src/presentation/vfx/rapid_interference_visual.gd" id="8_rapid_wave"]
+[ext_resource type="Script" path="res://src/presentation/parallax/parallax_controller.gd" id="9_parallax"]
+[ext_resource type="Script" path="res://src/presentation/parallax/stage_background_base.gd" id="10_background"]
 
 [sub_resource type="StyleBoxFlat" id="StyleTutorial"]
 bg_color = Color(0.025, 0.03, 0.043, 0.88)
@@ -23,13 +25,23 @@ script = ExtResource("1_stage")
 [node name="Backdrop" type="Node2D" parent="."]
 script = ExtResource("2_backdrop")
 
-[node name="WorldPair" type="Node2D" parent="."]
+[node name="BackgroundBase" type="CanvasLayer" parent="."]
+layer = -2
 
-[node name="LifeWorldSlot" type="Node2D" parent="WorldPair"]
+[node name="BaseArt" type="Node2D" parent="BackgroundBase"]
+script = ExtResource("10_background")
+backdrop_path = NodePath("../../Backdrop")
 
-[node name="DeathWorldSlot" type="Node2D" parent="WorldPair"]
+[node name="WorldPair" type="Node2D" parent="BackgroundBase"]
+
+[node name="LifeWorldSlot" type="Node2D" parent="BackgroundBase/WorldPair"]
+
+[node name="DeathWorldSlot" type="Node2D" parent="BackgroundBase/WorldPair"]
 position = Vector2(1920, 1080)
 rotation = 3.1415927
+
+[node name="ParallaxController" type="Node2D" parent="."]
+script = ExtResource("9_parallax")
 
 [node name="ActorLayer" type="Node2D" parent="."]
 z_index = 2

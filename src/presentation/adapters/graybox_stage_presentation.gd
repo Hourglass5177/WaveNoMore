@@ -10,9 +10,9 @@ signal bell_struck(affinity: int)
 ## 灰盒底图节点路径；负责水平分界、占位角色和关卡整体状态。
 @export var backdrop_path: NodePath = ^"Backdrop"
 ## 生界正式场景的挂载槽路径，位于上半画面。
-@export var life_world_slot_path: NodePath = ^"WorldPair/LifeWorldSlot"
+@export var life_world_slot_path: NodePath = ^"BackgroundBase/WorldPair/LifeWorldSlot"
 ## 死界正式场景的挂载槽路径，位于下半画面并与生界中心对称。
-@export var death_world_slot_path: NodePath = ^"WorldPair/DeathWorldSlot"
+@export var death_world_slot_path: NodePath = ^"BackgroundBase/WorldPair/DeathWorldSlot"
 ## 生者角色与生钟素材的挂载槽路径。
 @export var life_actor_slot_path: NodePath = ^"ActorLayer/LifeActorSlot"
 ## 死者角色与死钟素材的挂载槽路径。
@@ -34,6 +34,9 @@ signal bell_struck(affinity: int)
 
 # 当前关卡定义用于读取歌曲、规则和视觉主题。
 var stage_definition: StageDefinition
+## 本关视差与配置动画的共享控制中心。
+@onready var parallax_controller: ParallaxController = $ParallaxController
+@onready var _background_base: CanvasLayer = $BackgroundBase
 
 # 以下引用在 _ready() 中按上面的路径取得，集中负责主题装配和事件转发。
 var _backdrop: GrayboxBackdrop
@@ -70,6 +73,8 @@ var _settings_service: Node
 
 
 func _ready() -> void:
+	set_notify_transform(true)
+	_sync_background_canvas()
 	_backdrop = get_node(backdrop_path) as GrayboxBackdrop
 	_life_world_slot = get_node(life_world_slot_path) as Node2D
 	_death_world_slot = get_node(death_world_slot_path) as Node2D
@@ -228,6 +233,16 @@ func restore_preview_motion(snapshot: Dictionary, sample: ClockSample) -> void:
 func _on_visual_frame_ready(sample: ClockSample) -> void:
 	## Gameplay 写入当前目标后推进身体；原始时钟信号仅设置视觉目标。
 	_note_visual_host.set_clock_sample(sample)
+	parallax_controller.set_song_time(sample.song_time_sec)
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_TRANSFORM_CHANGED and is_node_ready():
+		_sync_background_canvas()
+
+
+func _sync_background_canvas() -> void:
+	_background_base.transform = get_global_transform_with_canvas()
 
 
 func _on_gameplay_snapshot(snapshot: Dictionary) -> void:
