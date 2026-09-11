@@ -487,13 +487,13 @@ func test_stage() -> void:
 	check(controller.get_camera_position() == Vector2.ZERO, "s08 镜头速度为零")
 	for record in controller._objects.values():
 		if record.object != controller.get_configured_object(0):
-			check(record.depth == 0 and record.view.position == Vector2.ZERO, "Tap/Hold 槽深度 0 不随镜头移动")
+			check(record.depth == 0 and record.view.position == Vector2.ZERO, "音符槽与角色深度 0 不随镜头移动")
 	moving_sample.song_time_sec = 1.0
 	scene.stage_session.visual_frame_ready.emit(moving_sample)
 	check(controller.get_camera_position() == Vector2.ZERO, "向后定位保持镜头位置")
 	stage.stage_id = "s01"
 	scene.stage_session.visual_frame_ready.emit(moving_sample)
-	check(controller.get_camera_position() == Vector2.ZERO, "其他关卡不增加匀速移动")
+	check(controller.get_camera_position() == Vector2.ZERO, "更换关卡 ID 仍使用主题的零速度")
 	stage.stage_id = "s08"
 	scene.presentation.handheld_camera_enabled = true
 	var sample := ClockSample.new()
@@ -515,7 +515,7 @@ func test_stage() -> void:
 	check(scene.stage_session.seek_song_time(0.0) and controller.get_camera_position() == Vector2.ZERO, "定位后手持驱动按歌曲时间重算摄像头，t=0 回到原点")
 	check(scene.retry(), "真实关卡重试")
 	check(controller.get_camera_position() == Vector2.ZERO and controller._animations[0].frame == 0, "重试重置相机与动画")
-	check(scene.load_stage(stage, false) and controller._animations.size() == 1 and controller._objects.size() == 3, "重装不重复背景，且生死音符槽各注册一次")
+	check(scene.load_stage(stage, false) and controller._animations.size() == 1 and controller._objects.size() == 5 and scene.presentation._parallax_actors.size() == 2, "重装只保留一张背景、生死音符槽和两个角色")
 	scene.teardown()
 	check(controller._objects.is_empty(), "关卡卸载清理")
 	scene.queue_free()

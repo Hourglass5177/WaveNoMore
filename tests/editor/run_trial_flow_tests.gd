@@ -18,8 +18,13 @@ func wait_stage() -> bool:
 
 func run() -> void:
 	var fixture := ChartProjectLoader.inspect_package("res://tests/editor/fixtures/tuning/song.json")
+	for chart: SongChart in fixture.charts:
+		var raw: Dictionary = chart.get_meta("json_source").duplicate(true)
+		raw.presentation = {"scene_id": "s08", "use_scene_show": true}
+		chart.set_meta("json_source", raw)
 	check(ChartPackageWriter.write(fixture.song, fixture.charts, "res://tests/editor/fixtures/tuning", "res://builds/trial-flow-input.zip").is_empty(), "准备独立试玩包")
 	var saves = root.get_node("SaveService")
+	DirAccess.make_dir_recursive_absolute(test_root)
 	saves.configure_storage_paths(test_root.path_join("player.json"), test_root.path_join("player.tmp"), test_root.path_join("player.bak"))
 	saves.data = saves.default_data()
 	saves.debug_grant_pet("nu_tu_fu", false)
@@ -29,6 +34,7 @@ func run() -> void:
 	check(await wait_stage(), "启动参数直接装配正式游戏")
 	if not app._current_screen.has_method("load_stage"): quit(1); return
 	var stage = app._current_screen
+	check(stage.stage_session.stage_definition.background != null and stage.get_parallax_controller().get_configured_object(0) != null and not stage.stage_show_director.get_compiled_cues().is_empty(), "正式游戏装入 s08 背景及可选演出")
 	check(stage.active_pet == null and stage.gameplay_coordinator.simulation.pet_effect.perfect_score_bonus == 0, "写谱器一键试玩忽略已装备随从")
 	check(stage.stage_session.state == GameplayTypes.StageState.READY and not stage.song_player.playing, "三秒准备时音乐和判定尚未启动")
 	await create_timer(3.2).timeout
@@ -43,6 +49,7 @@ func run() -> void:
 	modal._back(); await frames()
 	stage.pause_overlay._on_retry_pressed()
 	check(await wait_stage(), "暂停重试仍使用外部谱面")
+	check(app._current_screen.stage_session.stage_definition.background != null and not app._current_screen.stage_show_director.get_compiled_cues().is_empty(), "重试保留所选场景与演出")
 	check(app._current_screen.stage_session.state == GameplayTypes.StageState.READY, "重试再次准备倒计时")
 	await create_timer(3.2).timeout
 	app._on_stage_finished({"score": 17, "success": true})
@@ -70,6 +77,7 @@ func run() -> void:
 	page = app._current_screen
 	page.get_node("%Play").pressed.emit()
 	check(await wait_stage(), "本地页面试玩按钮加载所选难度")
+	check(app._current_screen.get_parallax_controller().get_configured_object(0) != null, "加入本地库后仍使用谱面指定的场景")
 	check(app._current_screen.active_pet.pet_id == "nu_tu_fu", "本地谱面使用当前装备")
 	await create_timer(3.2).timeout
 	app._on_stage_finished({"score": 23, "success": true})

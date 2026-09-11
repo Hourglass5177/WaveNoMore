@@ -50,6 +50,8 @@ var _tracks: Dictionary[StringName, Array] = {}
 var _cursors: Dictionary[StringName, int] = {}
 ## 当前已生成且尚未回收的事件，键为稳定事件 ID，值含类型和事件数据。
 var _active: Dictionary[String, Dictionary] = {}
+## 仅用于表现；按完整谱面索引，避免另一侧尚未生成时丢失双押提示。
+var _double_tap_ids: Dictionary[String, bool] = {}
 
 
 func configure(compiled_chart: Variant, approach_sec: float = 2.25) -> void:
@@ -61,6 +63,7 @@ func configure(compiled_chart: Variant, approach_sec: float = 2.25) -> void:
 		KIND_SU: _read_array_member(compiled_chart, &"su_manifestations"),
 	}
 	_sort_tracks()
+	_index_double_taps()
 	reset()
 
 
@@ -206,6 +209,8 @@ func _spawn(kind: StringName, source: Dictionary, fallback_index: int) -> void:
 	var entry: Dictionary = source.duplicate(true)
 	var event_id: String = _event_id(entry, kind, fallback_index)
 	entry["event_id"] = event_id
+	if kind == KIND_NOTE:
+		entry["double_tap"] = _double_tap_ids.has(event_id)
 	if kind == KIND_SU:
 		su_preparation_requested.emit(event_id)
 		return
@@ -213,6 +218,29 @@ func _spawn(kind: StringName, source: Dictionary, fallback_index: int) -> void:
 		return
 	_active[event_id] = {"kind": kind, "data": entry}
 	visual_spawn_requested.emit(kind, entry)
+
+
+func _index_double_taps() -> void:
+	_double_tap_ids.clear()
+	var groups: Dictionary = {}
+	for index: int in _tracks[KIND_NOTE].size():
+		var note: Dictionary = _tracks[KIND_NOTE][index]
+		if StringName(note.get("unit_kind", &"tap")) != &"tap":
+			continue
+		var side: int = int(note.get("affinity", -1))
+		if side not in [GameplayTypes.Affinity.ZHU, GameplayTypes.Affinity.XUAN]:
+			continue
+		var keys: Array[String] = ["tick:%d" % int(note["tick"]) if note.has("tick") else "time:%d" % _event_start_usec(note)]
+		var group: String = str(note.get("group_id", ""))
+		if not group.is_empty(): keys.append("group:" + group)
+		for key: String in keys:
+			if not groups.has(key): groups[key] = {}
+			if not groups[key].has(side): groups[key][side] = []
+			groups[key][side].append(_event_id(note, KIND_NOTE, index))
+	for pair: Dictionary in groups.values():
+		if pair.size() != 2: continue
+		for ids: Array in pair.values():
+			for id: String in ids: _double_tap_ids[id] = true
 
 
 func _sort_tracks() -> void:

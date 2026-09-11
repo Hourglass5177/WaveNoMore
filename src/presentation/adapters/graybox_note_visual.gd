@@ -6,6 +6,25 @@ extends Node2D
 ## Tap 使用的 ShaderMaterial；运行时由主题注入并复制，避免修改共享资源。
 @export var tap_material: ShaderMaterial
 
+const SOFT_GLOW = preload("res://src/presentation/vfx/note_soft_glow.gd")
+
+@export_group("White Glow")
+## 局部轮廓向外延伸的设计像素；中心纹理仍然保留。
+@export_range(1.0, 64.0, 0.5) var glow_width_px: float = 30.0
+@export_range(0.0, 1.5, 0.05) var glow_strength: float = 1.0
+## 双押 Tap 在判定前开始亮起，按绝对视觉时间求值。
+@export_range(0.01, 1.0, 0.01) var tap_glow_lead_sec: float = 0.60
+@export_range(0.01, 0.5, 0.01) var tap_glow_rise_sec: float = 0.15
+@export_range(0.01, 0.5, 0.01) var hold_glow_rise_sec: float = 0.10
+@export_range(0.01, 0.5, 0.01) var glow_fall_sec: float = 0.08
+var glow_amount: float = 0.0
+var _glow_visual: MeshInstance2D
+var _double_tap := false
+var _glow_time := 0.0
+var _glow_target := false
+var _glow_from := 0.0
+var _glow_change_time := 0.0
+
 ## 普通音符的程序绘制占位实现，用于验证旋入路径、时机确认、波接触和抵达钟的不同反馈。
 
 # 谱面稳定 ID 用于查找和回收同一个视觉节点；affinity 决定生、死或素的颜色。
@@ -37,9 +56,25 @@ var _wave_contact_tween: Tween
 var _timing_tween: Tween
 var preview_time_driven := false
 var _preview_clock := -INF
+## Tap 命中印记固定在按键位置，本体继续飞行；接触波前后才进入死亡阶段。
+const TAP_FEEDBACK_SEC := 0.12
+const TAP_BODY_BRIGHTNESS := 0.45
+var _is_tap := true
+var _tap_hit_time := INF
+var _tap_death_time := INF
+var _tap_hit_transform := Transform2D.IDENTITY
 
 
 func prepare(view_model: Dictionary) -> void:
+	_is_tap = StringName(view_model.get("unit_kind", &"tap")) == &"tap"
+	_tap_hit_time = INF
+	_tap_death_time = INF
+	if _glow_visual == null:
+		_glow_visual = SOFT_GLOW.new()
+		_glow_visual.name = "WhiteGlow"
+		add_child(_glow_visual)
+	_double_tap = bool(view_model.get("double_tap", false)) and StringName(view_model.get("unit_kind", &"tap")) == &"tap"
+	_reset_glow()
 	event_id = str(view_model.get("event_id", view_model.get("id", view_model.get("unit_id", ""))))
 	affinity = int(view_model.get("affinity", GameplayTypes.Affinity.ZHU))
 	approach_progress = 0.0
@@ -58,6 +93,10 @@ func prepare(view_model: Dictionary) -> void:
 
 func set_approach_progress(value: float) -> void:
 	approach_progress = clampf(value, 0.0, 1.0)
+	if _tap_body_only():
+		scale = Vector2.ONE
+		queue_redraw()
+		return
 	var breath: float = sin(approach_progress * PI * 3.0) * 0.045
 	scale = Vector2.ONE * (0.72 + approach_progress * 0.28 + breath)
 	queue_redraw()
@@ -80,11 +119,25 @@ func play_judgment(grade: int) -> void:
 
 
 func play_timing_confirmed(grade: int) -> void:
+	# 成功 Tap 的计分通知不能重播命中印记；Hold 与 Miss 仍走原反馈流程。
+	if _tap_body_only(): return
 	if timing_confirmed and judgment_grade == grade:
 		return
 	timing_confirmed = true
 	judgment_grade = grade
+	if grade == GameplayTypes.JudgmentGrade.MISS and not missed:
+		_glow_from = glow_amount
+		_glow_change_time = _glow_time
+		_glow_target = false
 	missed = grade == GameplayTypes.JudgmentGrade.MISS
+	if _tap_body_only():
+		_tap_hit_time = _glow_time
+		_tap_hit_transform = global_transform
+		modulate = Color.WHITE
+		scale = Vector2.ONE
+		_set_glow_amount(0.0)
+		queue_redraw()
+		return
 	if _timing_tween != null:
 		_timing_tween.kill()
 	modulate = Color("a7a9af") if missed else Color("fff3cf")
@@ -101,7 +154,12 @@ func play_miss() -> void:
 
 
 func play_wave_contact(_contact: Dictionary) -> void:
+	if _is_tap and wave_contacted: return
 	wave_contacted = true
+	if _tap_body_only():
+		_tap_death_time = float(_contact["contact_us"]) / 1000000.0
+		_update_tap_feedback()
+		return
 	if _wave_contact_tween != null:
 		_wave_contact_tween.kill()
 	modulate = Color("fff2cc")
@@ -128,6 +186,9 @@ func play_note_arrival(_arrival: Dictionary) -> void:
 
 
 func reset_for_pool() -> void:
+	_tap_hit_time = INF
+	_tap_death_time = INF
+	_reset_glow()
 	if _feedback_tween != null:
 		_feedback_tween.kill()
 	if _wave_contact_tween != null:
@@ -148,6 +209,9 @@ func set_preview_time(seconds: float) -> void:
 	preview_time_driven = true
 	var elapsed := maxf(0, seconds - _preview_clock) if is_finite(_preview_clock) else 0.0
 	_preview_clock = maxf(_preview_clock, seconds)
+	if _is_tap:
+		_glow_time = _preview_clock
+		_update_tap_feedback()
 	for tween in [_feedback_tween, _wave_contact_tween, _timing_tween]:
 		if tween != null and tween.is_valid(): tween.custom_step(elapsed)
 
@@ -177,6 +241,8 @@ func _draw() -> void:
 	var base_color: Color = _affinity_color()
 	if missed:
 		base_color = Color("5c606a")
+	elif _tap_body_only():
+		base_color = base_color.darkened(1.0 - TAP_BODY_BRIGHTNESS)
 	elif judgment_grade == GameplayTypes.JudgmentGrade.PERFECT:
 		base_color = base_color.lightened(0.35)
 
@@ -192,22 +258,85 @@ func _draw() -> void:
 		Vector2(-17.0, 51.0) * pulse,
 		Vector2(-31.0, 16.0) * pulse,
 	])
-	draw_colored_polygon(shape, Color(base_color, 0.88))
-	draw_polyline(PackedVector2Array([shape[0], shape[2], shape[4], shape[6], shape[8]]), Color("e5ddc8"), 3.0, true)
+	if _glow_visual != null and _glow_visual.visible:
+		_glow_visual.polygon(shape)
+	var death_progress: float = clampf((_glow_time - _tap_death_time) / TAP_FEEDBACK_SEC, 0.0, 1.0)
+	# 灰盒死亡先收束、消散；正式怪物可在 play_wave_contact 接口替换为死亡动画。
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE * (1.0 - death_progress * 0.25))
+	draw_colored_polygon(shape, Color(base_color, 0.88 * (1.0 - death_progress)))
+	if not _tap_body_only():
+		draw_polyline(PackedVector2Array([shape[0], shape[2], shape[4], shape[6], shape[8]]), Color("e5ddc8"), 3.0, true)
 	for index: int in range(4):
 		var offset: float = -24.0 + float(index) * 15.0
-		draw_line(Vector2(offset, -27.0), Vector2(offset + 23.0, 30.0), Color(0.02, 0.02, 0.03, 0.36), 2.0, true)
+		draw_line(Vector2(offset, -27.0), Vector2(offset + 23.0, 30.0), Color(0.02, 0.02, 0.03, 0.36 * (1.0 - death_progress)), 2.0, true)
+	draw_set_transform(Vector2.ZERO)
 
-	# 按键时先锁定精度，实际消灭仍等待波前接触；小印记用来区分这两个时刻。
-	if timing_confirmed and not missed and not wave_contacted:
-		draw_arc(Vector2.ZERO, 64.0, 0.0, TAU, 48, Color("fff0cf", 0.74), 3.0, true)
-		for angle: float in [0.0, PI * 0.5, PI, PI * 1.5]:
-			var direction := Vector2.from_angle(angle)
-			draw_line(direction * 57.0, direction * 69.0, Color("fff0cf", 0.82), 3.0, true)
-	if wave_contacted:
+	if _tap_body_only():
+		_draw_tap_hit()
+	elif wave_contacted:
 		draw_arc(Vector2.ZERO, 72.0, 0.0, TAU, 56, Color("fff8e8", 0.92), 6.0, true)
 	elif note_arrived:
 		draw_arc(Vector2.ZERO, 70.0, 0.0, TAU, 48, Color("8b8e96", 0.72), 5.0, true)
+
+
+func set_note_glow_time(seconds: float, time_to_hit: float) -> void:
+	_glow_time = seconds
+	_update_tap_feedback()
+	if _tap_body_only():
+		_set_glow_amount(0.0)
+	elif missed:
+		_set_glow_amount(_glow_from * (1.0 - smoothstep(0.0, glow_fall_sec, seconds - _glow_change_time)))
+	else:
+		_set_glow_amount(smoothstep(0.0, tap_glow_rise_sec, tap_glow_lead_sec - time_to_hit) if _double_tap else 0.0)
+
+func _tap_body_only() -> bool:
+	return _is_tap and timing_confirmed and not missed
+
+func _update_tap_feedback() -> void:
+	if not _tap_body_only(): return
+	visible = _glow_time < _tap_death_time + TAP_FEEDBACK_SEC
+	queue_redraw()
+
+func _draw_tap_hit() -> void:
+	var age: float = _glow_time - _tap_hit_time
+	if age < 0.0 or age >= TAP_FEEDBACK_SEC: return
+	var progress: float = age / TAP_FEEDBACK_SEC
+	var fade: float = pow(1.0 - progress, 2.0)
+	# 逆变换抵消本体继续移动、旋转和缩放，印记始终留在按键被接受的位置。
+	draw_set_transform_matrix(global_transform.affine_inverse() * _tap_hit_transform)
+	draw_circle(Vector2.ZERO, 9.0 * (1.0 - progress), Color(1.0, 0.96, 0.85, fade * 0.8))
+	for index: int in 4:
+		var direction := Vector2.from_angle(PI * 0.25 + float(index) * PI * 0.5)
+		var distance: float = lerpf(24.0, 54.0, progress)
+		draw_line(direction * distance, direction * (distance + 15.0 * (1.0 - progress)), Color(1.0, 0.96, 0.85, fade), 3.0, true)
+	draw_set_transform(Vector2.ZERO)
+
+
+func set_tuning_glow(active: bool, seconds: float) -> void:
+	## 同一时间重复快照不会推进过渡；转向从当前亮度开始，避免松开再接管时跳闪。
+	_glow_time = seconds
+	var duration: float = hold_glow_rise_sec if _glow_target else glow_fall_sec
+	var value: float = lerpf(_glow_from, 1.0 if _glow_target else 0.0, smoothstep(0.0, duration, seconds - _glow_change_time))
+	active = active and not missed
+	if active != _glow_target:
+		_glow_from = value
+		_glow_change_time = seconds
+		_glow_target = active
+	_set_glow_amount(value)
+
+
+func _set_glow_amount(value: float) -> void:
+	glow_amount = value
+	if _glow_visual != null: _glow_visual.set_light(value * glow_strength, glow_width_px)
+	queue_redraw()
+
+
+func _reset_glow() -> void:
+	_glow_time = 0.0
+	_glow_target = false
+	_glow_from = 0.0
+	_glow_change_time = 0.0
+	_set_glow_amount(0.0)
 
 
 func _affinity_color() -> Color:

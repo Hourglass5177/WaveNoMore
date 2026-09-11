@@ -207,16 +207,27 @@ func drain_emissions() -> Array[Dictionary]:
 func visible_wavefronts(time_us: int) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
 	var max_radius: float = _canvas_size.length() * 1.15
-	for emission: Dictionary in _history:
+	# 回看旧时刻时，二分跳过尚未发射的历史；正常播放直接从末尾开始。
+	var end: int = _history.size()
+	if end > 0 and int(_history[end - 1]["launch_us"]) > time_us:
+		var begin := 0
+		while begin < end:
+			var middle: int = (begin + end) / 2
+			if int(_history[middle]["launch_us"]) <= time_us:
+				begin = middle + 1
+			else:
+				end = middle
+	# 历史按发射时间排序，且本局波速固定；越过可见寿命后无需扫描更早的波。
+	for index: int in range(end - 1, -1, -1):
+		var emission: Dictionary = _history[index]
 		var age_us: int = time_us - int(emission["launch_us"])
-		if age_us < 0:
-			continue
 		var radius: float = float(age_us) / USEC_PER_SEC * float(emission["speed_px_sec"])
 		if radius > max_radius:
-			continue
-		var front: Dictionary = emission.duplicate(true)
+			break
+		var front: Dictionary = emission.duplicate()
 		front["radius_px"] = radius
 		result.append(front)
+	result.reverse()
 	return result
 
 
@@ -254,59 +265,90 @@ func find_constructive_intersections(
 ) -> Array[Vector2]:
 	## 素音只受谱面显式区域约束，包含四条边界；HUD 和波源不构成隐藏禁区。
 	if count <= 0: return []
-	var life_fronts: Array[Dictionary] = []
-	var death_fronts: Array[Dictionary] = []
-	for front: Dictionary in visible_wavefronts(time_us):
-		if int(front["affinity"]) == GameplayTypes.Affinity.ZHU:
-			life_fronts.append(front)
-		elif int(front["affinity"]) == GameplayTypes.Affinity.XUAN:
-			death_fronts.append(front)
-
 	var allowed := Rect2(
 		Vector2(normalized_region.position.x * _canvas_size.x, normalized_region.position.y * _canvas_size.y),
 		Vector2(normalized_region.size.x * _canvas_size.x, normalized_region.size.y * _canvas_size.y)
 	)
 	var center: Vector2 = allowed.get_center()
-	var candidates: Array[Dictionary] = []
-	for life: Dictionary in life_fronts:
-		for death: Dictionary in death_fronts:
-			for point: Vector2 in _circle_intersections(
-				life["origin"], float(life["radius_px"]),
-				death["origin"], float(death["radius_px"])
-			):
-				# Rect2.has_point 不包含右边和下边，因此显式比较闭区间。
-				# 不钳制坐标：屏幕外或谱面区域外的真实交点仍然拒绝。
-				if (
-					point.x < allowed.position.x or point.x > allowed.end.x
-					or point.y < allowed.position.y or point.y > allowed.end.y
-				):
-					continue
-				candidates.append({
-					"point": point,
-					"distance_to_center": point.distance_squared_to(center),
-					"life_id": str(life["wave_id"]),
-					"death_id": str(death["wave_id"]),
-					"available_us": maxi(int(life["launch_us"]), int(death["launch_us"])),
-				})
-	candidates.sort_custom(_sort_intersection_candidates)
-
-	# 按载波发射批次建立互不重叠的候选池，不能找到 count 个就立即停止遍历。
-	# 预读取最早足量的完整发射批次：即使一帧跨过多次发波，冻结池仍然相同。
+	var life_origin: Vector2 = _sources[GameplayTypes.Affinity.ZHU]["origin"]
+	var death_origin: Vector2 = _sources[GameplayTypes.Affinity.XUAN]["origin"]
+	var radial_bounds := {
+		GameplayTypes.Affinity.ZHU: _region_radial_bounds(life_origin, allowed),
+		GameplayTypes.Affinity.XUAN: _region_radial_bounds(death_origin, allowed),
+	}
+	var fronts: Array[Dictionary] = []
+	for front: Dictionary in visible_wavefronts(time_us):
+		var radius_squared: float = float(front["radius_px"]) * float(front["radius_px"])
+		var bounds: Vector2 = radial_bounds[int(front["affinity"])]
+		# 圆周若完全覆盖区域或完全到不了区域，都不会提供区域内交点。
+		if radius_squared + 0.001 < bounds.x or radius_squared - 0.001 > bounds.y: continue
+		fronts.append(front)
+	var delta: Vector2 = death_origin - life_origin
+	var source_distance: float = delta.length()
+	if source_distance <= 0.000001: return []
+	var axis: Vector2 = delta / source_distance
+	var perpendicular := Vector2(-delta.y, delta.x) / source_distance
+	var life_fronts: Array[Dictionary] = []
+	var death_fronts: Array[Dictionary] = []
 	var pool: Array[Vector2] = []
-	var batch_us := NEVER_TIME_US
-	for candidate: Dictionary in candidates:
-		var available_us: int = candidate["available_us"]
-		if freeze_when_complete and pool.size() >= count and available_us != batch_us: break
-		batch_us = available_us
-		var point: Vector2 = candidate["point"]
-		var spaced: bool = true
-		for existing: Vector2 in pool:
-			if point.distance_squared_to(existing) < minimum_spacing_px * minimum_spacing_px:
-				spaced = false
-				break
-		if not spaced:
-			continue
-		pool.append(point)
+	var spacing_cells: Dictionary[Vector2i, Array] = {}
+	var cursor := 0
+	var spacing_squared: float = minimum_spacing_px * minimum_spacing_px
+	var cell_size: float = absf(minimum_spacing_px)
+	while cursor < fronts.size():
+		var batch_us: int = fronts[cursor]["launch_us"]
+		var candidates: Array[Dictionary] = []
+		# 每对波只在较晚的一条入批时求交。同刻批次处理完整后才允许早停，
+		# 保留原算法的候选顺序和随机池，不让帧步或可见波数量改变选点。
+		while cursor < fronts.size() and int(fronts[cursor]["launch_us"]) == batch_us:
+			var front: Dictionary = fronts[cursor]
+			var is_life: bool = int(front["affinity"]) == GameplayTypes.Affinity.ZHU
+			var other_fronts: Array[Dictionary] = death_fronts if is_life else life_fronts
+			var radius: float = front["radius_px"]
+			# 半径降序：二分略过完全包住当前圆的前段，仅访问可能相交的区间。
+			var begin := 0
+			var end: int = other_fronts.size()
+			var maximum_radius: float = source_distance + radius
+			while begin < end:
+				var middle: int = (begin + end) / 2
+				if float(other_fronts[middle]["radius_px"]) > maximum_radius:
+					begin = middle + 1
+				else:
+					end = middle
+			for other_index: int in range(begin, other_fronts.size()):
+				var other: Dictionary = other_fronts[other_index]
+				var other_radius: float = other["radius_px"]
+				# 已入批半径按降序排列；后续只会更小，可直接结束不相交的小半径段。
+				if source_distance > radius + other_radius: break
+				if source_distance < absf(radius - other_radius):
+					if other_radius < radius: break
+					continue
+				var life: Dictionary = front if is_life else other
+				var death: Dictionary = other if is_life else front
+				_append_su_intersections(life, death, allowed, center, source_distance, axis, perpendicular, candidates)
+			if is_life: life_fronts.append(front)
+			else: death_fronts.append(front)
+			cursor += 1
+		candidates.sort_custom(_sort_intersection_candidates)
+		for candidate: Dictionary in candidates:
+			var point: Vector2 = candidate["point"]
+			var spaced := true
+			if not spacing_cells.is_empty():
+				spaced = not _has_nearby_su_point(point, spacing_cells, cell_size, spacing_squared)
+			elif spacing_squared > 0.0:
+				for existing: Vector2 in pool:
+					if point.distance_squared_to(existing) < spacing_squared:
+						spaced = false
+						break
+			if not spaced: continue
+			pool.append(point)
+			# 小池直接遍历更省；密集大池按间距分格，只需检查相邻九格。
+			# 分格只回答“是否太近”，不改变接受顺序、候选池或随机抽样。
+			if pool.size() == 32 and cell_size > 0.0:
+				for existing: Vector2 in pool: _index_su_point(existing, spacing_cells, cell_size)
+			elif not spacing_cells.is_empty():
+				_index_su_point(point, spacing_cells, cell_size)
+		if freeze_when_complete and pool.size() >= count: break
 	# 每个事件使用独立种子，不消耗全局 RNG；定位和 Replay 不会受其他随机效果影响。
 	var rng := RandomNumberGenerator.new()
 	rng.seed = selection_seed
@@ -318,6 +360,52 @@ func find_constructive_intersections(
 		pool[index] = point
 		selected.append(point)
 	return selected
+
+
+func _index_su_point(point: Vector2, cells: Dictionary[Vector2i, Array], cell_size: float) -> void:
+	var cell := Vector2i((point / cell_size).floor())
+	if not cells.has(cell): cells[cell] = []
+	cells[cell].append(point)
+
+
+func _has_nearby_su_point(point: Vector2, cells: Dictionary[Vector2i, Array], cell_size: float, spacing_squared: float) -> bool:
+	var cell := Vector2i((point / cell_size).floor())
+	for x: int in range(cell.x - 1, cell.x + 2):
+		for y: int in range(cell.y - 1, cell.y + 2):
+			var neighbor := Vector2i(x, y)
+			if not cells.has(neighbor): continue
+			for existing: Vector2 in cells[neighbor]:
+				if point.distance_squared_to(existing) < spacing_squared: return true
+	return false
+
+
+func _region_radial_bounds(origin: Vector2, region: Rect2) -> Vector2:
+	## 每个波源只算一次圆周触及矩形所需的半径平方范围。
+	var nearest: Vector2 = origin.clamp(region.position, region.end)
+	var farthest := Vector2(
+		maxf(absf(origin.x - region.position.x), absf(origin.x - region.end.x)),
+		maxf(absf(origin.y - region.position.y), absf(origin.y - region.end.y))
+	)
+	return Vector2(origin.distance_squared_to(nearest), farthest.length_squared())
+
+
+func _append_su_intersections(life: Dictionary, death: Dictionary, allowed: Rect2, center: Vector2,
+		distance: float, axis: Vector2, perpendicular: Vector2, candidates: Array[Dictionary]) -> void:
+	## 两口钟的轴与距离共用一次计算；不为每对圆创建临时交点数组。
+	var r0: float = life["radius_px"]
+	var r1: float = death["radius_px"]
+	var along: float = (r0 * r0 - r1 * r1 + distance * distance) / (2.0 * distance)
+	var height_squared: float = r0 * r0 - along * along
+	if height_squared < -0.001: return
+	var midpoint: Vector2 = Vector2(life["origin"]) + axis * along
+	var height: float = sqrt(maxf(height_squared, 0.0))
+	for side: int in (2 if height > 0.001 else 1):
+		var point: Vector2 = midpoint + perpendicular * height if side == 0 else midpoint - perpendicular * height
+		# 与旧查询一样使用闭区间，不把区域外的点钳到边上。
+		if point.x < allowed.position.x or point.x > allowed.end.x or point.y < allowed.position.y or point.y > allowed.end.y: continue
+		candidates.append({"point": point, "distance_to_center": point.distance_squared_to(center),
+			"life_id": str(life["wave_id"]), "death_id": str(death["wave_id"]),
+			"available_us": maxi(int(life["launch_us"]), int(death["launch_us"]))})
 
 
 func canvas_position_to_uv(position_px: Vector2) -> Vector2:

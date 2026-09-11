@@ -14,12 +14,16 @@ extends Resource
 @export var death_world_scene: PackedScene
 ## 生死分界线及关卡进度表现的场景。
 @export var boundary_scene: PackedScene
+## 模拟摄像头的持续速度，单位为设计像素/秒；按绝对歌曲时间采样。
+@export var camera_velocity: Vector2 = Vector2.ZERO
 
 @export_group("Actors")
 ## 位于左上生界的生角色场景。
 @export var life_actor_scene: PackedScene
 ## 位于右下死界的死角色场景。
 @export var death_actor_scene: PackedScene
+## 将生死角色放入背景深度 0 的 actors 子层，便于由背景子层顺序安排遮挡。
+@export var actors_in_parallax: bool = false
 ## 生角色使用的编钟场景。
 @export var life_bell_scene: PackedScene
 ## 死角色使用的编钟场景。

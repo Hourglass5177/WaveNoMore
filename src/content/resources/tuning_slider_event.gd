@@ -31,6 +31,8 @@ extends Resource
 @export_range(0.0, 1.0, 0.001) var end_value: float = 1.0
 
 @export_group("Presentation")
+## 0 使用频率跨度推导的原半径，正数覆盖绘制半径；不参与调频与判定。
+@export var visual_radius_px: float = 0.0
 ## 将默认圆弧绕自身中心旋转的角度。0°保持原来的近横向上/下弧；
 ## 正值按屏幕坐标顺时针旋转，可用来制作斜向或近纵向滑条。
 @export_range(-180.0, 180.0, 1.0) var arc_rotation_deg: float = 0.0

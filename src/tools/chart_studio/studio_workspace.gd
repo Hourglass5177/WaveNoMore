@@ -35,7 +35,10 @@ var recovery_path := "user://chart_studio/recovery.json"
 var offer_recovery_on_start := true
 var _color_edit := {}
 var _colors := {}
-var _preview_theme_id := ""
+var _preview_selection := {}
+var _scene_select: OptionButton
+var _scene_show: CheckButton
+var _scene_refresh_pending := false
 var _problem_messages: PackedStringArray = []
 var _alignment_bar: VBoxContainer
 var _offset_edit: LineEdit
@@ -87,6 +90,7 @@ func _ready() -> void:
 			_refresh_cues())
 		toggle.tooltip_text = "按谱面起手时刻敲钟" if caption == "音符提示音" else ("持续音与判定反馈，起手敲钟由音符提示音控制" if caption == "游戏反馈" else "按当前拍号打拍，小节第一拍加重")
 	document.new_project()
+	_setup_scene_controls()
 	timeline.bind(document)
 	document.changed.connect(_on_document_changed)
 	timeline.selection_changed.connect(_inspect)
@@ -195,6 +199,11 @@ func _process(_delta: float) -> void:
 	if _trial_background: return
 	if _refresh_pending and not preview.rebuilding and not recorder.active and not timeline.is_aligning():
 		_refresh_pending = false
+		if _scene_refresh_pending:
+			_scene_refresh_pending = false
+			ChartSceneLibrary.shared().refresh()
+			_sync_scene_controls()
+			_inspect()
 		_rebuild_preview()
 	preview.sound_enabled = _game_feedback_enabled
 	preview.set_transport(roundi(audio.position * 1000000.0), audio.playing)
@@ -322,10 +331,7 @@ func _fit_timeline(selection_only: bool) -> void:
 
 func _document_theme(presentation: Dictionary = {}) -> StageVisualTheme:
 	var raw: Dictionary = presentation if not presentation.is_empty() else document.chart().get_meta("json_source", {}).get("presentation", {})
-	var theme: StageVisualTheme = load(ChartProjectLoader.THEMES.get(str(raw.get("theme_id", "default")), ChartProjectLoader.THEMES.default)).duplicate(true)
-	for key in ["life", "death", "su", "ink", "paper"]:
-		if raw.get("palette_overrides", {}).has(key): theme.set(key + "_color", Color(raw.palette_overrides[key]))
-	return theme
+	return ChartSceneLibrary.shared().theme_copy(raw)
 
 func _begin_color(key: String) -> void:
 	_finish_recording(true)
@@ -336,7 +342,8 @@ func _preview_color(key: String, color: Color) -> void:
 	var raw: Dictionary = _color_edit.presentation
 	if not raw.has("palette_overrides"): raw.palette_overrides = {}
 	raw.palette_overrides[key] = "#" + color.to_html(true)
-	preview.apply_palette(_document_theme(raw))
+	var theme := _document_theme(raw)
+	if theme != null: preview.apply_palette(theme)
 
 func _finish_color() -> void:
 	if _color_edit.is_empty(): return
@@ -347,12 +354,89 @@ func _finish_color() -> void:
 	document.change_presentation(value)
 
 func _apply_document_palette() -> void:
-	var theme_id := str(document.chart().get_meta("json_source", {}).get("presentation", {}).get("theme_id", "default"))
-	if theme_id != _preview_theme_id: _refresh_pending = true
+	var identity := ChartSceneLibrary.selection(document.chart().get_meta("json_source", {}).get("presentation", {}))
+	if identity != _preview_selection:
+		_queue_scene_rebuild()
+		_sync_scene_controls()
+		_inspect()
+		return
 	var theme := _document_theme()
+	if theme == null: return
 	preview.apply_palette(theme)
 	for key in _colors:
 		if is_instance_valid(_colors[key]): _colors[key].color = theme.get(key + "_color")
+
+func _setup_scene_controls() -> void:
+	var column := $Layout/Split/Top/Main/PreviewColumn
+	var row := HFlowContainer.new(); row.name = "SceneControls"
+	column.add_child(row); column.move_child(row, 1)
+	var label := Label.new(); label.text = "场景"; row.add_child(label)
+	_scene_select = OptionButton.new(); _scene_select.name = "Scene"
+	_scene_select.custom_minimum_size.x = 220
+	_scene_select.fit_to_longest_item = false
+	_scene_select.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	row.add_child(_scene_select)
+	_scene_select.item_selected.connect(_select_scene)
+	_scene_show = CheckButton.new(); _scene_show.name = "SceneShow"
+	_scene_show.text = "使用场景演出"
+	_scene_show.tooltip_text = "按当前谱面的节拍播放场景原有演出"
+	row.add_child(_scene_show)
+	_scene_show.toggled.connect(_set_scene_show)
+	var refresh := Button.new(); refresh.name = "RefreshScene"; refresh.text = "刷新场景"
+	refresh.tooltip_text = "重新读取 Godot 中已保存的场景与已导入的素材"
+	refresh.visible = OS.has_feature("editor")
+	row.add_child(refresh)
+	refresh.pressed.connect(_refresh_scene)
+	_sync_scene_controls()
+
+func _sync_scene_controls() -> void:
+	var raw: Dictionary = document.chart().get_meta("json_source", {}).get("presentation", {})
+	_scene_select.clear()
+	var selected := -1
+	if not raw.has("scene_id"):
+		_scene_select.add_item("旧版主题")
+		_scene_select.set_item_disabled(0, true)
+		selected = 0
+	for stage: StageDefinition in ChartSceneLibrary.shared().all_stages():
+		var index := _scene_select.item_count
+		_scene_select.add_item(stage.display_name if not stage.display_name.is_empty() else stage.stage_id)
+		_scene_select.set_item_metadata(index, stage.stage_id)
+		if raw.get("scene_id", "") == stage.stage_id: selected = index
+	if selected < 0:
+		selected = _scene_select.item_count
+		_scene_select.add_item("缺失场景：" + str(raw.get("scene_id", "")))
+		_scene_select.set_item_disabled(selected, true)
+	_scene_select.select(selected)
+	_scene_show.disabled = not raw.has("scene_id")
+	_scene_show.set_pressed_no_signal(bool(raw.get("use_scene_show", false)))
+
+func _select_scene(index: int) -> void:
+	var id: String = _scene_select.get_item_metadata(index)
+	_finish_recording(true); _finish_text_edit()
+	var raw: Dictionary = document.chart().get_meta("json_source", {}).get("presentation", {}).duplicate(true)
+	raw.scene_id = id
+	raw.use_scene_show = raw.get("use_scene_show", false)
+	raw.erase("theme_id")
+	document.change_presentation(raw)
+
+func _set_scene_show(enabled: bool) -> void:
+	_finish_recording(true); _finish_text_edit()
+	var raw: Dictionary = document.chart().get_meta("json_source", {}).get("presentation", {}).duplicate(true)
+	raw.use_scene_show = enabled
+	document.change_presentation(raw)
+
+func _queue_scene_rebuild() -> void:
+	# 场景切换属于重装：终止旧定位，保留暂停位置，下一帧只重建最后一次选择。
+	audio.set_playing(false)
+	timeline.cancel_gesture()
+	_seek_timer.stop(); _candidate_timer.stop()
+	preview.clear_preview()
+	_refresh_pending = true
+
+func _refresh_scene() -> void:
+	_finish_recording(true); _finish_text_edit()
+	_scene_refresh_pending = true
+	_queue_scene_rebuild()
 
 func _restore_recovery(data: Dictionary) -> void:
 	var decoded := ChartJsonCodec.decode_song(data.song)
@@ -546,6 +630,7 @@ func _on_document_changed() -> void:
 	_updating = false
 	_inspect()
 	_update_window_title()
+	_sync_scene_controls()
 
 func _rebuild_preview() -> void:
 	var draft := document.chart().duplicate(true) as SongChart
@@ -560,8 +645,9 @@ func _rebuild_preview() -> void:
 		for issue in authoring_issues: report.add_error(issue.code, issue.message, issue.event_id, StringName(issue.track), issue.tick)
 	for unknown: Dictionary in draft.get_meta("unknown_notes", []):
 		report.add_error(&"editor.unsupported_note", "暂不支持的音符：%s；原数据仍保留" % unknown.get("id", ""), str(unknown.get("id", "")), &"notes", int(unknown.get("tick", 0)))
-	var theme_id := str(ChartJsonCodec.encode_chart(draft).get("presentation", {}).get("theme_id", "default"))
-	if not ChartProjectLoader.THEMES.has(theme_id): report.add_error(&"editor.unknown_theme", "找不到主题：" + theme_id)
+	_preview_selection = ChartSceneLibrary.selection(draft.get_meta("json_source", {}).get("presentation", {}))
+	for issue: Dictionary in ChartProjectLoader.presentation_issues(draft):
+		report.add_error(&"editor.scene", issue.message)
 	var previous_messages := _problem_messages
 	_problem_messages = PackedStringArray()
 	problems.clear()
@@ -584,7 +670,6 @@ func _rebuild_preview() -> void:
 		_preview_status("无法预览")
 		_message("谱面暂时无法预览。可以继续编辑和保存，请检查问题列表。")
 		return
-	_preview_theme_id = theme_id
 	var stage := ChartProjectLoader.make_stage(document.song, draft)
 	if preview.load_preview(stage, viewport):
 		audio.cues.set_sample(&"life", preview.stage_root.audio_feedback.life_strike)
@@ -719,18 +804,8 @@ func _inspect() -> void:
 		_number("试听补偿（ms）", audio.device_compensation_ms, -500, 500, func(value: float) -> void: audio.device_compensation_ms = value)
 		_number("长按判定（ms）", recorder.threshold_ms, 50, 500, func(value: float) -> void: recorder.threshold_ms = value; _save_tool_settings())
 		_section("外观")
-		_label("关卡主题")
-		var theme := OptionButton.new()
-		var theme_keys := ChartProjectLoader.THEMES.keys()
-		var names := ["默认", "载波实验", "Tap 实验", "Hold 实验", "调频实验背景", "综合实验"]
-		for name in names: theme.add_item(name)
-		fields.add_child(theme)
-		var current_theme := str(ChartJsonCodec.encode_chart(document.chart()).get("presentation", {}).get("theme_id", "default"))
-		theme.select(maxi(0, theme_keys.find(current_theme)))
-		theme.item_selected.connect(func(i: int) -> void:
-			var data := ChartJsonCodec.encode_chart(document.chart()); data.presentation.theme_id = theme_keys[i]; document.change_metadata(data))
 		var palette_theme := _document_theme()
-		for key in ["life", "death", "su", "ink", "paper"]:
+		for key in (["life", "death", "su", "ink", "paper"] if palette_theme != null else []):
 			_label({"life": "生界颜色", "death": "死界颜色", "su": "骨白相纹", "ink": "墨色", "paper": "纸色"}[key])
 			var picker := ColorPickerButton.new(); picker.color = palette_theme.get(key + "_color")
 			fields.add_child(picker); _colors[key] = picker
@@ -787,6 +862,7 @@ func _inspect_events() -> void:
 		_button("此刻再添加一批 Ghost", func(): _edit_action(12))
 	if events.size() == 1 and events[0] is TuningPathEvent:
 		var path: TuningPathEvent = events[0]
+		_tuning_radius_controls(path)
 		_number("结束位置（tick）", path.tick + path.duration_ticks, path.tick + path.points.size() - 1, 10000000, func(value: float):
 			var copy := path.duplicate(true) as TuningPathEvent
 			var length := int(value) - copy.tick
@@ -820,6 +896,31 @@ func _inspect_events() -> void:
 			_mutate_selected("外观设置", func(e):
 				if e is NoteEvent: e.visual_variant = StringName(value)))
 	_button("删除所选对象", func(): _edit_action(0))
+
+func _tuning_radius_controls(path: TuningPathEvent) -> void:
+	var automatic := CheckButton.new()
+	automatic.name = "TuningRadiusAutomatic"; automatic.text = "自动半径"
+	automatic.button_pressed = path.visual_radius_px == 0.0
+	fields.add_child(automatic)
+	automatic.toggled.connect(func(enabled: bool):
+		var rules: GameplayRuleSet = load("res://content/rules/default_gameplay_rules.tres")
+		var current := document.find_note(path.event_id) as TuningPathEvent
+		_set_tuning_radius(path.event_id, 0.0 if enabled else ChartPathAdapter.automatic_visual_radius(current, rules)))
+	if automatic.button_pressed: return
+	var spin := _number("半径（px）", path.visual_radius_px, minf(0.0, path.visual_radius_px), maxf(1920.0, path.visual_radius_px),
+		func(value: float): _set_tuning_radius(path.event_id, value))
+	spin.allow_greater = true; spin.allow_lesser = true
+	spin.name = "TuningRadius"
+	spin.tooltip_text = "轨道中心线到画面中心的距离，按 1920×1080 设计画布计算。"
+
+func _set_tuning_radius(id: String, value: float) -> void:
+	# 不让 SpinBox 的默认范围把错误输入悄悄钳成另一个半径。
+	if not is_finite(value) or value < 0.0:
+		_message("半径请输入有限的正数，0 表示自动"); return
+	var source := document.find_note(id) as TuningPathEvent
+	var copy := source.duplicate(true) as TuningPathEvent
+	copy.visual_radius_px = value
+	_commit_events("修改 Tuning 半径", [source], [copy])
 
 func _add_path_point(id: String, tick: int) -> void:
 	var source := document.find_note(id) as TuningPathEvent
@@ -930,7 +1031,7 @@ func _label(text: String) -> void:
 func _button(text: String, callback: Callable) -> void:
 	var button := Button.new(); button.text = text; fields.add_child(button); button.pressed.connect(func() -> void: _finish_text_edit(); callback.call())
 
-func _number(text: String, value: float, minimum: float, maximum: float, callback: Callable, step_value := 1.0) -> void:
+func _number(text: String, value: float, minimum: float, maximum: float, callback: Callable, step_value := 1.0) -> SpinBox:
 	_label(text)
 	var spin := SpinBox.new()
 	spin.min_value = minimum; spin.max_value = maximum; spin.step = step_value; spin.value = value
@@ -938,16 +1039,24 @@ func _number(text: String, value: float, minimum: float, maximum: float, callbac
 	fields.add_child(spin)
 	# 提交在文本确认或离焦时进行，输入过程中不重建控件。
 	var edit := spin.get_line_edit()
-	var committed := [value]
+	var committed := [spin.value]
 	var displayed := [edit.text]
 	var commit := func() -> void:
+		# 箭头先改变 Range 数值，文本更新可能晚于 value_changed。
+		if spin.value != committed[0]:
+			committed[0] = spin.value; displayed[0] = edit.text; callback.call(spin.value); return
 		# 控件显示的小数位少于谱面原值时，单纯进出焦点不应量化 BPM。
 		if edit.text == displayed[0]: return
+		spin.set_block_signals(true)
 		spin.apply()
+		spin.set_block_signals(false)
 		displayed[0] = edit.text
 		if spin.value != committed[0]: committed[0] = spin.value; callback.call(spin.value)
 	edit.text_submitted.connect(func(_text: String) -> void: _queue_property_commit(commit))
 	edit.focus_exited.connect(func() -> void: _queue_property_commit(commit))
+	# 箭头微调也走同一提交入口；普通键入仍等确认，避免输入中途重建面板。
+	spin.value_changed.connect(func(_value: float) -> void: _queue_property_commit(commit))
+	return spin
 
 func _queue_property_commit(commit: Callable) -> void:
 	if not _property_commits.has(commit): _property_commits.append(commit)

@@ -20,6 +20,8 @@ var _target_length: float = 0.0
 var _spine_frozen: bool = false
 var _body_mesh: ArrayMesh
 var _body_renderer: MeshInstance2D
+var _body_glow: MeshInstance2D
+var _tail_glow: MeshInstance2D
 ## 每个 Hold 独占可变材质参数；Inspector 资源只作为模板，不在运行时回写。
 var _runtime_body_material: ShaderMaterial
 var _body_material_source: ShaderMaterial
@@ -72,6 +74,13 @@ var _head_heading_controlled: bool = false
 func prepare(view_model: Dictionary) -> void:
 	## 由持续时间决定完整长度，重新生成时清空上一次动态链。
 	super(view_model)
+	if _body_glow == null:
+		_body_glow = SOFT_GLOW.new()
+		_body_glow.name = "BodyGlow"
+		add_child(_body_glow)
+		_tail_glow = SOFT_GLOW.new()
+		_tail_glow.name = "TailGlow"
+		add_child(_tail_glow)
 	release_head_control()
 	_head_control_center = Vector2.ZERO
 	var start_us: int = int(view_model.get("start_us", view_model.get("start_time_us", 0)))
@@ -139,6 +148,7 @@ func reset_for_pool() -> void:
 
 func _draw() -> void:
 	var color: Color = _hold_color()
+	_set_body_glow_amount()
 
 	# 从屏幕外带着完整身体进入；只有命中后的消耗和失败末端回收才收短。
 	var visual_state: Dictionary = visual_state_snapshot()
@@ -150,6 +160,9 @@ func _draw() -> void:
 	var half_widths := PackedFloat32Array()
 	if _path_spine.size() >= 2:
 		_build_spine(spine, half_widths)
+		if _body_glow != null and _body_glow.visible:
+			_body_glow.body(spine, half_widths)
+			_glow_visual.attachment(Vector2.ZERO, Vector2.LEFT, half_widths[0])
 		# 贴图身体由独立 CanvasItem 绘制，其 Shader 不会覆盖头部与尾部。
 		if body_texture == null:
 			_draw_body(spine, half_widths, color, body_reveal)
@@ -161,6 +174,10 @@ func _draw() -> void:
 		var tail_center: Vector2 = spine[-1]
 		var tail_direction: Vector2 = (spine[-1] - spine[-2]).normalized()
 		if tail_texture != null:
+			if _tail_glow != null and _tail_glow.visible:
+				_tail_glow.position = tail_center
+				_tail_glow.rotation = tail_direction.angle()
+				_tail_glow.texture_shape(tail_texture, Rect2(-24.0, -24.0, 48.0, 48.0))
 			draw_set_transform(tail_center, tail_direction.angle(), Vector2.ONE)
 			draw_texture_rect(tail_texture, Rect2(-24.0, -24.0, 48.0, 48.0), false, Color(color, tail_alpha))
 			draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
@@ -172,10 +189,17 @@ func _draw() -> void:
 		var head_extent := Vector2(96.0, 96.0)
 		if source_size.x > 0.0 and source_size.y > 0.0:
 			head_extent = source_size * (96.0 / maxf(source_size.x, source_size.y))
+		# 头部素材与轮廓光共用尺寸和翻转，保留新版美术的方向。
+		if _glow_visual != null and _glow_visual.visible:
+			_glow_visual.scale = Vector2(1.0, -1.0)
+			_glow_visual.texture_shape(head_texture, Rect2(-head_extent * 0.5, head_extent))
 		draw_set_transform(Vector2.ZERO, 0.0, Vector2(1.0, -1.0))
 		draw_texture_rect(head_texture, Rect2(-head_extent * 0.5, head_extent), false, Color(1.0, 1.0, 1.0, head_alpha))
 		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	else:
+		if _glow_visual != null: _glow_visual.scale = Vector2.ONE
+		if _glow_visual != null and spine.size() < 2:
+			_glow_visual.attachment(Vector2.ZERO, Vector2.LEFT, 0.0)
 		_draw_head(color, head_alpha)
 
 
@@ -416,6 +440,10 @@ func _draw_tail(center: Vector2, trail_direction: Vector2, color: Color, alpha: 
 		center + trail_direction * 32.0 - normal * 19.0,
 		center - normal * 12.0,
 	])
+	if _tail_glow != null and _tail_glow.visible:
+		_tail_glow.transform = Transform2D.IDENTITY
+		_tail_glow.polygon(tail)
+		_tail_glow.attachment(center, -trail_direction, 10.0)
 	draw_colored_polygon(tail, Color(color.darkened(0.24), alpha * 0.90))
 	draw_polyline(PackedVector2Array([tail[0], tail[1], tail[2], tail[3], tail[4]]), Color(color.lightened(0.22), alpha), 2.5, true)
 	var tail_ring_radius: float = 11.0 + (1.0 - hold_progress) * 4.0
@@ -437,6 +465,8 @@ func _draw_head(color: Color, alpha: float) -> void:
 		Vector2(-27.0, 27.0),
 		Vector2(-16.0, 0.0),
 	])
+	if _glow_visual != null and _glow_visual.visible:
+		_glow_visual.polygon(head)
 	draw_colored_polygon(head, Color(color.darkened(0.16), alpha * 0.96))
 	draw_polyline(PackedVector2Array([head[0], head[1], head[3], head[5], head[6], head[7], head[0]]), Color(color.lightened(0.32), alpha), 3.0, true)
 	var eye_color := Color("f7edcf", alpha * (0.42 if missed else 0.94))
@@ -444,6 +474,20 @@ func _draw_head(color: Color, alpha: float) -> void:
 	draw_circle(Vector2(16.0, 0.0), 3.2, eye_color, true, -1.0, true)
 	draw_line(Vector2(-14.0, -17.0), Vector2(7.0, -7.0), Color("eee3c7", alpha * 0.72), 2.0, true)
 	draw_line(Vector2(-14.0, 17.0), Vector2(7.0, 7.0), Color("eee3c7", alpha * 0.72), 2.0, true)
+
+
+## 全体分件共用同一份过渡强度。
+func _set_glow_amount(value: float) -> void:
+	super(value)
+	_set_body_glow_amount()
+
+
+func _set_body_glow_amount() -> void:
+	# 身体消耗完后不保留上一帧的光晕网格；头部仍按自身生命周期绘制。
+	if _body_glow != null:
+		var body_amount: float = glow_amount * glow_strength if _path_spine.size() >= 2 else 0.0
+		_body_glow.set_light(body_amount, glow_width_px)
+		_tail_glow.set_light(body_amount, glow_width_px)
 
 
 ## Host 在首次命中时设置设计画布坐标系中的控制圈心；不改变实际姿态。

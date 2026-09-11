@@ -9,6 +9,8 @@ static func decode(data: Dictionary, chart: SongChart) -> String:
 			if key == "tuning_paths":
 				if not raw.get("points", []) is Array: return "Tuning 节点必须是数组"
 				var path := TuningPathEvent.new()
+				if not ChartJsonCodec._number(raw.get("visual_radius_px", 0.0)): return "Tuning 半径必须是有限数值"
+				path.visual_radius_px = float(raw.get("visual_radius_px", 0.0))
 				path.event_id = str(raw.get("id", "")); path.tick = int(raw.tick)
 				path.affinity = {"zhu": 0, "xuan": 1}.get(str(raw.get("affinity")), -1)
 				path.hold_id = str(raw.get("hold_id", "")); path.support_hold_id = str(raw.get("support_hold_id", ""))
@@ -32,6 +34,8 @@ static func encode(chart: SongChart, data: Dictionary) -> void:
 	data.tuning_paths = []; data.ghost_events = []
 	for path in chart.tuning_paths:
 		var raw: Dictionary = path.get_meta("json_source", {}).duplicate(true)
+		if path.visual_radius_px != 0.0: raw.visual_radius_px = path.visual_radius_px
+		else: raw.erase("visual_radius_px")
 		raw.merge({"id": path.event_id, "affinity": "zhu" if path.affinity == 0 else "xuan", "tick": path.tick, "hold_id": path.hold_id, "support_hold_id": path.support_hold_id, "points": []}, true)
 		for point in path.points:
 			var p: Dictionary = point.get_meta("json_source", {}).duplicate(true)

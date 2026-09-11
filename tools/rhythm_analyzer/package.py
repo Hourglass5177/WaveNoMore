@@ -59,7 +59,8 @@ for relative in ('song.json', 'charts/normal.json', 'audio/song.wav'):
 screenshots = ('workspace-1280.png', 'workspace-1440.png', 'workspace-1920.png', 'ghost-three.png', 'preview-loading.png')
 (output / 'docs/screenshots').mkdir(exist_ok=True)
 for name in screenshots:
-    shutil.copy2(root / 'builds/tuning-review' / name, output / 'docs/screenshots' / ('tuning-' + name))
+    # 发布说明使用正式留存的图片，不依赖某次测试遗留的输出目录。
+    shutil.copy2(root / 'docs/screenshots' / ('tuning-' + name), output / 'docs/screenshots' / ('tuning-' + name))
 
 trial_screenshots = ('local-1280.png', 'local-1440.png', 'local-1920.png', 'select-1280.png')
 for name in trial_screenshots:

@@ -22,6 +22,7 @@ static func same(a, b) -> bool:
 	if a.get_script() != b.get_script() or a.event_id != b.event_id or a.tick != b.tick or a.affinity != b.affinity or a.duration_ticks != b.duration_ticks: return false
 	if a is GhostEvent: return a.count == b.count and a.boss == b.boss and a.tuning_ids == b.tuning_ids
 	if a is TuningPathEvent:
+		if a.visual_radius_px != b.visual_radius_px: return false
 		if a.hold_id != b.hold_id or a.support_hold_id != b.support_hold_id or a.points.size() != b.points.size(): return false
 		for i in a.points.size():
 			if a.points[i].event_id != b.points[i].event_id or a.points[i].offset_ticks != b.points[i].offset_ticks or a.points[i].angle_deg != b.points[i].angle_deg: return false

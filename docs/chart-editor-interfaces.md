@@ -6,14 +6,16 @@
 
 - `ChartJsonCodec`：歌曲 JSON v1、谱面 JSON v2（兼读 v1）与 `SongDefinition`／`SongChart` 双向转换，兼容未知内容存在 Resource 元数据中，不进入判定状态。
 - `ChartProjectLoader.load_stage(song_json_or_zip, difficulty_id)`：游戏和工具的共同装配入口，返回 `stage` 与 `errors`。ZIP 音频直接从字节加载。
-- `ChartProjectLoader.make_stage(song, chart)`：装配未保存的编辑版本，复用正式规则与主题。
+- `ChartProjectLoader.make_stage(song, chart)`：装配未保存的编辑版本，复用正式规则，按谱面引用装入主题、背景及可选演出；表现依赖有错时返回空资源，原因由 `presentation_issues(chart)` 返回。
 - `StudioProjectIO`：项目文件、资源复制、工作区、迁移归档及 ZIP 管理。
 
 歌曲 `format_version=1`、谱面 `format_version=2` 与 `SongChart.schema_version=2` 是不同版本体系。新增玩法需要同时补充编解码、工具表现和正式游戏语义；不能把未支持的字段静默解释成 Tap。
 
+场景绑定使用每张谱的 `presentation.scene_id` 和 `use_scene_show`，兼容旧 `theme_id`。目录、线程边界、资源刷新与发布约定见 [场景接入说明](chart-studio-scenes.md)。
+
 ## 时间与预览
 
-`StudioAudio` 是 EditorTransport 的实现，唯一拥有歌曲播放器、源音频位置、倍率、循环、试听补偿和暂停意图。其处理优先级为 -100，工作区随后消费本帧时间。编辑引起的预览重建不暂停音乐；恢复后无声追上当前时间，不补播历史反馈。内部 UI 使用音频秒坐标；预览公开定位入口使用音频整数微秒。
+`StudioAudio` 是 EditorTransport 的实现，唯一拥有歌曲播放器、源音频位置、倍率、循环、试听补偿和暂停意图。其处理优先级为 -100，工作区随后消费本帧时间。普通音符编辑引起的预览重建不暂停音乐；恢复后无声追上当前时间，不补播历史反馈。场景切换、演出开关和资源刷新会暂停播放、取消旧定位，重建后保持暂停位置。内部 UI 使用音频秒坐标；预览公开定位入口使用音频整数微秒。
 
 | 入口 | 用途 |
 |---|---|
@@ -80,3 +82,9 @@ Ghost 共享运行时已由写谱器分支补充候选池随机抽取、足量�
 新增游戏“本地谱面”固定入口、写谱器“在游戏中试玩”和匹配的游戏 EXE。共有加载器补充全难度检查；`ChartPackageWriter` 从内存纯打包，正式导出也取消隐式保存。应用层用外部来源上下文贯穿加载、暂停、重试、结算；本地成绩独立，临时试玩不写成绩、不触发正式奖励。
 
 详细接线、CLI、`-WithGame` 构建方式见 [导入与试玩接口](local-chart-playtest.md)，实测范围见 [验证记录](local-chart-validation.md)。本轮涉及 `app_main`、选关/结算/暂停页面、SaveService 的临时入口启动分流及共用 JSON 包加载；未改 Tap/Hold/Tuning/Ghost 判定、预测和计分规则。队友合并时需一并带上新来源上下文和暂停重试出口，不能退回仅凭 stage_id 重试。
+
+## 单条 Tuning 半径（2026-09-10）
+
+`TuningPathEvent.visual_radius_px` 经 `ChartPathAdapter.project` 传给该条的所有 `TuningSliderEvent`，再由编译器传入表现字典。JSON 使用同名可选字段，0／缺失沿用自动半径，不升级 v2 格式。`ChartPathAdapter` 和 `ChartValidator` 报告负数或非有限值；导入时非数值／非有限值走现有解析错误入口。
+
+半径不参与频率映射、角行程、判定、Ghost 查询或 Replay 内容哈希。`GrayboxFieldVisual` 先用旧规则计算角跨度，再用自定义半径生成轨道及附属提示；宽度、端帽、描边与文字不做径向缩放。`StudioDocument.execute` 处理半径编辑，比较、复制、保存、恢复与 ZIP 导出共用现有流程。字段及美术接入细节见 [表现说明](tap-feedback-tuning-radius.md)。

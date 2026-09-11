@@ -41,11 +41,9 @@ var stage_definition: StageDefinition
 
 ## Tap/Hold 音符槽不随模拟摄像头移动；音符自身路线和身体动画照常推进。
 const NOTE_PARALLAX_DEPTH: int = 0
-## s08 镜头持续向右的速度，设计像素/秒；背景由视差层按深度自动向左移动。
-const S08_CAMERA_SPEED_PX_SEC: float = 0.0
 
 @export_group("Parallax Camera")
-## 试验开关：叠加手持晃动；关闭不影响 s08 的持续移动。
+## 试验开关：叠加手持晃动；关闭不影响主题配置的持续移动。
 @export var handheld_camera_enabled: bool = true
 
 # 以下引用在 _ready() 中按上面的路径取得，集中负责主题装配和事件转发。
@@ -63,6 +61,9 @@ var _life_actor: Node
 var _death_actor: Node
 var _life_attacking := false
 var _death_attacking := false
+## 写谱预览由歌曲时间推进角色，暂停与分批重演不使用墙钟时间。
+var _preview_time_driven := false
+var _preview_actor_time_sec := -INF
 # 水平生死分界线素材的挂载槽。
 var _boundary_slot: Node2D
 # 调频期间持续发波并生成相纹的表现节点。
@@ -92,6 +93,7 @@ var _handheld_camera: ParallaxHandheldDriver
 func _ready() -> void:
 	set_notify_transform(true)
 	_sync_canvas_layers()
+	preload("res://src/presentation/vfx/note_effect_warmup.gd").prepare(self)
 	_backdrop = get_node(backdrop_path) as GrayboxBackdrop
 	_life_world_slot = get_node(life_world_slot_path) as Node2D
 	_death_world_slot = get_node(death_world_slot_path) as Node2D
@@ -178,6 +180,8 @@ func configure(stage: StageDefinition) -> void:
 		_death_actor = _instance_if_present(visual_theme.death_actor_scene, _death_actor_slot)
 		_instance_if_present(visual_theme.death_bell_scene, _death_actor_slot)
 		_instance_if_present(visual_theme.boundary_scene, _boundary_slot)
+	if _preview_time_driven:
+		_reset_preview_actors()
 
 	_song_duration_sec = _calculate_song_duration_sec()
 
@@ -207,6 +211,8 @@ func bind(clock: SongClock, session: StageSession, scheduler: ChartScheduler, _i
 	_session = session
 	if not session.waves_reset.is_connected(_tuning_interference_visual.clear):
 		session.waves_reset.connect(_tuning_interference_visual.clear)
+	if not session.waves_reset.is_connected(_reset_preview_actors):
+		session.waves_reset.connect(_reset_preview_actors)
 	_note_visual_host.bind_scheduler(scheduler)
 	_wave_field_visual.bind(clock, session)
 	_rapid_interference_visual.bind(clock, session)
@@ -228,7 +234,10 @@ func bind_show_director(director: Node) -> void:
 
 
 func clear() -> void:
-	_update_actor_attacks(false, false)
+	if _preview_time_driven:
+		_reset_preview_actors()
+	else:
+		_update_actor_attacks(false, false)
 	_note_visual_host.clear()
 	_tuning_interference_visual.clear()
 	_rapid_interference_visual.clear()
@@ -250,12 +259,15 @@ func _on_clock_sample(sample: ClockSample) -> void:
 	_backdrop.set_song_progress(sample.song_time_sec / maxf(_song_duration_sec, 0.001))
 
 func set_preview_time_driven() -> void:
+	_preview_time_driven = true
 	_note_visual_host.preview_time_driven = true
+	_reset_preview_actors()
 
 
 func restore_preview_motion(snapshot: Dictionary, sample: ClockSample) -> void:
 	## 保留身体恢复的状态→目标→积分顺序；历史中间帧无需刷新 HUD、背景与相纹。
 	_note_visual_host.restore_preview_motion(snapshot, sample)
+	_update_actor_snapshot(snapshot)
 
 
 func _on_visual_frame_ready(sample: ClockSample) -> void:
@@ -263,8 +275,8 @@ func _on_visual_frame_ready(sample: ClockSample) -> void:
 	_note_visual_host.set_clock_sample(sample)
 	parallax_controller.set_song_time(sample.song_time_sec)
 	var camera_position := Vector2.ZERO
-	if stage_definition != null and stage_definition.stage_id == "s08":
-		camera_position.x = maxf(sample.song_time_sec, 0.0) * S08_CAMERA_SPEED_PX_SEC
+	if stage_definition != null and stage_definition.visual_theme != null:
+		camera_position = stage_definition.visual_theme.camera_velocity * maxf(sample.song_time_sec, 0.0)
 	if handheld_camera_enabled:
 		camera_position += _handheld_camera.offset_at(sample.song_time_sec)
 	parallax_controller.set_camera_position(camera_position)
@@ -288,15 +300,14 @@ func _sync_canvas_layers() -> void:
 var _parallax_actors: Array[Node2D] = []
 
 
-## 灵均挂在 edge 之前的静止子层；编钟和随从继续保留在原槽位。
+## 角色层级由主题选择；编钟和随从继续保留在原槽位。
 func attach_actors_to_parallax() -> void:
-	if stage_definition == null or stage_definition.stage_id != "s08":
+	if stage_definition == null or stage_definition.visual_theme == null or not stage_definition.visual_theme.actors_in_parallax:
 		return
-	for slot in [_life_actor_slot, _death_actor_slot]:
-		for actor in slot.get_children():
-			if actor is Node2D and actor.scene_file_path == "res://scenes/presentation/actors/lingjun_actor.tscn":
-				if parallax_controller.register_object(actor, 0, false, "actors"):
-					_parallax_actors.append(actor)
+	for actor in [_life_actor, _death_actor]:
+		if actor is Node2D and not _parallax_actors.has(actor):
+			if parallax_controller.register_object(actor, 0, false, "actors"):
+				_parallax_actors.append(actor)
 
 
 func attach_notes_to_parallax() -> void:
@@ -309,7 +320,7 @@ func attach_notes_to_parallax() -> void:
 
 
 func _on_gameplay_snapshot(snapshot: Dictionary) -> void:
-	_update_actor_attacks(bool(snapshot.get("life_held", false)), bool(snapshot.get("death_held", false)))
+	_update_actor_snapshot(snapshot)
 	_note_visual_host.set_gameplay_snapshot(snapshot)
 	_tuning_interference_visual.set_gameplay_snapshot(snapshot)
 	_twin_gate_cue_visual.set_tuning_active(bool(snapshot.get("tuning_field_active", false)))
@@ -330,6 +341,34 @@ func _on_stage_state_changed(_previous: int, current: int, _reason: StringName) 
 func _on_wave_launched(wave: Dictionary) -> void:
 	var affinity := int(wave.get("affinity", GameplayTypes.Affinity.ZHU))
 	bell_struck.emit(affinity)
+
+
+## 预览复用正式输入边界；普通游玩仍由 Spine 自身推进动画。
+func _update_actor_snapshot(snapshot: Dictionary) -> void:
+	if _preview_time_driven:
+		var time_sec := float(snapshot.time_us) / 1000000.0
+		var delta := maxf(time_sec - _preview_actor_time_sec, 0.0) if is_finite(_preview_actor_time_sec) else 0.0
+		# 先走完上一段按住/松开的时间，再应用边界输入，才能保留“松开后播完本轮”的语义。
+		for actor in [_life_actor, _death_actor]:
+			if is_instance_valid(actor) and actor.is_class("SpineSprite") and actor.get_animation_state().get_num_tracks() > 0:
+				actor.update_skeleton(delta)
+		_preview_actor_time_sec = time_sec
+	_update_actor_attacks(bool(snapshot.get("life_held", false)), bool(snapshot.get("death_held", false)))
+
+
+func _reset_preview_actors() -> void:
+	if not _preview_time_driven: return
+	_preview_actor_time_sec = -INF
+	_life_attacking = false
+	_death_attacking = false
+	for actor in [_life_actor, _death_actor]:
+		if is_instance_valid(actor) and actor.is_class("SpineSprite"):
+			actor.set_update_mode(SpineConstant.UpdateMode_Manual)
+			actor.get_animation_state().clear_tracks()
+			actor.get_skeleton().set_to_setup_pose()
+			actor.get_skeleton().set_time(0.0)
+			actor.get_skeleton().update_world_transform(SpineConstant.Physics_Reset)
+			actor.update_skeleton(0.0)
 
 
 ## 只在按住状态变化时操作轨道，避免每份快照将循环动画重置到首帧。
@@ -356,6 +395,8 @@ func _set_actor_attack(actor: Node, held: bool) -> void:
 			# Spine 的轨道时间跨循环累计；折回本轮时间，避免关闭循环后立即跳到末帧。
 			track.set_track_time(fposmod(track.get_track_time(), track.get_animation().get_duration()))
 			track.set_loop(false)
+		if _preview_time_driven:
+			actor.update_skeleton(0.0)
 
 
 func _on_settings_changed() -> void:
@@ -427,6 +468,8 @@ func _disconnect_sources() -> void:
 	if is_instance_valid(_clock) and _clock.sample_published.is_connected(_on_clock_sample):
 		_clock.sample_published.disconnect(_on_clock_sample)
 	if is_instance_valid(_session):
+		if _session.waves_reset.is_connected(_reset_preview_actors):
+			_session.waves_reset.disconnect(_reset_preview_actors)
 		if _session.waves_reset.is_connected(_tuning_interference_visual.clear):
 			_session.waves_reset.disconnect(_tuning_interference_visual.clear)
 		if _session.visual_frame_ready.is_connected(_on_visual_frame_ready):

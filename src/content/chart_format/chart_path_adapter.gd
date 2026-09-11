@@ -49,6 +49,16 @@ static func frequency_values(path: TuningPathEvent, rules: GameplayRuleSet) -> D
 	for i in cumulative.size(): cumulative[i] = clampf(cumulative[i] + shift, 0.0, 1.0)
 	return {"values": cumulative}
 
+static func automatic_visual_radius(path: TuningPathEvent, rules: GameplayRuleSet) -> float:
+	## 切换到自定义时取首段现有半径；整条路径随后共用这个值。
+	var distance := TuningArcGeometry.equivalent_center_distance_px(rules.wave_canvas_size.x)
+	var mapping := frequency_values(path, rules)
+	if mapping.has("error"): return distance
+	var chord := TuningArcGeometry.chord_length_px(mapping.values[0], mapping.values[1],
+		rules.tuning_min_frequency_hz, rules.tuning_max_frequency_hz, rules.tuning_pixels_per_hz)
+	var sweep := TuningArcGeometry.equivalent_sweep_from_chord_rad(chord, distance)
+	return TuningArcGeometry.equivalent_radius_from_chord_px(chord, sweep)
+
 static func validate(chart: SongChart, rules: GameplayRuleSet) -> Array[Dictionary]:
 	var issues: Array[Dictionary] = []
 	var by_id := {}
@@ -59,6 +69,7 @@ static func validate(chart: SongChart, rules: GameplayRuleSet) -> Array[Dictiona
 	var paths := chart.tuning_paths.duplicate()
 	paths.sort_custom(func(a, b): return a.tick < b.tick)
 	for path in paths:
+		if not is_finite(path.visual_radius_px) or path.visual_radius_px < 0.0: _issue(issues, path, "Tuning 半径必须是有限的非负数，0 表示自动")
 		if path.affinity not in [0, 1]: _issue(issues, path, "Tuning 必须属于生钟或死钟")
 		if path.tick < 0 or path.tick + path.duration_ticks > chart.end_tick: _issue(issues, path, "Tuning 超出谱面起止范围")
 		if path.points.is_empty() or path.points[0].offset_ticks != 0: _issue(issues, path, "Tuning 首节点偏移必须为零")
@@ -119,6 +130,7 @@ static func project(chart: SongChart, rules: GameplayRuleSet) -> SongChart:
 		for i in range(1, path.points.size()):
 			var a := path.points[i - 1]; var b := path.points[i]
 			var slider := TuningSliderEvent.new()
+			slider.visual_radius_px = path.visual_radius_px
 			slider.event_id = path.event_id + ":" + a.event_id
 			slider.affinity = path.affinity; slider.tick = path.tick + a.offset_ticks
 			slider.traversal_ticks = b.offset_ticks - a.offset_ticks; slider.traversal_count = 1

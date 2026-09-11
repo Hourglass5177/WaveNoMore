@@ -172,6 +172,7 @@ func set_visual_time(value: float) -> void:
 func set_gameplay_snapshot(snapshot: Dictionary) -> void:
 	gameplay_snapshot = snapshot.duplicate(true)
 	_update_active_visuals()
+	_update_tuning_hold_controls()
 
 
 func restore_preview_motion(snapshot: Dictionary, sample: ClockSample) -> void:
@@ -315,14 +316,22 @@ func _on_visual_timing_confirmed(event_id: String, grade: int) -> void:
 	var active_entry: Dictionary = _active[event_id]
 	if bool(active_entry.get("timing_confirmed", false)):
 		return
-	active_entry["timing_confirmed"] = true
+	active_entry["timing_confirmed"] = grade != GameplayTypes.JudgmentGrade.MISS
 	if StringName(active_entry["data"].get("unit_kind", &"")) == &"hold" and grade != GameplayTypes.JudgmentGrade.MISS:
 		_pin_hold_visual(active_entry)
 	var visual: Node2D = active_entry["node"]
 	_sync_preview_time(visual, _scheduler.visual_time_sec)
 	var timing_ring: Node2D = active_entry.get("timing_ring") as Node2D
+	if StringName(active_entry["data"].get("unit_kind", &"tap")) == &"tap" and grade != GameplayTypes.JudgmentGrade.MISS:
+		# Seek 重演会跳过中间 Tap 帧，命中印记仍必须取输入边界的准确位置。
+		_place_tap(visual, active_entry["data"], _scheduler.visual_time_sec)
+		if visual.has_method("set_note_glow_time"):
+			visual.call("set_note_glow_time", _scheduler.visual_time_sec, float(_start_usec(active_entry["data"])) / 1000000.0 - _scheduler.visual_time_sec)
 	if visual.has_method("play_timing_confirmed"):
 		visual.call("play_timing_confirmed", grade)
+	if StringName(active_entry["data"].get("unit_kind", &"tap")) == &"tap" and grade != GameplayTypes.JudgmentGrade.MISS:
+		if is_instance_valid(timing_ring): timing_ring.hide()
+		return
 	# 这里刻意不回退调用 play_judgment：旧正式素材可能把它用于销毁性的终结特效。
 	# 自定义素材必须明确实现不会销毁音符的 play_timing_confirmed 接口。
 	if is_instance_valid(timing_ring):
@@ -335,7 +344,14 @@ func _on_visual_timing_confirmed(event_id: String, grade: int) -> void:
 func _on_visual_wave_contacted(event_id: String, contact: Dictionary) -> void:
 	if not _active.has(event_id):
 		return
-	var visual: Node2D = _active[event_id]["node"]
+	var entry: Dictionary = _active[event_id]
+	var visual: Node2D = entry["node"]
+	if entry.has("tap_contact_position"): return
+	if StringName(entry["data"].get("unit_kind", &"tap")) == &"tap" and bool(entry.get("timing_confirmed", false)):
+		# 用领域层的实际接触位置固定本体；后续视觉帧不再沿路线向前推进。
+		_place_tap(visual, entry["data"], float(contact["contact_us"]) / 1000000.0)
+		entry["tap_contact_position"] = contact["position"]
+		visual.position = entry["tap_contact_position"]
 	_sync_preview_time(visual, float(contact.get("contact_us", 0)) / 1000000.0)
 	if visual.has_method("play_wave_contact"):
 		visual.call("play_wave_contact", contact)
@@ -455,6 +471,8 @@ func _update_visual(event_id: String, active_entry: Dictionary) -> void:
 	var end_sec: float = float(_end_usec(data)) / 1_000_000.0
 	var presentation_time: float = _judge_visual_time if kind == ChartScheduler.KIND_TUNING else visual_time_sec
 	var time_to_hit_sec: float = start_sec - presentation_time
+	if kind == ChartScheduler.KIND_NOTE and not is_hold and visual.has_method("set_note_glow_time"):
+		visual.call("set_note_glow_time", visual_time_sec, time_to_hit_sec)
 	# approach 可以超过 1：圆环在中心闭合后，未解决音符仍会飞向钟，
 	# 直到真实波前碰到它，或它抵达钟并成为 Miss。
 	var approach: float = maxf(1.0 - time_to_hit_sec / approach_duration_sec, 0.0)
@@ -467,11 +485,10 @@ func _update_visual(event_id: String, active_entry: Dictionary) -> void:
 		if not _active.has(event_id):
 			return
 	elif kind == ChartScheduler.KIND_NOTE:
-		visual.position = _sample_approach_path(data, approach)
-		# 不对称灰盒轮廓会沿路径切线转向，才能读成“旋入”；兄弟节点圆环仍保持正圆和正向。
-		visual.rotation = _sample_approach_tangent(data, approach).angle() if orient_notes_along_path else 0.0
-		if visual.has_method("set_approach_progress"):
-			visual.call("set_approach_progress", approach)
+		if active_entry.has("tap_contact_position"):
+			visual.position = active_entry["tap_contact_position"]
+		else:
+			_place_tap(visual, data, presentation_time)
 		if visual.has_method("set_hold_progress"):
 			var presented_hold_progress: float = float(active_entry.get("hold_visual_progress", 0.0))
 			if hold_active and hold_held:
@@ -505,6 +522,10 @@ func _update_visual(event_id: String, active_entry: Dictionary) -> void:
 			visual.call("set_rapid_ratio", float(gameplay_snapshot.get("rapid_ratio", 0.0)))
 
 	if is_instance_valid(timing_ring):
+		# set_timing 自身会重新显示圆环，成功 Tap 必须停止更新它。
+		if kind == ChartScheduler.KIND_NOTE and not is_hold and bool(active_entry.get("timing_confirmed", false)):
+			timing_ring.hide()
+			return
 		# 圆环只认绝对剩余时间，因此回退、暂停和不同帧率会得到同一画面。
 		# Hold 头被接受后，持续环仍固定在中心；独立控制圈不修改现有判定环。
 		if is_hold and hold_active:
@@ -526,6 +547,12 @@ func _update_visual(event_id: String, active_entry: Dictionary) -> void:
 			# 自定义美术场景可能只提供旧版进度接口，因此在这里兼容回退。
 			timing_ring.call("set_approach_progress", approach)
 
+
+func _place_tap(visual: Node2D, data: Dictionary, seconds: float) -> void:
+	var approach: float = maxf(1.0 + (seconds - float(_start_usec(data)) / 1000000.0) / approach_duration_sec, 0.0)
+	visual.position = _sample_approach_path(data, approach)
+	visual.rotation = _sample_approach_tangent(data, approach).angle() if orient_notes_along_path else 0.0
+	if visual.has_method("set_approach_progress"): visual.call("set_approach_progress", approach)
 
 func _pin_hold_visual(entry: Dictionary) -> void:
 	## 首次头判接受时记录实际朝向并开始平滑入圈；续按不重建入圈目标。
@@ -924,6 +951,8 @@ func _update_tuning_hold_controls() -> void:
 			controlled[hold_id] = true
 	for hold_id: String in _active:
 		var entry: Dictionary = _active[hold_id]
+		if entry["node"] is GrayboxHoldVisual:
+			entry["node"].set_tuning_glow(controlled.has(hold_id), _judge_visual_time)
 		if not entry.has("tuning_controller") or controlled.has(hold_id):
 			continue
 		var hold: GrayboxHoldVisual = entry["node"] as GrayboxHoldVisual

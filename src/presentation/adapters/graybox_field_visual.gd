@@ -94,6 +94,7 @@ var _slider_chord_px: float = 384.0
 var _slider_length_px: float = 384.0
 var _slider_sweep_rad: float = deg_to_rad(45.0)
 var _slider_radius_px: float = 0.0
+var _visual_radius_px: float = 0.0
 var _slider_center_distance_px: float = 0.0
 # 谱面可把整段等效圆弧旋转到横向、斜向或近纵向；起手扇区使用同一角度。
 var _arc_rotation_rad: float = 0.0
@@ -186,6 +187,7 @@ func prepare(view_model: Dictionary) -> void:
 	_end_value = clampf(float(view_model.get("end_value", 1.0)), 0.0, 1.0)
 	_arc_rotation_rad = deg_to_rad(float(view_model.get("arc_rotation_deg", 0.0)))
 	_visual_offset_px = view_model.get("visual_offset_px", Vector2.ZERO)
+	_visual_radius_px = float(view_model.get("visual_radius_px", 0.0))
 	_traversal_count = maxi(1, int(view_model.get("traversal_count", 1)))
 	_traversal_ticks = maxi(1, int(view_model.get(
 		"traversal_ticks",
@@ -736,8 +738,7 @@ func _progress_from_frequency_value(value: float) -> float:
 
 
 func _recalculate_slider_length() -> void:
-	# 屏幕端点距离仍严格服从“频率跨度 × pixels_per_hz”。圆弧只向弦的
-	# 中垂线方向鼓起，因此改变曲率不会偷偷改变玩家理解的调频跨度。
+	# 自动模式按频率跨度推导弦长、圆心角和半径；自定义半径只替换最终绘制尺寸。
 	_slider_chord_px = TUNING_ARC_GEOMETRY.chord_length_px(
 		_start_value,
 		_end_value,
@@ -756,6 +757,10 @@ func _recalculate_slider_length() -> void:
 		_slider_chord_px,
 		_slider_sweep_rad
 	)
+	# 先按原规则确定角行程，再覆盖画面半径；不把绘制弦长反馈给频率或输入模型。
+	if _visual_radius_px > 0.0:
+		_slider_radius_px = _visual_radius_px
+		_slider_chord_px = 2.0 * _slider_radius_px * sin(_slider_sweep_rad * 0.5)
 	# 极短或极长滑条会触发角度上下限；调试值应报告钳制后真实圆的弦心距。
 	_slider_center_distance_px = (
 		_slider_radius_px * cos(_slider_sweep_rad * 0.5)
