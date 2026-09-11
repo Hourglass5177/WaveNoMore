@@ -12,8 +12,6 @@ extends Resource
 ## 背景的 canvas_item Shader 材质；在 Inspector 的 Shader Parameters 中配置 uniforms。
 ## 空值使用默认绘制；运行时复制材质参数，Shader 与纹理资源继续共享。
 @export var material: ShaderMaterial
-## 0 静止，非零位移为 -相机位移 / depth；负数位于玩法前方。
-@export var depth: int = 1
 ## 是否沿素材矩形在两个方向无限拼接。
 @export var infinite: bool = false
 ## 素材左上角的设计画布位置。

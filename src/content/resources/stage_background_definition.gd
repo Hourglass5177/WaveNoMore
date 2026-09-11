@@ -3,5 +3,5 @@
 class_name StageBackgroundDefinition
 extends Resource
 
-## 按数组顺序注册，同深度后面的条目覆盖前面的条目。
-@export var entries: Array[StageBackgroundEntry] = []
+## 每个有符号深度对应一个顶层；顶层只包含子层，素材只属于子层。
+@export var layers: Array[StageBackgroundLayer] = []

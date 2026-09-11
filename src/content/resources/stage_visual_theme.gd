@@ -30,10 +30,22 @@ extends Resource
 @export var zhu_note_scene: PackedScene
 ## 玄（死）Tap 音符场景；留空时使用 Graybox 默认物。
 @export var xuan_note_scene: PackedScene
+## 朱（生）默认 Tap 图片；拖入 PNG/WebP 等 Texture2D 后替换程序绘制。
+@export var zhu_tap_texture: Texture2D
+## 朱（生）Tap 的 ShaderMaterial；为空时使用默认材质。
+@export var zhu_tap_material: ShaderMaterial
+## 玄（死）默认 Tap 图片；拖入 PNG/WebP 等 Texture2D 后替换程序绘制。
+@export var xuan_tap_texture: Texture2D
+## 玄（死）Tap 的 ShaderMaterial；为空时使用默认材质。
+@export var xuan_tap_material: ShaderMaterial
 ## 素音动态凝现场景；留空时使用 Graybox 默认物。
 @export var su_note_scene: PackedScene
 ## Hold 的头、身、尾组合场景。
 @export var hold_scene: PackedScene
+## 生界默认 Hold 头部图片；仅作用于使用 GrayboxHoldVisual 的默认场景。
+@export var zhu_hold_head_texture: Texture2D
+## 死界默认 Hold 头部图片；仅作用于使用 GrayboxHoldVisual 的默认场景。
+@export var xuan_hold_head_texture: Texture2D
 ## 调频滑槽与引导场景。
 @export var tuning_scene: PackedScene
 ## 双钟疾振区域的表现场景。

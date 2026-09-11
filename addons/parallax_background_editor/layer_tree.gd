@@ -1,7 +1,7 @@
 @tool
 extends Tree
-## 树拖放只提交深度与同组前后位置，不把鼠标距离换算为深度。
-signal reorder_requested(id: int, depth: int, target: int, in_front: bool)
+## 树拖放提交所属子层和组内前后位置；顶层深度行不接收素材。
+signal reorder_requested(id: int, depth: int, target: int, in_front: bool, sublayer: int)
 var editing_enabled := true
 
 
@@ -23,10 +23,10 @@ func _can_drop_data(position: Vector2, data: Variant) -> bool:
 	if item == null: return false
 	var metadata = item.get_metadata(0)
 	drop_mode_flags = Tree.DROP_MODE_INBETWEEN if metadata is Dictionary and metadata.has("id") else Tree.DROP_MODE_ON_ITEM
-	return metadata is Dictionary and metadata.has("depth")
+	return metadata is Dictionary and metadata.has("sublayer")
 
 
 func _drop_data(position: Vector2, data: Variant) -> void:
 	var item := get_item_at_position(position)
 	var metadata: Dictionary = item.get_metadata(0)
-	reorder_requested.emit(data.id, metadata.depth, metadata.get("id", -1), get_drop_section_at_position(position) <= 0)
+	reorder_requested.emit(data.id, metadata.depth, metadata.get("id", -1), get_drop_section_at_position(position) <= 0, metadata.sublayer)

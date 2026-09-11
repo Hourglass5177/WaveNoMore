@@ -1,4 +1,4 @@
-## 单关视差控制中心。层对象与重复绘制节点属于内部实现，调用方只提交自身、深度、无限性。
+## 单关视差控制中心。顶层只挂子层，所有业务对象由子层内的重复视图挂载。
 @tool
 class_name ParallaxController
 extends Node2D
@@ -8,6 +8,10 @@ const RepeatView = preload("res://src/presentation/parallax/parallax_repeat.gd")
 class DepthLayer extends Node2D:
 	var depth: int
 
+class SubLayer extends Node2D:
+	var sublayer_id: String
+	var velocity := Vector2.ZERO
+
 class Registration extends RefCounted:
 	var object: Node2D
 	var original_parent: WeakRef
@@ -15,6 +19,7 @@ class Registration extends RefCounted:
 	var original_z_relative: bool
 	var view: Node2D
 	var depth: int
+	var sublayer: SubLayer
 	var infinite: bool
 	var exit_callback: Callable
 
@@ -26,6 +31,7 @@ var _objects: Dictionary[int, Registration] = {}
 var _configured_objects: Array[Node2D] = []
 var _animations: Array[AnimatedSprite2D] = []
 var _leaving := false
+var _song_time := 0.0
 
 
 func _ready() -> void:
@@ -40,9 +46,13 @@ func _ready() -> void:
 	set_process(false)
 
 
-## 注册或更新对象。失败不改动对象；重复相同参数不改变同层顺序。
-func register_object(object: Node2D, depth: int, infinite: bool = false) -> bool:
+## 注册或更新对象；省略子层 ID 时挂入该深度的 default 子层。
+## 保留注册时的显示变换；之后按所在子层速度和相机变化移动。
+## 失败不改动对象；重复相同参数不改变子层内顺序。
+func register_object(object: Node2D, depth: int, infinite: bool = false, sublayer_id: String = "default") -> bool:
 	if not is_node_ready() or not is_instance_valid(object) or object == self or object.is_ancestor_of(self):
+		return false
+	if sublayer_id.is_empty():
 		return false
 	if infinite:
 		var size := RepeatView.cell_size(object)
@@ -50,7 +60,7 @@ func register_object(object: Node2D, depth: int, infinite: bool = false) -> bool
 			return false
 	var id := object.get_instance_id()
 	var record: Registration = _objects.get(id)
-	if record != null and record.depth == depth and record.infinite == infinite:
+	if record != null and record.depth == depth and record.infinite == infinite and record.sublayer.sublayer_id == sublayer_id:
 		return true
 	var pose := _canvas_pose(object)
 	if is_zero_approx(pose.determinant()):
@@ -67,7 +77,8 @@ func register_object(object: Node2D, depth: int, infinite: bool = false) -> bool
 		_remove_view(record)
 	record.depth = depth
 	record.infinite = infinite
-	var layer := _get_layer(depth)
+	var layer := _get_sublayer(depth, sublayer_id)
+	record.sublayer = layer
 	var view := RepeatView.new()
 	view.name = "Object_%s" % id
 	layer.add_child(view)
@@ -75,7 +86,7 @@ func register_object(object: Node2D, depth: int, infinite: bool = false) -> bool
 	# 登记对象的根排序由注册顺序管理，注销时归还其原有排序设置。
 	object.z_index = 0
 	object.z_as_relative = true
-	view.configure(object, pose, _camera_position, depth, infinite)
+	view.configure(object, pose, _camera_position - layer.velocity * _song_time, depth, infinite)
 	record.exit_callback = _on_object_exiting.bind(id)
 	object.tree_exiting.connect(record.exit_callback)
 	_objects[id] = record
@@ -113,7 +124,23 @@ func set_camera_position(position: Vector2) -> void:
 	_camera_position = position
 	_sync_canvas_transform()
 	for record: Registration in _objects.values():
-		record.view.update_camera(position)
+		record.view.update_camera(position - record.sublayer.velocity * _song_time)
+
+
+## 设置子层 X/Y 速度（设计像素/秒）。按当前绝对歌曲时间重新采样，不写回资源。
+## 非零深度实际位移为 (velocity * time - camera) / depth；零深度静止。
+func set_sublayer_velocity(depth: int, sublayer_id: String, velocity: Vector2) -> void:
+	_get_sublayer(depth, sublayer_id).velocity = velocity
+	set_camera_position(_camera_position)
+
+
+## 查询子层速度；尚不存在时返回零，不隐式创建层。
+func get_sublayer_velocity(depth: int, sublayer_id: String) -> Vector2:
+	if _layers.has(depth):
+		for sublayer: SubLayer in _layers[depth].get_children():
+			if sublayer.sublayer_id == sublayer_id:
+				return sublayer.velocity
+	return Vector2.ZERO
 
 
 ## 按设计画布位移移动模拟摄像头。
@@ -126,7 +153,7 @@ func get_camera_position() -> Vector2:
 	return _camera_position
 
 
-## 按配置数组索引获取真实精灵，供编辑器选框使用；不暴露内部层和重复节点。
+## 按 layers → sublayers → entries 的遍历索引获取真实精灵，供编辑器选框使用。
 func get_configured_object(index: int) -> Node2D:
 	if index < 0 or index >= _configured_objects.size():
 		return null
@@ -139,46 +166,68 @@ func configure(definition: StageBackgroundDefinition, apply_materials: bool = tr
 	clear()
 	if definition == null:
 		return ""
-	for index in definition.entries.size():
-		var entry := definition.entries[index]
-		if entry == null or (entry.texture == null) == (entry.sprite_frames == null):
+	var depths: Dictionary = {}
+	for layer in definition.layers:
+		if layer == null or depths.has(layer.depth):
 			clear()
-			return "背景条目 %d 必须指定贴图或 SpriteFrames，且只能指定一项。" % (index + 1)
-		if not is_finite(entry.uniform_scale) or entry.uniform_scale < 0.01:
-			clear()
-			return "背景条目 %d 的缩放倍率必须至少为 0.01。" % (index + 1)
-		var object: Node2D
-		if entry.texture != null:
-			var sprite := Sprite2D.new()
-			sprite.texture = entry.texture
-			sprite.centered = false
-			object = sprite
-		else:
-			if not entry.sprite_frames.has_animation(entry.animation) or entry.sprite_frames.get_frame_count(entry.animation) == 0:
+			return "背景顶层为空或深度重复。"
+		depths[layer.depth] = true
+		_get_layer(layer.depth)
+		var ids: Dictionary = {}
+		for sublayer in layer.sublayers:
+			if sublayer == null or sublayer.sublayer_id.is_empty() or ids.has(sublayer.sublayer_id) or not sublayer.velocity.is_finite():
 				clear()
-				return "背景条目 %d 的动画不存在或没有帧。" % (index + 1)
-			var sprite := AnimatedSprite2D.new()
-			sprite.sprite_frames = entry.sprite_frames
-			sprite.animation = entry.animation
-			sprite.centered = false
-			sprite.stop()
-			_animations.append(sprite)
-			object = sprite
-		if apply_materials and entry.material != null:
-			object.material = entry.material.duplicate(false) as ShaderMaterial
-		add_child(object)
-		object.position = entry.position
-		object.scale = Vector2.ONE * entry.uniform_scale
-		_configured_objects.append(object)
-		if not register_object(object, entry.depth, entry.infinite):
-			clear()
-			return "背景条目 %d 无法拼接；请检查素材及动画帧画布尺寸。" % (index + 1)
+				return "背景子层为空、标识重复或速度无效。"
+			ids[sublayer.sublayer_id] = true
+			_get_sublayer(layer.depth, sublayer.sublayer_id).velocity = sublayer.velocity
+			for entry in sublayer.entries:
+				var issue := _configure_entry(entry, layer.depth, sublayer.sublayer_id, apply_materials)
+				if not issue.is_empty():
+					clear()
+					return issue
 	set_song_time(0.0)
 	return ""
 
 
-## 仅采样配置创建的动画。外部注册的 AnimatedSprite2D 保留自己的播放控制。
-func set_song_time(song_time: float) -> void:
+func _configure_entry(entry: StageBackgroundEntry, depth: int, sublayer_id: String, apply_materials: bool) -> String:
+	var index := _configured_objects.size()
+	if entry == null or (entry.texture == null) == (entry.sprite_frames == null):
+		return "背景条目 %d 必须指定贴图或 SpriteFrames，且只能指定一项。" % (index + 1)
+	if not is_finite(entry.uniform_scale) or entry.uniform_scale < 0.01:
+		return "背景条目 %d 的缩放倍率必须至少为 0.01。" % (index + 1)
+	var object: Node2D
+	if entry.texture != null:
+		var sprite := Sprite2D.new()
+		sprite.texture = entry.texture
+		sprite.centered = false
+		object = sprite
+	else:
+		if not entry.sprite_frames.has_animation(entry.animation) or entry.sprite_frames.get_frame_count(entry.animation) == 0:
+			return "背景条目 %d 的动画不存在或没有帧。" % (index + 1)
+		var sprite := AnimatedSprite2D.new()
+		sprite.sprite_frames = entry.sprite_frames
+		sprite.animation = entry.animation
+		sprite.centered = false
+		sprite.stop()
+		_animations.append(sprite)
+		object = sprite
+	if apply_materials and entry.material != null:
+		object.material = entry.material.duplicate(false) as ShaderMaterial
+	add_child(object)
+	object.position = entry.position
+	object.scale = Vector2.ONE * entry.uniform_scale
+	_configured_objects.append(object)
+	if not register_object(object, depth, entry.infinite, sublayer_id):
+		return "背景条目 %d 无法拼接；请检查素材及动画帧画布尺寸。" % (index + 1)
+	return ""
+
+
+## 采样子层主动位移和配置动画；同一时间重复调用不会累计位移。
+## apply_motion=false 供编辑器布局模式停用主动位移，动画仍采样指定帧。
+## 外部注册的 AnimatedSprite2D 保留自己的动画播放控制。
+func set_song_time(song_time: float, apply_motion: bool = true) -> void:
+	_song_time = maxf(song_time, 0.0) if apply_motion else 0.0
+	set_camera_position(_camera_position)
 	for sprite: AnimatedSprite2D in _animations:
 		if not is_instance_valid(sprite):
 			continue
@@ -212,6 +261,11 @@ func clear() -> void:
 	_configured_objects.clear()
 	_animations.clear()
 	_camera_position = Vector2.ZERO
+	_song_time = 0.0
+	for layer: DepthLayer in _layers.values():
+		layer.get_parent().remove_child(layer)
+		layer.queue_free()
+	_layers.clear()
 
 
 func _process(_delta: float) -> void:
@@ -219,7 +273,7 @@ func _process(_delta: float) -> void:
 	_sync_canvas_transform()
 	for record: Registration in _objects.values():
 		if record.infinite:
-			record.view.update_camera(_camera_position)
+			record.view.update_camera(_camera_position - record.sublayer.velocity * _song_time)
 
 
 func _sync_canvas_transform() -> void:
@@ -263,13 +317,22 @@ func _disconnect_record(record: Registration) -> void:
 
 
 func _remove_view(record: Registration) -> void:
-	var layer: DepthLayer = _layers[record.depth]
+	var layer := record.sublayer
 	layer.remove_child(record.view)
 	record.view.queue_free()
-	if layer.get_child_count() == 0:
-		_layers.erase(record.depth)
-		layer.get_parent().remove_child(layer)
-		layer.queue_free()
+	# 空子层仍保存速度与绘制顺序，只在 clear 时释放。
+
+
+func _get_sublayer(depth: int, id: String) -> SubLayer:
+	var layer := _get_layer(depth)
+	for sublayer: SubLayer in layer.get_children():
+		if sublayer.sublayer_id == id:
+			return sublayer
+	var sublayer := SubLayer.new()
+	sublayer.sublayer_id = id
+	sublayer.name = "SubLayer_" + id
+	layer.add_child(sublayer)
+	return sublayer
 
 
 func _on_object_exiting(id: int) -> void:

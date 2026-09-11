@@ -22,7 +22,7 @@ var message := ""
 var _gesture := ""
 var _start := Vector2.ZERO
 var _last := Vector2.ZERO
-var _before: Array[Dictionary] = []
+var _before: Dictionary = {}
 var _move_id := -1
 var _move_origin := Vector2.ZERO
 var _refresh_pending := false
@@ -122,16 +122,17 @@ func refresh() -> void:
 	controller.clear()
 	_images.clear()
 	if message.is_empty(): message = controller.configure(document.definition(), preview)
-	controller.set_song_time(song_time)
+	controller.set_song_time(song_time, preview)
 	controller.set_camera_position(camera)
-	for index in document.items.size():
+	var ids := document.configured_ids()
+	for index in ids.size():
 		var object := controller.get_configured_object(index)
-		if object != null: object.visible = not document.hidden.has(document.items[index].id)
+		if object != null: object.visible = not document.hidden.has(ids[index])
 	queue_redraw()
 
 
 func update_sample() -> void:
-	controller.set_song_time(song_time)
+	controller.set_song_time(song_time, preview)
 	controller.set_camera_position(camera)
 	queue_redraw()
 
@@ -150,7 +151,7 @@ func set_preview(value: bool) -> void:
 func hit(point: Vector2) -> int:
 	for id in document.front_ids():
 		if document.hidden.has(id) or document.locked.has(id): continue
-		var object := controller.get_configured_object(document.index_of(id))
+		var object := controller.get_configured_object(document.configured_index(id))
 		if object == null: continue
 		var local := object.get_global_transform_with_canvas().affine_inverse() * point
 		var extent := entry_size(id)
@@ -281,7 +282,7 @@ func cancel_gesture() -> void:
 
 
 func _display_rect(id: int, near: Vector2) -> Rect2:
-	var object := controller.get_configured_object(document.index_of(id))
+	var object := controller.get_configured_object(document.configured_index(id))
 	if object == null: return Rect2()
 	var pose := object.get_global_transform_with_canvas()
 	var extent := entry_size(id)

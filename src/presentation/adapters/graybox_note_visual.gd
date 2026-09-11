@@ -1,6 +1,11 @@
 class_name GrayboxNoteVisual
 extends Node2D
 
+## 可由 StageVisualTheme 注入的 Tap 图片；为空时继续使用程序绘制。
+@export var tap_texture: Texture2D
+## Tap 使用的 ShaderMaterial；运行时由主题注入并复制，避免修改共享资源。
+@export var tap_material: ShaderMaterial
+
 ## 普通音符的程序绘制占位实现，用于验证旋入路径、时机确认、波接触和抵达钟的不同反馈。
 
 # 谱面稳定 ID 用于查找和回收同一个视觉节点；affinity 决定生、死或素的颜色。
@@ -164,6 +169,11 @@ func _play_feedback() -> void:
 
 
 func _draw() -> void:
+	if tap_texture != null:
+		var size := tap_texture.get_size()
+		var extent := Vector2(96.0, 96.0)
+		draw_texture_rect(tap_texture, Rect2(-extent * 0.5, extent), false, Color.WHITE)
+		return
 	var base_color: Color = _affinity_color()
 	if missed:
 		base_color = Color("5c606a")

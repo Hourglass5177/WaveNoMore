@@ -22,6 +22,15 @@ func check(ok: bool, label: String) -> void:
 		print("FAIL ", label)
 
 
+## 测试资源均按顶层 → 默认子层 → 素材构造。
+func append_entry(definition: StageBackgroundDefinition, entry: StageBackgroundEntry) -> void:
+	if definition.layers.is_empty():
+		var layer := StageBackgroundLayer.new()
+		layer.sublayers.append(StageBackgroundSubLayer.new())
+		definition.layers.append(layer)
+	definition.layers[0].sublayers[0].entries.append(entry)
+
+
 func texture(color: Color, size := Vector2i(16, 16)) -> ImageTexture:
 	var image := Image.create(size.x, size.y, false, Image.FORMAT_RGBA8)
 	image.fill(color)
@@ -49,6 +58,7 @@ func run() -> void:
 	_viewport.size = Vector2i(128, 96)
 	_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 	root.add_child(_viewport)
+	await test_sublayers()
 	await test_registry()
 	await test_repeat()
 	await test_animation()
@@ -61,6 +71,68 @@ func run() -> void:
 	await process_frame
 	print("PARALLAX TESTS: %d checks, %d failures" % [checks, failures])
 	quit(1 if failures else 0)
+
+
+## 两个独立子层、默认注册、负/零深度、绝对定位与无限拼接的联合检查。
+func test_sublayers() -> void:
+	var controller := ParallaxController.new()
+	_viewport.add_child(controller)
+	var definition := StageBackgroundDefinition.new()
+	var layer := StageBackgroundLayer.new()
+	layer.depth = 2
+	for id in ["default", "clouds"]:
+		var child := StageBackgroundSubLayer.new()
+		child.sublayer_id = id
+		child.velocity = Vector2(20, -10) if id == "default" else Vector2(-8, 16)
+		var entry := StageBackgroundEntry.new()
+		entry.texture = texture(Color.RED)
+		entry.position = Vector2(12, 20)
+		child.entries.append(entry)
+		layer.sublayers.append(child)
+	definition.layers.append(layer)
+	check(controller.configure(definition).is_empty(), "分层资源装配")
+	check(controller._layers[2].get_child_count() == 2, "顶层只包含两个子层")
+	for child in controller._layers[2].get_children():
+		check(child is ParallaxController.SubLayer, "顶层无直接挂载对象")
+	controller.set_camera_position(Vector2(4, 6))
+	controller.set_song_time(3)
+	var first := controller.get_configured_object(0)
+	var second := controller.get_configured_object(1)
+	check(first.global_position.is_equal_approx(Vector2(40, 2)), "子层 X/Y 速度与摄像头按深度叠加")
+	check(second.global_position.is_equal_approx(Vector2(-2, 41)), "同深度子层独立移动")
+	controller.set_song_time(1)
+	controller.set_song_time(3)
+	check(first.global_position.is_equal_approx(Vector2(40, 2)), "往返定位不累计位移")
+	controller.set_song_time(3, false)
+	check(first.global_position.is_equal_approx(Vector2(10, 17)), "布局禁用主动位移")
+	controller.set_sublayer_velocity(2, "clouds", Vector2(4, 8))
+	controller.set_song_time(3)
+	check(second.global_position.is_equal_approx(Vector2(16, 29)), "速度接口更新已有子层")
+	check(layer.sublayers[1].velocity == Vector2(-8, 16), "运行速度不回写资源")
+	var zero := Node2D.new()
+	var negative := Node2D.new()
+	_viewport.add_child(zero)
+	_viewport.add_child(negative)
+	controller.register_object(zero, 0)
+	controller.register_object(negative, -2)
+	controller.set_sublayer_velocity(0, "default", Vector2(100, 80))
+	controller.set_sublayer_velocity(-2, "default", Vector2(20, -10))
+	controller.set_song_time(4)
+	check(zero.global_position == Vector2.ZERO, "零层无主动位移")
+	check(negative.global_position.is_equal_approx(Vector2(-40, 20)), "负深度主动位移反向")
+	controller.clear()
+	zero.free()
+	negative.free()
+	layer.sublayers[0].entries[0].infinite = true
+	check(controller.configure(definition).is_empty(), "移动子层支持无限素材")
+	controller.set_song_time(100000)
+	var record = controller._objects[controller.get_configured_object(0).get_instance_id()]
+	check(record.view.repeat.position.abs().x <= 16.01 and record.view.repeat.position.abs().y <= 16.01, "主动位移大时间无限拼接有界")
+	controller.set_song_time(0)
+	check(controller.get_sublayer_velocity(2, "clouds") == Vector2(-8, 16), "重新装配恢复资源速度")
+	controller.clear()
+	controller.queue_free()
+	await process_frame
 
 
 func test_registry() -> void:
@@ -91,9 +163,9 @@ func test_registry() -> void:
 	var same := Node2D.new()
 	parent.add_child(same)
 	controller.register_object(same, 1)
-	check(controller._layers.size() == 5 and controller._layers[1].get_child_count() == 2, "同深度复用")
+	check(controller._layers.size() == 5 and controller._layers[1].get_child(0).get_child_count() == 2, "同深度复用")
 	controller.register_object(same, 1)
-	check(controller._layers[1].get_child_count() == 2, "重复注册不增对象")
+	check(controller._layers[1].get_child(0).get_child_count() == 2, "重复注册不增对象")
 	controller.move_camera(Vector2(13, 24))
 	var pose := same.get_global_transform_with_canvas()
 	controller.register_object(same, -2)
@@ -105,12 +177,12 @@ func test_registry() -> void:
 	deleted.free()
 	await process_frame
 	await process_frame
-	check(not controller._layers.has(-2), "外部删除回收空层")
+	check(controller._layers[-2].get_child(0).get_child_count() == 0, "外部删除回收挂载，保留空子层")
 	var moved: Node2D = objects.pop_back()
 	moved.reparent(parent)
 	await process_frame
 	await process_frame
-	check(not controller._layers.has(-1), "外部重挂自动注销")
+	check(controller._layers[-1].get_child(0).get_child_count() == 0, "外部重挂自动注销")
 	controller.clear()
 	check(controller._layers.is_empty() and controller._objects.is_empty(), "清理全部外部对象与层")
 	for object in objects:
@@ -162,11 +234,11 @@ func test_repeat() -> void:
 	check(controller._objects[atlas.get_instance_id()].view.repeat.repeat_size == Vector2(20, 30), "区域纹理尺寸")
 	var other := sprite(Color.BLUE, _viewport, Vector2i(11, 13))
 	controller.register_object(other, 1, true)
-	check(controller._layers[1].get_child_count() == 2 and controller._objects[other.get_instance_id()].view.repeat.repeat_size == Vector2(11, 13), "同层独立重复尺寸")
+	check(controller._layers[1].get_child(0).get_child_count() == 2 and controller._objects[other.get_instance_id()].view.repeat.repeat_size == Vector2(11, 13), "同层独立重复尺寸")
 	var finite := Node2D.new()
 	_viewport.add_child(finite)
 	controller.register_object(finite, 1, false)
-	check(controller._layers[1].get_child_count() == 3, "同层混合有限与无限对象")
+	check(controller._layers[1].get_child(0).get_child_count() == 3, "同层混合有限与无限对象")
 	check(not controller.register_object(finite, 1, true), "普通 Node2D 不伪造无限拼接")
 	controller.clear()
 	atlas.free()
@@ -191,23 +263,23 @@ func test_background_material() -> void:
 		else: entry.texture = texture(Color.WHITE)
 		entry.infinite = animated
 		entry.material = material
-		definition.entries.append(entry)
+		append_entry(definition, entry)
 	var directory := "res://builds/background-editor-validation"
 	DirAccess.make_dir_recursive_absolute(directory)
 	var path := directory.path_join("shader_background.tres")
 	check(ResourceSaver.save(definition, path) == OK, "背景材质保存")
 	var loaded := ResourceLoader.load(path, "", ResourceLoader.CACHE_MODE_IGNORE) as StageBackgroundDefinition
-	check(loaded.entries[0].material.get_shader_parameter(&"strength") == 0.5, "重开保留数值 uniform")
-	check(loaded.entries[0].material.get_shader_parameter(&"tint") == Color.GREEN, "重开保留颜色 uniform")
+	check(loaded.layers[0].sublayers[0].entries[0].material.get_shader_parameter(&"strength") == 0.5, "重开保留数值 uniform")
+	check(loaded.layers[0].sublayers[0].entries[0].material.get_shader_parameter(&"tint") == Color.GREEN, "重开保留颜色 uniform")
 	var controller := ParallaxController.new()
 	_viewport.add_child(controller)
 	check(controller.configure(loaded).is_empty(), "静态与无限动画装配 Shader")
 	var first := controller.get_configured_object(0).material as ShaderMaterial
 	var second := controller.get_configured_object(1).material as ShaderMaterial
-	check(first != second and first != loaded.entries[0].material, "每对象独立材质实例")
-	check(first.shader == loaded.entries[0].material.shader, "实例共享 Shader")
+	check(first != second and first != loaded.layers[0].sublayers[0].entries[0].material, "每对象独立材质实例")
+	check(first.shader == loaded.layers[0].sublayers[0].entries[0].material.shader, "实例共享 Shader")
 	first.set_shader_parameter(&"strength", 0.25)
-	check(second.get_shader_parameter(&"strength") == 0.5 and loaded.entries[0].material.get_shader_parameter(&"strength") == 0.5, "修改实例不影响其他背景与模板")
+	check(second.get_shader_parameter(&"strength") == 0.5 and loaded.layers[0].sublayers[0].entries[0].material.get_shader_parameter(&"strength") == 0.5, "修改实例不影响其他背景与模板")
 	if DisplayServer.get_name() != "headless":
 		var color := (await pixels()).get_pixel(64, 48)
 		check(absf(color.g - 0.5) < 0.02 and color.r < 0.02, "无限背景 Shader uniform 实际渲染")
@@ -223,7 +295,7 @@ func test_animation() -> void:
 	var entry := StageBackgroundEntry.new()
 	entry.sprite_frames = frames()
 	entry.infinite = true
-	definition.entries.append(entry)
+	append_entry(definition, entry)
 	check(controller.configure(definition).is_empty(), "配置多帧动画")
 	var object: AnimatedSprite2D = controller._animations[0]
 	controller.set_song_time(-2.0)
@@ -397,7 +469,7 @@ func test_stage() -> void:
 	for number in range(1, 9):
 		stage = load("res://content/stages/s%02d/stage_definition.tres" % number).duplicate(true)
 		check(stage.resolve_dependencies_sync(), "s%02d 含背景依赖加载" % number)
-		check(stage.background != null and (number == 8 or stage.background.entries.is_empty()), "s%02d 背景配置（s08 已接入美术）" % number)
+		check(stage.background != null and (number == 8 or stage.background.layers.is_empty()), "s%02d 背景配置（s08 已接入美术）" % number)
 	var scene = load("res://scenes/stage/stage_root.tscn").instantiate()
 	_viewport.add_child(scene)
 	scene.stage_session.external_preview = true
@@ -405,20 +477,20 @@ func test_stage() -> void:
 	var entry := StageBackgroundEntry.new()
 	entry.sprite_frames = frames()
 	stage.background = StageBackgroundDefinition.new()
-	stage.background.entries.append(entry)
+	append_entry(stage.background, entry)
 	check(scene.load_stage(stage, false), "真实关卡装配背景")
 	var controller: ParallaxController = scene.get_parallax_controller()
 	scene.presentation.handheld_camera_enabled = false
 	var moving_sample := ClockSample.new()
 	moving_sample.song_time_sec = 2.0
 	scene.stage_session.visual_frame_ready.emit(moving_sample)
-	check(controller.get_camera_position() == Vector2(240, 0), "s08 按歌曲时间持续右移镜头")
+	check(controller.get_camera_position() == Vector2.ZERO, "s08 镜头速度为零")
 	for record in controller._objects.values():
 		if record.object != controller.get_configured_object(0):
 			check(record.depth == 0 and record.view.position == Vector2.ZERO, "Tap/Hold 槽深度 0 不随镜头移动")
 	moving_sample.song_time_sec = 1.0
 	scene.stage_session.visual_frame_ready.emit(moving_sample)
-	check(controller.get_camera_position() == Vector2(120, 0), "向后定位直接恢复移动位置")
+	check(controller.get_camera_position() == Vector2.ZERO, "向后定位保持镜头位置")
 	stage.stage_id = "s01"
 	scene.stage_session.visual_frame_ready.emit(moving_sample)
 	check(controller.get_camera_position() == Vector2.ZERO, "其他关卡不增加匀速移动")

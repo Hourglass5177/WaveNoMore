@@ -12,6 +12,12 @@ var _stage_picker: OptionButton
 var _title: Label
 var _status: Label
 var _fields: Dictionary = {}
+var _properties: VBoxContainer
+var _sublayer_properties: VBoxContainer
+var _sublayer_fields: Dictionary = {}
+var _sublayer_name: LineEdit
+var _sublayer_picker: OptionButton
+var _new_sublayer_depth: SpinBox
 var _infinite: OptionButton
 var _animations: OptionButton
 var _asset: Label
@@ -116,12 +122,17 @@ func _build() -> void:
 	_edit_buttons.append(_button(tools, "添加", func(): _choose_asset(false)))
 	_edit_buttons.append(_button(tools, "复制", func(): document.duplicate_selected()))
 	_edit_buttons.append(_button(tools, "删除", func(): document.delete_selected()))
+	var sublayer_tools := HBoxContainer.new()
+	left.add_child(sublayer_tools)
+	_new_sublayer_depth = _spin(sublayer_tools, "深度")
+	_new_sublayer_depth.value = 1
+	_edit_buttons.append(_button(sublayer_tools, "添加子层", func(): document.add_sublayer(int(_new_sublayer_depth.value))))
 	layer_tree = LayerTree.new()
 	layer_tree.columns = 3
 	layer_tree.hide_root = true
 	layer_tree.select_mode = Tree.SELECT_SINGLE
 	layer_tree.column_titles_visible = true
-	layer_tree.set_column_title(0, "素材 / 深度")
+	layer_tree.set_column_title(0, "层 / 子层 / 素材")
 	layer_tree.set_column_title(1, "显")
 	layer_tree.set_column_title(2, "锁")
 	for column in [1, 2]:
@@ -130,7 +141,7 @@ func _build() -> void:
 	layer_tree.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	layer_tree.item_selected.connect(_tree_selection)
 	layer_tree.item_edited.connect(_tree_edited)
-	layer_tree.reorder_requested.connect(func(id: int, depth: int, target: int, front: bool): document.reorder(id, depth, target, front))
+	layer_tree.reorder_requested.connect(func(id: int, depth: int, target: int, front: bool, sublayer: int): document.reorder(id, depth, target, front, sublayer))
 	left.add_child(layer_tree)
 	var right_split := HSplitContainer.new()
 	right_split.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -171,7 +182,24 @@ func _build() -> void:
 	right_split.add_child(scroll)
 	var properties := VBoxContainer.new()
 	properties.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	scroll.add_child(properties)
+	var pages := VBoxContainer.new()
+	pages.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(pages)
+	pages.add_child(properties)
+	_properties = properties
+	_sublayer_properties = VBoxContainer.new()
+	pages.add_child(_sublayer_properties)
+	_label(_sublayer_properties, "子层属性")
+	_label(_sublayer_properties, "名称")
+	_sublayer_name = LineEdit.new()
+	_sublayer_properties.add_child(_sublayer_name)
+	_sublayer_name.text_submitted.connect(func(_text: String): _commit_sublayer_name())
+	_sublayer_name.focus_exited.connect(_commit_sublayer_name)
+	for key in ["所属深度", "速度 X", "速度 Y"]:
+		var field := _spin(_sublayer_properties, key, 1.0 if key == "所属深度" else 0.1)
+		_sublayer_fields[key] = field
+		field.value_changed.connect(_sublayer_property_changed.bind(key))
+	_label(_sublayer_properties, "速度单位：设计像素/秒。\n实际位移按所属深度折算；深度 0 静止。\n正深度：X 正向右，Y 正向下。\n视差预览中播放时间查看移动。").autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_label(properties, "素材属性")
 	_asset = _label(properties, "未选择")
 	_asset.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -185,6 +213,13 @@ func _build() -> void:
 		var field := _spin(properties, key, 1.0 if key == "深度" else 0.1)
 		_fields[key] = field
 		field.value_changed.connect(_property_changed.bind(key))
+	_label(properties, "所属子层")
+	_sublayer_picker = OptionButton.new()
+	properties.add_child(_sublayer_picker)
+	_sublayer_picker.item_selected.connect(func(index: int):
+		if _updating or surface.preview or document.editable_entry() == null: return
+		var id: int = _sublayer_picker.get_item_metadata(index)
+		document.reorder(document.selected_id, document.sublayer_record(id).depth, -1, true, id))
 	_label(properties, "坐标为素材左上角。\n深度越小越靠前，0 静止。").autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_infinite = OptionButton.new()
 	for label in ["有限素材", "无限拼接"]: _infinite.add_item(label)
@@ -334,42 +369,31 @@ func _rebuild_tree() -> void:
 	_updating = true
 	layer_tree.clear()
 	var root_item := layer_tree.create_item()
-	var group: TreeItem
-	var depth_set := false
-	var last_depth := 0
 	var divider_added := false
-	for id in document.front_ids():
-		var value := document.entry(id)
-		if value.depth >= 0 and not divider_added:
+	var depths: Array[int] = []
+	for record in document.sublayers:
+		if not depths.has(record.depth): depths.append(record.depth)
+	depths.sort()
+	for depth in depths:
+		if depth >= 0 and not divider_added:
 			var divider := layer_tree.create_item(root_item)
 			divider.set_text(0, "──── 玩法参考层 ────")
 			divider.set_selectable(0, false)
 			divider_added = true
-		if not depth_set or value.depth != last_depth:
-			group = layer_tree.create_item(root_item)
-			group.set_text(0, "深度 %d%s" % [value.depth, " · 静止" if value.depth == 0 else ""])
-			group.set_metadata(0, {"depth": value.depth})
-			group.set_selectable(0, false)
-			last_depth = value.depth
-			depth_set = true
-		var row := layer_tree.create_item(group)
-		var resource: Resource = value.texture if value.texture != null else value.sprite_frames
-		row.set_text(0, (resource.resource_path.get_file() if not resource.resource_path.is_empty() else "内嵌素材") if resource != null else "未指定素材")
-		row.set_tooltip_text(0, "条目 %d · %s" % [document.index_of(id) + 1, resource.resource_path if resource != null else ""])
-		row.set_metadata(0, {"id": id, "depth": value.depth})
-		var icon: Texture2D = value.texture
-		if icon == null and value.sprite_frames != null and value.sprite_frames.has_animation(value.animation) and value.sprite_frames.get_frame_count(value.animation) > 0:
-			icon = value.sprite_frames.get_frame_texture(value.animation, 0)
-		if icon != null:
-			row.set_icon(0, icon)
-			row.set_icon_max_width(0, 36)
-		for column in [1, 2]:
-			row.set_cell_mode(column, TreeItem.CELL_MODE_CHECK)
-			row.set_editable(column, true)
-			row.set_selectable(column, false)
-		row.set_checked(1, not document.hidden.has(id))
-		row.set_checked(2, document.locked.has(id))
-		if document.selected_id == id: row.select(0)
+		var group := layer_tree.create_item(root_item)
+		group.set_text(0, "深度 %d%s" % [depth, " · 静止" if depth == 0 else ""])
+		group.set_metadata(0, {"depth": depth})
+		group.set_selectable(0, false)
+		for index in range(document.sublayers.size() - 1, -1, -1):
+			var record: Dictionary = document.sublayers[index]
+			if record.depth != depth: continue
+			var child := layer_tree.create_item(group)
+			child.set_text(0, record.resource.display_name)
+			child.set_tooltip_text(0, "%s · 速度 %s px/s" % [record.resource.sublayer_id, record.resource.velocity])
+			child.set_metadata(0, {"depth": depth, "sublayer": record.id})
+			if document.selected_id < 0 and document.selected_sublayer_id == record.id: child.select(0)
+			for id in document.front_ids():
+				if document.sublayer_of(id) == record.id: _add_entry_row(child, id, depth, record.id)
 	if not divider_added:
 		var divider := layer_tree.create_item(root_item)
 		divider.set_text(0, "──── 玩法参考层 ────")
@@ -377,13 +401,37 @@ func _rebuild_tree() -> void:
 	_updating = false
 
 
+func _add_entry_row(parent: TreeItem, id: int, depth: int, sublayer: int) -> void:
+	var value := document.entry(id)
+	var row := layer_tree.create_item(parent)
+	var resource: Resource = value.texture if value.texture != null else value.sprite_frames
+	row.set_text(0, (resource.resource_path.get_file() if not resource.resource_path.is_empty() else "内嵌素材") if resource != null else "未指定素材")
+	row.set_tooltip_text(0, "条目 %d · %s" % [document.index_of(id) + 1, resource.resource_path if resource != null else ""])
+	row.set_metadata(0, {"id": id, "depth": depth, "sublayer": sublayer})
+	var icon: Texture2D = value.texture
+	if icon == null and value.sprite_frames != null and value.sprite_frames.has_animation(value.animation) and value.sprite_frames.get_frame_count(value.animation) > 0:
+		icon = value.sprite_frames.get_frame_texture(value.animation, 0)
+	if icon != null:
+		row.set_icon(0, icon)
+		row.set_icon_max_width(0, 36)
+	for column in [1, 2]:
+		row.set_cell_mode(column, TreeItem.CELL_MODE_CHECK)
+		row.set_editable(column, true)
+		row.set_selectable(column, false)
+	row.set_checked(1, not document.hidden.has(id))
+	row.set_checked(2, document.locked.has(id))
+	if document.selected_id == id: row.select(0)
+
+
 func _tree_selection() -> void:
 	if _updating: return
 	document.selected_id = -1
+	document.selected_sublayer_id = -1
 	var item := layer_tree.get_selected()
 	if item != null:
 		var metadata = item.get_metadata(0)
 		if metadata is Dictionary and metadata.has("id"): document.selected_id = metadata.id
+		elif metadata is Dictionary and metadata.has("sublayer"): document.selected_sublayer_id = metadata.sublayer
 	_update_properties()
 
 
@@ -400,12 +448,24 @@ func _tree_edited() -> void:
 
 
 func _selection_changed() -> void:
+	document.selected_sublayer_id = -1
 	_rebuild_tree()
 	_update_properties()
 
 
 func _update_properties() -> void:
 	_updating = true
+	var record := document.sublayer_record(document.selected_sublayer_id) if document.selected_id < 0 else {}
+	_sublayer_properties.visible = not record.is_empty()
+	_properties.visible = record.is_empty()
+	for field: SpinBox in _sublayer_fields.values(): field.editable = not surface.preview
+	if not record.is_empty():
+		_sublayer_name.text = record.resource.display_name
+		_sublayer_name.editable = not surface.preview
+		_sublayer_fields["所属深度"].set_value_no_signal(record.depth)
+		_sublayer_fields["速度 X"].set_value_no_signal(record.resource.velocity.x)
+		_sublayer_fields["速度 Y"].set_value_no_signal(record.resource.velocity.y)
+		_new_sublayer_depth.set_value_no_signal(record.depth)
 	var first := document.selected_entry()
 	var editable := document.editable_entry() != null and not surface.preview
 	for field: SpinBox in _fields.values(): field.editable = editable
@@ -415,6 +475,8 @@ func _update_properties() -> void:
 	_material_buttons[2].disabled = not editable or not Engine.is_editor_hint()
 	_animations.clear()
 	_animations.disabled = true
+	_sublayer_picker.clear()
+	_sublayer_picker.disabled = not editable
 	if first == null:
 		_asset.text = "未选择素材"
 		_material.text = "未设置 ShaderMaterial"
@@ -422,7 +484,12 @@ func _update_properties() -> void:
 		return
 	_fields.X.set_value_no_signal(first.position.x)
 	_fields.Y.set_value_no_signal(first.position.y)
-	_fields["深度"].set_value_no_signal(first.depth)
+	_fields["深度"].set_value_no_signal(document.depth_of(document.selected_id))
+	for layer in document.sublayers:
+		_sublayer_picker.add_item("%d / %s" % [layer.depth, layer.resource.display_name])
+		var index := _sublayer_picker.item_count - 1
+		_sublayer_picker.set_item_metadata(index, layer.id)
+		if layer.id == document.sublayer_of(document.selected_id): _sublayer_picker.select(index)
 	_infinite.select(1 if first.infinite else 0)
 	var resource: Resource = first.texture if first.texture != null else first.sprite_frames
 	_asset.text = (resource.resource_path if resource != null else "未指定素材") + (" · 已锁定" if document.locked.has(document.selected_id) else "")
@@ -443,8 +510,32 @@ func _property_changed(value: float, key: String) -> void:
 	match key:
 		"X": entry.position.x = value
 		"Y": entry.position.y = value
-		"深度": entry.depth = int(value)
+		"深度":
+			document.reorder(document.selected_id, int(value))
+			return
 	document.commit("修改" + key, before)
+
+
+func _commit_sublayer_name() -> void:
+	if _updating or surface.preview: return
+	var record := document.sublayer_record(document.selected_sublayer_id)
+	if not record.is_empty() and record.resource.display_name != _sublayer_name.text:
+		document.change_sublayer(record.id, "display_name", _sublayer_name.text)
+
+
+func _sublayer_property_changed(value: float, key: String) -> void:
+	if _updating or surface.preview: return
+	var record := document.sublayer_record(document.selected_sublayer_id)
+	if record.is_empty(): return
+	if key == "所属深度":
+		if not document.change_sublayer(record.id, "depth", int(value)):
+			_status.text = "目标深度存在同标识子层，未移动。"
+			_update_properties()
+	else:
+		var velocity: Vector2 = record.resource.velocity
+		if key == "速度 X": velocity.x = value
+		else: velocity.y = value
+		document.change_sublayer(record.id, "velocity", velocity)
 
 
 func _change_entry(key: String, value: Variant) -> void:

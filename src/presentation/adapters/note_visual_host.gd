@@ -218,6 +218,7 @@ func _spawn_visual_now(kind: StringName, event_id: String, event_data: Dictionar
 	var pool_key: StringName = _pool_key(kind, event_data)
 	var scene: PackedScene = _scene_for(kind, event_data)
 	var visual: Node2D = _acquire_visual(pool_key, scene)
+	_apply_hold_head_texture(visual, event_data)
 	var parent_slot: Node2D = _slot_for(kind, event_data)
 	if visual.get_parent() != parent_slot:
 		visual.reparent(parent_slot)
@@ -770,7 +771,30 @@ func _acquire_visual(pool_key: StringName, scene: PackedScene) -> Node2D:
 		_pool_root.add_child(fallback)
 		return fallback
 	_pool_root.add_child(instance)
+	_apply_default_tap_texture(instance, pool_key)
 	return instance as Node2D
+
+
+## 将关卡主题中的 Tap 图片注入默认灰盒对象；自定义场景保持自身表现配置。
+func _apply_default_tap_texture(instance: Node2D, pool_key: StringName) -> void:
+	if visual_theme == null or not instance is GrayboxNoteVisual:
+		return
+	if pool_key == &"note_0":
+		(instance as GrayboxNoteVisual).tap_texture = visual_theme.zhu_tap_texture
+		(instance as GrayboxNoteVisual).tap_material = visual_theme.zhu_tap_material.duplicate(false) if visual_theme.zhu_tap_material != null else null
+	elif pool_key == &"note_1":
+		(instance as GrayboxNoteVisual).tap_texture = visual_theme.xuan_tap_texture
+		(instance as GrayboxNoteVisual).tap_material = visual_theme.xuan_tap_material.duplicate(false) if visual_theme.xuan_tap_material != null else null
+	if instance is GrayboxNoteVisual:
+		(instance as CanvasItem).material = (instance as GrayboxNoteVisual).tap_material
+
+
+## 每次生成时刷新 Hold 头部图片，兼容对象池和生/死阵营复用。
+func _apply_hold_head_texture(instance: Node2D, data: Dictionary) -> void:
+	if visual_theme == null or not instance is GrayboxHoldVisual:
+		return
+	var texture := visual_theme.xuan_hold_head_texture if int(data.get("affinity", GameplayTypes.Affinity.ZHU)) == GameplayTypes.Affinity.XUAN else visual_theme.zhu_hold_head_texture
+	(instance as GrayboxHoldVisual).head_texture = texture
 
 
 func _acquire_timing_ring(scene: PackedScene) -> Node2D:

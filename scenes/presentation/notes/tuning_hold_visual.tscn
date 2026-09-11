@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://b8r7y43n2e220"]
 
-[ext_resource type="Script" path="res://src/presentation/adapters/tuning_hold_visual.gd" id="1"]
+[ext_resource type="Script" uid="uid://dg1tkxd5yi2pl" path="res://src/presentation/adapters/tuning_hold_visual.gd" id="1"]
 
-[node name="TuningHoldVisual" type="Node2D"]
+[node name="TuningHoldVisual" type="Node2D" unique_id=1096969172]
 script = ExtResource("1")

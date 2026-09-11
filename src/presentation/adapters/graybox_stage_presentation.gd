@@ -42,7 +42,7 @@ var stage_definition: StageDefinition
 ## Tap/Hold 音符槽不随模拟摄像头移动；音符自身路线和身体动画照常推进。
 const NOTE_PARALLAX_DEPTH: int = 0
 ## s08 镜头持续向右的速度，设计像素/秒；背景由视差层按深度自动向左移动。
-const S08_CAMERA_SPEED_PX_SEC: float = 500.0
+const S08_CAMERA_SPEED_PX_SEC: float = 0.0
 
 @export_group("Parallax Camera")
 ## 试验开关：叠加手持晃动；关闭不影响 s08 的持续移动。

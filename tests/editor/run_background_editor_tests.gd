@@ -51,11 +51,11 @@ func run() -> void:
 	check(document.open("res://content/stages/s08/stage_definition.tres").is_empty(), "打开 s08")
 	check(document.items.size() == 5, "还原五层条目")
 	var original: StageBackgroundDefinition = load("res://content/stages/s08/stage_background.tres")
-	var original_position := original.entries[0].position
+	var original_position := original.layers[0].sublayers[0].entries[0].position
 	check(document.entry(document.items[0].id).position == original_position, "还原素材坐标")
 	document.items[0].entry.position.x += 10
-	check(original.entries[0].position == original_position, "编辑副本不修改共享条目")
-	check(document.items[0].entry.texture == original.entries[0].texture, "素材资源引用共享")
+	check(original.layers[0].sublayers[0].entries[0].position == original_position, "编辑副本不修改共享条目")
+	check(document.items[0].entry.texture == original.layers[0].sublayers[0].entries[0].texture, "素材资源引用共享")
 	var fixture := OUTPUT.path_join("background.tres")
 	check(ResourceSaver.save(original, fixture) == OK, "建立测试资源")
 	check(document.open(fixture).is_empty(), "打开独立背景")
@@ -85,9 +85,9 @@ func run() -> void:
 	check(document.items.size() == count, "撤销复制")
 	var ids: Array[int] = [document.items[0].id, document.items[1].id]
 	var target: int = document.items[2].id
-	var untouched_depth := document.entry(ids[1]).depth
+	var untouched_depth := document.depth_of(ids[1])
 	document.reorder(ids[0], -2, target, true)
-	check(document.entry(ids[0]).depth == -2 and document.entry(ids[1]).depth == untouched_depth, "跨深度拖放只修改一个素材")
+	check(document.depth_of(ids[0]) == -2 and document.depth_of(ids[1]) == untouched_depth, "跨深度拖放只修改一个素材")
 	document.reorder(ids[1], -2, target, true)
 	document.reorder(ids[0], -2, ids[1], true)
 	check(document.front_ids().find(ids[0]) < document.front_ids().find(ids[1]), "同层前后顺序")
@@ -113,9 +113,58 @@ func run() -> void:
 	check(reopened.external_changed(), "检测外部修改")
 	reopened.acknowledge_external()
 	check(not reopened.external_changed(), "明确保留草稿后接纳外部版本基线")
+	await test_sublayer_workspace()
 	await test_workspace(fixture)
 	print("BACKGROUND EDITOR: %d checks, %d failures" % [checks, failures])
 	quit(1 if failures else 0)
+
+
+## 子层属性经真实控件修改，验证撤销、层级保存、预览和跨子层挂载。
+func test_sublayer_workspace() -> void:
+	var workspace := Workspace.new()
+	root.add_child(workspace)
+	workspace.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	workspace.document.add_sublayer(2)
+	var child_id := workspace.document.selected_sublayer_id
+	check(workspace._sublayer_properties.visible and not workspace._properties.visible, "选中子层显示独立属性页")
+	workspace._sublayer_fields["速度 X"].value = 24
+	workspace._sublayer_fields["速度 Y"].value = -12
+	var child := workspace.document.sublayer_record(child_id)
+	check(child.resource.velocity == Vector2(24, -12), "速度 X/Y 控件分别提交")
+	workspace._undo_action()
+	check(workspace.document.sublayer_record(child_id).resource.velocity == Vector2(24, 0), "子层速度撤销")
+	workspace._redo_action()
+	workspace._sublayer_name.text = "流云"
+	workspace._sublayer_name.text_submitted.emit("流云")
+	if DisplayServer.get_name() != "headless":
+		await process_frame
+		await RenderingServer.frame_post_draw
+		root.get_texture().get_image().save_png(OUTPUT.path_join("sublayer-properties.png"))
+	workspace.document.add_asset(make_texture(Color.RED), Vector2(10, 20))
+	var id := workspace.document.selected_id
+	check(workspace.document.sublayer_of(id) == child_id, "新增素材进入选中子层")
+	workspace.document.background_path = OUTPUT.path_join("sublayers.tres")
+	check(workspace.document.save().is_empty(), "保存层级与速度")
+	var reopened := Document.new()
+	check(reopened.open(workspace.document.background_path).is_empty(), "重开子层资源")
+	var loaded := reopened.definition()
+	check(loaded.layers[0].depth == 2 and loaded.layers[0].sublayers[0].display_name == "流云" and loaded.layers[0].sublayers[0].velocity == Vector2(24, -12), "重开保留子层属性")
+	workspace.surface.song_time = 5
+	workspace.surface.refresh()
+	check(workspace.surface.controller.get_configured_object(0).position.is_equal_approx(Vector2(10, 20)), "布局保持素材原坐标")
+	workspace._set_preview(true)
+	workspace.surface.refresh()
+	check(workspace.surface.controller.get_configured_object(0).global_position.is_equal_approx(Vector2(70, -10)), "编辑器预览复用正式速度")
+	check(not workspace._sublayer_fields["速度 X"].editable, "预览禁止子层编辑")
+	workspace._set_preview(false)
+	workspace.document.add_sublayer(2)
+	var target := workspace.document.selected_sublayer_id
+	workspace.document.reorder(id, 2, -1, true, target)
+	check(workspace.document.sublayer_of(id) == target, "挂载对象移动到另一子层")
+	workspace._undo_action()
+	check(workspace.document.sublayer_of(id) == child_id, "撤销恢复所属子层")
+	workspace.queue_free()
+	await process_frame
 
 
 func test_workspace(fixture: String) -> void:
@@ -136,6 +185,8 @@ func test_workspace(fixture: String) -> void:
 		root.get_texture().get_image().save_png(OUTPUT.path_join("s08-workspace.png"))
 	check(surface.to_design(surface.pan + Vector2(700, 300) * surface.zoom).is_equal_approx(Vector2(700, 300)), "浏览变换精确逆换算")
 	workspace.document.items.clear()
+	workspace.document.sublayers.clear()
+	workspace.document.selected_sublayer_id = -1
 	workspace.document.selected_id = -1
 	workspace.document.hidden.clear()
 	workspace.document.locked.clear()
@@ -195,8 +246,8 @@ func test_workspace(fixture: String) -> void:
 	workspace.document.selected_id = first
 	workspace._property_changed(100, "X")
 	check(workspace.document.entry(first).position.x == 100 and workspace.document.entry(second).position.x == 350, "坐标修改不影响其他素材")
-	workspace._change_entry("depth", -2)
-	check(workspace.document.entry(first).depth == -2 and workspace.document.entry(second).depth == 1, "深度修改只影响选中素材")
+	workspace._property_changed(-2, "深度")
+	check(workspace.document.depth_of(first) == -2 and workspace.document.depth_of(second) == 1, "深度修改只影响选中素材")
 	workspace._change_entry("infinite", true)
 	check(workspace.document.entry(first).infinite and not workspace.document.entry(second).infinite, "拼接修改只影响选中素材")
 	workspace.document.selected_id = second
@@ -230,10 +281,10 @@ func test_workspace(fixture: String) -> void:
 	await process_frame
 	surface.song_time = 0.75
 	surface.update_sample()
-	var object := surface.controller.get_configured_object(0) as AnimatedSprite2D
+	var object := surface.controller.get_configured_object(workspace.document.configured_index(first)) as AnimatedSprite2D
 	check(object.frame == 1, "编辑器按时间采样正式动画")
 	workspace.document.entry(first).animation = &"missing"
-	check(workspace.document.validation_error().contains("条目 1"), "非法动画标明条目")
+	check(workspace.document.validation_error().contains("条目 %d" % (workspace.document.index_of(first) + 1)), "非法动画标明条目")
 	check(not workspace.document.save().is_empty(), "无效配置阻止保存")
 	workspace.document.entry(first).animation = &"default"
 	workspace.request_open(fixture)

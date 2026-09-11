@@ -168,7 +168,13 @@ func _draw() -> void:
 			_draw_tail(tail_center, tail_direction, color, tail_alpha)
 
 	if head_texture != null:
-		draw_texture_rect(head_texture, Rect2(-48.0, -48.0, 96.0, 96.0), false, Color(color, head_alpha))
+		var source_size := head_texture.get_size()
+		var head_extent := Vector2(384.0, 384.0)
+		if source_size.x > 0.0 and source_size.y > 0.0:
+			head_extent = source_size * (384.0 / maxf(source_size.x, source_size.y))
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2(1.0, -1.0))
+		draw_texture_rect(head_texture, Rect2(-head_extent * 0.5, head_extent), false, Color(color, head_alpha))
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	else:
 		_draw_head(color, head_alpha)
 

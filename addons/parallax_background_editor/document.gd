@@ -4,6 +4,9 @@ extends RefCounted
 
 signal changed
 var items: Array[Dictionary] = []
+## 子层编辑记录保存深度与资源属性；素材通过 sublayer 键引用所属记录。
+var sublayers: Array[Dictionary] = []
+var selected_sublayer_id: int = -1
 ## 唯一选中素材 ID；-1 表示无选中对象。
 var selected_id: int = -1
 var hidden: Dictionary = {}
@@ -67,14 +70,19 @@ func open(path: String) -> String:
 	else:
 		return "请选择 StageDefinition 或 StageBackgroundDefinition 资源。"
 	items.clear()
+	sublayers.clear()
 	selected_id = -1
+	selected_sublayer_id = -1
 	hidden.clear()
 	locked.clear()
 	history.clear_history()
 	if definition != null:
-		for entry in definition.entries:
-			items.append({"id": _next_id, "entry": entry.duplicate(false) if entry != null else StageBackgroundEntry.new()})
-			_next_id += 1
+		for layer in definition.layers:
+			for sublayer in layer.sublayers:
+				var id := _append_sublayer(layer.depth, sublayer)
+				for value in sublayer.entries:
+					items.append({"id": _next_id, "sublayer": id, "entry": value.duplicate(false)})
+					_next_id += 1
 	source_path = path
 	background_path = target
 	stage_path = stage_file
@@ -89,9 +97,102 @@ func open(path: String) -> String:
 ## 获取可交给运行时装配或保存的独立资源，不包含选中、隐藏、锁定状态。
 func definition() -> StageBackgroundDefinition:
 	var result := StageBackgroundDefinition.new()
-	for item in items:
-		result.entries.append(item.entry.duplicate(false))
+	for record in sublayers:
+		var layer: StageBackgroundLayer
+		for candidate in result.layers:
+			if candidate.depth == record.depth: layer = candidate; break
+		if layer == null:
+			layer = StageBackgroundLayer.new()
+			layer.depth = record.depth
+			result.layers.append(layer)
+		var sublayer := record.resource.duplicate(false) as StageBackgroundSubLayer
+		sublayer.entries = []
+		for item in items:
+			if item.sublayer == record.id: sublayer.entries.append(item.entry.duplicate(false))
+		layer.sublayers.append(sublayer)
 	return result
+
+
+## 返回某素材的所属子层编辑 ID。
+func sublayer_of(id: int) -> int:
+	var index := index_of(id)
+	return items[index].sublayer if index >= 0 else -1
+
+
+## 按编辑 ID 查询子层记录，缺少时返回空字典。
+func sublayer_record(id: int) -> Dictionary:
+	for record in sublayers:
+		if record.id == id: return record
+	return {}
+
+
+## 素材深度取自所属子层的顶层，不再存于条目资源。
+func depth_of(id: int) -> int:
+	return sublayer_record(sublayer_of(id)).get("depth", 1)
+
+
+## 配置遍历顺序的素材 ID；运行时扁平索引与保存的层级顺序一致。
+func configured_ids() -> Array[int]:
+	var result: Array[int] = []
+	var depths: Array[int] = []
+	for record in sublayers:
+		if not depths.has(record.depth): depths.append(record.depth)
+	for depth in depths:
+		for record in sublayers:
+			if record.depth != depth: continue
+			for item in items:
+				if item.sublayer == record.id: result.append(item.id)
+	return result
+
+
+## 将素材编辑 ID 转为控制器的资源遍历索引，缺少时返回 -1。
+func configured_index(id: int) -> int:
+	return configured_ids().find(id)
+
+
+func _append_sublayer(depth: int, resource: StageBackgroundSubLayer) -> int:
+	var value := resource.duplicate(false) as StageBackgroundSubLayer
+	value.entries = []
+	var id := _next_id
+	_next_id += 1
+	sublayers.append({"id": id, "depth": depth, "resource": value})
+	return id
+
+
+func _default_sublayer(depth: int) -> int:
+	for record in sublayers:
+		if record.depth == depth and record.resource.sublayer_id == "default": return record.id
+	return _append_sublayer(depth, StageBackgroundSubLayer.new())
+
+
+## 在指定深度创建空子层并选中；保存、撤销均保留空子层。
+func add_sublayer(depth: int) -> void:
+	var before := snapshot()
+	var value := StageBackgroundSubLayer.new()
+	value.sublayer_id = "sublayer_%d" % _next_id
+	while _has_sublayer_name(depth, value.sublayer_id): value.sublayer_id += "_new"
+	value.display_name = "子层 %d" % _next_id
+	selected_sublayer_id = _append_sublayer(depth, value)
+	selected_id = -1
+	commit("添加子层", before)
+
+
+func _has_sublayer_name(depth: int, id: String, except_id: int = -1) -> bool:
+	for record in sublayers:
+		if record.id != except_id and record.depth == depth and record.resource.sublayer_id == id: return true
+	return false
+
+
+## 修改子层属性；深度移动冲突时拒绝，不合并不同子层。
+func change_sublayer(id: int, key: String, value: Variant) -> bool:
+	var record := sublayer_record(id)
+	if record.is_empty(): return false
+	if key == "depth" and _has_sublayer_name(int(value), record.resource.sublayer_id, id): return false
+	var before := snapshot()
+	if key == "depth": record.depth = int(value)
+	else: record.resource.set(key, value)
+	commit("修改子层属性", before)
+	return true
 
 
 func index_of(id: int) -> int:
@@ -115,26 +216,27 @@ func editable_entry() -> StageBackgroundEntry:
 
 ## 前到后排序：较小深度在前，同深度数组后项在前。
 func front_ids() -> Array[int]:
-	var indices: Array[int] = []
-	for index in items.size(): indices.append(index)
-	indices.sort_custom(func(a: int, b: int):
-		return items[a].entry.depth < items[b].entry.depth if items[a].entry.depth != items[b].entry.depth else a > b)
-	var result: Array[int] = []
-	for index in indices: result.append(items[index].id)
+	var order := configured_ids()
+	var result := order.duplicate()
+	result.sort_custom(func(a: int, b: int): return depth_of(a) < depth_of(b) if depth_of(a) != depth_of(b) else order.find(a) > order.find(b))
 	return result
 
 
-func snapshot() -> Array[Dictionary]:
+func snapshot() -> Dictionary:
 	var result: Array[Dictionary] = []
-	for item in items: result.append({"id": item.id, "entry": item.entry.duplicate(false)})
-	return result
+	for item in items: result.append({"id": item.id, "sublayer": item.sublayer, "entry": item.entry.duplicate(false)})
+	var layers: Array[Dictionary] = []
+	for record in sublayers: layers.append({"id": record.id, "depth": record.depth, "resource": record.resource.duplicate(false)})
+	return {"items": result, "sublayers": layers}
 
 
 func signature() -> Array:
 	var result: Array = []
+	for record in sublayers:
+		result.append([record.id, record.depth, record.resource.sublayer_id, record.resource.display_name, record.resource.velocity])
 	for item in items:
 		var value: StageBackgroundEntry = item.entry
-		result.append([value.texture, value.sprite_frames, value.animation, value.depth, value.infinite, value.position, value.uniform_scale, value.material])
+		result.append([item.sublayer, value.texture, value.sprite_frames, value.animation, value.infinite, value.position, value.uniform_scale, value.material])
 	return result
 
 
@@ -143,7 +245,7 @@ func is_dirty() -> bool:
 
 
 ## 一次手势或属性提交对应一次撤销；拖动过程中只更改草稿，结束后调用此方法。
-func commit(label: String, before: Array[Dictionary]) -> void:
+func commit(label: String, before: Dictionary) -> void:
 	history.create_action(label)
 	# 撤销栈只持有弱引用，避免文档与 UndoRedo 的回调构成引用环。
 	history.add_do_method(_apply_weak.bind(weakref(self), snapshot()))
@@ -151,19 +253,22 @@ func commit(label: String, before: Array[Dictionary]) -> void:
 	history.commit_action()
 
 
-static func _apply_weak(reference: WeakRef, state: Array[Dictionary]) -> void:
+static func _apply_weak(reference: WeakRef, state: Dictionary) -> void:
 	var document = reference.get_ref()
 	if document != null: document._apply(state)
 
 
-func _apply(state: Array[Dictionary]) -> void:
+func _apply(state: Dictionary) -> void:
 	items.clear()
-	for item in state: items.append({"id": item.id, "entry": item.entry.duplicate(false)})
+	for item in state.items: items.append({"id": item.id, "sublayer": item.sublayer, "entry": item.entry.duplicate(false)})
+	sublayers.clear()
+	for record in state.sublayers: sublayers.append({"id": record.id, "depth": record.depth, "resource": record.resource.duplicate(false)})
 	if index_of(selected_id) < 0: selected_id = -1
+	if sublayer_record(selected_sublayer_id).is_empty(): selected_sublayer_id = -1
 	changed.emit()
 
 
-func restore(state: Array[Dictionary]) -> void:
+func restore(state: Dictionary) -> void:
 	_apply(state)
 
 
@@ -174,8 +279,11 @@ func add_asset(resource: Resource, position: Vector2) -> bool:
 	var value := StageBackgroundEntry.new()
 	assign_asset(value, resource)
 	value.position = position
-	items.append({"id": _next_id, "entry": value})
+	var parent := sublayer_of(selected_id) if selected_id >= 0 else selected_sublayer_id
+	if sublayer_record(parent).is_empty(): parent = _default_sublayer(1)
+	items.append({"id": _next_id, "sublayer": parent, "entry": value})
 	selected_id = _next_id
+	selected_sublayer_id = -1
 	_next_id += 1
 	commit("添加素材", before)
 	return true
@@ -193,7 +301,7 @@ func duplicate_selected() -> void:
 	var source := editable_entry()
 	if source == null: return
 	var before := snapshot()
-	items.append({"id": _next_id, "entry": source.duplicate(false)})
+	items.append({"id": _next_id, "sublayer": sublayer_of(selected_id), "entry": source.duplicate(false)})
 	selected_id = _next_id
 	_next_id += 1
 	commit("复制素材", before)
@@ -208,12 +316,13 @@ func delete_selected() -> void:
 
 
 ## 只移动指定的一件素材到目标深度与位置。
-func reorder(id: int, depth: int, target_id: int = -1, in_front: bool = true) -> void:
+func reorder(id: int, depth: int, target_id: int = -1, in_front: bool = true, sublayer_id: int = -1) -> void:
 	if index_of(id) < 0 or locked.has(id) or id == target_id: return
 	var before := snapshot()
 	var moving := items[index_of(id)]
 	items.remove_at(index_of(id))
-	moving.entry.depth = depth
+	if sublayer_id < 0: sublayer_id = _default_sublayer(depth)
+	moving.sublayer = sublayer_id
 	var target := index_of(target_id)
 	var at := items.size() if target < 0 else target + (1 if in_front else 0)
 	items.insert(at, moving)
@@ -222,7 +331,15 @@ func reorder(id: int, depth: int, target_id: int = -1, in_front: bool = true) ->
 
 ## 保存前逐项校验；无限动画必须等画布，任何无效条目都给出所在序号。
 func validation_error() -> String:
+	var names: Dictionary = {}
+	for record in sublayers:
+		var value: StageBackgroundSubLayer = record.resource
+		var key := "%d/%s" % [record.depth, value.sublayer_id]
+		if value.sublayer_id.is_empty() or names.has(key): return "子层标识为空或同深度重复。"
+		if not value.velocity.is_finite(): return "子层速度必须为有限数值。"
+		names[key] = true
 	for index in items.size():
+		if sublayer_record(items[index].sublayer).is_empty(): return "素材必须属于子层。"
 		var value: StageBackgroundEntry = items[index].entry
 		var issue := ""
 		if not is_finite(value.uniform_scale) or value.uniform_scale < 0.01:
