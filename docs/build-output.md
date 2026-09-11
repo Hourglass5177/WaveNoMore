@@ -3,7 +3,7 @@
 `builds` 只长期保留当前可运行版本、最新发布 ZIP 和 `.gdignore`。
 
 - `chart-studio/`：写谱器、`game/` 配套游戏、识别器及离线模型。这里的 `test/`、示例工程和 `output/` 含用户项目与交付文件，不能作为构建垃圾删除。
-- `冥河写谱器-v0.1.5-Windows.zip`：本次发布包。新版本验证完成后再清理旧包，不额外保留一份完整解压目录。
+- `冥河写谱器-v0.1.4-Windows.zip`：本次发布包。新版本验证完成后再清理旧包，不额外保留一份完整解压目录。
 - 临时日志、测量录音、截图、探针脚本及中间导出，验证结束后清理；需要留存的结论写入 `docs`，发布说明使用的少量图片存入 `docs/screenshots`。
 
 识别器的 Python 环境和下载缓存可以重建。清理后首次重建识别器，运行 `tools/rhythm_analyzer/build.ps1` 时需加 `-InstallDependencies`；仅更新 Godot 写谱器与游戏时不需要重建识别器。
@@ -26,6 +26,4 @@
 
 制作完整 ZIP 使用 `tools/package_chart_studio_release.py --version 0.1.4 --base builds/冥河写谱器-v0.1.3-Windows.zip`。脚本同时更新场景说明、接口说明和根目录使用说明中的链接；上一版已有的玩法说明不会重复追加。
 
-## v0.1.5 构建
-
-沿用上面的两个导出目录，文件版本统一为 0.1.5.0。新谱默认目录最后一个场景（目前为 s08）。制作完整 ZIP 使用 `tools/package_chart_studio_release.py --version 0.1.5 --base builds/冥河写谱器-v0.1.4-Windows.zip`，发布检查记录保存在 `builds/release-0.1.5-verification.json`。
+2026-09-12 更新仍使用 v0.1.4：新谱默认目录最后一个场景（目前为 s08），覆盖上述 EXE 与 ZIP。重新打包继续使用 v0.1.3 包作为依赖来源，不能同时读取并覆盖同一个 ZIP。发布检查记录保存在 `builds/release-0.1.4-verification.json`。
