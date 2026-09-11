@@ -22,7 +22,7 @@ func run() -> void:
 	check(ids.has("s08"), "目录自动提供 s08")
 	check(library.all_stages().map(func(s): return s.stage_id) == root.get_node("ContentCatalog").all_stages().map(func(s): return s.stage_id), "游戏目录与写谱器发现和排序一致")
 	var doc := StudioDocument.new(); doc.new_project()
-	check(presentation(doc) == {"scene_id": "s02", "use_scene_show": false}, "新谱默认 s02，演出关闭")
+	check(presentation(doc) == {"scene_id": library.all_stages().back().stage_id, "use_scene_show": false}, "新谱默认目录最后一个场景，演出关闭")
 	StudioProjectIO.open_project(FIXTURE, doc)
 	var legacy := ChartProjectLoader.make_stage(doc.song, doc.chart())
 	check(legacy.background == null and legacy.stage_show.cues.is_empty() and not presentation(doc).has("scene_id"), "旧谱仍只加载原主题，不隐式迁移")
