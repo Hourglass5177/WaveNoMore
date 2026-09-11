@@ -1,0 +1,8 @@
+[gd_resource type="SpineSkeletonDataResource" format=3 uid="uid://bp0oe84fcd2yx"]
+
+[ext_resource type="SpineAtlasResource" uid="uid://c3qiik5phk3yf" path="res://assets/character/lingjun/juese.atlas" id="1_j0uon"]
+[ext_resource type="SpineSkeletonFileResource" uid="uid://csodd24a8w1bk" path="res://assets/character/lingjun/juese.spine-json" id="2_bkdpy"]
+
+[resource]
+atlas_res = ExtResource("1_j0uon")
+skeleton_file_res = ExtResource("2_bkdpy")

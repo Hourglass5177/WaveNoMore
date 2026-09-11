@@ -170,6 +170,7 @@ func load_stage(stage: StageDefinition, start_after_prepare: bool = true) -> boo
 		return false
 	# 背景条目先注册，Tap/Hold 音符槽后注册到深度 0，保持同深度下音符在上。
 	presentation.attach_notes_to_parallax()
+	presentation.attach_actors_to_parallax()
 	audio_feedback.configure_from_rules(stage.rule_set)
 	presentation.clear()
 	hud.configure(stage)

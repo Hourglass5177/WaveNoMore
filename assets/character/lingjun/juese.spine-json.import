@@ -1,0 +1,14 @@
+[remap]
+
+importer="spine.json"
+type="SpineSkeletonFileResource"
+uid="uid://csodd24a8w1bk"
+path="res://.godot/imported/juese.spine-json-ee3cd80ac8bf1abfaa377598daf98a12.spjson"
+
+[deps]
+
+source_file="res://assets/character/lingjun/juese.spine-json"
+dest_files=["res://.godot/imported/juese.spine-json-ee3cd80ac8bf1abfaa377598daf98a12.spjson"]
+
+[params]
+

@@ -58,6 +58,11 @@ var _death_world_slot: Node2D
 var _life_actor_slot: Node2D
 # 死者角色素材的挂载槽；角色位于右下并朝共同中心行动。
 var _death_actor_slot: Node2D
+## 保留角色实例引用，不依赖视差注册之后的父节点位置。
+var _life_actor: Node
+var _death_actor: Node
+var _life_attacking := false
+var _death_attacking := false
 # 水平生死分界线素材的挂载槽。
 var _boundary_slot: Node2D
 # 调频期间持续发波并生成相纹的表现节点。
@@ -116,6 +121,15 @@ func _exit_tree() -> void:
 
 
 func configure(stage: StageDefinition) -> void:
+	# 换关前归还角色，随后由原槽位清理，避免运行时挂载对象残留。
+	for actor in _parallax_actors:
+		if is_instance_valid(actor):
+			parallax_controller.unregister_object(actor)
+	_parallax_actors.clear()
+	_life_actor = null
+	_death_actor = null
+	_life_attacking = false
+	_death_attacking = false
 	stage_definition = stage
 	_clear_slot(_life_world_slot)
 	_clear_slot(_death_world_slot)
@@ -159,9 +173,9 @@ func configure(stage: StageDefinition) -> void:
 			visual_theme.death_world_scene if visual_theme.death_world_scene != null else visual_theme.life_world_scene,
 			_death_world_slot
 		)
-		_instance_if_present(visual_theme.life_actor_scene, _life_actor_slot)
+		_life_actor = _instance_if_present(visual_theme.life_actor_scene, _life_actor_slot)
 		_instance_if_present(visual_theme.life_bell_scene, _life_actor_slot)
-		_instance_if_present(visual_theme.death_actor_scene, _death_actor_slot)
+		_death_actor = _instance_if_present(visual_theme.death_actor_scene, _death_actor_slot)
 		_instance_if_present(visual_theme.death_bell_scene, _death_actor_slot)
 		_instance_if_present(visual_theme.boundary_scene, _boundary_slot)
 
@@ -214,6 +228,7 @@ func bind_show_director(director: Node) -> void:
 
 
 func clear() -> void:
+	_update_actor_attacks(false, false)
 	_note_visual_host.clear()
 	_tuning_interference_visual.clear()
 	_rapid_interference_visual.clear()
@@ -270,6 +285,20 @@ func _sync_canvas_layers() -> void:
 
 ## 把生、死 Tap/Hold 音符槽注册进静止的深度 0 层。先装配背景，同深度音符在后绘制；
 ## 负深度装饰仍位于其前方，换关 clear 后自动归还原父节点。
+var _parallax_actors: Array[Node2D] = []
+
+
+## 灵均挂在 edge 之前的静止子层；编钟和随从继续保留在原槽位。
+func attach_actors_to_parallax() -> void:
+	if stage_definition == null or stage_definition.stage_id != "s08":
+		return
+	for slot in [_life_actor_slot, _death_actor_slot]:
+		for actor in slot.get_children():
+			if actor is Node2D and actor.scene_file_path == "res://scenes/presentation/actors/lingjun_actor.tscn":
+				if parallax_controller.register_object(actor, 0, false, "actors"):
+					_parallax_actors.append(actor)
+
+
 func attach_notes_to_parallax() -> void:
 	if _note_visual_host == null:
 		return
@@ -280,6 +309,7 @@ func attach_notes_to_parallax() -> void:
 
 
 func _on_gameplay_snapshot(snapshot: Dictionary) -> void:
+	_update_actor_attacks(bool(snapshot.get("life_held", false)), bool(snapshot.get("death_held", false)))
 	_note_visual_host.set_gameplay_snapshot(snapshot)
 	_tuning_interference_visual.set_gameplay_snapshot(snapshot)
 	_twin_gate_cue_visual.set_tuning_active(bool(snapshot.get("tuning_field_active", false)))
@@ -291,13 +321,41 @@ func _on_gameplay_snapshot(snapshot: Dictionary) -> void:
 func _on_stage_state_changed(_previous: int, current: int, _reason: StringName) -> void:
 	_backdrop.set_failed(current == GameplayTypes.StageState.FAILING)
 	if current == GameplayTypes.StageState.RESULT:
+		_update_actor_attacks(false, false)
 		# 会话结束不保留动态链；正常收尾在 FINISHING/FAILING 阶段由时钟推进。
 		_note_visual_host.clear()
 		_tuning_interference_visual.clear()
 
 
 func _on_wave_launched(wave: Dictionary) -> void:
-	bell_struck.emit(int(wave.get("affinity", GameplayTypes.Affinity.ZHU)))
+	var affinity := int(wave.get("affinity", GameplayTypes.Affinity.ZHU))
+	bell_struck.emit(affinity)
+
+
+## 只在按住状态变化时操作轨道，避免每份快照将循环动画重置到首帧。
+func _update_actor_attacks(life_held: bool, death_held: bool) -> void:
+	if life_held != _life_attacking:
+		_set_actor_attack(_life_actor, life_held)
+		_life_attacking = life_held
+	if death_held != _death_attacking:
+		_set_actor_attack(_death_actor, death_held)
+		_death_attacking = death_held
+
+
+## 松开只结束循环；本轮结束前重新按住继续原轨道，结束后才重新起播。
+func _set_actor_attack(actor: Node, held: bool) -> void:
+	if is_instance_valid(actor) and actor.is_class("SpineSprite"):
+		var state = actor.get_animation_state()
+		var track = state.get_track(0) if state.get_num_tracks() > 0 else null
+		if held:
+			if track != null and (track.get_loop() or track.get_track_time() < track.get_animation().get_duration()):
+				track.set_loop(true)
+			else:
+				state.set_animation("attack", true, 0)
+		elif track != null and track.get_loop():
+			# Spine 的轨道时间跨循环累计；折回本轮时间，避免关闭循环后立即跳到末帧。
+			track.set_track_time(fposmod(track.get_track_time(), track.get_animation().get_duration()))
+			track.set_loop(false)
 
 
 func _on_settings_changed() -> void:
@@ -342,11 +400,12 @@ func _apply_palette(visual_theme: StageVisualTheme) -> void:
 	_backdrop.queue_redraw()
 
 
-func _instance_if_present(scene: PackedScene, target: Node2D) -> void:
+func _instance_if_present(scene: PackedScene, target: Node2D) -> Node:
 	if scene == null:
-		return
+		return null
 	var instance: Node = scene.instantiate()
 	target.add_child(instance)
+	return instance
 
 
 func _clear_slot(slot: Node) -> void:

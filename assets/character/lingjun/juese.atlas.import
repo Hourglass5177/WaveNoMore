@@ -1,0 +1,16 @@
+[remap]
+
+importer="spine.atlas"
+type="SpineAtlasResource"
+uid="uid://c3qiik5phk3yf"
+path="res://.godot/imported/juese.atlas-d95fdb721b0d9772b314a5b3f674b1f8.spatlas"
+
+[deps]
+
+source_file="res://assets/character/lingjun/juese.atlas"
+dest_files=["res://.godot/imported/juese.atlas-d95fdb721b0d9772b314a5b3f674b1f8.spatlas"]
+
+[params]
+
+normal_map_prefix="n"
+specular_map_prefix="s"

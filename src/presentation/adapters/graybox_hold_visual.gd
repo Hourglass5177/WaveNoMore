@@ -169,11 +169,11 @@ func _draw() -> void:
 
 	if head_texture != null:
 		var source_size := head_texture.get_size()
-		var head_extent := Vector2(384.0, 384.0)
+		var head_extent := Vector2(96.0, 96.0)
 		if source_size.x > 0.0 and source_size.y > 0.0:
-			head_extent = source_size * (384.0 / maxf(source_size.x, source_size.y))
+			head_extent = source_size * (96.0 / maxf(source_size.x, source_size.y))
 		draw_set_transform(Vector2.ZERO, 0.0, Vector2(1.0, -1.0))
-		draw_texture_rect(head_texture, Rect2(-head_extent * 0.5, head_extent), false, Color(color, head_alpha))
+		draw_texture_rect(head_texture, Rect2(-head_extent * 0.5, head_extent), false, Color(1.0, 1.0, 1.0, head_alpha))
 		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	else:
 		_draw_head(color, head_alpha)

@@ -183,10 +183,14 @@ uniform_scale = 0.7616555803103707
 script = ExtResource("sublayer_schema")
 entries = Array[ExtResource("2_entry")]([SubResource("Resource_l1l4p")])
 
+[sub_resource type="Resource" id="Sublayer_actors"]
+script = ExtResource("sublayer_schema")
+sublayer_id = "actors"
+
 [sub_resource type="Resource" id="Resource_55svu"]
 script = ExtResource("layer_schema")
 depth = 0
-sublayers = Array[ExtResource("sublayer_schema")]([SubResource("Resource_e1fih")])
+sublayers = Array[ExtResource("sublayer_schema")]([SubResource("Sublayer_actors"), SubResource("Resource_e1fih")])
 
 [resource]
 script = ExtResource("1_background")
