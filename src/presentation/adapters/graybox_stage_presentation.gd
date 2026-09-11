@@ -28,15 +28,25 @@ signal bell_struck(affinity: int)
 ## 音符、Hold、调频槽、疾振提示和对象池所在节点路径。
 @export var note_visual_host_path: NodePath = ^"GameplayLayer/NoteVisualHost"
 ## 共同中心落点、路线提示和短暂判定印记所在节点路径。
-@export var twin_gate_cue_visual_path: NodePath = ^"GameplayCueLayer/TwinGateCueVisual"
+@export var twin_gate_cue_visual_path: NodePath = ^"CueCanvas/GameplayCueLayer/TwinGateCueVisual"
 ## StageShow 演出事件接收节点路径；灰盒实现会画教学和简化闪光。
-@export var show_cue_host_path: NodePath = ^"ShowCueHost"
+@export var show_cue_host_path: NodePath = ^"CueCanvas/ShowCueHost"
 
 # 当前关卡定义用于读取歌曲、规则和视觉主题。
 var stage_definition: StageDefinition
 ## 本关视差与配置动画的共享控制中心。
 @onready var parallax_controller: ParallaxController = $ParallaxController
 @onready var _background_base: CanvasLayer = $BackgroundBase
+@onready var _cue_canvas: CanvasLayer = $CueCanvas
+
+## Tap/Hold 音符槽不随模拟摄像头移动；音符自身路线和身体动画照常推进。
+const NOTE_PARALLAX_DEPTH: int = 0
+## s08 镜头持续向右的速度，设计像素/秒；背景由视差层按深度自动向左移动。
+const S08_CAMERA_SPEED_PX_SEC: float = 500.0
+
+@export_group("Parallax Camera")
+## 试验开关：叠加手持晃动；关闭不影响 s08 的持续移动。
+@export var handheld_camera_enabled: bool = true
 
 # 以下引用在 _ready() 中按上面的路径取得，集中负责主题装配和事件转发。
 var _backdrop: GrayboxBackdrop
@@ -70,11 +80,13 @@ var _clock: SongClock
 var _session: StageSession
 # 全局设置服务；在这里读取玩家可调的波纹显示参数。
 var _settings_service: Node
+# 试验用手持晃动驱动；纯函数式，只读取绝对歌曲时间。
+var _handheld_camera: ParallaxHandheldDriver
 
 
 func _ready() -> void:
 	set_notify_transform(true)
-	_sync_background_canvas()
+	_sync_canvas_layers()
 	_backdrop = get_node(backdrop_path) as GrayboxBackdrop
 	_life_world_slot = get_node(life_world_slot_path) as Node2D
 	_death_world_slot = get_node(death_world_slot_path) as Node2D
@@ -88,6 +100,7 @@ func _ready() -> void:
 	_twin_gate_cue_visual = get_node(twin_gate_cue_visual_path) as TwinGateCueVisual
 	_show_cue_host = get_node(show_cue_host_path) as Node2D
 	_settings_service = get_node_or_null("/root/SettingsService")
+	_handheld_camera = ParallaxHandheldDriver.new()
 	_apply_visual_settings()
 	var callback := Callable(self, "_on_settings_changed")
 	if is_instance_valid(_settings_service) and not _settings_service.is_connected(&"settings_changed", callback):
@@ -234,15 +247,36 @@ func _on_visual_frame_ready(sample: ClockSample) -> void:
 	## Gameplay 写入当前目标后推进身体；原始时钟信号仅设置视觉目标。
 	_note_visual_host.set_clock_sample(sample)
 	parallax_controller.set_song_time(sample.song_time_sec)
+	var camera_position := Vector2.ZERO
+	if stage_definition != null and stage_definition.stage_id == "s08":
+		camera_position.x = maxf(sample.song_time_sec, 0.0) * S08_CAMERA_SPEED_PX_SEC
+	if handheld_camera_enabled:
+		camera_position += _handheld_camera.offset_at(sample.song_time_sec)
+	parallax_controller.set_camera_position(camera_position)
 
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_TRANSFORM_CHANGED and is_node_ready():
-		_sync_background_canvas()
+		_sync_canvas_layers()
 
 
-func _sync_background_canvas() -> void:
-	_background_base.transform = get_global_transform_with_canvas()
+func _sync_canvas_layers() -> void:
+	# CanvasLayer 不继承父节点变换；底图与提示层都手动跟随表现根画布，
+	# 屏幕震动、缩放和视差摄像头的变换才能一致作用。
+	var pose := get_global_transform_with_canvas()
+	_background_base.transform = pose
+	_cue_canvas.transform = pose
+
+
+## 把生、死 Tap/Hold 音符槽注册进静止的深度 0 层。先装配背景，同深度音符在后绘制；
+## 负深度装饰仍位于其前方，换关 clear 后自动归还原父节点。
+func attach_notes_to_parallax() -> void:
+	if _note_visual_host == null:
+		return
+	for slot_path: NodePath in [_note_visual_host.life_note_slot_path, _note_visual_host.death_note_slot_path]:
+		var slot := _note_visual_host.get_node_or_null(slot_path) as Node2D
+		if slot != null:
+			parallax_controller.register_object(slot, NOTE_PARALLAX_DEPTH)
 
 
 func _on_gameplay_snapshot(snapshot: Dictionary) -> void:

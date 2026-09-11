@@ -56,6 +56,7 @@ func run() -> void:
 	await test_empty_background_rendering()
 	await test_loading()
 	await test_stage()
+	await test_background_material()
 	_viewport.queue_free()
 	await process_frame
 	print("PARALLAX TESTS: %d checks, %d failures" % [checks, failures])
@@ -171,6 +172,46 @@ func test_repeat() -> void:
 	atlas.free()
 	other.free()
 	finite.free()
+	controller.queue_free()
+	await process_frame
+
+
+## 验证背景材质的持久化、原生参数提示以及静态/动画实例隔离。
+func test_background_material() -> void:
+	var shader := Shader.new()
+	shader.code = "shader_type canvas_item; uniform float strength : hint_range(0.0, 1.0) = 1.0; uniform vec4 tint : source_color = vec4(1.0); void fragment() { COLOR = vec4(tint.rgb * strength, 1.0); }"
+	var material := ShaderMaterial.new()
+	material.shader = shader
+	material.set_shader_parameter(&"strength", 0.5)
+	material.set_shader_parameter(&"tint", Color.GREEN)
+	var definition := StageBackgroundDefinition.new()
+	for animated in [false, true]:
+		var entry := StageBackgroundEntry.new()
+		if animated: entry.sprite_frames = frames()
+		else: entry.texture = texture(Color.WHITE)
+		entry.infinite = animated
+		entry.material = material
+		definition.entries.append(entry)
+	var directory := "res://builds/background-editor-validation"
+	DirAccess.make_dir_recursive_absolute(directory)
+	var path := directory.path_join("shader_background.tres")
+	check(ResourceSaver.save(definition, path) == OK, "背景材质保存")
+	var loaded := ResourceLoader.load(path, "", ResourceLoader.CACHE_MODE_IGNORE) as StageBackgroundDefinition
+	check(loaded.entries[0].material.get_shader_parameter(&"strength") == 0.5, "重开保留数值 uniform")
+	check(loaded.entries[0].material.get_shader_parameter(&"tint") == Color.GREEN, "重开保留颜色 uniform")
+	var controller := ParallaxController.new()
+	_viewport.add_child(controller)
+	check(controller.configure(loaded).is_empty(), "静态与无限动画装配 Shader")
+	var first := controller.get_configured_object(0).material as ShaderMaterial
+	var second := controller.get_configured_object(1).material as ShaderMaterial
+	check(first != second and first != loaded.entries[0].material, "每对象独立材质实例")
+	check(first.shader == loaded.entries[0].material.shader, "实例共享 Shader")
+	first.set_shader_parameter(&"strength", 0.25)
+	check(second.get_shader_parameter(&"strength") == 0.5 and loaded.entries[0].material.get_shader_parameter(&"strength") == 0.5, "修改实例不影响其他背景与模板")
+	if DisplayServer.get_name() != "headless":
+		var color := (await pixels()).get_pixel(64, 48)
+		check(absf(color.g - 0.5) < 0.02 and color.r < 0.02, "无限背景 Shader uniform 实际渲染")
+	controller.clear()
 	controller.queue_free()
 	await process_frame
 
@@ -356,7 +397,7 @@ func test_stage() -> void:
 	for number in range(1, 9):
 		stage = load("res://content/stages/s%02d/stage_definition.tres" % number).duplicate(true)
 		check(stage.resolve_dependencies_sync(), "s%02d 含背景依赖加载" % number)
-		check(stage.background != null and stage.background.entries.is_empty(), "s%02d 空背景" % number)
+		check(stage.background != null and (number == 8 or stage.background.entries.is_empty()), "s%02d 背景配置（s08 已接入美术）" % number)
 	var scene = load("res://scenes/stage/stage_root.tscn").instantiate()
 	_viewport.add_child(scene)
 	scene.stage_session.external_preview = true
@@ -367,6 +408,22 @@ func test_stage() -> void:
 	stage.background.entries.append(entry)
 	check(scene.load_stage(stage, false), "真实关卡装配背景")
 	var controller: ParallaxController = scene.get_parallax_controller()
+	scene.presentation.handheld_camera_enabled = false
+	var moving_sample := ClockSample.new()
+	moving_sample.song_time_sec = 2.0
+	scene.stage_session.visual_frame_ready.emit(moving_sample)
+	check(controller.get_camera_position() == Vector2(240, 0), "s08 按歌曲时间持续右移镜头")
+	for record in controller._objects.values():
+		if record.object != controller.get_configured_object(0):
+			check(record.depth == 0 and record.view.position == Vector2.ZERO, "Tap/Hold 槽深度 0 不随镜头移动")
+	moving_sample.song_time_sec = 1.0
+	scene.stage_session.visual_frame_ready.emit(moving_sample)
+	check(controller.get_camera_position() == Vector2(120, 0), "向后定位直接恢复移动位置")
+	stage.stage_id = "s01"
+	scene.stage_session.visual_frame_ready.emit(moving_sample)
+	check(controller.get_camera_position() == Vector2.ZERO, "其他关卡不增加匀速移动")
+	stage.stage_id = "s08"
+	scene.presentation.handheld_camera_enabled = true
 	var sample := ClockSample.new()
 	sample.song_time_sec = 0.75
 	scene.stage_session.visual_frame_ready.emit(sample)
@@ -383,10 +440,10 @@ func test_stage() -> void:
 	await create_timer(0.1).timeout
 	check(controller._animations[0].frame == 1 and controller._animations[0].frame_progress == progress, "暂停不累计背景动画时间")
 	controller.move_camera(Vector2(75, 13))
-	check(scene.stage_session.seek_song_time(0.0) and controller.get_camera_position() == Vector2(75, 13), "定位不推算摄像头")
+	check(scene.stage_session.seek_song_time(0.0) and controller.get_camera_position() == Vector2.ZERO, "定位后手持驱动按歌曲时间重算摄像头，t=0 回到原点")
 	check(scene.retry(), "真实关卡重试")
 	check(controller.get_camera_position() == Vector2.ZERO and controller._animations[0].frame == 0, "重试重置相机与动画")
-	check(scene.load_stage(stage, false) and controller._animations.size() == 1 and controller._objects.size() == 1, "重装不重复背景")
+	check(scene.load_stage(stage, false) and controller._animations.size() == 1 and controller._objects.size() == 3, "重装不重复背景，且生死音符槽各注册一次")
 	scene.teardown()
 	check(controller._objects.is_empty(), "关卡卸载清理")
 	scene.queue_free()

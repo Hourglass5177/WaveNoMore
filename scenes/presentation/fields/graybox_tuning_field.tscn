@@ -1,8 +1,6 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://5w1rq48yguf2"]
 
-[ext_resource type="Script" path="res://src/presentation/adapters/graybox_field_visual.gd" id="1_field"]
+[ext_resource type="Script" uid="uid://c3lsun5ea1a4p" path="res://src/presentation/adapters/graybox_field_visual.gd" id="1_field"]
 
-[node name="GrayboxTuningField" type="Node2D"]
+[node name="GrayboxTuningField" type="Node2D" unique_id=1756035538]
 script = ExtResource("1_field")
-field_kind = 0
-

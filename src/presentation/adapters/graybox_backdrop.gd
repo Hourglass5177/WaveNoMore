@@ -168,10 +168,6 @@ func _boundary_points() -> PackedVector2Array:
 
 
 func _draw_boundary(points: PackedVector2Array) -> void:
-	var shadow_points := PackedVector2Array()
-	for point: Vector2 in points:
-		shadow_points.append(point + Vector2(0.0, 10.0))
-	draw_polyline(shadow_points, Color(0.0, 0.0, 0.0, 0.65), 22.0, true)
 	draw_polyline(points, Color(bone_color, 0.17), 7.0, true)
 
 	# 歌曲进度沿水平分界线推进；保留点列形式，是为了将来替换成自定义边界时仍有稳定接口。

@@ -89,29 +89,32 @@ script = ExtResource("3_host")
 [node name="PoolRoot" type="Node2D" parent="GameplayLayer/NoteVisualHost"]
 visible = false
 
-[node name="GameplayCueLayer" type="Node2D" parent="."]
+[node name="CueCanvas" type="CanvasLayer" parent="."]
+layer = 2
+
+[node name="GameplayCueLayer" type="Node2D" parent="CueCanvas"]
 z_index = 10
 
-[node name="TwinGateCueVisual" type="Node2D" parent="GameplayCueLayer"]
+[node name="TwinGateCueVisual" type="Node2D" parent="CueCanvas/GameplayCueLayer"]
 script = ExtResource("6_gate")
 
-[node name="LifeGateAnchor" type="Marker2D" parent="GameplayCueLayer/TwinGateCueVisual"]
+[node name="LifeGateAnchor" type="Marker2D" parent="CueCanvas/GameplayCueLayer/TwinGateCueVisual"]
 position = Vector2(960, 540)
 
-[node name="DeathGateAnchor" type="Marker2D" parent="GameplayCueLayer/TwinGateCueVisual"]
+[node name="DeathGateAnchor" type="Marker2D" parent="CueCanvas/GameplayCueLayer/TwinGateCueVisual"]
 position = Vector2(960, 540)
 
-[node name="ForegroundArt" type="Node2D" parent="."]
+[node name="ForegroundArt" type="Node2D" parent="CueCanvas"]
 z_index = 12
 
-[node name="PresentationVfx" type="Node2D" parent="."]
+[node name="PresentationVfx" type="Node2D" parent="CueCanvas"]
 z_index = 15
 
-[node name="ShowCueHost" type="Node2D" parent="."]
+[node name="ShowCueHost" type="Node2D" parent="CueCanvas"]
 z_index = 20
 script = ExtResource("4_show")
 
-[node name="TutorialPanel" type="PanelContainer" parent="ShowCueHost"]
+[node name="TutorialPanel" type="PanelContainer" parent="CueCanvas/ShowCueHost"]
 offset_left = 560.0
 offset_top = 86.0
 offset_right = 1360.0
@@ -119,7 +122,7 @@ offset_bottom = 158.0
 theme_override_styles/panel = SubResource("StyleTutorial")
 mouse_filter = 2
 
-[node name="Label" type="Label" parent="ShowCueHost/TutorialPanel"]
+[node name="Label" type="Label" parent="CueCanvas/ShowCueHost/TutorialPanel"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.91, 0.87, 0.76, 1)
 theme_override_colors/font_outline_color = Color(0.01, 0.015, 0.025, 0.9)

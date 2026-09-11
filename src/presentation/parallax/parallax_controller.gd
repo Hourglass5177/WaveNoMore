@@ -1,4 +1,5 @@
 ## 单关视差控制中心。层对象与重复绘制节点属于内部实现，调用方只提交自身、深度、无限性。
+@tool
 class_name ParallaxController
 extends Node2D
 
@@ -125,8 +126,16 @@ func get_camera_position() -> Vector2:
 	return _camera_position
 
 
+## 按配置数组索引获取真实精灵，供编辑器选框使用；不暴露内部层和重复节点。
+func get_configured_object(index: int) -> Node2D:
+	if index < 0 or index >= _configured_objects.size():
+		return null
+	var object := _configured_objects[index]
+	return object if is_instance_valid(object) else null
+
+
 ## 装配本关素材。配置错误返回原因；运行实例不写回共享资源。
-func configure(definition: StageBackgroundDefinition) -> String:
+func configure(definition: StageBackgroundDefinition, apply_materials: bool = true) -> String:
 	clear()
 	if definition == null:
 		return ""
@@ -135,6 +144,9 @@ func configure(definition: StageBackgroundDefinition) -> String:
 		if entry == null or (entry.texture == null) == (entry.sprite_frames == null):
 			clear()
 			return "背景条目 %d 必须指定贴图或 SpriteFrames，且只能指定一项。" % (index + 1)
+		if not is_finite(entry.uniform_scale) or entry.uniform_scale < 0.01:
+			clear()
+			return "背景条目 %d 的缩放倍率必须至少为 0.01。" % (index + 1)
 		var object: Node2D
 		if entry.texture != null:
 			var sprite := Sprite2D.new()
@@ -152,8 +164,11 @@ func configure(definition: StageBackgroundDefinition) -> String:
 			sprite.stop()
 			_animations.append(sprite)
 			object = sprite
+		if apply_materials and entry.material != null:
+			object.material = entry.material.duplicate(false) as ShaderMaterial
 		add_child(object)
 		object.position = entry.position
+		object.scale = Vector2.ONE * entry.uniform_scale
 		_configured_objects.append(object)
 		if not register_object(object, entry.depth, entry.infinite):
 			clear()

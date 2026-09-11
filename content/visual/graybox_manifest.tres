@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="VisualAssetManifest" load_steps=12 format=3]
+[gd_resource type="Resource" script_class="VisualAssetManifest" format=3 uid="uid://cuq8is7aa1hmc"]
 
-[ext_resource type="Script" path="res://src/content/resources/visual_asset_manifest.gd" id="1_manifest"]
-[ext_resource type="Script" path="res://src/content/resources/visual_asset_entry.gd" id="2_entry"]
+[ext_resource type="Script" uid="uid://dw4idp43p5kbu" path="res://src/content/resources/visual_asset_manifest.gd" id="1_manifest"]
+[ext_resource type="Script" uid="uid://1ripw1fv282p" path="res://src/content/resources/visual_asset_entry.gd" id="2_entry"]
 [ext_resource type="PackedScene" path="res://scenes/tools/art_lab/graybox_asset_placeholder.tscn" id="3_placeholder"]
 
 [sub_resource type="Resource" id="Entry_life_actor"]
@@ -9,64 +9,74 @@ script = ExtResource("2_entry")
 asset_id = "actor_life"
 category = &"actor"
 runtime_scene = ExtResource("3_placeholder")
-pivot = Vector2(0, 0)
 visual_bounds = Rect2(-180, -340, 360, 680)
-anchors = {"body_center": Vector2(0, -40), "follower_anchor": Vector2(-130, -80), "hit_fx_anchor": Vector2(130, -110), "mallet_tip": Vector2(190, -80), "wave_origin": Vector2(220, -40)}
-facing_direction = Vector2(1, 0)
+anchors = {
+"body_center": Vector2(0, -40),
+"follower_anchor": Vector2(-130, -80),
+"hit_fx_anchor": Vector2(130, -110),
+"mallet_tip": Vector2(190, -80),
+"wave_origin": Vector2(220, -40)
+}
 state_names = PackedStringArray("idle_loop", "strike", "hold_start", "hold_loop", "hold_release", "rapid_loop", "damage", "fail", "stage_intro", "stage_outro")
 required_anchors = PackedStringArray("wave_origin", "mallet_tip", "body_center", "hit_fx_anchor", "follower_anchor")
 required_states = PackedStringArray("idle_loop", "strike", "hold_start", "hold_loop", "hold_release", "rapid_loop", "damage", "fail", "stage_intro", "stage_outro")
-placeholder = true
 
 [sub_resource type="Resource" id="Entry_death_actor"]
 script = ExtResource("2_entry")
 asset_id = "actor_death"
 category = &"actor"
 runtime_scene = ExtResource("3_placeholder")
-pivot = Vector2(0, 0)
 visual_bounds = Rect2(-180, -340, 360, 680)
-anchors = {"body_center": Vector2(0, 40), "follower_anchor": Vector2(130, 80), "hit_fx_anchor": Vector2(-130, 110), "mallet_tip": Vector2(-190, 80), "wave_origin": Vector2(-220, 40)}
+anchors = {
+"body_center": Vector2(0, 40),
+"follower_anchor": Vector2(130, 80),
+"hit_fx_anchor": Vector2(-130, 110),
+"mallet_tip": Vector2(-190, 80),
+"wave_origin": Vector2(-220, 40)
+}
 facing_direction = Vector2(-1, 0)
 state_names = PackedStringArray("idle_loop", "strike", "hold_start", "hold_loop", "hold_release", "rapid_loop", "damage", "fail", "stage_intro", "stage_outro")
 required_anchors = PackedStringArray("wave_origin", "mallet_tip", "body_center", "hit_fx_anchor", "follower_anchor")
 required_states = PackedStringArray("idle_loop", "strike", "hold_start", "hold_loop", "hold_release", "rapid_loop", "damage", "fail", "stage_intro", "stage_outro")
-placeholder = true
 
 [sub_resource type="Resource" id="Entry_zhu_note"]
 script = ExtResource("2_entry")
 asset_id = "note_zhu"
 category = &"note"
 runtime_scene = ExtResource("3_placeholder")
-visual_bounds = Rect2(-128, -128, 256, 256)
-anchors = {"hit_anchor": Vector2(0, 0), "progress_anchor": Vector2(0, 92)}
+anchors = {
+"hit_anchor": Vector2(0, 0),
+"progress_anchor": Vector2(0, 92)
+}
 state_names = PackedStringArray("prepare", "approach", "perfect", "good", "pass", "miss")
 required_anchors = PackedStringArray("hit_anchor")
 required_states = PackedStringArray("prepare", "approach", "perfect", "good", "pass", "miss")
-placeholder = true
 
 [sub_resource type="Resource" id="Entry_xuan_note"]
 script = ExtResource("2_entry")
 asset_id = "note_xuan"
 category = &"note"
 runtime_scene = ExtResource("3_placeholder")
-visual_bounds = Rect2(-128, -128, 256, 256)
-anchors = {"hit_anchor": Vector2(0, 0), "progress_anchor": Vector2(0, -92)}
+anchors = {
+"hit_anchor": Vector2(0, 0),
+"progress_anchor": Vector2(0, -92)
+}
 state_names = PackedStringArray("prepare", "approach", "perfect", "good", "pass", "miss")
 required_anchors = PackedStringArray("hit_anchor")
 required_states = PackedStringArray("prepare", "approach", "perfect", "good", "pass", "miss")
-placeholder = true
 
 [sub_resource type="Resource" id="Entry_su_note"]
 script = ExtResource("2_entry")
 asset_id = "note_su"
 category = &"note"
 runtime_scene = ExtResource("3_placeholder")
-visual_bounds = Rect2(-128, -128, 256, 256)
-anchors = {"hit_anchor": Vector2(0, 0), "progress_anchor": Vector2(0, 100)}
+anchors = {
+"hit_anchor": Vector2(0, 0),
+"progress_anchor": Vector2(0, 100)
+}
 state_names = PackedStringArray("prepare", "approach", "target_near", "perfect", "good", "pass", "miss")
 required_anchors = PackedStringArray("hit_anchor", "progress_anchor")
 required_states = PackedStringArray("prepare", "approach", "target_near", "perfect", "good", "pass", "miss")
-placeholder = true
 
 [sub_resource type="Resource" id="Entry_hold"]
 script = ExtResource("2_entry")
@@ -74,11 +84,13 @@ asset_id = "note_hold"
 category = &"note"
 runtime_scene = ExtResource("3_placeholder")
 visual_bounds = Rect2(-128, -64, 256, 128)
-anchors = {"hit_anchor": Vector2(0, 0), "progress_anchor": Vector2(128, 0)}
+anchors = {
+"hit_anchor": Vector2(0, 0),
+"progress_anchor": Vector2(128, 0)
+}
 state_names = PackedStringArray("prepare", "approach", "hold", "release", "perfect", "good", "pass", "miss")
 required_anchors = PackedStringArray("hit_anchor", "progress_anchor")
 required_states = PackedStringArray("prepare", "approach", "hold", "release", "perfect", "good", "pass", "miss")
-placeholder = true
 
 [sub_resource type="Resource" id="Entry_rapid"]
 script = ExtResource("2_entry")
@@ -86,26 +98,28 @@ asset_id = "field_rapid"
 category = &"field"
 runtime_scene = ExtResource("3_placeholder")
 visual_bounds = Rect2(-256, -256, 512, 512)
-anchors = {"hit_anchor": Vector2(0, 0), "progress_anchor": Vector2(0, 210)}
+anchors = {
+"hit_anchor": Vector2(0, 0),
+"progress_anchor": Vector2(0, 210)
+}
 state_names = PackedStringArray("prepare", "active", "perfect", "good", "pass", "miss")
 required_anchors = PackedStringArray("hit_anchor", "progress_anchor")
 required_states = PackedStringArray("prepare", "active", "perfect", "good", "pass", "miss")
-placeholder = true
 
 [sub_resource type="Resource" id="Entry_pet"]
 script = ExtResource("2_entry")
 asset_id = "pet_horned_soul"
 category = &"follower"
 runtime_scene = ExtResource("3_placeholder")
-visual_bounds = Rect2(-128, -128, 256, 256)
-anchors = {"attach_anchor": Vector2(0, 0), "hit_anchor": Vector2(64, -24)}
+anchors = {
+"attach_anchor": Vector2(0, 0),
+"hit_anchor": Vector2(64, -24)
+}
 state_names = PackedStringArray("idle_loop", "trigger", "obtain", "advanced_idle")
 required_anchors = PackedStringArray("attach_anchor")
 required_states = PackedStringArray("idle_loop", "trigger", "obtain", "advanced_idle")
-placeholder = true
 
 [resource]
 script = ExtResource("1_manifest")
-schema_version = 1
 manifest_id = "graybox_mvp"
-entries = [SubResource("Entry_life_actor"), SubResource("Entry_death_actor"), SubResource("Entry_zhu_note"), SubResource("Entry_xuan_note"), SubResource("Entry_su_note"), SubResource("Entry_hold"), SubResource("Entry_rapid"), SubResource("Entry_pet")]
+entries = Array[ExtResource("2_entry")]([SubResource("Entry_life_actor"), SubResource("Entry_death_actor"), SubResource("Entry_zhu_note"), SubResource("Entry_xuan_note"), SubResource("Entry_su_note"), SubResource("Entry_hold"), SubResource("Entry_rapid"), SubResource("Entry_pet")])

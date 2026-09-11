@@ -1,6 +1,81 @@
-[gd_resource type="Resource" script_class="StageBackgroundDefinition" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="StageBackgroundDefinition" format=3 uid="uid://drd6lklng6py4"]
 
-[ext_resource type="Script" path="res://src/content/resources/stage_background_definition.gd" id="1_background"]
+[ext_resource type="Script" uid="uid://cmdrk3aa03hw6" path="res://src/content/resources/stage_background_definition.gd" id="1_background"]
+[ext_resource type="Script" uid="uid://b14wt0k1s37p" path="res://src/content/resources/stage_background_entry.gd" id="2_entry"]
+[ext_resource type="Texture2D" uid="uid://dgroebfyynokr" path="res://assets/image/background/background-1-1-c-live.png" id="4_bg_mid_back"]
+[ext_resource type="Texture2D" uid="uid://cgk0qcyopxkt6" path="res://assets/image/background/background-1-1-b-live.png" id="5_bg_mid_middle"]
+[ext_resource type="Texture2D" uid="uid://c3wvup7lidbmw" path="res://assets/image/background/background-1-1-a-death.png" id="5_qkwsl"]
+[ext_resource type="Texture2D" uid="uid://cwhc1rwsaa4f4" path="res://assets/image/background/background-1-1-a-live.png" id="6_bg_mid_front"]
+[ext_resource type="Texture2D" uid="uid://b5ej2ggcn4efg" path="res://assets/image/background/background-1-1-b-death.png" id="7_f5ud5"]
+[ext_resource type="Texture2D" uid="uid://dg8e4307vs18k" path="res://assets/image/background/background-1-0-death.png" id="7_rju76"]
+[ext_resource type="Texture2D" uid="uid://cd8bhg07jm8cn" path="res://assets/image/background/background-1-0-live.png" id="8_f5ud5"]
+[ext_resource type="Shader" uid="uid://dca4ddyalfe3" path="res://shaders/materials/screen_half_material_split.gdshader" id="8_screen_split"]
+[ext_resource type="Texture2D" uid="uid://d1wutgpu7yic5" path="res://assets/image/background/background-1-1-c-death.png" id="9_qqfhi"]
+[ext_resource type="Texture2D" uid="uid://ca3hsojh2kcnw" path="res://assets/image/background/edge.png" id="11_pxfxu"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_1dpc0"]
+shader = ExtResource("8_screen_split")
+shader_parameter/upper_material = ExtResource("8_f5ud5")
+shader_parameter/lower_material = ExtResource("7_rju76")
+
+[sub_resource type="Resource" id="Resource_pxfxu"]
+script = ExtResource("2_entry")
+texture = ExtResource("8_f5ud5")
+material = SubResource("ShaderMaterial_1dpc0")
+depth = 15
+infinite = true
+position = Vector2(-749.13635, -96)
+uniform_scale = 1.74580807320869
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_rju76"]
+shader = ExtResource("8_screen_split")
+shader_parameter/upper_material = ExtResource("6_bg_mid_front")
+shader_parameter/lower_material = ExtResource("5_qkwsl")
+
+[sub_resource type="Resource" id="Resource_o0yob"]
+script = ExtResource("2_entry")
+texture = ExtResource("6_bg_mid_front")
+material = SubResource("ShaderMaterial_rju76")
+depth = 2
+infinite = true
+position = Vector2(-51.245117, -13.923218)
+uniform_scale = 0.7645889008109715
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_o0yob"]
+shader = ExtResource("8_screen_split")
+shader_parameter/upper_material = ExtResource("5_bg_mid_middle")
+shader_parameter/lower_material = ExtResource("7_f5ud5")
+
+[sub_resource type="Resource" id="Resource_x5urg"]
+script = ExtResource("2_entry")
+texture = ExtResource("5_bg_mid_middle")
+material = SubResource("ShaderMaterial_o0yob")
+depth = 5
+infinite = true
+position = Vector2(-27.105051, 1.4649806)
+uniform_scale = 0.7459003309110498
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_hwrvv"]
+shader = ExtResource("8_screen_split")
+shader_parameter/upper_material = ExtResource("4_bg_mid_back")
+shader_parameter/lower_material = ExtResource("9_qqfhi")
+
+[sub_resource type="Resource" id="Resource_1dpc0"]
+script = ExtResource("2_entry")
+texture = ExtResource("4_bg_mid_back")
+material = SubResource("ShaderMaterial_hwrvv")
+depth = 10
+infinite = true
+position = Vector2(-19.95945, 13.368315)
+uniform_scale = 0.7364709600817934
+
+[sub_resource type="Resource" id="Resource_hwrvv"]
+script = ExtResource("2_entry")
+texture = ExtResource("11_pxfxu")
+depth = 0
+position = Vector2(-49.9, -10.3)
+uniform_scale = 0.7616555803103707
 
 [resource]
 script = ExtResource("1_background")
+entries = Array[ExtResource("2_entry")]([SubResource("Resource_pxfxu"), SubResource("Resource_o0yob"), SubResource("Resource_x5urg"), SubResource("Resource_1dpc0"), SubResource("Resource_hwrvv")])

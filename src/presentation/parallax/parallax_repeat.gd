@@ -1,4 +1,5 @@
 ## 控制中心内部使用的单对象拼接节点，不复制精灵、动画或业务脚本。
+@tool
 extends Node2D
 
 var source: Node2D

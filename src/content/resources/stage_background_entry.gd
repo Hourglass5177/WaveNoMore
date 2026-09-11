@@ -9,9 +9,14 @@ extends Resource
 @export var sprite_frames: SpriteFrames
 ## SpriteFrames 中使用的动画，遵循其帧率、帧时长与循环设置。
 @export var animation: StringName = &"default"
+## 背景的 canvas_item Shader 材质；在 Inspector 的 Shader Parameters 中配置 uniforms。
+## 空值使用默认绘制；运行时复制材质参数，Shader 与纹理资源继续共享。
+@export var material: ShaderMaterial
 ## 0 静止，非零位移为 -相机位移 / depth；负数位于玩法前方。
 @export var depth: int = 1
 ## 是否沿素材矩形在两个方向无限拼接。
 @export var infinite: bool = false
 ## 素材左上角的设计画布位置。
 @export var position: Vector2 = Vector2.ZERO
+## 素材自身的等比缩放倍率；与视差深度无关，不允许翻转。
+@export_range(0.01, 10.0, 0.01, "or_greater") var uniform_scale: float = 1.0
