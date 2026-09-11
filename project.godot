@@ -40,7 +40,7 @@ window/stretch/mode="canvas_items"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/minghe_chart_editor/plugin.cfg", "res://addons/parallax_background_editor/plugin.cfg")
+enabled=PackedStringArray("res://addons/parallax_background_editor/plugin.cfg")
 
 [input]
 
