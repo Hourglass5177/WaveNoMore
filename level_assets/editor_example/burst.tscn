@@ -1,0 +1,43 @@
+[gd_scene format=3]
+
+[sub_resource type="Animation" id="Animation_4fxtw"]
+length = 0.4
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Ring:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.4),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(0.2, 0.2), Vector2(2, 2)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Ring:modulate")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.4),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 1), Color(1, 1, 1, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_15r73"]
+_data = {
+&"burst": SubResource("Animation_4fxtw")
+}
+
+[node name="Burst" type="Node2D" unique_id=1636356169]
+
+[node name="Ring" type="Line2D" parent="." unique_id=460447805]
+points = PackedVector2Array(40, 0, 39.657795, 5.221048, 38.63703, 10.352762, 36.95518, 15.307339, 34.641014, 20, 31.734133, 24.350456, 28.284271, 28.284271, 24.350456, 31.734133, 19.999998, 34.641018, 15.307337, 36.95518, 10.352763, 38.63703, 5.22105, 39.65779, -1.7484556e-06, 40, -5.2210484, 39.657795, -10.352762, 38.63703, -15.307336, 36.95518, -20.000002, 34.641014, -24.350456, 31.734133, -28.284271, 28.284271, -31.734133, 24.350456, -34.641014, 20.000002, -36.95518, 15.30734, -38.63703, 10.352765, -39.657795, 5.221043, -40, -3.4969112e-06, -39.65779, -5.2210503, -38.63703, -10.352763, -36.95518, -15.307337, -34.641014, -19.999998, -31.734135, -24.350454, -28.284273, -28.284267, -24.35046, -31.73413, -19.999996, -34.641018, -15.307343, -36.95518, -10.352759, -38.637035, -5.221056, -39.65779, 4.7699524e-07, -40, 5.2210565, -39.65779, 10.35276, -38.63703, 15.307344, -36.955177, 19.999996, -34.641018, 24.350462, -31.73413, 28.284266, -28.284275, 31.734135, -24.350454, 34.641014, -20.000008, 36.95518, -15.307337, 38.637035, -10.352754, 39.657795, -5.2210493, 40, 6.9938224e-06)
+width = 5.0
+default_color = Color(0.84313726, 0.76862746, 0.59607846, 1)
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=423574537]
+libraries/ = SubResource("AnimationLibrary_15r73")

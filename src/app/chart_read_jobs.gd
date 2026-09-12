@@ -13,7 +13,7 @@ func request(path: String, difficulty: String = "", inspect_all := false) -> int
 	var holder := {"result": {}}
 	var scene_ids := ChartSceneLibrary.shared().scene_ids()
 	var task := WorkerThreadPool.add_task(func() -> void:
-		holder.result = ChartProjectLoader.read_project(path, difficulty, inspect_all, scene_ids))
+		holder.result = LevelPackageReader.read(path, difficulty, inspect_all, scene_ids))
 	_tasks.append({"id": _serial, "task": task, "holder": holder, "inspect_all": inspect_all, "cancelled": false})
 	return _serial
 
@@ -24,10 +24,7 @@ func _process(_delta: float) -> void:
 			WorkerThreadPool.wait_for_task_completion(item.task)
 			_tasks.remove_at(i)
 			if item.cancelled: continue
-			var result := ChartProjectLoader.check_project_presentation(item.holder.result)
-			if not item.inspect_all:
-				# 表现资源在主线程装配；工作线程只解码、检查纯数据。
-				result = {"stage": ChartProjectLoader.make_stage(result.song, result.charts[0]) if result.errors.is_empty() else null, "errors": result.errors}
+			var result := LevelPackageReader.finish(item.holder.result,item.inspect_all)
 			completed.emit(item.id, result)
 
 func _exit_tree() -> void:

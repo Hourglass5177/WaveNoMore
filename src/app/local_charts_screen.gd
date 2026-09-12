@@ -26,7 +26,7 @@ func _ready() -> void:
 	%Back.pressed.connect(_back)
 	%Play.pressed.connect(func(): play_requested.emit(library.context(selected_song, selected_chart)))
 	%Remove.pressed.connect(_remove)
-	list.item_selected.connect(func(i: int): selected_song = _songs[i]; selected_chart = ""; _refresh_difficulties())
+	list.item_selected.connect(func(i: int): selected_song = _songs[i]; selected_chart = ""; list.ensure_current_is_visible(); _refresh_difficulties())
 	list.item_activated.connect(func(_i: int): difficulties.grab_focus())
 	difficulties.item_selected.connect(func(i: int): selected_chart = _charts[i]; _show_details())
 	jobs.completed.connect(_loaded)
@@ -38,11 +38,18 @@ func _ready() -> void:
 
 func refresh() -> void:
 	list.clear(); _songs.clear()
-	for id: String in library.data.songs:
+	var ids: Array = library.data.songs.keys()
+	ids.sort_custom(func(a, b): return int(library.data.songs[a].get("order_index", 0)) < int(library.data.songs[b].get("order_index", 0)))
+	for id: String in ids:
 		_songs.append(id)
-		list.add_item(str(library.data.songs[id].title))
+		var song: Dictionary = library.data.songs[id]
+		var cover: Texture2D
+		if song.has("cover_path"):
+			var picture := Image.load_from_file(library.directory.path_join(song.cover_path))
+			if picture != null: cover = ImageTexture.create_from_image(picture)
+		list.add_item(str(song.title), cover)
 	if not _songs.has(selected_song): selected_song = _songs[0] if not _songs.is_empty() else ""
-	if not selected_song.is_empty(): list.select(_songs.find(selected_song))
+	if not selected_song.is_empty(): list.select(_songs.find(selected_song)); list.ensure_current_is_visible()
 	_refresh_difficulties()
 	message.text = library.error if not library.error.is_empty() else ("还没有本地谱面。点击“导入谱面”，或将一个 ZIP 拖到这里。" if _songs.is_empty() else "")
 
@@ -62,14 +69,20 @@ func _show_details() -> void:
 	var song: Dictionary = library.data.songs.get(selected_song, {})
 	var chart: Dictionary = song.get("charts", {}).get(selected_chart, {})
 	%Details.text = "作者：%s\n谱师：%s" % [song.get("artist", ""), chart.get("mapper", "")] if not chart.is_empty() else ""
+	if song.has("level_id"):
+		%Details.text += "\n" + str(song.get("description", ""))
+		var locked: bool = not bool(song.get("unlocked_by_default", true)) and song.level_id not in SaveService.data.get("unlocked_stages", [])
+		%Play.disabled = chart.is_empty() or locked
+		if locked: %Details.text += "\n尚未解锁，请先完成前置关卡。"
 
 func _choose_file() -> void:
 	var dialog := FileDialog.new()
 	dialog.access = FileDialog.ACCESS_FILESYSTEM
 	dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILE
-	dialog.filters = PackedStringArray(["*.zip ; 谱面包"])
-	dialog.title = "导入谱面"
+	dialog.filters = PackedStringArray(["*.zip ; 谱面包或关卡包"])
+	dialog.title = "导入谱面或关卡"
 	add_child(dialog)
+	dialog.tree_exited.connect(func(): %Import.grab_focus())
 	dialog.file_selected.connect(func(path: String): import_path(path); dialog.queue_free())
 	dialog.canceled.connect(dialog.queue_free)
 	dialog.popup_centered_ratio(0.7)
@@ -119,11 +132,14 @@ func _remove() -> void:
 		message.text = "已移除" if error.is_empty() else error)
 
 func _confirm(text: String, action: Callable) -> void:
+	var previous := get_viewport().gui_get_focus_owner()
 	var dialog := ConfirmationDialog.new()
 	dialog.dialog_text = text
 	dialog.title = "本地谱面"
 	dialog.ok_button_text = "确定"; dialog.cancel_button_text = "取消"
 	add_child(dialog)
+	dialog.tree_exited.connect(func():
+		if is_instance_valid(previous): previous.grab_focus())
 	dialog.confirmed.connect(func(): action.call(); dialog.queue_free())
 	dialog.canceled.connect(dialog.queue_free)
 	dialog.popup_centered(Vector2i(660, 220))

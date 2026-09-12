@@ -1,0 +1,601 @@
+{
+  "format": "minghe-show",
+  "format_version": 1,
+  "objects": [
+    {
+      "id": "ferryman",
+      "name": "渡口面具",
+      "type": "actor",
+      "asset": "example:ferryman",
+      "parent_id": "",
+      "layer": "world",
+      "depth": 40,
+      "locked": false,
+      "hidden": false,
+      "fields": {
+        "position": [
+          960,
+          440
+        ],
+        "rotation": 0.0,
+        "scale": [
+          1.0,
+          1.0
+        ],
+        "opacity": 1.0,
+        "color": "ffffffff",
+        "visible": true,
+        "size": [
+          560.0,
+          100.0
+        ],
+        "text": "在此输入文字",
+        "font_size": 36,
+        "alignment": 1,
+        "font": "",
+        "visible_ratio": 1.0,
+        "volume_db": 0.0,
+        "zoom": 1.0,
+        "shake": 0.0
+      }
+    },
+    {
+      "id": "caption",
+      "name": "引导字幕",
+      "type": "text",
+      "asset": "",
+      "parent_id": "",
+      "layer": "hud",
+      "depth": 0.0,
+      "locked": false,
+      "hidden": false,
+      "fields": {
+        "position": [
+          960,
+          140
+        ],
+        "rotation": 0.0,
+        "scale": [
+          1.0,
+          1.0
+        ],
+        "opacity": 1.0,
+        "color": "ffffffff",
+        "visible": true,
+        "size": [
+          560.0,
+          100.0
+        ],
+        "text": "渡口",
+        "font_size": 44,
+        "alignment": 1,
+        "font": "",
+        "visible_ratio": 1.0,
+        "volume_db": 0.0,
+        "zoom": 1.0,
+        "shake": 0.0
+      }
+    },
+    {
+      "id": "night",
+      "name": "夜渡色幕",
+      "type": "image",
+      "asset": "assets/night.svg",
+      "parent_id": "",
+      "layer": "world",
+      "depth": -20,
+      "locked": false,
+      "hidden": false,
+      "fields": {
+        "position": [
+          960.0,
+          540.0
+        ],
+        "rotation": 0.0,
+        "scale": [
+          1.0,
+          1.0
+        ],
+        "opacity": 0.25,
+        "color": "ffffffff",
+        "visible": true,
+        "size": [
+          560.0,
+          100.0
+        ],
+        "text": "在此输入文字",
+        "font_size": 36,
+        "alignment": 1,
+        "font": "",
+        "visible_ratio": 1.0,
+        "volume_db": 0.0,
+        "zoom": 1.0,
+        "shake": 0.0
+      }
+    },
+    {
+      "id": "reply",
+      "name": "收尾余响",
+      "type": "audio",
+      "asset": "assets/reply.wav",
+      "parent_id": "",
+      "layer": "world",
+      "depth": 0.0,
+      "locked": false,
+      "hidden": false,
+      "fields": {
+        "position": [
+          960.0,
+          540.0
+        ],
+        "rotation": 0.0,
+        "scale": [
+          1.0,
+          1.0
+        ],
+        "opacity": 1.0,
+        "color": "ffffffff",
+        "visible": true,
+        "size": [
+          560.0,
+          100.0
+        ],
+        "text": "在此输入文字",
+        "font_size": 36,
+        "alignment": 1,
+        "font": "",
+        "visible_ratio": 1.0,
+        "volume_db": -12,
+        "zoom": 1.0,
+        "shake": 0.0
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "id": "track_023922b1e0d1ba33",
+      "object_id": "ferryman",
+      "property": "action",
+      "type": "action",
+      "section": "song",
+      "difficulties": [],
+      "muted": false,
+      "locked": false,
+      "keys": [],
+      "clips": [
+        {
+          "id": "clip_58addf4c6ef6db9b",
+          "name": "待机循环",
+          "start_us": 0,
+          "duration_us": 24000000,
+          "asset": "",
+          "action": "idle",
+          "offset_us": 0,
+          "rate": 1.0,
+          "loop": true,
+          "fade_in_us": 0,
+          "fade_out_us": 0,
+          "gain_db": 0.0,
+          "hold_last": false
+        }
+      ]
+    },
+    {
+      "id": "track_da0f3dc7f8a583e0",
+      "object_id": "ferryman",
+      "property": "position",
+      "type": "property",
+      "section": "song",
+      "difficulties": [],
+      "muted": false,
+      "locked": false,
+      "keys": [
+        {
+          "id": "key_1fccf6d82fe1adc1",
+          "time_us": 0,
+          "value": [
+            960,
+            440
+          ],
+          "interpolation": "linear",
+          "out_handle": [
+            0.333333,
+            0.333333
+          ],
+          "in_handle": [
+            0.666667,
+            0.666667
+          ]
+        },
+        {
+          "id": "key_67a58c1fd79c8240",
+          "time_us": 12000000,
+          "value": [
+            960,
+            440
+          ],
+          "interpolation": "ease",
+          "out_handle": [
+            0.333333,
+            0.333333
+          ],
+          "in_handle": [
+            0.666667,
+            0.666667
+          ]
+        },
+        {
+          "id": "key_04bca1973ef4da25",
+          "time_us": 16000000,
+          "value": [
+            1040,
+            480
+          ],
+          "interpolation": "linear",
+          "out_handle": [
+            0.333333,
+            0.333333
+          ],
+          "in_handle": [
+            0.666667,
+            0.666667
+          ]
+        },
+        {
+          "id": "key_6e8810e1c72d4bed",
+          "time_us": 24000000,
+          "value": [
+            960,
+            440
+          ],
+          "interpolation": "linear",
+          "out_handle": [
+            0.333333,
+            0.333333
+          ],
+          "in_handle": [
+            0.666667,
+            0.666667
+          ]
+        }
+      ],
+      "clips": []
+    },
+    {
+      "id": "track_287f06c246457b8d",
+      "object_id": "caption",
+      "property": "text",
+      "type": "property",
+      "section": "intro",
+      "difficulties": [],
+      "muted": false,
+      "locked": false,
+      "keys": [
+        {
+          "id": "key_f76129eab58a303a",
+          "time_us": 0,
+          "value": "渡口 · 请聆听钟声",
+          "interpolation": "linear",
+          "out_handle": [
+            0.333333,
+            0.333333
+          ],
+          "in_handle": [
+            0.666667,
+            0.666667
+          ]
+        }
+      ],
+      "clips": []
+    },
+    {
+      "id": "track_7af0a75a7f91d822",
+      "object_id": "caption",
+      "property": "opacity",
+      "type": "property",
+      "section": "intro",
+      "difficulties": [],
+      "muted": false,
+      "locked": false,
+      "keys": [
+        {
+          "id": "key_838252e3958bba42",
+          "time_us": 0,
+          "value": 0.0,
+          "interpolation": "linear",
+          "out_handle": [
+            0.333333,
+            0.333333
+          ],
+          "in_handle": [
+            0.666667,
+            0.666667
+          ]
+        },
+        {
+          "id": "key_04be571c2ac8bf49",
+          "time_us": 350000,
+          "value": 1.0,
+          "interpolation": "linear",
+          "out_handle": [
+            0.333333,
+            0.333333
+          ],
+          "in_handle": [
+            0.666667,
+            0.666667
+          ]
+        },
+        {
+          "id": "key_822ec171d08703b4",
+          "time_us": 1650000,
+          "value": 1.0,
+          "interpolation": "linear",
+          "out_handle": [
+            0.333333,
+            0.333333
+          ],
+          "in_handle": [
+            0.666667,
+            0.666667
+          ]
+        },
+        {
+          "id": "key_f0ba155296cdc200",
+          "time_us": 2000000,
+          "value": 0.0,
+          "interpolation": "linear",
+          "out_handle": [
+            0.333333,
+            0.333333
+          ],
+          "in_handle": [
+            0.666667,
+            0.666667
+          ]
+        }
+      ],
+      "clips": []
+    },
+    {
+      "id": "track_f55c3ca379aed3cd",
+      "object_id": "caption",
+      "property": "text",
+      "type": "property",
+      "section": "song",
+      "difficulties": [],
+      "muted": false,
+      "locked": false,
+      "keys": [
+        {
+          "id": "key_30f641accadec732",
+          "time_us": 0,
+          "value": "渡口 · 测试拍",
+          "interpolation": "linear",
+          "out_handle": [
+            0.333333,
+            0.333333
+          ],
+          "in_handle": [
+            0.666667,
+            0.666667
+          ]
+        }
+      ],
+      "clips": []
+    },
+    {
+      "id": "track_e0e09910fd518aff",
+      "object_id": "caption",
+      "property": "text",
+      "type": "property",
+      "section": "outro",
+      "difficulties": [],
+      "muted": false,
+      "locked": false,
+      "keys": [
+        {
+          "id": "key_eb9db0a73f75bf0f",
+          "time_us": 0,
+          "value": "一曲既终，余响未息",
+          "interpolation": "linear",
+          "out_handle": [
+            0.333333,
+            0.333333
+          ],
+          "in_handle": [
+            0.666667,
+            0.666667
+          ]
+        }
+      ],
+      "clips": []
+    },
+    {
+      "id": "track_22cf34cd65107f72",
+      "object_id": "caption",
+      "property": "opacity",
+      "type": "property",
+      "section": "outro",
+      "difficulties": [],
+      "muted": false,
+      "locked": false,
+      "keys": [
+        {
+          "id": "key_0dd517ae2e9981e4",
+          "time_us": 0,
+          "value": 0.0,
+          "interpolation": "linear",
+          "out_handle": [
+            0.333333,
+            0.333333
+          ],
+          "in_handle": [
+            0.666667,
+            0.666667
+          ]
+        },
+        {
+          "id": "key_4547865fc80fb63f",
+          "time_us": 350000,
+          "value": 1.0,
+          "interpolation": "linear",
+          "out_handle": [
+            0.333333,
+            0.333333
+          ],
+          "in_handle": [
+            0.666667,
+            0.666667
+          ]
+        },
+        {
+          "id": "key_19371e2dc06ac405",
+          "time_us": 1650000,
+          "value": 1.0,
+          "interpolation": "linear",
+          "out_handle": [
+            0.333333,
+            0.333333
+          ],
+          "in_handle": [
+            0.666667,
+            0.666667
+          ]
+        },
+        {
+          "id": "key_83cf104a896bef26",
+          "time_us": 2000000,
+          "value": 0.0,
+          "interpolation": "linear",
+          "out_handle": [
+            0.333333,
+            0.333333
+          ],
+          "in_handle": [
+            0.666667,
+            0.666667
+          ]
+        }
+      ],
+      "clips": []
+    },
+    {
+      "id": "track_ffdc522ce07b79d2",
+      "object_id": "night",
+      "property": "visibility",
+      "type": "visibility",
+      "section": "song",
+      "difficulties": [],
+      "muted": false,
+      "locked": false,
+      "keys": [],
+      "clips": [
+        {
+          "id": "clip_ebe480ada63e3733",
+          "name": "夜渡 · 淡入",
+          "start_us": 12000000,
+          "duration_us": 12000000,
+          "asset": "",
+          "action": "",
+          "offset_us": 0,
+          "rate": 1.0,
+          "loop": false,
+          "fade_in_us": 2000000,
+          "fade_out_us": 0,
+          "gain_db": 0.0,
+          "hold_last": false
+        }
+      ]
+    },
+    {
+      "id": "track_334e4fa33fd3e5b8",
+      "object_id": "reply",
+      "property": "audio",
+      "type": "audio",
+      "section": "outro",
+      "difficulties": [],
+      "muted": false,
+      "locked": false,
+      "keys": [],
+      "clips": [
+        {
+          "id": "clip_b9d10e29ffdcbd90",
+          "name": "余响",
+          "start_us": 0,
+          "duration_us": 2000000,
+          "asset": "assets/reply.wav",
+          "action": "",
+          "offset_us": 0,
+          "rate": 1.0,
+          "loop": false,
+          "fade_in_us": 150000,
+          "fade_out_us": 650000,
+          "gain_db": 0.0,
+          "hold_last": false
+        }
+      ]
+    }
+  ],
+  "bindings": [
+    {
+      "id": "attack_normal",
+      "object_id": "ferryman",
+      "difficulty": "normal",
+      "note_ids": [
+        "normal_5760",
+        "normal_7680",
+        "normal_9600",
+        "normal_11520",
+        "normal_13440",
+        "normal_15360",
+        "normal_17280",
+        "normal_hold_0",
+        "normal_hold_1",
+        "normal_ghost"
+      ],
+      "action": "attack",
+      "release_sec": 0.3,
+      "return_us": 600000,
+      "rate": 1.0,
+      "action_duration_us": 1000000,
+      "life_anchor": "life",
+      "death_anchor": "death",
+      "effect": "example:burst",
+      "hit_effect": "example:burst"
+    },
+    {
+      "id": "attack_hard",
+      "object_id": "ferryman",
+      "difficulty": "hard",
+      "note_ids": [
+        "hard_5760",
+        "hard_6720",
+        "hard_7680",
+        "hard_8640",
+        "hard_9600",
+        "hard_10560",
+        "hard_11520",
+        "hard_12480",
+        "hard_13440",
+        "hard_14400",
+        "hard_15360",
+        "hard_16320",
+        "hard_17280",
+        "hard_hold_0",
+        "hard_hold_1",
+        "hard_ghost"
+      ],
+      "action": "attack",
+      "release_sec": 0.3,
+      "return_us": 600000,
+      "rate": 1.0,
+      "action_duration_us": 1000000,
+      "life_anchor": "life",
+      "death_anchor": "death",
+      "effect": "example:burst",
+      "hit_effect": "example:burst"
+    }
+  ],
+  "sequences": []
+}

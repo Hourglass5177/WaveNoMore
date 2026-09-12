@@ -1,0 +1,43 @@
+[gd_resource type="Resource" script_class="VisualAssetManifest" format=3]
+
+[ext_resource type="Script" path="res://src/content/resources/visual_asset_entry.gd" id="1_w10wb"]
+[ext_resource type="PackedScene" path="res://level_assets/editor_example/ferryman.tscn" id="2_2fr0e"]
+[ext_resource type="Texture2D" path="res://level_assets/editor_example/thumbnail.svg" id="3_286mc"]
+[ext_resource type="PackedScene" path="res://level_assets/editor_example/burst.tscn" id="4_7cbqt"]
+[ext_resource type="Script" path="res://src/content/resources/visual_asset_manifest.gd" id="5_u472s"]
+
+[sub_resource type="Resource" id="Resource_wkwtb"]
+script = ExtResource("1_w10wb")
+asset_id = "example:ferryman"
+category = &"actor"
+runtime_scene = ExtResource("2_2fr0e")
+visual_bounds = Rect2(-170, -140, 340, 280)
+anchors = {
+"death": "Death",
+"life": "Life"
+}
+state_names = PackedStringArray("idle", "attack")
+action_markers = {
+"attack": {
+"release_sec": 0.3
+}
+}
+display_name = "渡口面具 · 几何占位"
+thumbnail = ExtResource("3_286mc")
+required_anchors = PackedStringArray()
+required_states = PackedStringArray()
+
+[sub_resource type="Resource" id="Resource_soral"]
+script = ExtResource("1_w10wb")
+asset_id = "example:burst"
+category = &"effect"
+runtime_scene = ExtResource("4_7cbqt")
+state_names = PackedStringArray("burst")
+display_name = "发射相纹"
+required_anchors = PackedStringArray()
+required_states = PackedStringArray()
+
+[resource]
+script = ExtResource("5_u472s")
+manifest_id = "渡口演出示例"
+entries = Array[ExtResource("1_w10wb")]([SubResource("Resource_wkwtb"), SubResource("Resource_soral")])

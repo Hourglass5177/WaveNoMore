@@ -45,6 +45,9 @@ var _load_message: Label
 
 
 func _ready() -> void:
+	if StudioLaunch.is_level_editor():
+		get_tree().change_scene_to_file.call_deferred("res://scenes/tools/level_studio/studio.tscn")
+		return
 	if StudioLaunch.is_active():
 		get_tree().change_scene_to_file.call_deferred("res://scenes/tools/chart_studio/studio.tscn")
 		return
@@ -212,6 +215,8 @@ func _on_stage_finished(result: Variant = {}) -> void:
 		result_dictionary.content_hash = _run_context.content_hash
 		var error := _library.record_result(_run_context, result_dictionary)
 		if not error.is_empty(): result_dictionary.local_save_error = error
+		if _current_stage != null and _current_stage.has_meta("level"):
+			SaveService.record_stage_result(_current_stage,result_dictionary)
 	AppRouter.navigate(AppRouter.ROUTE_RESULT, {"stage": _current_stage, "result": result_dictionary}, false)
 
 
@@ -341,13 +346,14 @@ func _external_loaded(id: int, result: Dictionary) -> void:
 	AppRouter.navigate(AppRouter.ROUTE_STAGE, {"stage": result.stage}, false)
 
 func _retry_external() -> void:
+	_run_context.skip_intro = true
 	AppRouter.navigate(&"external_loading", _run_context.duplicate(true), false)
 
 func _start_countdown(stage_root: Node) -> void:
 	InputEventBuffer.set_mode(InputEventBuffer.InputMode.DISABLED)
 	var countdown := ChartReadyCountdown.new()
 	stage_root.add_child(countdown)
-	countdown.finished.connect(stage_root.stage_session.start)
+	countdown.finished.connect(func():stage_root.start_level(bool(_run_context.get("skip_intro",false))))
 
 func _add_trial_to_library() -> void:
 	# 复用同一导入页面和更新确认；不自动改变本次临时试玩的成绩策略。

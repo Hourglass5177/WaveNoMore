@@ -32,6 +32,14 @@ func import_checked(source: String, info: Dictionary) -> String:
 	var next := data.duplicate(true)
 	var song: Dictionary = next.songs.get(info.song_id, {"charts": {}})
 	song.merge({"song_id": info.song_id, "title": info.title, "artist": info.artist}, true)
+	if info.has("level_id"):
+		song.level_id = info.level_id
+		song.order_index = info.get("order_index",0)
+		song.description = info.get("description", "")
+		song.unlocked_by_default = info.get("unlocked_by_default", true)
+		if info.get("cover_image") is Image:
+			var cover_path := filename + ".png"
+			if info.cover_image.save_png(directory.path_join(cover_path)) == OK: song.cover_path = cover_path
 	for chart: Dictionary in info.charts:
 		var entry := chart.duplicate(true)
 		entry.package = filename
@@ -45,7 +53,7 @@ func import_checked(source: String, info: Dictionary) -> String:
 func context(song_id: String, chart_id: String) -> Dictionary:
 	var chart: Dictionary = data.songs.get(song_id, {}).get("charts", {}).get(chart_id, {})
 	if chart.is_empty(): return {}
-	return {"origin": "local", "song_id": song_id, "chart_id": chart_id, "difficulty_id": chart.difficulty_id, "path": directory.path_join(chart.package)}
+	return {"origin": "local", "song_id": song_id, "chart_id": chart_id, "difficulty_id": chart.difficulty_id, "path": directory.path_join(chart.package),"level":chart.has("level_id"),"level_id":chart.get("level_id","")}
 
 func remove(song_id: String, chart_id: String) -> String:
 	var next := data.duplicate(true)
@@ -81,8 +89,9 @@ func _commit(next: Dictionary) -> String:
 func _remove_unused_packages() -> void:
 	var used := {}
 	for song: Dictionary in data.songs.values():
+		if song.has("cover_path"): used[song.cover_path] = true
 		for chart: Dictionary in song.charts.values(): used[chart.package] = true
 	# 仅处理本模块生成的内部包，不扫描或删除导入源。
 	for name in DirAccess.get_files_at(directory):
-		if name.begins_with("package_") and name.ends_with(".zip") and not used.has(name):
+		if name.begins_with("package_") and (name.ends_with(".zip") or name.ends_with(".zip.png")) and not used.has(name):
 			DirAccess.remove_absolute(directory.path_join(name))

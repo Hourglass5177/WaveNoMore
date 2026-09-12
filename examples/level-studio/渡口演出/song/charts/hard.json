@@ -1,0 +1,211 @@
+{
+  "difficulty_name": "困难",
+  "mapper": "示例谱",
+  "presentation": {
+    "scene_id": "s08",
+    "use_scene_show": false
+  },
+  "format": "minghe-chart",
+  "format_version": 2,
+  "chart_id": "example_hard",
+  "difficulty_id": "hard",
+  "sections": [
+    {
+      "id": "phase2",
+      "tick": 11520,
+      "name": "夜渡"
+    }
+  ],
+  "timing": {
+    "ppq": 480,
+    "chart_offset_ticks": 0,
+    "end_tick": 23040,
+    "tempo_events": [
+      {
+        "tick": 0,
+        "bpm": 120.0
+      }
+    ],
+    "meter_events": [
+      {
+        "tick": 0,
+        "numerator": 4,
+        "denominator": 4
+      }
+    ]
+  },
+  "notes": [
+    {
+      "id": "hard_5760",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 5760,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "hard_6720",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 6720,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "hard_7680",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 7680,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "hard_8640",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 8640,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "hard_9600",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 9600,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "hard_10560",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 10560,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "hard_11520",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 11520,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "hard_12480",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 12480,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "hard_13440",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 13440,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "hard_14400",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 14400,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "hard_15360",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 15360,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "hard_16320",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 16320,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "hard_17280",
+      "kind": "hold",
+      "affinity": "zhu",
+      "tick": 17280,
+      "duration_ticks": 480,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "hard_hold_0",
+      "kind": "hold",
+      "affinity": "zhu",
+      "tick": 19200,
+      "duration_ticks": 3840,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "hard_hold_1",
+      "kind": "hold",
+      "affinity": "xuan",
+      "tick": 19200,
+      "duration_ticks": 3840,
+      "visual_variant": "default",
+      "boss": true
+    }
+  ],
+  "tuning_paths": [
+    {
+      "id": "hard_tuning",
+      "affinity": "zhu",
+      "tick": 20160,
+      "hold_id": "hard_hold_0",
+      "support_hold_id": "hard_hold_1",
+      "points": [
+        {
+          "id": "point_0",
+          "offset_ticks": 0,
+          "angle_deg": -90.642246
+        },
+        {
+          "id": "point_1",
+          "offset_ticks": 960,
+          "angle_deg": -30.642246
+        },
+        {
+          "id": "point_2",
+          "offset_ticks": 1920,
+          "angle_deg": -90.642246
+        }
+      ]
+    }
+  ],
+  "ghost_events": [
+    {
+      "id": "hard_ghost",
+      "tick": 21120,
+      "count": 1,
+      "tuning_ids": [
+        "hard_tuning"
+      ],
+      "boss": true
+    }
+  ]
+}

@@ -12,6 +12,8 @@
 
 导出谱面也不再替你保存工程；请按 Ctrl+S 明确保存项目。
 
+本机整理后的运行入口为 `Charts/minghe-chart-studio.exe`。打开谱面请选择 `Charts/charts/<项目名>/song.json`；教程2仍位于 `Charts/charts/教程2/song.json`。导出的谱面可集中存放在 `Charts/output/`，完整发行包放在 `Charts/releases/`。
+
 ## 开始一张谱
 
 1. 运行 `minghe-chart-studio.exe`，不需要安装 Godot。点击“导入音乐”，首次使用时先选择一个项目目录，再选择 WAV、Ogg Vorbis 或 MP3。
@@ -139,7 +141,7 @@
 
 如果只是敲钟听起来晚，先核对提示音同步，再决定是否修改歌曲首拍。设备补偿只影响本机，歌曲首拍和 BPM 则会改变所有玩家听到的对齐关系。开发记录附有 test 歌曲的只读比较，未自动改写其谱面。
 
-开发者重新构建完整开发包，可从 Game 运行 `tools/rhythm_analyzer/build.ps1 -PythonExe <Python3.12路径> -GodotExe <Godot4.7.2路径> -InstallDependencies`。首次安装需要联网；以后可省略 `-InstallDependencies` 复用独立构建环境。脚本默认只导出写谱器；加 `-WithGame` 同时制作配套游戏，输出 `builds/minghe-chart-studio-dev.zip`。测试范围和未验收项见 `docs/chart-editor-rhythm-analysis.md`。
+开发者重新构建完整开发包，可从 Game 运行 `tools/rhythm_analyzer/build.ps1 -PythonExe <Python3.12路径> -GodotExe <Godot4.7.2路径> -InstallDependencies`。首次安装需要联网；以后可省略 `-InstallDependencies` 复用独立构建环境。脚本默认只导出写谱器；加 `-WithGame` 同时制作配套游戏，输出 `../Charts/releases/minghe-chart-studio-dev.zip`。测试范围和未验收项见 `docs/chart-editor-rhythm-analysis.md`。
 
 问题区域仅在存在问题时显示，默认展开紧凑列表；可以收起，点击具体问题定位。问题全部修正后入口和列表一同隐藏。
 

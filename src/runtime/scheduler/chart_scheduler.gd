@@ -52,9 +52,12 @@ var _cursors: Dictionary[StringName, int] = {}
 var _active: Dictionary[String, Dictionary] = {}
 ## 仅用于表现；按完整谱面索引，避免另一侧尚未生成时丢失双押提示。
 var _double_tap_ids: Dictionary[String, bool] = {}
+## 关卡演出给出的提前发射段；不写入编译谱和 Replay 指纹。
+var boss_emissions: Dictionary = {}
 
 
 func configure(compiled_chart: Variant, approach_sec: float = 2.25) -> void:
+	boss_emissions.clear()
 	approach_duration_sec = maxf(approach_sec, 0.05)
 	_tracks = {
 		KIND_NOTE: _read_array_member(compiled_chart, &"notes"),
@@ -65,6 +68,18 @@ func configure(compiled_chart: Variant, approach_sec: float = 2.25) -> void:
 	_sort_tracks()
 	_index_double_taps()
 	reset()
+
+
+func configure_boss_emissions(emissions: Dictionary) -> void:
+	boss_emissions = emissions
+	# 不同动作可用不同提前量，因此按实际生成时间排列，不能沿用拍点顺序。
+	_tracks[KIND_NOTE].sort_custom(func(a: Dictionary, b: Dictionary): return _spawn_time_usec(KIND_NOTE, a) < _spawn_time_usec(KIND_NOTE, b))
+
+
+func _spawn_time_usec(kind: StringName, entry: Dictionary) -> int:
+	var event_id := _event_id(entry, kind, 0)
+	if kind == KIND_NOTE and boss_emissions.has(event_id): return int(boss_emissions[event_id].release_us)
+	return _event_start_usec(entry) - roundi(approach_duration_sec * USEC_PER_SEC)
 
 
 func reset() -> void:
@@ -93,12 +108,11 @@ func seek(target_visual_time_sec: float, tuning_time_sec: float) -> void:
 		var cursor: int = 0
 		while cursor < track.size():
 			var entry: Dictionary = track[cursor]
-			var start_usec: int = _event_start_usec(entry)
 			var end_usec: int = _event_end_usec(entry)
 			if end_usec + _tail_usec_for(kind) < target_usec:
 				cursor += 1
 				continue
-			if start_usec - roundi(approach_duration_sec * USEC_PER_SEC) <= target_usec:
+			if _spawn_time_usec(kind, entry) <= target_usec:
 				_spawn(kind, entry, cursor)
 				cursor += 1
 				continue
@@ -111,7 +125,6 @@ func advance(target_visual_time_sec: float, tuning_time_sec: float) -> void:
 	visual_time_sec = target_visual_time_sec
 	var target_usec: int = roundi(target_visual_time_sec * USEC_PER_SEC)
 	var tuning_usec: int = roundi(tuning_time_sec * USEC_PER_SEC)
-	var lookahead_usec: int = roundi(approach_duration_sec * USEC_PER_SEC)
 
 	# 第一阶段只向前移动各轨游标，把进入“当前时间 + 预见窗口”的事件生成出来。
 	for kind: StringName in _tracks.keys():
@@ -120,7 +133,7 @@ func advance(target_visual_time_sec: float, tuning_time_sec: float) -> void:
 		var cursor: int = int(_cursors.get(kind, 0))
 		while cursor < track.size():
 			var entry: Dictionary = track[cursor]
-			if _event_start_usec(entry) - lookahead_usec > spawn_usec:
+			if _spawn_time_usec(kind, entry) > spawn_usec:
 				break
 			_spawn(kind, entry, cursor)
 			cursor += 1
@@ -211,6 +224,7 @@ func _spawn(kind: StringName, source: Dictionary, fallback_index: int) -> void:
 	entry["event_id"] = event_id
 	if kind == KIND_NOTE:
 		entry["double_tap"] = _double_tap_ids.has(event_id)
+		if boss_emissions.has(event_id): entry["boss_emission"] = boss_emissions[event_id]
 	if kind == KIND_SU:
 		su_preparation_requested.emit(event_id)
 		return
@@ -277,10 +291,10 @@ func _read_array_member(source: Variant, member_name: StringName) -> Array:
 	if source is Dictionary:
 		var dictionary: Dictionary = source
 		var dictionary_value: Variant = dictionary.get(member_name, [])
-		return dictionary_value if dictionary_value is Array else []
+		return dictionary_value.duplicate() if dictionary_value is Array else []
 	if source is Object and _object_has_property(source, member_name):
 		var object_value: Variant = source.get(member_name)
-		return object_value if object_value is Array else []
+		return object_value.duplicate() if object_value is Array else []
 	return []
 
 

@@ -6,7 +6,7 @@ import sys
 import zipfile
 
 root = Path(__file__).resolve().parents[2]
-output = root / 'builds/chart-studio'
+output = root.parent / 'Charts'
 with_game = '--with-game' in sys.argv
 if with_game and not (output / 'game/minghe.exe').is_file():
     raise SystemExit('缺少配套 game/minghe.exe，请先显式构建游戏')
@@ -30,6 +30,7 @@ guide = (root / 'docs/chart-editor-guide.md').read_text(encoding='utf-8')
 guide = guide.replace('(chart-editor-progress.md)', '(docs/chart-editor-progress.md)')
 guide = guide.replace('(chart-editor-tuning.md)', '(docs/chart-editor-tuning.md)')
 guide = guide.replace('(local-chart-playtest.md)', '(docs/local-chart-playtest.md)')
+guide = guide.replace('(chart-studio-scenes.md)', '(docs/chart-studio-scenes.md)')
 (output / '写谱器使用说明.md').write_text(guide, encoding='utf-8')
 # 运行目录与开发包共用当前文档清单，不把本地历史和用户工程扫入包中。
 documents = ('local-chart-playtest.md', 'local-chart-validation.md', 'chart-editor-progress.md', 'chart-editor-interfaces.md',
@@ -48,14 +49,10 @@ for name in documents:
     shutil.copy2(root / 'docs' / name, output / 'docs' / name)
 packaged_tuning = output / 'docs/chart-editor-tuning.md'
 packaged_tuning.write_text(packaged_tuning.read_text(encoding='utf-8').replace(
-    '../tests/editor/fixtures/tuning/charts/normal.json', '../Tuning示例工程/charts/normal.json'), encoding='utf-8')
+    '../tests/editor/fixtures/tuning/charts/normal.json', '../charts/Tuning示例工程/charts/normal.json'), encoding='utf-8')
 
 # 新示例使用独立目录名，只收集明确文件，既有用户项目和旧示例均不改动。
 tuning_example = root / 'tests/editor/fixtures/tuning'
-for relative in ('song.json', 'charts/normal.json', 'audio/song.wav'):
-    destination = output / 'Tuning示例工程' / relative
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(tuning_example / relative, destination)
 screenshots = ('workspace-1280.png', 'workspace-1440.png', 'workspace-1920.png', 'ghost-three.png', 'preview-loading.png')
 (output / 'docs/screenshots').mkdir(exist_ok=True)
 for name in screenshots:
@@ -66,12 +63,14 @@ trial_screenshots = ('local-1280.png', 'local-1440.png', 'local-1920.png', 'sele
 for name in trial_screenshots:
     shutil.copy2(root / 'docs/screenshots' / name, output / 'docs/screenshots' / name)
 
-archive = root / 'builds/minghe-chart-studio-dev.zip'
+archive = output / 'releases/minghe-chart-studio-dev.zip'
+archive.parent.mkdir(parents=True, exist_ok=True)
 with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED, compresslevel=6) as bundle:
-    for name in ('minghe-chart-studio.exe', '写谱器使用说明.md'):
+    for name in ('minghe-chart-studio.exe', 'libspine_godot.windows.template_release.x86_64.dll', 'wnm_controller_haptics.dll', '写谱器使用说明.md'):
         bundle.write(output / name, name)
     if with_game:
-        bundle.write(output / 'game/minghe.exe', 'game/minghe.exe')
+        for name in ('minghe.exe', 'libspine_godot.windows.template_release.x86_64.dll', 'wnm_controller_haptics.dll'):
+            bundle.write(output / 'game' / name, 'game/' + name)
     for name in documents:
         bundle.write(output / 'docs' / name, 'docs/' + name)
     for name in trial_screenshots:
@@ -83,6 +82,6 @@ with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED, compresslevel=6) as bun
             bundle.write(path, path.relative_to(output))
     fixture = root / 'tests/editor/fixtures/training'
     for relative in ('song.json', 'charts/normal.json', 'audio/song.wav'):
-        bundle.write(fixture / relative, '示例工程/' + relative)
-        bundle.write(tuning_example / relative, 'Tuning示例工程/' + relative)
+        bundle.write(fixture / relative, 'charts/示例工程/' + relative)
+        bundle.write(tuning_example / relative, 'charts/Tuning示例工程/' + relative)
 print(f'{archive}\nZIP bytes: {archive.stat().st_size}')

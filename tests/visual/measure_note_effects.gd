@@ -1,7 +1,7 @@
 extends SceneTree
 ## 读取实际谱面，在相同输入与采样时间下比较白光及 Ghost 段；不保存或修改用户工程。
 var output := "res://builds/visual-review/note-glow/performance-before.json"
-var project_path := "res://builds/chart-studio/test/song.json"
+var project_path := ProjectSettings.globalize_path("res://").path_join("../Charts/charts/test/song.json").simplify_path()
 
 func _initialize() -> void: run.call_deferred()
 

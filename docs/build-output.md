@@ -1,6 +1,31 @@
 # 构建目录
 
-`builds` 只长期保留当前可运行版本、最新发布 ZIP 和 `.gdignore`。
+从 2026-09-12 起，写谱器运行文件移到与 `Game` 同级的 `Charts`。下文旧日期中的 `builds/chart-studio` 是历史路径。
+
+- `../Charts/`：写谱器 EXE、原生 DLL、使用说明、`game/` 配套游戏及 `rhythm_analyzer/` 离线识别器。
+- `../Charts/charts/`：用户谱面与示例；`教程2/` 原地保留，原运行目录的 `test/`、`示例项目/`、`Tuning示例工程/` 整体迁入。
+- `../Charts/output/`：用户导出的谱面 ZIP；与完整程序发行包分开。
+- `../Charts/releases/`：最新完整发行包。v0.1.2、v0.1.3 旧包移到 `archive/旧发行包/`，这里保留 v0.1.4；原发布 ZIP 内容不因本次移动而重写。
+- `../Charts/archive/旧空白工程/`：Charts 顶层原先无音符的工程、音频和工作区备份，保留相对目录结构。
+
+`Game/builds/` 留给构建中间物和测试日志；本次没有改动关卡编辑器的运行目录或正在开发的源码。
+
+从 Game 单独导出写谱器：
+
+```powershell
+New-Item -ItemType Directory -Force ../Charts | Out-Null
+& $godotExe --headless --path . --export-release 'Chart Studio Windows' ../Charts/minghe-chart-studio.exe
+```
+
+需要更新配套游戏时显式导出到 `../Charts/game/minghe.exe`。完整识别器构建脚本也向 Charts 输出程序；Python 开发环境、模型下载缓存及 PyInstaller 中间文件仍在 `Game/builds`，不与谱师运行文件混放。
+
+更新发行包：`python tools/package_chart_studio_release.py --version 0.1.4 --base ../Charts/releases/冥河写谱器-v0.1.4-Windows.zip`。允许读取并更新同版本包，通过临时文件完成后替换；个人工程不被扫描入包。以后生成的示例项目统一放到 ZIP 的 `charts/` 中，运行目录里已经修改的示例不被构建覆盖。
+
+清理命令被自动审批策略拦截，永久删除和回收站操作均未执行；因此旧包采用移动归档，约 662.5 MiB 尚未释放。Game/builds/chart-studio 已没有文件，仅留空目录。迁移前后 3000 个运行及项目文件校验一致（之后仅同步当前说明），教程2全部文件原地不变。写谱器启动、识别器启动、配套游戏加载教程2及 test 的真实试玩往返均通过；测试后再次核对用户项目文件不变。
+
+## 历史记录
+
+以下为迁移前的整理与发布记录。
 
 - `chart-studio/`：写谱器、`game/` 配套游戏、识别器及离线模型。这里的 `test/`、示例工程和 `output/` 含用户项目与交付文件，不能作为构建垃圾删除。
 - `冥河写谱器-v0.1.4-Windows.zip`：本次发布包。新版本验证完成后再清理旧包，不额外保留一份完整解压目录。

@@ -1,0 +1,7 @@
+{
+  "format": "minghe-assets",
+  "format_version": 1,
+  "manifest": "res://level_assets/editor_example/manifest.tres",
+  "name": "渡口演出示例",
+  "pack": "example.pck"
+}

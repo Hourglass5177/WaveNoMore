@@ -9,9 +9,12 @@ parser.add_argument('--version', required=True)
 parser.add_argument('--base', type=Path, required=True)
 args = parser.parse_args()
 root = Path(__file__).resolve().parents[1]
-runtime = root / 'builds/chart-studio'
+runtime = root.parent / 'Charts'
 prefix = f'冥河写谱器-v{args.version}'
-archive = root / 'builds' / f'{prefix}-Windows.zip'
+archive = runtime / 'releases' / f'{prefix}-Windows.zip'
+archive.parent.mkdir(parents=True, exist_ok=True)
+# 允许用当前发布包更新同版本；读取关闭后才替换成品，失败时保留原包。
+temporary = archive.with_suffix('.zip.tmp')
 
 with zipfile.ZipFile(args.base) as previous:
     old_prefix = previous.namelist()[0].split('/')[0] + '/'
@@ -45,7 +48,7 @@ with zipfile.ZipFile(args.base) as previous:
     gameplay = gameplay.replace('多节点 Tuning 的预览目前分段播放，接合处的预告和圆弧半径可能变化。',
         '多节点 Tuning 的预览目前分段播放。自动模式保留各段原半径；设置自定义半径后，各段位于同一圆周。')
     tuning = (root / 'docs/chart-editor-tuning.md').read_text(encoding='utf-8').replace(
-        '../tests/editor/fixtures/tuning/charts/normal.json', '../Tuning示例工程/charts/normal.json')
+        '../tests/editor/fixtures/tuning/charts/normal.json', '../charts/Tuning示例工程/charts/normal.json')
     texts = {'写谱器使用说明.md': guide, '音符与玩法介绍.md': gameplay,
              '版本更新.md': (root / f'docs/chart-studio-v{args.version}.md').read_text(encoding='utf-8'),
              'docs/chart-editor-tuning.md': tuning}
@@ -57,9 +60,14 @@ with zipfile.ZipFile(args.base) as previous:
             destination = runtime / relative
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(source, destination)
-    with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED, compresslevel=6) as bundle:
+    with zipfile.ZipFile(temporary, 'w', zipfile.ZIP_DEFLATED, compresslevel=6) as bundle:
         for relative in sorted(entries.keys() | replacements.keys() | texts.keys()):
-            target = f'{prefix}/{relative}'
+            packaged = relative
+            for project in ('test', '示例项目', '示例工程', 'Tuning示例工程'):
+                if relative.startswith(project + '/'):
+                    packaged = 'charts/' + relative
+                    break
+            target = f'{prefix}/{packaged}'
             if relative in texts:
                 bundle.writestr(target, texts[relative].encode('utf-8'))
             elif relative in replacements:
@@ -68,4 +76,5 @@ with zipfile.ZipFile(args.base) as previous:
                 # 流式沿用模型、依赖许可和已发布示例，避免复制整份解压目录。
                 with previous.open(entries[relative]) as source, bundle.open(target, 'w') as destination:
                     shutil.copyfileobj(source, destination)
+temporary.replace(archive)
 print(f'{archive}\n{archive.stat().st_size / 1048576:.1f} MiB')

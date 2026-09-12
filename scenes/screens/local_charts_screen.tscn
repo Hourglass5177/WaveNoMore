@@ -28,18 +28,19 @@ theme_override_constants/separation = 18
 [node name="Title" type="Label" parent="Margin/Layout"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "本地谱面"
+text = "本地谱面与关卡"
 
 [node name="Import" type="Button" parent="Margin/Layout"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "导入谱面"
+text = "导入谱面或关卡"
 
 [node name="Songs" type="ItemList" parent="Margin/Layout"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 custom_minimum_size = Vector2(0, 120)
+fixed_icon_size = Vector2i(96, 54)
 
 [node name="Difficulties" type="OptionButton" parent="Margin/Layout"]
 unique_name_in_owner = true

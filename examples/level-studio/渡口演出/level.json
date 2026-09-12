@@ -1,0 +1,28 @@
+{
+  "format": "minghe-level",
+  "format_version": 1,
+  "level_id": "editor_example_ferry",
+  "title": "渡口演出示例",
+  "author": "编辑器示例",
+  "description": "两种难度共用场景；曲前引导、BOSS 弹射、换景与曲后演出。",
+  "cover": "assets/cover.svg",
+  "order_index": 0,
+  "scene_id": "s08",
+  "song_path": "song/song.json",
+  "intro_us": 2000000,
+  "outro_us": 2000000,
+  "rule_path": "res://content/rules/default_gameplay_rules.tres",
+  "next_stage_id": "",
+  "pet_id": "",
+  "fc_grants_base_pet": true,
+  "ap_grants_advanced_pet": true,
+  "packs": [
+    {
+      "path": "packs/example.pck",
+      "manifest": "res://level_assets/editor_example/manifest.tres",
+      "name": "渡口演出示例"
+    }
+  ],
+  "unlocked_by_default": true,
+  "show_path": "show.json"
+}

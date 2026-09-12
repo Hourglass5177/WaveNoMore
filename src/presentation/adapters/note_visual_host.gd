@@ -549,10 +549,25 @@ func _update_visual(event_id: String, active_entry: Dictionary) -> void:
 
 
 func _place_tap(visual: Node2D, data: Dictionary, seconds: float) -> void:
+	if _place_boss_emission(visual, data, seconds): return
 	var approach: float = maxf(1.0 + (seconds - float(_start_usec(data)) / 1000000.0) / approach_duration_sec, 0.0)
 	visual.position = _sample_approach_path(data, approach)
 	visual.rotation = _sample_approach_tangent(data, approach).angle() if orient_notes_along_path else 0.0
 	if visual.has_method("set_approach_progress"): visual.call("set_approach_progress", approach)
+
+
+func _place_boss_emission(visual: Node2D, data: Dictionary, seconds: float) -> bool:
+	if not data.has("boss_emission"): return false
+	var path: Dictionary = data.boss_emission
+	var time_us := roundi(seconds * 1000000.0)
+	if time_us >= int(path.entry_us): return false
+	var sampled := BossEmissionPath.sample(path, time_us - int(path.release_us))
+	visual.position = sampled.position
+	if orient_notes_along_path: visual.rotation = sampled.velocity.angle()
+	# BOSS 已在画面内出手，不使用普通音符在屏幕外的渐显。
+	if visual.has_method("set_approach_progress"): visual.call("set_approach_progress", 0.0)
+	if visual.has_method("set_body_target"): visual.call("set_body_target", minf(float(visual.get("body_length")), float(sampled.distance)), false)
+	return true
 
 func _pin_hold_visual(entry: Dictionary) -> void:
 	## 首次头判接受时记录实际朝向并开始平滑入圈；续按不重建入圈目标。
@@ -619,6 +634,7 @@ func _update_hold_visual(
 	var data: Dictionary = entry["data"]
 	var failed: bool = bool(entry.get("hold_failed", false))
 	var finished: bool = bool(entry.get("hold_finished", false))
+	if not failed and not finished and _place_boss_emission(visual, data, visual_time_sec): return
 	if hold_active and not failed:
 		_pin_hold_visual(entry)
 	var pinned: bool = entry.has("hold_anchor_distance")
@@ -654,6 +670,9 @@ func _update_hold_visual(
 	visual.call("set_hold_progress", consumed)
 	var state: Dictionary = visual.call("visual_state_snapshot")
 	var remaining_length: float = float(state["visible_length"])
+	if data.has("boss_emission") and not pinned:
+		# 若出手点紧邻入口，回转段不足以展开整条身体，入轨后继续按实际路程延展。
+		remaining_length = minf(remaining_length, float(data.boss_emission.lengths[-1]) + maxf(distance, 0.0))
 	if failed:
 		var target: Vector2 = death_target if affinity == GameplayTypes.Affinity.XUAN else life_target
 		var origin: Vector2 = death_wave_origin if affinity == GameplayTypes.Affinity.XUAN else life_wave_origin

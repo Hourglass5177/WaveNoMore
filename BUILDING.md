@@ -17,9 +17,11 @@
 $godotExe = 'F:/godot 4.7.2/Godot_v4.7.2-stable_win64_console.exe'
 & $godotExe --headless --path . --editor --quit --disable-plugins
 ./tests/editor/run.ps1 -GodotExe $godotExe
-New-Item -ItemType Directory -Force builds/chart-studio | Out-Null
-& $godotExe --headless --path . --export-release 'Chart Studio Windows' 'builds/chart-studio/minghe-chart-studio.exe'
+New-Item -ItemType Directory -Force ../Charts | Out-Null
+& $godotExe --headless --path . --export-release 'Chart Studio Windows' '../Charts/minghe-chart-studio.exe'
 ```
+
+写谱器运行目录统一为仓库旁的 `../Charts/`；配套游戏放在 `../Charts/game/`，发布 ZIP 放在 `../Charts/releases/`。`builds/` 仅用于中间导出、日志和验证产物。
 
 产物可直接在 Windows x86_64 启动，无需安装 Godot。当前验收状态见 [开发记录](docs/chart-editor-progress.md)。打包时附上 `docs/chart-editor-guide.md` 和 `tests/editor/fixtures/training` 示例项目；不附加测试解码依赖。
 

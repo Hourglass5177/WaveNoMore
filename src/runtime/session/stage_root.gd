@@ -92,6 +92,13 @@ var last_replay: ReplayData
 var active_pet: PetDefinition
 var pet_advanced: bool = false
 var _pet_views: Array[PetVisual] = []
+## 演出工具共用播放器；片头片尾不占用谱面或判定时钟。
+var level_show_player: LevelShowPlayer
+var level_show_external := false
+var _level: Dictionary = {}
+var _level_section := "song"
+var _section_elapsed_us := 0.0
+var _pending_level_result := {}
 
 func set_pet(pet: PetDefinition, advanced: bool = false) -> void:
 	active_pet = pet
@@ -153,6 +160,12 @@ func _ready() -> void:
 	note_haptics_feedback.bind(stage_session, controller_haptics)
 	stage_session.result_ready.connect(_on_stage_result_ready)
 	stage_session.visual_frame_ready.connect(_update_pet_views)
+	stage_session.visual_frame_ready.connect(_update_level_show)
+	stage_session.state_changed.connect(_level_state_changed)
+	stage_session.run_started.connect(_level_run_started)
+	chart_scheduler.visual_wave_contacted.connect(_level_wave_contacted)
+	chart_scheduler.visual_note_arrived.connect(_level_note_arrived)
+	chart_scheduler.visual_judged.connect(_level_judged)
 	pause_overlay.exit_requested.connect(_on_exit_requested)
 
 	if initial_stage != null:
@@ -179,12 +192,21 @@ func load_stage(stage: StageDefinition, start_after_prepare: bool = true) -> boo
 		return false
 	_setup_pet_views()
 	stage_show_director.call("configure", stage.stage_show, stage_session.compiled_chart.tempo_map)
+	_configure_level_show(stage)
 	presentation.set_song_duration(stage_session.get_end_song_time_sec())
 	hud.set_song_duration(stage_session.get_end_song_time_sec())
 	stage_loaded.emit(stage.stage_id)
 	if start_after_prepare:
-		return stage_session.start()
+		return start_level()
 	return true
+
+
+func start_level(skip_intro := false) -> bool:
+	if not skip_intro and int(_level.get("intro_us", 0)) > 0:
+		_level_section = "intro"; _section_elapsed_us = 0.0
+		level_show_player.playing = true; level_show_player.seek("intro", 0)
+		return true
+	return stage_session.start()
 
 
 func configure_stage(stage: StageDefinition) -> bool:
@@ -246,6 +268,8 @@ func _reset_parallax(_run_id: int) -> void:
 
 
 func teardown() -> void:
+	_level_section = "stopped"; _pending_level_result.clear()
+	if is_instance_valid(level_show_player): level_show_player.stop_audio()
 	if is_instance_valid(presentation) and is_instance_valid(presentation.parallax_controller) and presentation.parallax_controller.is_inside_tree():
 		presentation.parallax_controller.clear()
 	if is_instance_valid(controller_haptics):
@@ -304,7 +328,81 @@ func _on_stage_result_ready(result: Dictionary) -> void:
 	final.equipped_pet_id = active_pet.pet_id if active_pet != null else ""
 	final.pet_name = active_pet.display_name if active_pet != null else ""
 	final.pet_advanced = pet_advanced
+	if bool(final.get("success", false)) and int(_level.get("outro_us", 0)) > 0 and not stage_session.external_preview:
+		_pending_level_result = final
+		_level_section = "outro"; _section_elapsed_us = 0.0
+		level_show_player.playing = true; level_show_player.seek("outro", 0)
+		return
 	stage_finished.emit(final)
+
+
+func _configure_level_show(stage: StageDefinition) -> void:
+	if is_instance_valid(level_show_player):
+		remove_child(level_show_player); level_show_player.queue_free(); level_show_player = null
+	_level = stage.get_meta("level", {})
+	_level_section = "song"; _pending_level_result.clear()
+	if stage.stage_show.level_data.is_empty(): return
+	level_show_player = LevelShowPlayer.new(); add_child(level_show_player)
+	level_show_player.configure(stage.stage_show.level_data, stage.stage_show.asset_directory, stage.stage_show.asset_packs, stage.chart.difficulty_id)
+	var compiled := LevelBossCompiler.compile(stage, stage_session.compiled_chart.tempo_map, level_show_player)
+	level_show_player.show.tracks.append_array(compiled.tracks)
+	chart_scheduler.configure_boss_emissions(compiled.emissions)
+	level_show_player.seek("song", 0)
+
+
+func _update_level_show(sample: ClockSample) -> void:
+	if level_show_external or not is_instance_valid(level_show_player) or _level_section != "song": return
+	var audio_us := roundi((sample.visual_time_sec + stage_session.stage_definition.song.first_beat_offset_sec) * 1000000.0)
+	level_show_player.advance("song", audio_us, not stage_session.external_preview)
+	# 摄像头只影响环境视差，判定基准和波源坐标不随演出移动。
+	get_parallax_controller().set_camera_position(level_show_player.camera_position)
+
+
+func _level_state_changed(_previous: int, current: int, _reason: StringName) -> void:
+	if not is_instance_valid(level_show_player): return
+	level_show_player.playing = current in [GameplayTypes.StageState.PREROLL, GameplayTypes.StageState.PLAYING, GameplayTypes.StageState.FINISHING]
+	if not level_show_player.playing: level_show_player.stop_audio()
+
+
+func _level_run_started(_run_id: int) -> void:
+	_level_section = "song"; _pending_level_result.clear()
+	if is_instance_valid(level_show_player): level_show_player.seek("song", 0)
+
+
+func _level_wave_contacted(event_id: String, contact: Dictionary) -> void:
+	_level_feedback(event_id, true, int(contact.get("contact_us", roundi(chart_scheduler.visual_time_sec * 1000000))))
+
+
+func _level_note_arrived(event_id: String, arrival: Dictionary) -> void:
+	_level_feedback(event_id, false, int(arrival.get("arrival_us", roundi(chart_scheduler.visual_time_sec * 1000000))))
+
+
+func _level_judged(event_id: String, grade: int) -> void:
+	# Tap 成功等待真实接触；Hold 的失败/结束可直接使用正式可见判定。
+	if grade == GameplayTypes.JudgmentGrade.MISS:
+		_level_feedback(event_id, false, roundi(chart_scheduler.visual_time_sec * 1000000))
+
+
+func _level_feedback(event_id: String, hit: bool, at_us: int) -> void:
+	if not is_instance_valid(level_show_player): return
+	for binding: Dictionary in level_show_player.show.get("bindings", []):
+		if binding.get("difficulty", "") == stage_session.stage_definition.chart.difficulty_id and event_id in binding.get("note_ids", []):
+			level_show_player.feedback(str(binding.object_id), hit, at_us + roundi(stage_session.stage_definition.song.first_beat_offset_sec * 1000000), str(binding.get("hit_effect" if hit else "miss_effect", "")))
+
+
+func _process(delta: float) -> void:
+	if _level_section not in ["intro", "outro"] or not is_instance_valid(level_show_player): return
+	_section_elapsed_us += delta * 1000000.0
+	var duration := int(_level.get(_level_section + "_us", 0))
+	level_show_player.advance(_level_section, mini(roundi(_section_elapsed_us), duration))
+	if _section_elapsed_us < duration: return
+	level_show_player.stop_audio()
+	if _level_section == "intro":
+		_level_section = "song"; stage_session.start()
+	else:
+		_level_section = "finished"
+		var final := _pending_level_result; _pending_level_result = {}
+		if not final.is_empty(): stage_finished.emit(final)
 
 
 func _on_replay_saved(path: String, replay: ReplayData, _run_log: Dictionary) -> void:

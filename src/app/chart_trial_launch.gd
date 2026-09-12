@@ -8,6 +8,7 @@ static func arguments() -> Dictionary:
 	for i in args.size() - 1:
 		match args[i]:
 			"--play-chart": result.path = args[i + 1]
+			"--play-level": result.path = args[i + 1]; result.level = true
 			"--difficulty": result.difficulty_id = args[i + 1]
 			"--trial-status": result.status_path = args[i + 1]
 			"--trial-request": result.request_id = args[i + 1]

@@ -45,13 +45,13 @@ Tuning、Ghost 使用当前游戏的真实实现。多节点 Tuning 的分段适
 在 Game 目录执行工程内验证：
 
 ```powershell
-& 'F:/godot 4.7.2/Godot_v4.7.2-stable_win64_console.exe' --path . -- --play-chart 'E:/大学/MEMO/编钟音游/Game/builds/chart-studio/output/test.zip' --difficulty normal
+& 'F:/godot 4.7.2/Godot_v4.7.2-stable_win64_console.exe' --path . -- --play-chart 'E:/大学/MEMO/编钟音游/Charts/output/test.zip' --difficulty normal
 ```
 
 配套游戏接受相同自有参数：
 
 ```powershell
-& './builds/chart-studio/game/minghe.exe' -- --play-chart 'E:/谱面/test.zip' --difficulty normal --trial-status 'E:/临时/status.json' --trial-request '本次唯一标识'
+& '../Charts/game/minghe.exe' -- --play-chart 'E:/谱面/test.zip' --difficulty normal --trial-status 'E:/临时/status.json' --trial-request '本次唯一标识'
 ```
 
 状态 JSON 的 `interface_version=1`，`request_id` 原样回传，`stage` 为 `recognized`、`ready` 或 `error`；错误包含 `message` 和日志位置。写谱器同时传入 `--log-file` 和 `--trial-log`，后者用于准确回传这次独立日志的位置。`ready` 表示正式 Session 准备成功，之后进行三秒倒数。参数不是新的谱面协议，歌曲仍为 JSON v1、谱面为 JSON v2。开发者可以用共享加载器读取 song.json；本地库导入只接收 ZIP。

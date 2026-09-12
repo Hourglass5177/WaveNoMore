@@ -29,16 +29,7 @@ static func open_project(path: String, doc: StudioDocument) -> String:
 	return ""
 
 static func write_json(path: String, data: Dictionary) -> String:
-	DirAccess.make_dir_recursive_absolute(path.get_base_dir())
-	var file := FileAccess.open(path + ".tmp", FileAccess.WRITE)
-	if file == null: return "无法写入：" + path
-	file.store_string(JSON.stringify(data, "  ", false) + "\n")
-	file.close()
-	if FileAccess.file_exists(path):
-		var backup_error := DirAccess.copy_absolute(path, path + ".bak")
-		if backup_error != OK: return "备份失败：" + path
-	var error := DirAccess.rename_absolute(path + ".tmp", path)
-	return "" if error == OK else "保存失败：" + error_string(error)
+	return LevelProjectIO.write_json(path, data)
 
 static func save_project(doc: StudioDocument, target: String = "") -> String:
 	if target.is_empty(): target = doc.directory

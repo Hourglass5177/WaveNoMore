@@ -7,6 +7,8 @@ param(
 # 默认仅制作写谱器；-WithGame 同时导出配套试玩游戏。下载和安装发生在开发机，谱师运行时全部使用随包文件。
 $ErrorActionPreference = 'Stop'
 $rhythmRoot = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
+$chartsRoot = [IO.Path]::GetFullPath((Join-Path $rhythmRoot '../Charts'))
+New-Item -ItemType Directory -Force $chartsRoot | Out-Null
 Push-Location $rhythmRoot
 try {
     New-Item -ItemType Directory -Force builds/rhythm-models | Out-Null
@@ -25,16 +27,16 @@ try {
     }
     & $rhythmPython -m unittest discover -s tools/rhythm_analyzer -p test_analysis.py
     if ($LASTEXITCODE -ne 0) { throw '节奏拟合测试失败' }
-    & $rhythmPython -m PyInstaller --noconfirm --onedir --name rhythm_analyzer --distpath builds/chart-studio --workpath builds/rhythm-pyinstaller --specpath builds/rhythm-pyinstaller --collect-all beat_this --collect-all rotary_embedding_torch --collect-all soxr tools/rhythm_analyzer/analyze.py
+    & $rhythmPython -m PyInstaller --noconfirm --onedir --name rhythm_analyzer --distpath $chartsRoot --workpath builds/rhythm-pyinstaller --specpath builds/rhythm-pyinstaller --collect-all beat_this --collect-all rotary_embedding_torch --collect-all soxr tools/rhythm_analyzer/analyze.py
     if ($LASTEXITCODE -ne 0) { throw '识别器打包失败' }
-    New-Item -ItemType Directory -Force builds/chart-studio/rhythm_analyzer/models | Out-Null
-    Copy-Item -LiteralPath builds/rhythm-models/final0.ckpt -Destination builds/chart-studio/rhythm_analyzer/models/final0.ckpt
-    & $GodotExe --headless --path . --export-release 'Chart Studio Windows' builds/chart-studio/minghe-chart-studio.exe
+    New-Item -ItemType Directory -Force (Join-Path $chartsRoot rhythm_analyzer/models) | Out-Null
+    Copy-Item -LiteralPath builds/rhythm-models/final0.ckpt -Destination (Join-Path $chartsRoot rhythm_analyzer/models/final0.ckpt)
+    & $GodotExe --headless --path . --export-release 'Chart Studio Windows' (Join-Path $chartsRoot minghe-chart-studio.exe)
     if ($LASTEXITCODE -ne 0) { throw '写谱器导出失败' }
     $packageArguments = @('tools/rhythm_analyzer/package.py')
     if ($WithGame) {
-        New-Item -ItemType Directory -Force builds/chart-studio/game | Out-Null
-        & $GodotExe --headless --path . --export-release 'Windows x86_64 Release' builds/chart-studio/game/minghe.exe
+        New-Item -ItemType Directory -Force (Join-Path $chartsRoot game) | Out-Null
+        & $GodotExe --headless --path . --export-release 'Windows x86_64 Release' (Join-Path $chartsRoot game/minghe.exe)
         if ($LASTEXITCODE -ne 0) { throw '配套游戏导出失败' }
         $packageArguments += '--with-game'
     }

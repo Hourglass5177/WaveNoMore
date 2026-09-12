@@ -142,7 +142,8 @@ func is_stage_unlocked(stage: StageDefinition) -> bool:
 		return false
 	if stage.unlocked_by_default:
 		return true
-	return stage.stage_id in data.get("unlocked_stages", [])
+	var unlock_id := str(stage.get_meta("level", {}).get("level_id", stage.stage_id))
+	return unlock_id in data.get("unlocked_stages", [])
 
 
 func unlock_stage(stage_id: String) -> void:

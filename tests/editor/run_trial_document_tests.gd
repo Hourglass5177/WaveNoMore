@@ -23,7 +23,7 @@ func run() -> void:
 	print("BEFORE ", count, " indexed=", workspace.timeline._indexed_notes.size())
 	workspace.timeline.view_start = 0.0
 	var visible: int = workspace.timeline.visible_notes(0, 10000).size()
-	workspace.playtest.executable = ProjectSettings.globalize_path("res://builds/chart-studio/game/minghe.exe")
+	workspace.playtest.executable = ProjectSettings.globalize_path("res://").path_join("../Charts/game/minghe.exe").simplify_path()
 	workspace.playtest.temp_root = "user://chart_studio/tests/trial_document/trials"
 	workspace._playtest()
 	workspace._notification(Node.NOTIFICATION_APPLICATION_FOCUS_OUT)

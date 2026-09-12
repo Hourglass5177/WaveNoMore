@@ -42,6 +42,9 @@ $godotExe = 'F:\Godot_v4.6.2-stable_win64.exe\Godot_v4.6.2-stable_win64_console.
 
 ## 写谱与美术接入
 
+- 独立关卡编辑器：`scenes/tools/level_studio/studio.tscn`，或 `-- --level-editor`；负责关卡装配、演出、BOSS 绑定和完整关卡包。
+- [关卡编辑器使用说明](docs/level-editor-guide.md)、[素材与数据接口](docs/level-editor-interfaces.md)、[实际 EXE 验证记录](docs/level-editor-validation.md)。示例工程在 `examples/level-studio/渡口演出/`，Windows 程序和交付文件在 `../Levels/`，验证输出在 `../Levels/output/`。
+
 - 新版独立写谱器入口：`scenes/tools/chart_studio/studio.tscn`，或启动参数 `-- --chart-editor`。仅支持生死 Tap/Hold，使用共同 JSON 协议保存、预览和交付。
 - [谱师使用说明](docs/chart-editor-guide.md)、[共同接口](docs/chart-editor-interfaces.md)、[进度与验证记录](docs/chart-editor-progress.md)。当前为开发版，尚未完成全部验收。
 - 新测试：在 Game 目录运行 `./tests/editor/run.ps1 -GodotExe <Godot控制台程序路径>`。

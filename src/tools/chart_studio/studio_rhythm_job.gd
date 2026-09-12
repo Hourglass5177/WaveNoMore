@@ -27,7 +27,7 @@ func start(path: String, span: Vector2, force := false) -> void:
 	_remove_pcm()
 	var base := OS.get_executable_path().get_base_dir()
 	if not OS.has_feature("minghe_chart_editor"):
-		base = ProjectSettings.globalize_path("res://builds/chart-studio")
+		base = ProjectSettings.globalize_path("res://").path_join("../Charts").simplify_path()
 	_exe = base.path_join("rhythm_analyzer/rhythm_analyzer.exe")
 	_model = base.path_join("rhythm_analyzer/models/final0.ckpt")
 	var source := FileAccess.open(path, FileAccess.READ)
