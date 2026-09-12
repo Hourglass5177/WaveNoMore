@@ -59,8 +59,11 @@ func _package() -> void:
 	DirAccess.make_dir_recursive_absolute(_folder)
 	_set_state(true, "正在打包试玩…")
 	_packed = {"error": ""}
+	var chart_issues := {}
+	for chart: SongChart in _snapshot_charts:
+		chart_issues[chart.chart_id] = ChartProjectLoader.check_chart(chart)
 	_task = WorkerThreadPool.add_task(func():
-		_packed.error = ChartPackageWriter.write(_snapshot_song, _snapshot_charts, _source_directory, _folder.path_join("chart.zip")))
+		_packed.error = ChartPackageWriter.write(_snapshot_song, _snapshot_charts, _source_directory, _folder.path_join("chart.zip"), chart_issues))
 
 func _process(delta: float) -> void:
 	if _task >= 0 and WorkerThreadPool.is_task_completed(_task):

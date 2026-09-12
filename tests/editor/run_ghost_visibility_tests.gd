@@ -21,11 +21,28 @@ func run() -> void:
 	check(not overlay.z_as_relative and overlay.z_index > blocker.z_index, "Ghost 不继承波纹层，并高于 Tuning")
 	check(overlay._entries.visibility.points.size() == 5, "表现层保留五个独立目标")
 	if DisplayServer.get_name() != "headless":
+		var draws := [0]
+		overlay.draw.connect(func(): draws[0] += 1)
 		await RenderingServer.frame_post_draw
 		var frame := view.get_texture().get_image()
 		for i in points.size():
 			var p := Vector2i(points[i] * Vector2(640,360))
 			var color := frame.get_pixelv(p)
 			check(color.r > 0.9 and color.g > 0.9 and color.b > 0.9, "目标 %d 未被遮挡" % (i + 1))
+		var static_draws: int = draws[0]
+		for tick: int in 4:
+			overlay.set_visual_time(float(tick) * 0.1)
+			await process_frame
+			await RenderingServer.frame_post_draw
+		check(draws[0] == static_draws, "静止 Ghost 推进时钟不重新生成绘制命令")
+		overlay.resolve_targets({"event_id": "visibility", "success": true})
+		overlay.set_visual_time(1.2)
+		await process_frame
+		await RenderingServer.frame_post_draw
+		check(draws[0] > static_draws and overlay.has_active_entries(), "结算后仍绘制命中动画")
+		overlay.set_visual_time(2.0)
+		await process_frame
+		await RenderingServer.frame_post_draw
+		check(not overlay.has_active_entries(), "结果过期后清除目标")
 	view.queue_free(); await process_frame
 	print("GHOST VISIBILITY TESTS: ", failures); quit(1 if failures else 0)

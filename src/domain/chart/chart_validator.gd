@@ -147,6 +147,8 @@ static func _validate_tuning_sliders(chart: SongChart, fields_by_id: Dictionary,
 			report.add_error(&"tuning_slider.null", "Tuning slider track contains a null event.", "", &"tuning_sliders", 0)
 			continue
 		_register_id(slider.event_id, &"tuning_sliders", slider.tick, ids, report)
+		if not is_finite(slider.visual_radius_px) or slider.visual_radius_px < 0.0:
+			report.add_error(&"tuning_slider.visual_radius", "Tuning 半径必须是有限的非负数，0 表示自动。", slider.event_id, &"tuning_sliders", slider.tick)
 		if slider.tick < 0:
 			report.add_error(&"tuning_slider.before_zero", "Tuning sliders cannot begin before tick 0.", slider.event_id, &"tuning_sliders", slider.tick)
 		if slider.affinity != GameplayTypes.Affinity.ZHU and slider.affinity != GameplayTypes.Affinity.XUAN:

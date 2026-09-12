@@ -49,7 +49,9 @@ func add_difficulty(id: String, copy_current := false) -> void:
 		ChartEditEvents.replace(copied, ChartEditEvents.all(copied), duplicate_events(ChartEditEvents.all(chart()), 0))
 		data = ChartJsonCodec.encode_chart(copied)
 	else:
-		data = {"format": "minghe-chart", "format_version": 1, "notes": [], "sections": [], "presentation": {"theme_id": "default"}, "timing": {"ppq": 480, "first_beat_offset_ms": 0, "chart_offset_ticks": 0, "end_tick": 7680, "tempo_events": [{"tick": 0, "bpm": 120}], "meter_events": [{"tick": 0, "numerator": 4, "denominator": 4}]}}
+		# 与场景下拉列表共用排序，新增空白谱默认选择目录中的最后一项。
+		var default_scene: StageDefinition = ChartSceneLibrary.shared().all_stages().back()
+		data = {"format": "minghe-chart", "format_version": 1, "notes": [], "sections": [], "presentation": {"scene_id": default_scene.stage_id, "use_scene_show": false}, "timing": {"ppq": 480, "first_beat_offset_ms": 0, "chart_offset_ticks": 0, "end_tick": 7680, "tempo_events": [{"tick": 0, "bpm": 120}], "meter_events": [{"tick": 0, "numerator": 4, "denominator": 4}]}}
 	data.merge({"chart_id": new_id("chart"), "song_id": song.song_id, "difficulty_id": id, "difficulty_name": id, "mapper": ""}, true)
 	var decoded := ChartJsonCodec.decode_chart(data)
 	charts.append(decoded.chart)

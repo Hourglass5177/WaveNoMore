@@ -80,6 +80,8 @@ var _su_cursor: int = 0
 var _su_events_by_id: Dictionary[String, Dictionary] = {}
 var _su_pending: Dictionary[String, Dictionary] = {}
 var _su_prepared: Dictionary[String, Dictionary] = {}
+## 固定目标时刻的交点只随新载波改变；不足量时复用上次结果，不按渲染帧重算。
+var _su_candidate_cache: Dictionary[String, Dictionary] = {}
 var _su_resolved_ids: Dictionary[String, bool] = {}
 ## 分配给下一条 JudgmentRecord 的全局递增序号；同微秒也不会重复。
 var _judgment_sequence: int = 0
@@ -129,6 +131,7 @@ func configure(p_compiled: CompiledChart, p_rules: GameplayRuleSet, debug_nonlet
 	_su_events_by_id.clear()
 	_su_pending.clear()
 	_su_prepared.clear()
+	_su_candidate_cache.clear()
 	_su_resolved_ids.clear()
 	for event: Dictionary in compiled.su_manifestations:
 		_su_events_by_id[str(event["event_id"])] = event
@@ -600,6 +603,7 @@ func reset_su_timeline(time_us: int) -> void:
 	## Seek/清场丢弃旧目标；早于新时间的事件不再生成结果或打印历史 Miss。
 	_su_pending.clear()
 	_su_prepared.clear()
+	_su_candidate_cache.clear()
 	_su_manifestations.clear()
 	_su_resolved_ids.clear()
 	_su_cursor = 0
@@ -615,6 +619,7 @@ func clear_su_targets() -> void:
 	## 会话结束释放预读请求、目标、结果和去重状态，不改变其他玩法数据。
 	_su_pending.clear()
 	_su_prepared.clear()
+	_su_candidate_cache.clear()
 	_su_manifestations.clear()
 	_su_resolved_ids.clear()
 
@@ -624,10 +629,16 @@ func _try_prepare_su(event: Dictionary, prepared_at_us: int) -> void:
 	var event_id: String = str(event["event_id"])
 	if _su_prepared.has(event_id):
 		return
-	var points: Array[Vector2] = carrier_engine.find_constructive_intersections(
-		int(event["time_us"]), event["spawn_region_normalized"], int(event["count"]),
-		120.0, hash("%s:%d" % [event_id, int(event["time_us"])]), true
-	)
+	var wave_count: int = carrier_engine.emission_count()
+	# 查询时刻与事件区域固定，只有新发射的波会改变候选；空结果也复用。
+	var cached: Dictionary = _su_candidate_cache.get(event_id, {})
+	if cached.is_empty() or int(cached["wave_count"]) != wave_count:
+		cached = {"wave_count": wave_count, "points": carrier_engine.find_constructive_intersections(
+			int(event["time_us"]), event["spawn_region_normalized"], int(event["count"]),
+			120.0, hash("%s:%d" % [event_id, int(event["time_us"])]), true
+		)}
+		_su_candidate_cache[event_id] = cached
+	var points: Array[Vector2] = cached["points"]
 	if points.is_empty():
 		return
 	# 只有足量时才冻结整批目标；旧逻辑会把第一次找到的一个交点永久当成整批。
@@ -641,10 +652,11 @@ func _try_prepare_su(event: Dictionary, prepared_at_us: int) -> void:
 	target["requested_count"] = int(event["count"])
 	target["prepared_at_us"] = prepared_at_us
 	_su_prepared[event_id] = target
+	_su_candidate_cache.erase(event_id)
 
 
 func _process_su_manifestations(time_us: int, inclusive: bool) -> void:
-	## 待生成目标每帧重试；已有目标冻结坐标，目标时刻只结算一次。
+	## 待生成目标随新载波重试；已有目标冻结坐标，目标时刻只结算一次。
 	if compiled == null:
 		return
 	for event: Dictionary in _su_pending.values():
@@ -667,8 +679,9 @@ func _process_su_manifestations(time_us: int, inclusive: bool) -> void:
 		result["points"] = target.get("points", []).duplicate()
 		result["requested_count"] = int(event["count"])
 		result["generation_issue"] = &"insufficient_constructive_intersections" if result["points"].size() < int(event["count"]) else &""
+		# 数量与失败原因已在快照中；控制台可能阻塞主线程，诊断仅在 --verbose 时输出。
 		if not String(result["generation_issue"]).is_empty():
-			print("[SuManifestation] target_shortage event=%s requested=%d actual=%d reason=%s" % [event_id, int(event["count"]), result["points"].size(), result["generation_issue"]])
+			print_verbose("[SuManifestation] target_shortage event=%s requested=%d actual=%d reason=%s" % [event_id, int(event["count"]), result["points"].size(), result["generation_issue"]])
 		result["success"] = group_success and not result["points"].is_empty()
 		result["failure_reason"] = &"" if result["success"] else (
 			&"group_not_finalized" if not group_ready
@@ -678,8 +691,9 @@ func _process_su_manifestations(time_us: int, inclusive: bool) -> void:
 		_su_manifestations.append(result)
 		_su_resolved_ids[event_id] = true
 		_su_pending.erase(event_id)
+		_su_candidate_cache.erase(event_id)
 		if not bool(result["success"]):
-			print("[SuManifestation] note_miss event=%s requested=%d actual=%d reason=%s uv=none" % [
+			print_verbose("[SuManifestation] note_miss event=%s requested=%d actual=%d reason=%s uv=none" % [
 				event_id, int(event["count"]), result["points"].size(), result["failure_reason"]
 			])
 		_su_cursor += 1

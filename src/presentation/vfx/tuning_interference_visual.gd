@@ -440,7 +440,6 @@ func _consume_su_manifestations(snapshot: Dictionary) -> void:
 	_ensure_su_overlay()
 	var judge_time_sec: float = float(snapshot.get("time_us", 0)) / 1_000_000.0
 	_su_overlay.set("canvas_size", canvas_size)
-	_su_overlay.call("set_visual_time", judge_time_sec)
 	for target: Dictionary in snapshot.get("su_prepared_targets", []):
 		var event_id: String = str(target["event_id"])
 		if _prepared_su_ids.has(event_id):

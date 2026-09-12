@@ -8,9 +8,9 @@ signal catalog_ready
 signal catalog_failed(message: String)
 
 ## 应用启动时默认加载的内容目录资源。
-const DEFAULT_CATALOG_PATH := "res://content/catalogs/mvp_catalog.tres"
+const DEFAULT_CATALOG_PATH := StageCatalogIndex.DEFAULT_CATALOG_PATH
 ## 开发期自动发现关卡包的根目录；正式发布仍应显式登记到 Catalog。
-const STAGES_ROOT := "res://content/stages"
+const STAGES_ROOT := StageCatalogIndex.STAGES_ROOT
 
 ## 当前已加载的目录资源，保存显式登记的关卡、随从和默认规则。
 var data: ContentCatalogData
@@ -33,47 +33,18 @@ func load_catalog(path: String) -> bool:
 		return false
 	data = loaded as ContentCatalogData
 	_rebuild_indices()
-	_discover_stage_packages()
 	catalog_ready.emit()
 	return true
 
 
 func _rebuild_indices() -> void:
-	_stages_by_id.clear()
+	_stages_by_id = StageCatalogIndex.read(data)
 	_pets_by_id.clear()
 	if data == null:
 		return
-	for stage: StageDefinition in data.stages:
-		if stage != null and not stage.stage_id.is_empty():
-			_stages_by_id[stage.stage_id] = stage
 	for pet: PetDefinition in data.pets:
 		if pet != null and not pet.pet_id.is_empty():
 			_pets_by_id[pet.pet_id] = pet
-
-
-func _discover_stage_packages() -> void:
-	# 启动时尝试扫描 stages 目录，把尚未登记的新关卡补进来，主要方便开发。
-	# 正式导出仍应在 Catalog 中显式登记，确保相关资源会被打进发布包。
-	# 直接打开 res:// 虚拟目录；资源进入 PCK 后，转换出的系统绝对路径不再适用。
-	var directory := DirAccess.open(STAGES_ROOT)
-	if directory == null:
-		return
-	var folders := directory.get_directories()
-	folders.sort()
-	for folder: String in folders:
-		var path := STAGES_ROOT.path_join(folder).path_join("stage_definition.tres")
-		if not ResourceLoader.exists(path):
-			continue
-		var stage := ResourceLoader.load(path, "Resource") as StageDefinition
-		if stage == null or stage.stage_id.is_empty():
-			push_error("Invalid stage package: %s" % path)
-			continue
-		if _stages_by_id.has(stage.stage_id):
-			var registered := _stages_by_id[stage.stage_id] as StageDefinition
-			if registered != null and registered.resource_path != stage.resource_path:
-				push_error("Duplicate stage ID '%s': %s / %s" % [stage.stage_id, registered.resource_path, stage.resource_path])
-			continue
-		_stages_by_id[stage.stage_id] = stage
 
 
 func get_stage(stage_id: String) -> StageDefinition:
@@ -90,16 +61,7 @@ func get_pet(pet_id: String) -> PetDefinition:
 
 
 func all_stages() -> Array[StageDefinition]:
-	var result: Array[StageDefinition] = []
-	for value: Variant in _stages_by_id.values():
-		if value is StageDefinition:
-			result.append(value as StageDefinition)
-	result.sort_custom(func(a: StageDefinition, b: StageDefinition) -> bool:
-		if a.order_index == b.order_index:
-			return a.stage_id < b.stage_id
-		return a.order_index < b.order_index
-	)
-	return result
+	return StageCatalogIndex.sorted_stages(_stages_by_id)
 
 
 func default_rule_set() -> GameplayRuleSet:

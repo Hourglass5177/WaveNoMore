@@ -1,7 +1,7 @@
 class_name ChartPackageWriter
 extends RefCounted
 ## 只序列化传入快照；不保存工程、不改变资源元数据或编辑历史。
-static func write(song: SongDefinition, charts: Array[SongChart], directory: String, path: String) -> String:
+static func write(song: SongDefinition, charts: Array[SongChart], directory: String, path: String, chart_issues: Dictionary = {}) -> String:
 	var manifest := ChartJsonCodec.encode_song(song)
 	var audio_path := str(manifest.get("audio", ""))
 	if audio_path.is_empty() or not FileAccess.file_exists(directory.path_join(audio_path)):
@@ -10,7 +10,8 @@ static func write(song: SongDefinition, charts: Array[SongChart], directory: Str
 	manifest.charts = []
 	var files := {}
 	for chart in charts:
-		var issues := ChartProjectLoader.check_chart(chart)
+		# 后台试玩打包接收主线程检查过的同一文档快照，不跨线程访问表现资源缓存。
+		var issues: Array = chart_issues[chart.chart_id] if chart_issues.has(chart.chart_id) else ChartProjectLoader.check_chart(chart)
 		if not issues.is_empty(): return ChartProjectLoader.describe_issues(issues)
 		if not chart.difficulty_id.is_valid_filename(): return "难度标识不能用作文件名：" + chart.difficulty_id
 		var relative := "charts/%s.json" % chart.difficulty_id

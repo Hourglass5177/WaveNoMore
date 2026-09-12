@@ -6,6 +6,8 @@ extends Resource
 @export var tick: int = 0
 @export var hold_id: String = ""
 @export var support_hold_id: String = ""
+## 轨道中心线到画面中心的设计像素距离；0 沿用自动半径，仅影响表现。
+@export var visual_radius_px: float = 0.0
 @export var points: Array[TuningPathPoint] = []
 var duration_ticks: int:
 	get: return points[-1].offset_ticks if not points.is_empty() else 0

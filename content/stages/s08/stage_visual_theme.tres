@@ -11,6 +11,7 @@ script = ExtResource("1_theme")
 theme_id = "s08_combined_lab_theme"
 life_actor_scene = ExtResource("4_lingjun")
 death_actor_scene = ExtResource("4_lingjun")
+actors_in_parallax = true
 zhu_tap_texture = ExtResource("2_dgcur")
 zhu_tap_material = ExtResource("5_tap_eye")
 xuan_tap_texture = ExtResource("2_dgcur")

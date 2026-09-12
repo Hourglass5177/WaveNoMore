@@ -4,7 +4,11 @@ extends Node2D
 ## 素音目标及原地命中动画。存储坐标全部为 UV，只有绘制时转成画布像素。
 ## 外部使用 Gameplay 判定时钟推进；查询和绘制不推进生命周期。
 
-@export var canvas_size: Vector2 = Vector2(1920.0, 1080.0)
+@export var canvas_size: Vector2 = Vector2(1920.0, 1080.0):
+	set(value):
+		if canvas_size == value: return
+		canvas_size = value
+		queue_redraw()
 @export var bone_color: Color = Color("fff1d1")
 @export var failure_color: Color = Color("8c8790")
 @export_range(0.1, 2.0, 0.01) var lifetime_sec: float = 0.78
@@ -35,11 +39,6 @@ func prepare_targets(event_data: Dictionary) -> void:
 		"resolved": false,
 		"success": false,
 	}
-	for index: int in range(points_uv.size()):
-		var uv: Vector2 = points_uv[index]
-		print("[SuManifestation] note_generated event=%s index=%d requested=%d actual=%d success=true uv=(%.4f, %.4f)" % [
-			event_id, index, int(event_data["requested_count"]), points_uv.size(), uv.x, uv.y
-		])
 	queue_redraw()
 
 
@@ -53,24 +52,21 @@ func resolve_targets(result: Dictionary) -> void:
 		return
 	entry["resolved"] = true
 	entry["success"] = bool(result["success"])
-	if bool(entry["success"]):
-		var points_uv: PackedVector2Array = entry["points"]
-		for index: int in range(points_uv.size()):
-			var uv: Vector2 = points_uv[index]
-			print("[SuManifestation] note_hit event=%s index=%d time_us=%d uv=(%.4f, %.4f)" % [
-				event_id, index, int(result["time_us"]), uv.x, uv.y
-			])
 	queue_redraw()
 
 
 func set_visual_time(time_sec: float) -> void:
 	## 使用绝对判定时间过期；等待目标时不回收，暂停不增长动画年龄。
 	_visual_time_sec = time_sec
+	var animating := false
 	for event_id: String in _entries.keys():
 		var entry: Dictionary = _entries[event_id]
-		if bool(entry["resolved"]) and time_sec >= float(entry["target_time_sec"]) + float(entry["duration_sec"]):
+		if not bool(entry["resolved"]): continue
+		animating = true
+		if time_sec >= float(entry["target_time_sec"]) + float(entry["duration_sec"]):
 			_entries.erase(event_id)
-	queue_redraw()
+	# 未结算的目标完全静止，保留已有绘制命令；只重画结果动画或过期帧。
+	if animating: queue_redraw()
 
 
 func clear() -> void:

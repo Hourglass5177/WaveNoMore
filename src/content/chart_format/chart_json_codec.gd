@@ -94,6 +94,9 @@ static func _check_chart_structure(data: Dictionary) -> String:
 			if key == "notes" and not _integer(item.get("duration_ticks", 0)): return "音符 duration_ticks 必须是整数"
 			if key == "notes" and not item.get("behaviors", {}) is Dictionary: return "音符 behaviors 必须是命名行为对象"
 	if not data.get("presentation", {}) is Dictionary: return "presentation 必须是对象"
+	var presentation: Dictionary = data.get("presentation", {})
+	if presentation.has("scene_id") and (not presentation.scene_id is String or presentation.scene_id.is_empty()): return "scene_id 必须是非空场景标识"
+	if presentation.has("use_scene_show") and not presentation.use_scene_show is bool: return "use_scene_show 必须是开关"
 	if not data.get("presentation", {}).get("palette_overrides", {}) is Dictionary: return "palette_overrides 必须是对象"
 	return ""
 

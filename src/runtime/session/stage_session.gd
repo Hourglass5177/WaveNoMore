@@ -910,6 +910,8 @@ func advance_preview(time_us: int, inclusive: bool = true) -> void:
 	chart_scheduler.advance(seconds, seconds)
 	var preview_sample := song_clock.publish_external_time(seconds, not gameplay_coordinator.defer_preview_snapshot)
 	gameplay_coordinator.advance_to(time_us, inclusive)
+	# 大步 Seek 会在本次推进中补发早先的波接触，立即按目标时刻回收已结束的表现。
+	chart_scheduler.advance(seconds, seconds)
 	if not gameplay_coordinator.defer_preview_snapshot:
 		_emit_snapshot_changes(gameplay_coordinator.snapshot())
 		visual_frame_ready.emit(preview_sample)

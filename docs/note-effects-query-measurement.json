@@ -1,0 +1,9 @@
+{
+  "additional_cases": 252,
+  "cases": 720,
+  "dense_legacy_ms": 5093.325,
+  "dense_optimized_ms": 875.265,
+  "failures": 0,
+  "legacy_ms": 507.768,
+  "optimized_ms": 153.759
+}

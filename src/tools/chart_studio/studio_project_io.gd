@@ -116,6 +116,8 @@ static func import_legacy(path: String, target: String, doc: StudioDocument) -> 
 	source_chart.note_events = source_chart.note_events.filter(func(n: NoteEvent) -> bool: return not omitted.has(n.event_id))
 	var raw := ChartJsonCodec.encode_chart(source_chart)
 	raw.merge({"song_id": stage.song.song_id, "difficulty_name": source_chart.difficulty_id, "mapper": "", "presentation": {"theme_id": "default"}}, true)
+	if ChartSceneLibrary.shared().contains_source(stage):
+		raw.presentation = {"scene_id": stage.stage_id, "use_scene_show": false}
 	raw.timing.first_beat_offset_ms = stage.song.first_beat_offset_sec * 1000
 	# 原始文件逐字节归档，连同路径依赖保留；游戏仅解释转换后的 JSON。
 	var pending: Array[String] = [path]
@@ -143,7 +145,10 @@ static func import_legacy(path: String, target: String, doc: StudioDocument) -> 
 		if not audio_error.is_empty(): return audio_error
 		# 导入音乐不能覆盖旧谱原定的尾点。
 		doc.chart().end_tick = source_chart.end_tick
-	var report := {"source": path, "archived_files": archived, "omitted_note_ids": omitted, "notice": "只转换生死 Tap/Hold、时间和段落。旧调频、素音、演出及其他资源已原样归档，不进入新版预览或可玩导出。"}
+	var notice := "只转换生死 Tap/Hold、时间和段落；旧调频、素音和演出数据原样归档，不转换为新版谱面事件。"
+	if raw.presentation.has("scene_id"): notice += "已关联内置场景，场景演出默认关闭，可在预览区单独开启。"
+	else: notice += "未匹配内置场景，使用旧版默认主题。"
+	var report := {"source": path, "archived_files": archived, "omitted_note_ids": omitted, "notice": notice}
 	var error := write_json(target.path_join("legacy/import-report.json"), report)
 	if not error.is_empty(): return error
 	doc.mark_changed()

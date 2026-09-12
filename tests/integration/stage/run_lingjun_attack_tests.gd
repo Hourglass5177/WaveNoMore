@@ -6,12 +6,13 @@ func _initialize() -> void:
 
 
 func _run() -> void:
-	var presentation := GrayboxStagePresentation.new()
+	# --script 入口先于自动加载单例编译；入树后加载表现脚本，避免提前解析 StageSession。
+	var presentation = load("res://src/presentation/adapters/graybox_stage_presentation.gd").new()
 	var scene := load("res://scenes/presentation/actors/lingjun_actor.tscn") as PackedScene
 	var slot := Node2D.new()
 	root.add_child(slot)
-	var life := presentation._instance_if_present(scene, slot)
-	var death := presentation._instance_if_present(scene, slot)
+	var life: Node = presentation._instance_if_present(scene, slot)
+	var death: Node = presentation._instance_if_present(scene, slot)
 	presentation._life_actor = life
 	presentation._death_actor = death
 	life.reparent(root)
