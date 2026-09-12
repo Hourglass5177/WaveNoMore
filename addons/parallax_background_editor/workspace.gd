@@ -489,10 +489,7 @@ func _update_properties() -> void:
 	var editable := document.editable_entry() != null and not surface.preview
 	for field: SpinBox in _fields.values(): field.editable = editable
 	_infinite.disabled = not editable
-	var random_flip: CheckButton = properties.get_node_or_null("RandomFlip")
-	if random_flip != null:
-		random_flip.button_pressed = first.infinite and first.random_flip
-		random_flip.disabled = not editable or not first.infinite
+	var random_flip: CheckButton = _properties.get_node_or_null("RandomFlip")
 	_replace.disabled = not editable
 	for button in _material_buttons: button.disabled = not editable
 	_material_buttons[2].disabled = not editable or not Engine.is_editor_hint()
@@ -505,6 +502,9 @@ func _update_properties() -> void:
 		_material.text = "未设置 ShaderMaterial"
 		_updating = false
 		return
+	if random_flip != null:
+		random_flip.button_pressed = first.infinite and first.random_flip
+	random_flip.disabled = not editable or not first.infinite
 	_fields.X.set_value_no_signal(first.position.x)
 	_fields.Y.set_value_no_signal(first.position.y)
 	_fields["深度"].set_value_no_signal(document.depth_of(document.selected_id))
