@@ -45,6 +45,7 @@ func _reset() -> void:
 		note.prepare({"event_id": "art_note%d" % index, "affinity": index if is_hold else (1 if _entry.asset_id == "note_xuan" else 0), "unit_kind": &"hold" if is_hold else &"tap", "start_us": 0, "end_us": 1000000, "double_tap": true})
 		note.position = Vector2(110, -66 + index * 132) if is_hold else Vector2.ZERO
 		note.set_approach_progress(1.0)
+		if not is_hold: note.rotation = 0.0 if note.affinity == GameplayTypes.Affinity.ZHU else PI
 		if is_hold:
 			note.body_length = 210.0
 			note.set_body_target(210.0); note.advance_body(0.0)

@@ -4,13 +4,15 @@ extends Resource
 ## 所有关卡共用的音符视觉语言；不写入谱面，也不参与判定。
 @export var enabled: bool = true
 @export_group("生音符")
-@export var life_shadow := Color("45201f")
-@export var life_base := Color("87382e")
-@export var life_highlight := Color("ba5841")
-@export var life_halo := Color("ad4638")
+@export var life_shadow := Color("172a31")
+@export var life_base := Color("3f5967")
+@export var life_highlight := Color("73818e")
+@export var life_halo := Color("517587")
 @export_group("死音符")
-@export var death_halo := Color("102a2c")
-@export var death_rim := Color("416466")
+@export var death_shadow := Color("45201f")
+@export var death_base := Color("87382e")
+@export var death_highlight := Color("ba5841")
+@export var death_halo := Color("ad4638")
 @export_group("柔光")
 @export var halo_width_px: float = 36.0
 @export var rim_width_px: float = 3.0
@@ -35,20 +37,28 @@ extends Resource
 @export var hold_shard_count: int = 5
 @export var hold_dust_count: int = 6
 @export var consume_spacing_px: float = 24.0
+@export_group("眼睛与震颤")
+@export var eye_change_sec: float = 0.08
+@export var eye_enlarge: float = 1.20
+@export var fracture_shake_sec: float = 0.06
+@export var fracture_shake_px: float = 2.0
 
 func halo(side: int) -> Color:
 	return death_halo if side == GameplayTypes.Affinity.XUAN else life_halo
 
 func rim(side: int) -> Color:
-	return death_rim if side == GameplayTypes.Affinity.XUAN else life_highlight
+	return death_highlight if side == GameplayTypes.Affinity.XUAN else life_highlight
+
+func base(side: int) -> Color:
+	return death_base if side == GameplayTypes.Affinity.XUAN else life_base
 
 func apply_to(target: ShaderMaterial, side: int) -> void:
 	## 只在装配或换阵营时同步静态色板，逐帧仅更新强度和事件年龄。
 	target.set_shader_parameter(&"effects_enabled", enabled)
-	target.set_shader_parameter(&"life_tint", side == GameplayTypes.Affinity.ZHU)
-	target.set_shader_parameter(&"lacquer_shadow", life_shadow)
-	target.set_shader_parameter(&"lacquer_base", life_base)
-	target.set_shader_parameter(&"lacquer_highlight", life_highlight)
+	var death := side == GameplayTypes.Affinity.XUAN
+	target.set_shader_parameter(&"lacquer_shadow", death_shadow if death else life_shadow)
+	target.set_shader_parameter(&"lacquer_base", base(side))
+	target.set_shader_parameter(&"lacquer_highlight", rim(side))
 	target.set_shader_parameter(&"surface_color", rim(side))
 	target.set_shader_parameter(&"surface_strength", surface_strength)
 	target.set_shader_parameter(&"white_color", white_color)

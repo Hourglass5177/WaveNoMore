@@ -32,8 +32,8 @@ func _run() -> void:
 	host._apply_effect_style(first_tap, {"affinity": GameplayTypes.Affinity.ZHU, "unit_kind": &"tap"})
 	host._apply_effect_style(second_tap, {"affinity": GameplayTypes.Affinity.XUAN, "unit_kind": &"tap"})
 	check(first_tap.tap_material != second_tap.tap_material, "Tap glow materials remain per-instance")
-	check(first_tap.tap_material.get_shader_parameter(&"life_tint") == true, "Zhu Tap receives theme glow")
-	check(second_tap.tap_material.get_shader_parameter(&"life_tint") == false, "Xuan Tap receives theme glow")
+	check(first_tap.tap_material.get_shader_parameter(&"lacquer_base") == style.life_base, "生侧使用青蓝色板")
+	check(second_tap.tap_material.get_shader_parameter(&"lacquer_base") == style.death_base, "死侧使用赭红色板")
 
 	var hold := GrayboxHoldVisual.new()
 	host._apply_effect_style(hold, {"affinity": GameplayTypes.Affinity.ZHU, "unit_kind": &"hold"})
@@ -46,7 +46,7 @@ func _run() -> void:
 	check(hold._edge_head_glow.mesh == null and hold._edge_body_glow.mesh == null, "Pooled Hold clears previous edge geometry")
 	host._apply_effect_style(hold, {"affinity": GameplayTypes.Affinity.XUAN, "unit_kind": &"hold"})
 	check(hold._edge_head_glow.visible and hold._edge_body_glow.visible, "对象池刷新死侧全局柔光")
-	check(head_material.get_shader_parameter(&"glow_color") == style.death_rim, "Pooled Hold refreshes Xuan color")
+	check(head_material.get_shader_parameter(&"glow_color") == style.death_highlight, "Pooled Hold refreshes Xuan color")
 	if DisplayServer.get_name() != "headless":
 		await _render_samples(theme, host)
 

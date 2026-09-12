@@ -1,4 +1,4 @@
-"""从音符透明度生成距离遮罩；美术替换后执行一次，运行时不做模糊。
+"""生成柔光距离遮罩与 Tap 睫毛保护遮罩；美术替换后执行一次。
 
 用法：python tools/generate_note_glow_masks.py [相对于工程的 PNG 路径 ...]
 依赖 Pillow、NumPy。遮罩以 96 px 长边、2 倍采样、64 px 留边存储。
@@ -6,7 +6,7 @@
 from pathlib import Path
 import sys
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageFilter
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULTS = ["tap_base", "hold_note", "hold_head2"]
@@ -44,6 +44,21 @@ def generate(source):
     target = source.with_name(source.stem + "_glow.png")
     Image.fromarray(encoded).save(target)
     print(target.relative_to(ROOT))
+    if source.stem == "tap_base":
+        # 只保护眼眶外的中性浅色细节；眼眶内由原来的眼部遮罩处理。
+        rgba = np.asarray(image, dtype=float) / 255
+        eye = np.asarray(Image.open(source.with_name("tap_musk.png")).convert("L").resize(image.size), dtype=float) / 255
+        rgb = rgba[:, :, :3]
+        low, high = rgb.min(axis=2), rgb.max(axis=2)
+        neutral = np.clip(1 - (high - low) / .16, 0, 1)
+        bright = np.clip((low - .30) / .35, 0, 1)
+        mask = neutral * bright * (1 - eye)
+        # 闭合细小颗粒孔洞，睫毛的灰暗纹理也保留中性，轮廓不向外扩张。
+        closed = Image.fromarray(np.uint8(np.round(mask * 255))).filter(ImageFilter.MaxFilter(3)).filter(ImageFilter.MinFilter(3))
+        mask = np.asarray(closed, dtype=float) * (1 - eye)
+        target = source.with_name("tap_lashes.png")
+        Image.fromarray(np.uint8(np.round(mask))).save(target)
+        print(target.relative_to(ROOT))
 
 if __name__ == "__main__":
     for path in sys.argv[1:] or [f"assets/image/note/{name}.png" for name in DEFAULTS]:

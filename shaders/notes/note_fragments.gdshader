@@ -1,6 +1,7 @@
 shader_type canvas_item;
 render_mode unshaded, blend_mix;
 #include "res://shaders/notes/note_surface.gdshaderinc"
+#include "res://shaders/notes/note_eye.gdshaderinc"
 
 uniform vec2 source_size = vec2(96.0);
 uniform float age = 0.0;
@@ -12,9 +13,9 @@ uniform vec2 impact_direction = vec2(1.0, 0.0);
 uniform float variation = 0.0;
 uniform bool has_texture = true;
 uniform bool has_eye = false;
-uniform sampler2D eye_ball_texture : source_color, filter_linear, repeat_disable;
-uniform sampler2D musk_texture : filter_linear, repeat_disable;
 uniform vec2 eye_offset_uv;
+uniform float shake_sec = 0.06;
+uniform float shake_px = 0.0;
 varying float is_dust;
 varying float piece_age;
 
@@ -31,6 +32,10 @@ void vertex() {
 	vec2 relative = VERTEX - center;
 	VERTEX = center + mat2(vec2(cos(angle), sin(angle)), vec2(-sin(angle), cos(angle))) * relative;
 	VERTEX += direction * motion * distance_px;
+	// 同一事件共用一次衰减震颤，坐标锚点不动，也不依赖逐帧随机数。
+	float shake_age = clamp(age / shake_sec, 0.0, 1.0);
+	float shake = sin(shake_age * 18.849556 + variation) * (1.0 - shake_age) * (1.0 - shake_age);
+	VERTEX += impact_direction * shake * shake_px;
 	COLOR = vec4(1.0);
 }
 
@@ -45,13 +50,11 @@ void fragment() {
 	} else {
 		vec4 texel = has_texture ? texture(TEXTURE, UV) : vec4(surface_color.rgb, 1.0);
 		float eye_mask = smoothstep(0.72, 0.92, min(texel.r, min(texel.g, texel.b)));
-		if (has_eye) {
-			vec4 eye = texture(eye_ball_texture, UV - eye_offset_uv);
-			float coverage = eye.a * texture(musk_texture, UV).r;
-			texel.rgb = mix(texel.rgb, eye.rgb, coverage);
-			eye_mask = texture(musk_texture, UV).r;
-		}
 		vec3 color = note_surface(texel.rgb, eye_mask);
+		if (has_eye) {
+			texel = note_eye(texel, UV, UV - eye_offset_uv);
+			color = texel.rgb;
+		}
 		float flash = 1.0 - smoothstep(0.0, crack_sec + 0.035, age);
 		color = mix(color, white_color.rgb, flash * 0.45);
 		float fade = 1.0 - smoothstep(shard_sec * 0.35, shard_sec, age);

@@ -15,6 +15,7 @@ var _aura: MeshInstance2D
 var _standalone_effects: NoteFragmentHost
 var _finished_effect := false
 var _last_surface_state := Vector3(INF, INF, INF)
+var _last_eye_progress := -1.0
 const SOFT_GLOW = preload("res://src/presentation/vfx/note_soft_glow.gd")
 
 # 时间参数取自共享设计资源；保留只读状态接口供表现测试使用。
@@ -37,7 +38,7 @@ var _glow_change_time := 0.0
 
 # 谱面稳定 ID 用于查找和回收同一个视觉节点；affinity 决定生、死或素的颜色。
 var event_id: String = ""
-# 音符所属阵营；生音符使用红色语义，死音符使用黑色语义，素音使用白色语义。
+# 音符所属阵营；具体色板由全局表现资源提供。
 var affinity: int = GameplayTypes.Affinity.ZHU
 # approach/hold/proximity 均为 0～1 的显示进度，分别表示接近、持续消耗和贴近目标。
 var approach_progress: float = 0.0
@@ -84,6 +85,8 @@ func configure_effect_style(style: NoteEffectStyle, side: int) -> void:
 		tap_material.shader = SURFACE_SHADER
 	material = tap_material if tap_texture != null else null
 	style.apply_to(tap_material, side)
+	tap_material.set_shader_parameter(&"eye_enlarge", style.eye_enlarge)
+	_last_eye_progress = -1.0
 	_last_surface_state = Vector3(INF, INF, INF)
 	if _aura == null:
 		_aura = AURA.new()
@@ -107,15 +110,27 @@ func _sync_effect_surface() -> void:
 		tap_material.set_shader_parameter(&"aura_amount", surface_state.y)
 		tap_material.set_shader_parameter(&"body_brightness", surface_state.z)
 		_last_surface_state = surface_state
+	var eye_progress := eye_hit_progress()
+	if tap_material != null and eye_progress != _last_eye_progress:
+		tap_material.set_shader_parameter(&"eye_hit_progress", eye_progress)
+		_last_eye_progress = eye_progress
 	if _aura != null: _aura.visible = active and tap_texture != null
 	if _edge_glow_visual != null: _edge_glow_visual.visible = active and tap_texture == null
 	if _standalone_effects != null: _standalone_effects.set_time(_glow_time)
+
+func eye_hit_progress() -> float:
+	# 接触时截住进度；短于 80 ms 的命中间隔也立即裂解。
+	if not effect_style.enabled or not _tap_body_only(): return 0.0
+	return smoothstep(0.0, effect_style.eye_change_sec, minf(_glow_time, _tap_death_time) - _tap_hit_time)
 
 func effect_snapshot() -> Dictionary:
 	var result := {"transform": global_transform, "texture": tap_texture, "size": Vector2(96, 96), "affinity": affinity}
 	if tap_material != null and tap_material.get_shader_parameter(&"eye_ball_texture") is Texture2D:
 		result.eye = tap_material.get_shader_parameter(&"eye_ball_texture")
 		result.mask = tap_material.get_shader_parameter(&"musk_texture")
+		result.lashes = tap_material.get_shader_parameter(&"lash_texture")
+		result.eye_progress = eye_hit_progress()
+		result.eye_enlarge = effect_style.eye_enlarge
 		# 冻结触发时眼球偏移，碎片散开后眼球不再跨片移动。
 		var screen := get_global_transform_with_canvas()
 		var delta := get_viewport_rect().size * 0.5 - screen.origin
@@ -419,9 +434,7 @@ func _reset_glow() -> void:
 
 func _affinity_color() -> Color:
 	match affinity:
-		GameplayTypes.Affinity.XUAN:
-			return Color("7e879d")
 		GameplayTypes.Affinity.SU:
 			return Color("ddd4ba")
 		_:
-			return effect_style.life_base
+			return effect_style.base(affinity)

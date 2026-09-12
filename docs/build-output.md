@@ -25,6 +25,8 @@ New-Item -ItemType Directory -Force ../Charts | Out-Null
 
 ## 历史记录
 
+2026-09-13 生死换色与声波折射更新：按当前工作区重新导出写谱器、关卡编辑器及 `builds/windows/minghe-mvp.exe`，本体和 DLL 同步到 Charts、Levels 的 `game/`。三个导出包各通过 31 项背景图形回归与 22 项声波折射像素检查；三个 EXE 的 Compatibility 启动均正常退出，写谱器配套游戏加载教程2 normal 难度返回 `ready`。导入、导出和启动日志无错误或警告，位于 `builds/note-wave-release/`。版本沿用 0.1.4.0，未更新发行 ZIP。
+
 2026-09-13 灵均静息与受击更新：正式角色引用增强呼吸、静息受击、攻击受击及死亡灰烬资源，重新导出 `../Charts/minghe-chart-studio.exe`、`../Levels/minghe-level-studio.exe` 和 `builds/windows/minghe-mvp.exe`，游戏本体及 DLL 同步到两个编辑器的 `game/`。三个导出包均在 Compatibility 下通过 30 项角色姿态、受击、死亡与正式场景接入检查；三个 EXE 图形启动正常退出，配套游戏加载教程2 normal 难度返回 `ready`。导入、导出和运行日志无错误或警告，记录位于 `builds/lingjun-states-release/`。版本沿用 0.1.4.0，本次未更新发行 ZIP。
 
 2026-09-13 白底预览修复：此前记录中的背景 shader UID 重复警告实际会让导出包引用错误材质，不能视为无影响。已修复资源 UID 并重新导出三个程序、同步两个编辑器的配套游戏；直接对三个导出包运行背景图形回归，每个包 17 项通过，1920×1080 与 960×540 的背景均恢复。详情与截图见 [白底修复记录](background-preview-fix.md)，日志在 `builds/background-fix/`。

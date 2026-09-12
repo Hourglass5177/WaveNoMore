@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="Script" path="res://src/presentation/adapters/graybox_stage_presentation.gd" id="1_stage"]
 [ext_resource type="Script" path="res://src/presentation/adapters/graybox_backdrop.gd" id="2_backdrop"]
@@ -10,6 +10,7 @@
 [ext_resource type="Script" path="res://src/presentation/vfx/rapid_interference_visual.gd" id="8_rapid_wave"]
 [ext_resource type="Script" path="res://src/presentation/parallax/parallax_controller.gd" id="9_parallax"]
 [ext_resource type="Script" path="res://src/presentation/parallax/stage_background_base.gd" id="10_background"]
+[ext_resource type="Script" path="res://src/presentation/vfx/wave_distortion_visual.gd" id="11_distortion"]
 
 [sub_resource type="StyleBoxFlat" id="StyleTutorial"]
 bg_color = Color(0.025, 0.03, 0.043, 0.88)
@@ -92,6 +93,10 @@ visible = false
 [node name="CueCanvas" type="CanvasLayer" parent="."]
 layer = 2
 
+[node name="WaveDistortion" type="CanvasLayer" parent="."]
+layer = 3
+script = ExtResource("11_distortion")
+
 [node name="GameplayCueLayer" type="Node2D" parent="CueCanvas"]
 z_index = 10
 
@@ -113,8 +118,13 @@ z_index = 15
 [node name="ShowCueHost" type="Node2D" parent="CueCanvas"]
 z_index = 20
 script = ExtResource("4_show")
+tutorial_panel_path = NodePath("TutorialCanvas/TutorialPanel")
+tutorial_label_path = NodePath("TutorialCanvas/TutorialPanel/Label")
 
-[node name="TutorialPanel" type="PanelContainer" parent="CueCanvas/ShowCueHost"]
+[node name="TutorialCanvas" type="CanvasLayer" parent="CueCanvas/ShowCueHost"]
+layer = 4
+
+[node name="TutorialPanel" type="PanelContainer" parent="CueCanvas/ShowCueHost/TutorialCanvas"]
 offset_left = 560.0
 offset_top = 86.0
 offset_right = 1360.0
@@ -122,7 +132,7 @@ offset_bottom = 158.0
 theme_override_styles/panel = SubResource("StyleTutorial")
 mouse_filter = 2
 
-[node name="Label" type="Label" parent="CueCanvas/ShowCueHost/TutorialPanel"]
+[node name="Label" type="Label" parent="CueCanvas/ShowCueHost/TutorialCanvas/TutorialPanel"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.91, 0.87, 0.76, 1)
 theme_override_colors/font_outline_color = Color(0.01, 0.015, 0.025, 0.9)

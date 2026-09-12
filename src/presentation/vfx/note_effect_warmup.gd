@@ -60,4 +60,13 @@ static func prepare(host: Node) -> void:
 	hold.position = Vector2(22, 22)
 	hold.scale = Vector2(0.04, 0.04)
 	hold.advance_body(0.0)
+	var copy := BackBufferCopy.new()
+	copy.copy_mode = BackBufferCopy.COPY_MODE_VIEWPORT
+	viewport.add_child(copy)
+	var refraction := ColorRect.new()
+	refraction.size = Vector2(32, 32)
+	var refraction_material := ShaderMaterial.new()
+	refraction_material.shader = preload("res://shaders/fields/wave_distortion.gdshader")
+	refraction.material = refraction_material
+	viewport.add_child(refraction)
 	RenderingServer.frame_post_draw.connect(viewport.queue_free, CONNECT_ONE_SHOT)

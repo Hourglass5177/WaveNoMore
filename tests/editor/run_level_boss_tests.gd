@@ -56,11 +56,13 @@ func _run() -> void:
 	var instance_id: int = host._active[note.event_id].node.get_instance_id()
 	host.set_visual_time(9.5)
 	check(host._active[note.event_id].node.position.is_equal_approx(BossEmissionPath.sample(path, 350000).position), "正式音符沿提前段移动")
-	check(is_zero_approx(host._active[note.event_id].node.rotation), "BOSS Tap 发射段保留正向图案")
+	var boss_tap: Node2D = host._active[note.event_id].node
+	check(absf(Vector2.RIGHT.rotated(boss_tap.rotation).dot(BossEmissionPath.sample(path, 350000).velocity.normalized())) > 0.999, "BOSS Tap 沿发射速度倾斜")
+	check(cos(boss_tap.rotation) > 0.0, "BOSS 生侧发射的睫毛朝向下方分界线")
 	scheduler.advance(9.75, 9.75); host.set_visual_time(9.75)
 	check(host._active[note.event_id].node.get_instance_id() == instance_id, "入轨保留同一音符实例")
 	check(host._active[note.event_id].node.position.is_equal_approx(rules.life_note_spawn), "Host 入轨位置吻合常规入口")
-	check(is_zero_approx(host._active[note.event_id].node.rotation), "BOSS Tap 入轨后仍保持正向")
+	check(absf(Vector2.RIGHT.rotated(boss_tap.rotation).dot(normal_velocity.normalized())) > 0.999, "BOSS Tap 入轨后沿常规路线倾斜")
 	# 编辑器回拖要重新进入发射段，不能沿用已入轨的位置。
 	host.set_visual_time(9.5)
 	check(host._active[note.event_id].node.position.is_equal_approx(BossEmissionPath.sample(path, 350000).position), "回拖恢复 BOSS 发射路径")

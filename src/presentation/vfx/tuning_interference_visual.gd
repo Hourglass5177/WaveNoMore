@@ -1,6 +1,10 @@
 class_name TuningInterferenceVisual
 extends ColorRect
 
+signal render_fronts_changed(fronts: Dictionary)
+## 只共享当前帧的渲染输入，既不复制物理历史，也不重新筛选候选。
+var render_fronts: Dictionary = {}
+
 ## 生、死双钟的持续载波与相纹表现。
 ## 每条波前只保存发射时刻，半径始终由“绝对时间差 × 固定波速”重建；
 ## 改变频率只会改变未来波前的发射间隔，绝不会拉伸或加速已经发出的波。
@@ -840,8 +844,18 @@ func _push_runtime_state() -> void:
 	_shader_material.set_shader_parameter(&"death_wavefront_count", death_display_times.size())
 	_shader_material.set_shader_parameter(&"life_guide_aligned", _life_alignment_strength)
 	_shader_material.set_shader_parameter(&"death_guide_aligned", _death_alignment_strength)
-	_shader_material.set_shader_parameter(&"life_emission_times", _padded_wavefront_times(life_display_times))
-	_shader_material.set_shader_parameter(&"death_emission_times", _padded_wavefront_times(death_display_times))
+	var life_times := _padded_wavefront_times(life_display_times)
+	var death_times := _padded_wavefront_times(death_display_times)
+	_shader_material.set_shader_parameter(&"life_emission_times", life_times)
+	_shader_material.set_shader_parameter(&"death_emission_times", death_times)
+	render_fronts = {
+		"canvas_size": canvas_size, "life_source": life_source, "death_source": death_source,
+		"wave_speed_px_sec": wave_speed_px_sec, "max_radius_px": _max_visible_radius(),
+		"visual_time_sec": _visual_time_sec,
+		"life_wavefront_count": life_display_times.size(), "death_wavefront_count": death_display_times.size(),
+		"life_emission_times": life_times, "death_emission_times": death_times,
+	}
+	render_fronts_changed.emit(render_fronts)
 
 
 func _padded_wavefront_times(wavefront_times: Array[float]) -> PackedFloat32Array:

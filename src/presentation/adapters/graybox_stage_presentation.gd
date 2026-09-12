@@ -38,6 +38,8 @@ var stage_definition: StageDefinition
 @onready var parallax_controller: ParallaxController = $ParallaxController
 @onready var _background_base: CanvasLayer = $BackgroundBase
 @onready var _cue_canvas: CanvasLayer = $CueCanvas
+@onready var _distortion: WaveDistortionVisual = $WaveDistortion
+@onready var _tutorial_canvas: CanvasLayer = $CueCanvas/ShowCueHost/TutorialCanvas
 
 ## Tap/Hold 音符槽不随模拟摄像头移动；音符自身路线和身体动画照常推进。
 const NOTE_PARALLAX_DEPTH: int = 0
@@ -116,6 +118,7 @@ func _ready() -> void:
 	_death_actor_slot = get_node(death_actor_slot_path) as Node2D
 	_boundary_slot = get_node(boundary_slot_path) as Node2D
 	_tuning_interference_visual = get_node(tuning_interference_visual_path) as TuningInterferenceVisual
+	_distortion.bind(_tuning_interference_visual)
 	_rapid_interference_visual = get_node(rapid_interference_visual_path) as RapidInterferenceVisual
 	_wave_field_visual = get_node(wave_field_visual_path) as WaveFieldVisual
 	_note_visual_host = get_node(note_visual_host_path) as NoteVisualHost
@@ -311,6 +314,8 @@ func _sync_canvas_layers() -> void:
 	var pose := get_global_transform_with_canvas()
 	_background_base.transform = pose
 	_cue_canvas.transform = pose
+	_distortion.sync_transform(pose)
+	_tutorial_canvas.transform = pose
 
 
 ## 把生、死 Tap/Hold 音符槽注册进静止的深度 0 层。先装配背景，同深度音符在后绘制；

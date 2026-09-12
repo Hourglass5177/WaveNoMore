@@ -49,7 +49,12 @@ func burst(key: String, source: Dictionary, at_sec: float, direction: Vector2, k
 	if source.has("eye"):
 		surface.set_shader_parameter(&"eye_ball_texture", source.eye)
 		surface.set_shader_parameter(&"musk_texture", source.mask)
+		surface.set_shader_parameter(&"lash_texture", source.get("lashes"))
+		surface.set_shader_parameter(&"eye_hit_progress", source.get("eye_progress", 0.0))
+		surface.set_shader_parameter(&"eye_enlarge", source.get("eye_enlarge", STYLE.eye_enlarge))
 		surface.set_shader_parameter(&"eye_offset_uv", source.eye_offset)
+	surface.set_shader_parameter(&"shake_sec", STYLE.fracture_shake_sec)
+	surface.set_shader_parameter(&"shake_px", STYLE.fracture_shake_px if kind == &"tap" else 0.0)
 	surface.set_shader_parameter(&"crack_sec", 0.0 if dust or hit else STYLE.crack_sec)
 	surface.set_shader_parameter(&"shard_sec", STYLE.hold_finish_sec if hold else STYLE.shard_sec)
 	surface.set_shader_parameter(&"dust_sec", duration)

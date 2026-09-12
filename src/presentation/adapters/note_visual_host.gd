@@ -50,7 +50,7 @@ const HOLD_EXIT_SEGMENT_COUNT: int = 96
 @export_range(0.0, 600.0, 1.0) var curve_outer_bend_px: float = 220.0
 ## 共同中心附近控制点的弯曲量，单位为像素；数值越大，旋入中心的转向越强。
 @export_range(0.0, 800.0, 1.0) var curve_center_handle_px: float = 360.0
-## 是否让音符图形沿路线切线旋转；关闭后素材始终保持场景原始朝向。
+## 是否沿路线切线倾斜；Tap 的睫毛始终选择朝向分界线的一面。
 @export var orient_notes_along_path: bool = true
 # 调频和疾振共用中心场域，不依附任一侧普通音符轨道。
 ## 中央判定位置及真 Hold 控制圈心；调频曲线自身使用完整画布坐标。
@@ -365,6 +365,7 @@ func _on_visual_wave_contacted(event_id: String, contact: Dictionary) -> void:
 	_sync_preview_time(visual, at_sec)
 	var payload := contact.duplicate()
 	if StringName(entry.data.get("unit_kind", &"tap")) == &"tap":
+		_place_tap_at(visual, entry.data, at_sec)
 		entry["tap_contact_position"] = contact["position"]
 		visual.position = contact["position"]
 		var origin := death_wave_origin if int(entry.data.get("affinity", 0)) == GameplayTypes.Affinity.XUAN else life_wave_origin
@@ -381,8 +382,12 @@ func _place_tap_at(visual: Node2D, data: Dictionary, at_sec: float) -> void:
 	if not _place_boss_emission(visual, data, at_sec):
 		var approach := maxf(1.0 - (float(_start_usec(data)) / 1000000.0 - at_sec) / approach_duration_sec, 0.0)
 		visual.position = _sample_approach_path(data, approach)
+		if orient_notes_along_path: visual.rotation = _sample_approach_tangent(data, approach).angle()
 		if visual.has_method("set_approach_progress"): visual.call("set_approach_progress", approach)
-	visual.rotation = 0.0
+	# 以所属世界选择朝分界线的一面，中心交汇时不突然翻转整个眼睛。
+	if not orient_notes_along_path: visual.rotation = 0.0
+	var toward_boundary := -1.0 if int(data.get("affinity", 0)) == GameplayTypes.Affinity.XUAN else 1.0
+	if cos(visual.rotation) * toward_boundary < 0.0: visual.rotation += PI
 
 
 func _on_visual_note_arrived(event_id: String, arrival: Dictionary) -> void:

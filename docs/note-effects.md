@@ -8,15 +8,18 @@
 
 | 参数 | 默认值 | 用途 |
 | --- | --- | --- |
-| 生侧暗部／本体／亮部 | `#45201F` / `#87382E` / `#BA5841` | 按原图明度重映射，眼部保留对比 |
-| 生侧外晕 | `#AD4638` | 暖赭红柔光 |
-| 死侧外晕／亮边 | `#102A2C` / `#416466` | 保留本体原色，叠加青黑柔光 |
+| 生侧暗部／本体／亮部 | `#172A31` / `#3F5967` / `#73818E` | 青蓝明度映射，保留颗粒与暗纹 |
+| 生侧外晕 | `#517587` | 稍亮的青蓝柔光 |
+| 死侧暗部／本体／亮部 | `#45201F` / `#87382E` / `#BA5841` | 赭红漆色，眼部与睫毛保留原色 |
+| 死侧外晕 | `#AD4638` | 暖赭红柔光 |
 | 外晕宽度／近边宽度 | 36 / 3 px | 1920×1080 设计像素，随整体画布缩放 |
 | 外晕／本体提亮强度 | 0.80 / 0.18 | 平时的阵营色光 |
 | 条件白光色／强度 | `#E6DDC9` / 0.48 | 双押与实际调频控制的本体提亮 |
 | Tap 提前／渐亮 | 0.60 / 0.15 s | 沿用同 tick 或同组的双侧 Tap 识别 |
 | Hold 渐亮／退出 | 0.10 / 0.08 s | 只读当前侧交互窗口、dragging 与 Hold 控制关联 |
 | 命中亮痕／续行亮度 | 0.08 s / 45% | Tap 接受按键后隐藏圈和所有光晕 |
+| 眼球变化／放大 | 0.08 s / 1.20 倍 | 可动暗色眼球平滑褪成骨白，局部亮度独立于暗淡本体 |
+| 裂解震颤 | 0.06 s / 2 px | 沿冲击方向衰减，只影响音符与碎片 |
 | 裂隙／漆片／光尘 | 0.03 / 0.26 / 0.34 s | 在真实声波接触时替换完整 Tap |
 | Tap 漆片／光尘 | 8 / 12 | 稳定编号的非规则纹理薄片，快速散开后减速 |
 | Hold 收尾 | 5 片＋6 尘，0.24 s | 成功结束播放一次轻量裂解 |
@@ -26,16 +29,27 @@
 
 ## 素材接入
 
-- 保留现有 Tap 底图、眼球和眼部遮罩组合。着色代码共用 `shaders/notes/note_surface.gdshaderinc`；眼球偏移在碎裂时冻结。
+- 保留现有 Tap 底图、眼球和眼部遮罩组合，增加 `tap_lashes.png` 中性睫毛保护遮罩。两侧着色共用 `note_surface.gdshaderinc`，眼球合成共用 `note_eye.gdshaderinc`；碎裂时冻结眼球偏移、放大和褪白进度。
+- 当前原图睫毛向下。正式宿主让 Tap 随普通路线切线或 BOSS 发射速度倾斜，并选朝分界线的一面；当前蓝侧朝下、红侧朝上。原图、眼球、遮罩、柔光与碎片一起变换，不能分别翻转。
 - Hold 继续使用头部贴图与可平铺身体。身体沿原动态脊线绘制，头部与身体采用同一套色板；尖尾包含在身体网格中。
 - 正式贴图的距离遮罩与原图同目录，命名为 `<原图名>_glow.png`。遮罩按长边 96 设计像素生成，2 倍采样、四周预留 64 设计像素；保留线性数据导入。常用柔光宽度在 1～60 px 内调整。
-- 替换 PNG 后运行 `python tools/generate_note_glow_masks.py assets/image/note/新素材.png`。默认不传路径会更新当前 Tap 与两种 Hold 头部；依赖 Pillow、NumPy。只生成遮罩，不改写原图。
+- 替换 PNG 后运行 `python tools/generate_note_glow_masks.py assets/image/note/新素材.png`。默认不传路径会更新当前 Tap 与两种 Hold 头部；依赖 Pillow、NumPy。处理 `tap_base.png` 时还根据中性浅色区域生成睫毛遮罩，并排除 `tap_musk.png` 眼眶内部。换成不同构图后应检查遮罩，必要时由美术提供同尺寸灰度遮罩；白色保护、黑色染色。工具不改写原图。
 - 裂解网格使用原图 UV 和透明轮廓，不需要为当前素材手工切片。工具生成的遮罩随素材一起纳入工程与发布包。
 - 自定义音符场景实现 `configure_effect_style(style, affinity)`，继续响应 `prepare`、`play_timing_confirmed`、`play_wave_contact`、`reset_for_pool`；默认 Tap/Hold 已完整接入。自定义 shader 可包含共用着色文件。
 
 ## 时间与生命周期
 
 按键反馈、真正波接触和 Hold 结束分别触发不同效果。表现宿主将触发时的姿态交给独立 `NoteFragmentHost`，所以本体隐藏或回收不会截断碎片。重复事件由原音符状态和活动效果 ID 去重。
+
+按键到波接触不足 0.08 秒时立即裂解，使用当时眼球变化进度，不延后死亡。震颤以稳定事件 ID 和绝对事件年龄解析求值；暂停冻结，定位重演得到相同姿态，池复用清除眼部状态。
+
+## 声波空间扭曲
+
+`content/presentation/wave_distortion_style.tres` 是全局 `WaveDistortionStyle`：开关、单波位移 2 px、波带半宽 24 px、总位移上限 3 px、波源淡入距离 48 px、远端强度 0.35、画布边缘淡出 24 px。均使用设计画布像素，随窗口和写谱器 SubViewport 整体缩放。
+
+`TuningInterferenceVisual.render_fronts_changed` 发布已筛选的两侧渲染波前，每侧至多 16 条。`WaveDistortionVisual` 直接消费同一批发射时间、波源、波速和视觉时间，不保存第二套发波历史、不触发 Ghost 查询。波带内部以连续压缩—回弹产生折射，带外位移严格为零；交汇只限制位移，无额外闪光或接触圆环扭曲。
+
+玩法绘制完成后，CanvasLayer 3 使用一次 `BackBufferCopy` 和一次屏幕颜色取样。教程面板在第 4 层，HUD 在第 10 层，因此文字、计分、血条及外部编辑器界面不被扭曲。没有可见波前或关闭效果时，同时停用复制和绘制。背景、钟、声波、Tuning、Ghost 自身色板保持原配置。
 
 每次裂解使用一个可复用网格节点，网格模板缓存后不逐帧重建。片中心、片编号和类型存入顶点数据，位移、旋转、断面亮度和透明度由 shader 根据绝对事件年龄求值。没有逐碎片节点、运行时大半径模糊或逐音符 SubViewport；初始化阶段只借用现有一次性小视口预热材质。
 
@@ -54,7 +68,9 @@ ArtLab 的 `note_zhu`、`note_xuan`、`note_hold` 条目接入 `note_effect_prev
 - `tests/editor/run_preview_frame_tests.gd`：定位纹理冻结、取消、后台休眠、重建结果一致性。
 - `tests/visual/measure_note_effect_density.gd`：固定密集负载交替关闭／开启特效。
 - `tests/visual/measure_note_effect_comparison.gd`：真实谱面同进程交替采样；默认使用 `../Charts/charts/test/song.json`。`-- --phases=2` 可运行一组关闭／开启。
+- `tests/visual/run_wave_distortion_tests.gd`：实际像素检查有限波带、HUD、留边、缩放、暂停与恢复。
+- `tests/visual/measure_wave_distortion.gd`：实际 Ghost 谱段交替开关折射；`-- --fixed` 固定正式画面并测试 16＋16 条波前，记录 GPU 时间；`-- --capture` 输出 60 fps 连续帧。
 
 截图与原始测量输出位于 `builds/visual-review/note-effects/`，本轮不导出应用。
 
-本轮结果见 [验证记录](note-effects-validation.md)。
+换色、眼睛与折射结果见 [验证记录](note-wave-effects-validation.md)。早期光效结果保留在 [历史验证记录](note-effects-validation.md)。

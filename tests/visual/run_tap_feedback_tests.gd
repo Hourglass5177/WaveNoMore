@@ -34,11 +34,13 @@ func test_host(side: int, pair: bool, hit: float) -> void:
 	tap.set_note_glow_time(hit, 1.0 - hit)
 	var ring: Node2D = host._active.tap.timing_ring
 	var accepted := tap.global_transform
+	check(Vector2.DOWN.rotated(tap.rotation).y > 0.0 if side == 0 else Vector2.DOWN.rotated(tap.rotation).y < 0.0, "沿路线倾斜且睫毛朝分界线：蓝朝下、红朝上")
 	var grade := GameplayTypes.JudgmentGrade.PERFECT if hit == 1.0 else GameplayTypes.JudgmentGrade.GOOD
 	scheduler.mark_timing_confirmed("tap", grade)
 	check(not ring.visible and tap.glow_amount == 0.0 and tap._tap_body_only(), "命中后隐藏圆环和白光，进入暗淡本体阶段")
 	check(tap._tap_hit_transform.is_equal_approx(accepted), "命中印记记录按键位置")
 	host.set_visual_time(hit + 0.04)
+	check(is_equal_approx(tap.eye_hit_progress(), 0.5), "40 ms 时眼球处于平滑变化中点")
 	check(tap.global_position.distance_to(accepted.origin) > 0.1 and tap._tap_hit_transform.is_equal_approx(accepted), "本体继续移动，印记不跟随")
 	scheduler.mark_timing_confirmed("tap", grade); tap.play_judgment(grade)
 	check(is_equal_approx(tap._tap_hit_time, hit), "重复判定不重播印记")
@@ -46,6 +48,7 @@ func test_host(side: int, pair: bool, hit: float) -> void:
 	scheduler.mark_wave_contacted("tap", contact)
 	host.set_visual_time(hit + 0.15)
 	check(tap.position == contact.position and not tap.visible and host._effects._active.has("tap:break"), "波接触后本体被独立碎片替换")
+	check(tap.eye_hit_progress() == 1.0, "接触后眼球状态冻结")
 	var before := tap._glow_time
 	host.set_visual_time(hit + 0.15)
 	check(tap._glow_time == before and tap.position == contact.position, "暂停保持消散进度和位置")
@@ -57,12 +60,15 @@ func test_host(side: int, pair: bool, hit: float) -> void:
 	host._on_visual_spawn_requested(ChartScheduler.KIND_NOTE, note(side, false))
 	tap = host._active.tap.node
 	check(tap.visible and not tap.timing_confirmed and not tap.wave_contacted and is_inf(tap._tap_hit_time) and is_inf(tap._tap_death_time), "对象池复用清除命中与死亡状态")
+	check(tap.eye_hit_progress() == 0.0, "复用不残留放大变白")
 	tap.play_miss()
 	check(tap.missed and not tap._tap_body_only() and is_inf(tap._tap_death_time), "漏击仍使用原反馈")
 	host.free(); scheduler.free()
 
 func state(preview: Node) -> Dictionary:
 	var result := {}
+	var fronts: Dictionary = preview.stage_root.presentation._tuning_interference_visual.render_fronts
+	result["wave"] = {"time": fronts.visual_time_sec, "life_count": fronts.life_wavefront_count, "death_count": fronts.death_wavefront_count, "life_times": fronts.life_emission_times, "death_times": fronts.death_emission_times}
 	var host: NoteVisualHost = preview.stage_root.presentation._note_visual_host
 	for id: String in host._active:
 		if not id.begins_with("feedback_"): continue
@@ -70,11 +76,11 @@ func state(preview: Node) -> Dictionary:
 		var tap: GrayboxNoteVisual = item.node
 		result[id] = {"position": tap.position, "rotation": tap.rotation, "hit_time": tap._tap_hit_time,
 			"anchor": tap._tap_hit_transform, "death_time": tap._tap_death_time, "visible": tap.visible,
-			"ring": item.timing_ring.visible, "glow": tap.glow_amount}
+			"ring": item.timing_ring.visible, "glow": tap.glow_amount, "eye": tap.eye_hit_progress()}
 	for key: String in host._effects._active:
 		if not key.begins_with("feedback_"): continue
 		var entry: Dictionary = host._effects._active[key]
-		result["fx:" + key] = {"transform": entry.node.transform, "time": entry.time, "age": entry.node.material.get_shader_parameter(&"age")}
+		result["fx:" + key] = {"transform": entry.node.transform, "time": entry.time, "age": entry.node.material.get_shader_parameter(&"age"), "eye": entry.node.material.get_shader_parameter(&"eye_hit_progress"), "variation": entry.node.material.get_shader_parameter(&"variation")}
 	return result
 
 func test_preview() -> void:

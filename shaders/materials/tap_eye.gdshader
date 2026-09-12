@@ -2,8 +2,7 @@ shader_type canvas_item;
 render_mode unshaded, blend_mix;
 #include "res://shaders/notes/note_surface.gdshaderinc"
 
-uniform sampler2D musk_texture : filter_linear, repeat_disable;
-uniform sampler2D eye_ball_texture : source_color, filter_linear, repeat_disable;
+#include "res://shaders/notes/note_eye.gdshaderinc"
 uniform float eye_offset_px : hint_range(0.0, 32.0, 0.1) = 10.0;
 uniform float eye_falloff_radius_px : hint_range(1.0, 1000.0, 1.0) = 128.0;
 
@@ -25,12 +24,5 @@ void fragment() {
 	// Reverse sampling moves the eye toward the center in screen space.
 	vec2 eye_uv = UV - dFdx(UV) * offset_px.x - dFdy(UV) * offset_px.y;
 	vec4 base = texture(TEXTURE, UV);
-	vec4 eye = texture(eye_ball_texture, eye_uv);
-	float inside = step(0.0, eye_uv.x) * step(eye_uv.x, 1.0) * step(0.0, eye_uv.y) * step(eye_uv.y, 1.0);
-	// Mask stays on the base: black preserves base; white composites the moving eye over it.
-	float eye_alpha = eye.a * texture(musk_texture, UV).r * inside;
-	float alpha = eye_alpha + base.a * (1.0 - eye_alpha);
-	vec3 premultiplied = eye.rgb * eye_alpha + base.rgb * base.a * (1.0 - eye_alpha);
-	vec3 composed = alpha > 0.0 ? premultiplied / alpha : vec3(0.0);
-	COLOR = vec4(note_surface(composed, texture(musk_texture, UV).r), alpha) * item_color;
+	COLOR = note_eye(base, UV, eye_uv) * item_color;
 }

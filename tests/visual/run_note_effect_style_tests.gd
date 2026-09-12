@@ -20,6 +20,7 @@ func tap(parent: Node, side: int, at: Vector2) -> GrayboxNoteVisual:
 	parent.add_child(item)
 	item.prepare({"event_id": str(at), "affinity": side, "unit_kind": &"tap", "double_tap": true})
 	item.position = at
+	item.rotation = 0.0 if side == 0 else PI
 	item.set_approach_progress(1.0)
 	item.set_note_glow_time(0.0, 1.0)
 	return item
@@ -40,11 +41,16 @@ func run() -> void:
 	var b := tap(root, 1, Vector2(500, 150))
 	check(a.effect_style == b.effect_style and a.effect_style == STYLE, "两侧使用同一全局设计资源")
 	check(a.material != b.material, "贴图参数属于各自实例")
-	check(a.tap_material.get_shader_parameter(&"life_tint") and not b.tap_material.get_shader_parameter(&"life_tint"), "仅生侧重映射底色")
+	check(a.tap_material.get_shader_parameter(&"lacquer_base") == STYLE.life_base and b.tap_material.get_shader_parameter(&"lacquer_base") == STYLE.death_base, "两侧分别使用完整青蓝与赭红色板")
 	a.set_note_glow_time(0.5, 0.5)
 	check(float(a.tap_material.get_shader_parameter(&"condition_light")) > 0.0, "条件白光进入正式贴图本体")
 	a.play_timing_confirmed(GameplayTypes.JudgmentGrade.PERFECT)
 	check(not a._aura.visible and is_equal_approx(a.tap_material.get_shader_parameter(&"body_brightness"), 0.45), "命中后熄灭阵营光并保留 45% 本体")
+	a.set_note_glow_time(0.54, 0.0)
+	a.play_wave_contact({"contact_us": 540000, "position": a.position})
+	var frozen: ShaderMaterial = a._standalone_effects._active[a.event_id + ":break"].node.material
+	check(not a.visible and is_equal_approx(frozen.get_shader_parameter(&"eye_hit_progress"), 0.5), "短间隔接触立即裂解并保留半程眼球")
+	check(frozen.get_shader_parameter(&"lash_texture") == a.tap_material.get_shader_parameter(&"lash_texture"), "漆片复用睫毛保护遮罩")
 	a.play_wave_contact({"contact_us": 600000, "position": a.position})
 	a.set_note_glow_time(0.65, 0.0)
 	check(not a.visible and a._standalone_effects._active.has(a.event_id + ":break"), "ArtLab 独立实例也播放裂解")
@@ -89,7 +95,9 @@ func run() -> void:
 		sample.art_lab_set_progress(0.0); sample.art_lab_set_progress(0.12); sample.art_lab_set_progress(0.25)
 		check(not sample._notes[0].visible and sample._notes[0]._standalone_effects._active.size() > 0, "ArtLab 完整播放命中与裂解 " + entry.asset_id)
 	canvas.free()
-	if DisplayServer.get_name() != "headless": await render_samples()
+	if DisplayServer.get_name() != "headless":
+		await render_samples()
+		await render_eye_sequence()
 	print("NOTE EFFECT STYLE: %d checks, %d failures" % [checks, failures])
 	quit(1 if failures else 0)
 
@@ -109,7 +117,7 @@ func render_samples() -> void:
 		background.size = Vector2(1600, 500)
 		background.color = Color("12282a") if side == 0 else Color("713e35")
 		stage.add_child(background)
-		label(stage, "生 · 赭红漆色" if side == 0 else "死 · 青黑柔光", Vector2(30, side * 500 + 20), 30)
+		label(stage, "生 · 青蓝" if side == 0 else "死 · 赭红", Vector2(30, side * 500 + 20), 30)
 		for i: int in 6:
 			var x := 160.0 + i * 250.0
 			var y := 200.0 + side * 500
@@ -137,4 +145,42 @@ func render_samples() -> void:
 	DirAccess.make_dir_recursive_absolute(OUTPUT)
 	screenshot.save_png(OUTPUT + "/palette-and-fracture.png")
 	check(screenshot.get_pixel(160, 200) != Color("12282a"), "Compatibility 实际绘制正式素材")
+	# 对原图明确属于睫毛的高覆盖像素取样，两侧均不应出现阵营色偏。
+	var lashes: Image = (load("res://assets/image/note/tap_lashes.png") as Texture2D).get_image()
+	var base_image := THEME.zhu_tap_texture.get_image()
+	var neutral := true; var sampled := 0
+	for y: int in 96:
+		for x: int in 96:
+			var texel := Vector2i((Vector2(x + 0.5, y + 0.5) / 96.0) * Vector2(lashes.get_size()) - Vector2(0.5, 0.5))
+			var interior := true
+			for dy: int in 2:
+				for dx: int in 2:
+					var p := Vector2i(clampi(texel.x + dx, 0, lashes.get_width() - 1), clampi(texel.y + dy, 0, lashes.get_height() - 1))
+					interior = interior and lashes.get_pixelv(p).r > 0.99 and base_image.get_pixelv(p).a > 0.99
+			if not interior: continue
+			for side: int in 2:
+				var point := Vector2i(112 + x, 152 + y) if side == 0 else Vector2i(207 - x, 747 - y)
+				var color := screenshot.get_pixelv(point)
+				neutral = neutral and maxf(color.r, maxf(color.g, color.b)) - minf(color.r, minf(color.g, color.b)) < 0.04
+				sampled += 1
+	check(sampled > 20 and neutral, "两侧正式睫毛像素保持中性浅色（%d 个内部样本）" % sampled)
+	viewport.queue_free()
+
+func render_eye_sequence() -> void:
+	var viewport := SubViewport.new(); viewport.size = Vector2i(1000, 460)
+	viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS; root.add_child(viewport)
+	for side: int in 2:
+		var background := ColorRect.new(); background.position.y = side * 230
+		background.size = Vector2(1000, 230); background.color = Color("12282a") if side == 0 else Color("713e35"); viewport.add_child(background)
+		for index: int in 4:
+			var point := Vector2(125 + index * 250, 140 + side * 230)
+			label(viewport, ["命中 0 ms", "命中 40 ms", "命中 80 ms", "40 ms 接触即裂解"][index], point - Vector2(90, 105), 20)
+			var item := tap(viewport, side, point)
+			item.set_note_glow_time(1.0, 0.0); item.play_timing_confirmed(GameplayTypes.JudgmentGrade.PERFECT)
+			item.set_note_glow_time(1.0 + [0.0, 0.04, 0.08, 0.04][index], 0.0)
+			if index == 3:
+				item.play_wave_contact({"contact_us": 1040000, "position": point})
+				item.set_note_glow_time(1.08, 0.0)
+	await process_frame; await RenderingServer.frame_post_draw
+	viewport.get_texture().get_image().save_png(OUTPUT + "/eye-sequence.png")
 	viewport.queue_free()

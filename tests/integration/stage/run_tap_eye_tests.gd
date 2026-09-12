@@ -32,6 +32,7 @@ func _run() -> void:
 	material.set_shader_parameter("eye_ball_texture", ImageTexture.create_from_image(eye))
 	# 旧断言隔离眼球机制；泛光在后面的独立像素检查中开启。
 	material.set_shader_parameter("surface_strength", 0.0)
+	material.set_shader_parameter("effects_enabled", false)
 	sprite.material = material
 	viewport.add_child(sprite)
 	for dimensions in [Vector2i(640, 360), Vector2i(360, 640)]:
@@ -80,6 +81,28 @@ func _run() -> void:
 	await RenderingServer.frame_post_draw
 	var outside := viewport.get_texture().get_image().get_pixel(180, 100)
 	check(outside.r < 0.02 and absf(outside.a - 0.5) < 0.02, "Out-of-bounds eye is transparent")
+	# 独立量测可动暗眼球的放大与褪白，眼眶以外的像素必须保持不变。
+	sprite.position = Vector2(320, 180)
+	sprite.texture = solid(Color(0.2, 0.2, 0.2))
+	material.set_shader_parameter("eye_offset_px", 0.0)
+	eye.fill(Color.TRANSPARENT); eye.fill_rect(Rect2i(28, 28, 8, 8), Color(0.1, 0.1, 0.1))
+	material.set_shader_parameter("eye_ball_texture", ImageTexture.create_from_image(eye))
+	var aperture := Image.create(64, 64, false, Image.FORMAT_RGBA8)
+	aperture.fill(Color.BLACK); aperture.fill_rect(Rect2i(22, 22, 20, 20), Color.WHITE)
+	material.set_shader_parameter("musk_texture", ImageTexture.create_from_image(aperture))
+	material.set_shader_parameter("eye_hit_progress", 1.0)
+	await process_frame; await RenderingServer.frame_post_draw
+	var expanded := viewport.get_texture().get_image()
+	var lit_width := 0
+	for x: int in range(300, 340):
+		if expanded.get_pixel(x, 180).r > 0.6: lit_width += 1
+	check(lit_width >= 9 and lit_width <= 11, "命中眼球由 8 px 放大至约 9.6 px 并变白")
+	var cropped := true
+	for y: int in range(149, 211):
+		for x: int in range(289, 351):
+			if abs(x - 320) > 11 or abs(y - 180) > 11:
+				cropped = cropped and absf(expanded.get_pixel(x, y).r - 0.2) < 0.02
+	check(cropped, "放大与变白始终裁切在眼睛内部")
 	# Render the actual s08 textures using the production Tap visual.
 	sprite.queue_free()
 	viewport.size = Vector2i(640, 360)
