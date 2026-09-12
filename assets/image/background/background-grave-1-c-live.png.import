@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dgroebfyynokr"
-path="res://.godot/imported/background-1-1-c-live.png-896374934aa9dda2903ad18bb87f9473.ctex"
+path="res://.godot/imported/background-grave-1-c-live.png-a314321198c51a308adcc3e9f4438efd.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/image/background/background-1-1-c-live.png"
-dest_files=["res://.godot/imported/background-1-1-c-live.png-896374934aa9dda2903ad18bb87f9473.ctex"]
+source_file="res://assets/image/background/background-grave-1-c-live.png"
+dest_files=["res://.godot/imported/background-grave-1-c-live.png-a314321198c51a308adcc3e9f4438efd.ctex"]
 
 [params]
 

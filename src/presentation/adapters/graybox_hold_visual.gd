@@ -25,6 +25,10 @@ var _runtime_body_material: ShaderMaterial
 var _body_material_source: ShaderMaterial
 var _body_distances := PackedFloat32Array()
 var _body_visual_time_sec: float = 0.0
+var _hold_edge_glow_enabled: bool = true
+var _hold_edge_glow_color: Color = Color.WHITE
+var _edge_head_glow: MeshInstance2D
+var _edge_body_glow: MeshInstance2D
 
 @export_group("Hold Textures")
 ## 可选头部贴图，局部 +X 朝前；为空时保留程序化头部。
@@ -65,6 +69,19 @@ var _head_heading_controlled: bool = false
 @export_range(0.0, 60.0, 0.1) var angular_drag: float = 8.0
 ## 固定积分步长（秒），默认每秒 120 次。
 @export_range(0.001, 0.033333, 0.000001) var integration_step_sec: float = 1.0 / 120.0
+
+
+func configure_edge_glow(enabled: bool, color: Color) -> void:
+	## Host 在每次创建或对象池复用时刷新完整 Hold 的常驻阵营边缘光。
+	_hold_edge_glow_enabled = enabled
+	_hold_edge_glow_color = color
+	_ensure_edge_glow_visuals()
+	_edge_head_glow.configure_style(color, true)
+	_edge_body_glow.configure_style(color, true)
+	_edge_head_glow.set_light(1.0 if enabled else 0.0, 12.0)
+	_edge_body_glow.set_light(1.0 if enabled else 0.0, 12.0)
+	_update_body_material()
+	queue_redraw()
 
 
 func prepare(view_model: Dictionary) -> void:
@@ -147,6 +164,8 @@ func _draw() -> void:
 	var half_widths := PackedFloat32Array()
 	if _path_spine.size() >= 2:
 		_build_spine(spine, half_widths)
+		if _edge_body_glow != null and _hold_edge_glow_enabled:
+			_edge_body_glow.body(spine, half_widths)
 		# 贴图身体由独立 CanvasItem 绘制，其 Shader 不会覆盖头部。
 		if body_texture == null:
 			_draw_body(spine, half_widths, color, body_reveal)
@@ -157,11 +176,33 @@ func _draw() -> void:
 		var head_extent := Vector2(96.0, 96.0)
 		if source_size.x > 0.0 and source_size.y > 0.0:
 			head_extent = source_size * (96.0 / maxf(source_size.x, source_size.y))
+		if _edge_head_glow != null and _hold_edge_glow_enabled:
+			_edge_head_glow.scale = Vector2(1.0, -1.0)
+			_edge_head_glow.texture_shape(head_texture, Rect2(-head_extent * 0.5, head_extent))
 		draw_set_transform(Vector2.ZERO, 0.0, Vector2(1.0, -1.0))
 		draw_texture_rect(head_texture, Rect2(-head_extent * 0.5, head_extent), false, Color(1.0, 1.0, 1.0, head_alpha))
 		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	else:
+		if _edge_head_glow != null and _hold_edge_glow_enabled:
+			_edge_head_glow.scale = Vector2.ONE
+			_edge_head_glow.polygon(_head_polygon())
 		_draw_head(color, head_alpha)
+
+
+func _ensure_edge_glow_visuals() -> void:
+	## 头部和动态身体各自使用实例材质；尖尾属于身体网格并随其一起发光。
+	if _edge_head_glow == null:
+		_edge_head_glow = SOFT_GLOW.new()
+		_edge_head_glow.name = "HeadEdgeGlow"
+		_edge_head_glow.show_behind_parent = true
+		_edge_head_glow.z_index = -1
+		add_child(_edge_head_glow)
+	if _edge_body_glow == null:
+		_edge_body_glow = SOFT_GLOW.new()
+		_edge_body_glow.name = "BodyEdgeGlow"
+		_edge_body_glow.show_behind_parent = true
+		_edge_body_glow.z_index = -2
+		add_child(_edge_body_glow)
 
 
 func visual_state_snapshot() -> Dictionary:
@@ -305,6 +346,10 @@ func _clear_body_render_state() -> void:
 		_body_renderer.material = null
 		_body_renderer.texture = null
 		_body_renderer.visible = false
+	if _edge_head_glow != null:
+		_edge_head_glow.clear_geometry()
+	if _edge_body_glow != null:
+		_edge_body_glow.clear_geometry()
 
 
 func _hold_color() -> Color:
@@ -399,7 +444,19 @@ func _draw_head(color: Color, alpha: float) -> void:
 		return
 	# 尖端朝局部 +X，Host 只需按路径切线设置 rotation，整条灵体就会
 	# 始终面向生／死玩家，而不需要视觉脚本知道世界坐标。
-	var head := PackedVector2Array([
+	var head := _head_polygon()
+	draw_colored_polygon(head, Color(color.darkened(0.16), alpha * 0.96))
+	draw_polyline(PackedVector2Array([head[0], head[1], head[3], head[5], head[6], head[7], head[0]]), Color(color.lightened(0.32), alpha), 3.0, true)
+	var eye_color := Color("f7edcf", alpha * (0.42 if missed else 0.94))
+	draw_circle(Vector2(13.0, 0.0), 8.0, Color(0.02, 0.02, 0.03, alpha * 0.86), true, -1.0, true)
+	draw_circle(Vector2(16.0, 0.0), 3.2, eye_color, true, -1.0, true)
+	draw_line(Vector2(-14.0, -17.0), Vector2(7.0, -7.0), Color("eee3c7", alpha * 0.72), 2.0, true)
+	draw_line(Vector2(-14.0, 17.0), Vector2(7.0, 7.0), Color("eee3c7", alpha * 0.72), 2.0, true)
+
+
+func _head_polygon() -> PackedVector2Array:
+	## 程序化头部与其 Shader 发光层共享同一轮廓。
+	return PackedVector2Array([
 		Vector2(-27.0, -27.0),
 		Vector2(5.0, -36.0),
 		Vector2(40.0, -8.0),
@@ -409,13 +466,6 @@ func _draw_head(color: Color, alpha: float) -> void:
 		Vector2(-27.0, 27.0),
 		Vector2(-16.0, 0.0),
 	])
-	draw_colored_polygon(head, Color(color.darkened(0.16), alpha * 0.96))
-	draw_polyline(PackedVector2Array([head[0], head[1], head[3], head[5], head[6], head[7], head[0]]), Color(color.lightened(0.32), alpha), 3.0, true)
-	var eye_color := Color("f7edcf", alpha * (0.42 if missed else 0.94))
-	draw_circle(Vector2(13.0, 0.0), 8.0, Color(0.02, 0.02, 0.03, alpha * 0.86), true, -1.0, true)
-	draw_circle(Vector2(16.0, 0.0), 3.2, eye_color, true, -1.0, true)
-	draw_line(Vector2(-14.0, -17.0), Vector2(7.0, -7.0), Color("eee3c7", alpha * 0.72), 2.0, true)
-	draw_line(Vector2(-14.0, 17.0), Vector2(7.0, 7.0), Color("eee3c7", alpha * 0.72), 2.0, true)
 
 
 ## Host 在首次命中时设置设计画布坐标系中的控制圈心；不改变实际姿态。

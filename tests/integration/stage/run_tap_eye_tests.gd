@@ -30,6 +30,8 @@ func _run() -> void:
 	material.shader = load("res://shaders/materials/tap_eye.gdshader")
 	material.set_shader_parameter("musk_texture", solid(Color.WHITE))
 	material.set_shader_parameter("eye_ball_texture", ImageTexture.create_from_image(eye))
+	# 旧断言隔离眼球机制；泛光在后面的独立像素检查中开启。
+	material.set_shader_parameter("glow_enabled", false)
 	sprite.material = material
 	viewport.add_child(sprite)
 	for dimensions in [Vector2i(640, 360), Vector2i(360, 640)]:
@@ -51,11 +53,13 @@ func _run() -> void:
 							var alpha := image.get_pixel(x, y).a
 							weight += alpha
 							sum += Vector2(x + 0.5, y + 0.5) * alpha
-					var max_center_distance := 0.5 * Vector2(dimensions).length()
-					var expected_offset := 4.0 * minf(offset.length() / max_center_distance, 1.0)
+					# 当前机制在中心附近用 smoothstep 衰减，128 px 外保持 10 px 默认半径。
+					var distance_px: float = Vector2(offset).length()
+					var falloff: float = smoothstep(0.0, 128.0, distance_px)
+					var expected_offset: float = 10.0 * falloff
 					var expected: Vector2 = sprite.position - offset.normalized() * expected_offset
 					var measured := sum / maxf(weight, 0.001)
-					check(weight > 0.0 and measured.distance_to(expected) < 1.5, "Eye direction/scale: %s %s %s" % [offset, angle, zoom])
+					check(weight > 0.0 and measured.distance_to(expected) < 1.5, "Eye direction/scale: %s %s %s measured=%s expected=%s" % [offset, angle, zoom, measured, expected])
 	viewport.size = Vector2i(640, 360)
 	sprite.position = Vector2(180, 100)
 	sprite.rotation = 0.0
@@ -76,6 +80,26 @@ func _run() -> void:
 	await RenderingServer.frame_post_draw
 	var outside := viewport.get_texture().get_image().get_pixel(180, 100)
 	check(outside.r < 0.02 and absf(outside.a - 0.5) < 0.02, "Out-of-bounds eye is transparent")
+	var glow_source := Image.create(64, 64, false, Image.FORMAT_RGBA8)
+	glow_source.fill(Color.TRANSPARENT)
+	glow_source.fill_rect(Rect2i(24, 24, 16, 16), Color(0.08, 0.08, 0.08, 1.0))
+	sprite.texture = ImageTexture.create_from_image(glow_source)
+	material.set_shader_parameter("musk_texture", solid(Color.BLACK))
+	material.set_shader_parameter("eye_ball_texture", solid(Color.TRANSPARENT))
+	material.set_shader_parameter("glow_enabled", true)
+	material.set_shader_parameter("glow_color", Color(1.0, 0.1, 0.05, 1.0))
+	material.set_shader_parameter("glow_width_px", 16.0)
+	await process_frame
+	await RenderingServer.frame_post_draw
+	var glow_image := viewport.get_texture().get_image()
+	var body_pixel := glow_image.get_pixel(180, 100)
+	var edge_pixel := glow_image.get_pixel(190, 100)
+	check(body_pixel.r < 0.12 and body_pixel.a > 0.98, "Glow preserves opaque Tap body")
+	check(edge_pixel.r > 0.2 and edge_pixel.a > 0.05, "Glow extends colored alpha outside Tap body")
+	material.set_shader_parameter("glow_enabled", false)
+	await process_frame
+	await RenderingServer.frame_post_draw
+	check(viewport.get_texture().get_image().get_pixel(190, 100).a < 0.02, "Disabled glow restores transparent edge")
 	# Render the actual s08 textures using the production Tap visual.
 	sprite.queue_free()
 	viewport.size = Vector2i(640, 360)

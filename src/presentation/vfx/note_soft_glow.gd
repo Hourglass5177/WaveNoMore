@@ -8,6 +8,8 @@ var _quad := QuadMesh.new()
 var _strip := ArrayMesh.new()
 var width_px := 30.0
 var _amount := -1.0
+var _glow_color := Color.WHITE
+var _edge_only := false
 var _bounds := Rect2()
 var _polygon := PackedVector2Array()
 var _texture_source: Texture2D
@@ -31,6 +33,29 @@ func set_light(amount: float, width: float) -> void:
 	if width_px != width:
 		width_px = width
 		_shader_material.set_shader_parameter(&"radius_px", width)
+
+
+func configure_style(color: Color, edge_only: bool) -> void:
+	## 设置光效颜色与绘制范围；材质始终属于当前实例，不会回写共享资源。
+	_glow_color = color
+	_edge_only = edge_only
+	_shader_material.set_shader_parameter(&"glow_color", color)
+	_shader_material.set_shader_parameter(&"edge_only", edge_only)
+
+
+func clear_geometry() -> void:
+	## 对象池回收时丢弃上一个音符的轮廓，避免重新启用后显示旧网格。
+	mesh = null
+	_bounds = Rect2()
+	_polygon.clear()
+	_texture_source = null
+	_texture_bounds = Rect2()
+	_attachment = Vector4(INF, INF, INF, INF)
+	_attachment_width = -1.0
+	_vertices.clear()
+	_attributes.clear()
+	_strip.clear_surfaces()
+
 
 func polygon(points: PackedVector2Array) -> void:
 	var bounds := Rect2(points[0], Vector2.ZERO)
@@ -77,6 +102,8 @@ func body(spine: PackedVector2Array, widths: PackedFloat32Array) -> void:
 		_shader_material.shader = BODY_SHADER
 		_shader_material.set_shader_parameter(&"radius_px", width_px)
 		_shader_material.set_shader_parameter(&"strength", _amount)
+		_shader_material.set_shader_parameter(&"glow_color", _glow_color)
+		_shader_material.set_shader_parameter(&"edge_only", _edge_only)
 	var rebuild: bool = _vertices.size() != spine.size() * 2
 	if rebuild:
 		_vertices.resize(spine.size() * 2)
@@ -90,7 +117,8 @@ func body(spine: PackedVector2Array, widths: PackedFloat32Array) -> void:
 		if i > 0: distance += spine[i].distance_to(spine[i - 1])
 		var tangent: Vector2 = spine[mini(i + 1, spine.size() - 1)] - spine[maxi(i - 1, 0)]
 		var normal := Vector2(-tangent.y, tangent.x).normalized()
-		var cap_alpha: float = smoothstep(12.0, 38.0, distance) * smoothstep(0.0, 12.0, total - distance)
+		# 常驻边缘光必须覆盖身体收束出的尖尾；判定白光仍在头尾连接处渐隐。
+		var cap_alpha: float = 1.0 if _edge_only else smoothstep(12.0, 38.0, distance) * smoothstep(0.0, 12.0, total - distance)
 		for side_index: int in 2:
 			var side: float = -1.0 if side_index == 0 else 1.0
 			var vertex_index: int = i * 2 + side_index

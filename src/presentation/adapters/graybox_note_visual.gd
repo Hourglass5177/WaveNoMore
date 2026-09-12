@@ -19,6 +19,9 @@ const SOFT_GLOW = preload("res://src/presentation/vfx/note_soft_glow.gd")
 @export_range(0.01, 0.5, 0.01) var glow_fall_sec: float = 0.08
 var glow_amount: float = 0.0
 var _glow_visual: MeshInstance2D
+var _edge_glow_visual: MeshInstance2D
+var _edge_glow_enabled: bool = true
+var _edge_glow_color: Color = Color.WHITE
 var _double_tap := false
 var _glow_time := 0.0
 var _glow_target := false
@@ -63,6 +66,26 @@ var _is_tap := true
 var _tap_hit_time := INF
 var _tap_death_time := INF
 var _tap_hit_transform := Transform2D.IDENTITY
+
+
+func configure_edge_glow(enabled: bool, color: Color) -> void:
+	## Host 在每次创建或对象池复用时调用；贴图 Shader 和灰盒轮廓共享配置语义。
+	_edge_glow_enabled = enabled
+	_edge_glow_color = color
+	if tap_material != null:
+		if _edge_glow_visual != null:
+			_edge_glow_visual.visible = false
+		tap_material.set_shader_parameter(&"glow_enabled", enabled)
+		tap_material.set_shader_parameter(&"glow_color", color)
+		return
+	if _edge_glow_visual == null:
+		_edge_glow_visual = SOFT_GLOW.new()
+		_edge_glow_visual.name = "EdgeGlow"
+		_edge_glow_visual.show_behind_parent = true
+		_edge_glow_visual.z_index = -1
+		add_child(_edge_glow_visual)
+	_edge_glow_visual.configure_style(color, true)
+	_edge_glow_visual.set_light(1.0 if enabled else 0.0, 12.0)
 
 
 func prepare(view_model: Dictionary) -> void:
@@ -234,8 +257,9 @@ func _play_feedback() -> void:
 
 func _draw() -> void:
 	if tap_texture != null:
-		var size := tap_texture.get_size()
 		var extent := Vector2(96.0, 96.0)
+		if tap_material == null and _edge_glow_visual != null and _edge_glow_enabled:
+			_edge_glow_visual.texture_shape(tap_texture, Rect2(-extent * 0.5, extent))
 		draw_texture_rect(tap_texture, Rect2(-extent * 0.5, extent), false, Color.WHITE)
 		return
 	var base_color: Color = _affinity_color()
@@ -258,6 +282,8 @@ func _draw() -> void:
 		Vector2(-17.0, 51.0) * pulse,
 		Vector2(-31.0, 16.0) * pulse,
 	])
+	if _edge_glow_visual != null and _edge_glow_enabled:
+		_edge_glow_visual.polygon(shape)
 	if _glow_visual != null and _glow_visual.visible:
 		_glow_visual.polygon(shape)
 	var death_progress: float = clampf((_glow_time - _tap_death_time) / TAP_FEEDBACK_SEC, 0.0, 1.0)

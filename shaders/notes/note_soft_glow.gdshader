@@ -4,6 +4,9 @@ render_mode unshaded, blend_mix;
 // 光效使用音符局部坐标，外扩绘制区域让柔光完整落在原轮廓之外。
 uniform float strength = 0.0;
 uniform float radius_px = 12.0;
+uniform vec4 glow_color : source_color = vec4(1.0);
+// 常驻主题光只画轮廓外侧；判定白光保留原有面光。
+uniform bool edge_only = false;
 uniform int point_count = 0;
 uniform vec2 points[16];
 uniform bool textured = false;
@@ -39,8 +42,8 @@ void fragment() {
 			inner_mask = min(inner_mask, near_sample);
 			far_mask += mask_at(uv + step_uv * radius_px * 0.45) / 12.0;
 		}
-		coverage = center * 0.30 + (center - inner_mask) * 0.25
-			+ (1.0 - center) * (near_mask * 0.55 + far_mask * 0.48);
+		float outer = (1.0 - center) * (near_mask * 0.55 + far_mask * 0.48);
+		coverage = edge_only ? outer : center * 0.30 + (center - inner_mask) * 0.25 + outer;
 	} else {
 		float distance_px = 100000.0;
 		bool inside = false;
@@ -64,7 +67,8 @@ void fragment() {
 			* (1.0 - smoothstep(attachment_width - 1.0, attachment_width + 1.0, across)) : 0.0;
 		// 面光与边缘有连续的亮度层次，纹理仍透出，避免只剩一圈硬描边。
 		float surface_light = 0.30 + 0.06 * exp(-pow(distance_px / radius_px, 2.0));
-		coverage = (inside ? surface_light : 0.0) + (inside ? rim : rim + halo) * (1.0 - join_mask);
+		float outer = inside ? 0.0 : (rim + halo) * (1.0 - join_mask);
+		coverage = edge_only ? outer : (inside ? surface_light + rim : outer);
 	}
-	COLOR = vec4(vec3(1.0), coverage * strength * COLOR.a);
+	COLOR = vec4(glow_color.rgb, coverage * strength * glow_color.a * COLOR.a);
 }

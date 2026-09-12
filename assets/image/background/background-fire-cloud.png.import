@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://3o8o4m7cp2g8"
-path="res://.godot/imported/background-1-2-live.png-052324a9a4c138da2e72ab8d956e63ee.ctex"
+uid="uid://c3avup1q4skg5"
+path="res://.godot/imported/background-fire-cloud.png-f52150e98509d21772ae9b03feba6a6f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/image/background/background-1-2-live.png"
-dest_files=["res://.godot/imported/background-1-2-live.png-052324a9a4c138da2e72ab8d956e63ee.ctex"]
+source_file="res://assets/image/background/background-fire-cloud.png"
+dest_files=["res://.godot/imported/background-fire-cloud.png-f52150e98509d21772ae9b03feba6a6f.ctex"]
 
 [params]
 

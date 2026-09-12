@@ -38,10 +38,18 @@ extends Resource
 @export var zhu_tap_texture: Texture2D
 ## 朱（生）Tap 的 ShaderMaterial；为空时使用默认材质。
 @export var zhu_tap_material: ShaderMaterial
+## 朱（生）Tap 是否绘制常驻透明边缘泛光。
+@export var zhu_tap_glow_enabled: bool = true
+## 朱（生）Tap 的边缘泛光颜色。
+@export var zhu_tap_glow_color: Color = Color("f24033")
 ## 玄（死）默认 Tap 图片；拖入 PNG/WebP 等 Texture2D 后替换程序绘制。
 @export var xuan_tap_texture: Texture2D
 ## 玄（死）Tap 的 ShaderMaterial；为空时使用默认材质。
 @export var xuan_tap_material: ShaderMaterial
+## 玄（死）Tap 是否绘制常驻透明边缘泛光。
+@export var xuan_tap_glow_enabled: bool = true
+## 玄（死）Tap 的边缘泛光颜色。
+@export var xuan_tap_glow_color: Color = Color("5973bf")
 ## 素音动态凝现场景；留空时使用 Graybox 默认物。
 @export var su_note_scene: PackedScene
 ## Hold 的头、身、尾组合场景。
@@ -50,6 +58,14 @@ extends Resource
 @export var zhu_hold_head_texture: Texture2D
 ## 死界默认 Hold 头部图片；仅作用于使用 GrayboxHoldVisual 的默认场景。
 @export var xuan_hold_head_texture: Texture2D
+## 朱（生）Hold 头部、身体和尖尾是否绘制常驻边缘泛光。
+@export var zhu_hold_glow_enabled: bool = true
+## 朱（生）Hold 完整轮廓的边缘泛光颜色。
+@export var zhu_hold_glow_color: Color = Color("f24033")
+## 玄（死）Hold 头部、身体和尖尾是否绘制常驻边缘泛光。
+@export var xuan_hold_glow_enabled: bool = true
+## 玄（死）Hold 完整轮廓的边缘泛光颜色。
+@export var xuan_hold_glow_color: Color = Color("5973bf")
 ## 调频滑槽与引导场景。
 @export var tuning_scene: PackedScene
 ## 双钟疾振区域的表现场景。

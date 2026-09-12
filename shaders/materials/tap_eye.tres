@@ -1,10 +1,16 @@
 [gd_resource type="ShaderMaterial" format=3 uid="uid://bscxvarjdy8qm"]
 
 [ext_resource type="Shader" uid="uid://dhca246dgn56p" path="res://shaders/materials/tap_eye.gdshader" id="1_shader"]
-[ext_resource type="Texture2D" path="res://assets/image/note/tap_musk.png" id="2_musk"]
-[ext_resource type="Texture2D" path="res://assets/image/note/tap_eye_ball.png" id="3_eye_ball"]
+[ext_resource type="Texture2D" uid="uid://dpqcwl48siwiw" path="res://assets/image/note/tap_musk.png" id="2_musk"]
+[ext_resource type="Texture2D" uid="uid://c4jny5bbmhtc5" path="res://assets/image/note/tap_eye_ball.png" id="3_eye_ball"]
 
 [resource]
 shader = ExtResource("1_shader")
 shader_parameter/musk_texture = ExtResource("2_musk")
 shader_parameter/eye_ball_texture = ExtResource("3_eye_ball")
+shader_parameter/eye_offset_px = 10.0
+shader_parameter/eye_falloff_radius_px = 128.0
+shader_parameter/glow_enabled = true
+shader_parameter/glow_color = Color(0.95, 0.25, 0.2, 1)
+shader_parameter/glow_strength = 1.1
+shader_parameter/glow_width_px = 25.0

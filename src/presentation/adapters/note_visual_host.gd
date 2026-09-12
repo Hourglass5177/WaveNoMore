@@ -218,6 +218,7 @@ func _spawn_visual_now(kind: StringName, event_id: String, event_data: Dictionar
 	var pool_key: StringName = _pool_key(kind, event_data)
 	var scene: PackedScene = _scene_for(kind, event_data)
 	var visual: Node2D = _acquire_visual(pool_key, scene)
+	_apply_edge_glow(visual, event_data)
 	_apply_hold_head_texture(visual, event_data)
 	var parent_slot: Node2D = _slot_for(kind, event_data)
 	if visual.get_parent() != parent_slot:
@@ -797,6 +798,23 @@ func _apply_hold_head_texture(instance: Node2D, data: Dictionary) -> void:
 		return
 	var texture := visual_theme.xuan_hold_head_texture if int(data.get("affinity", GameplayTypes.Affinity.ZHU)) == GameplayTypes.Affinity.XUAN else visual_theme.zhu_hold_head_texture
 	(instance as GrayboxHoldVisual).head_texture = texture
+
+
+## 将当前阵营的主题泛光写入实例；对象池复用时同样刷新，避免继承上一阵营。
+func _apply_edge_glow(instance: Node2D, data: Dictionary) -> void:
+	if visual_theme == null or not instance.has_method("configure_edge_glow"):
+		return
+	var is_xuan := int(data.get("affinity", GameplayTypes.Affinity.ZHU)) == GameplayTypes.Affinity.XUAN
+	var is_hold := StringName(data.get("unit_kind", &"tap")) == &"hold"
+	var enabled: bool
+	var color: Color
+	if is_hold:
+		enabled = visual_theme.xuan_hold_glow_enabled if is_xuan else visual_theme.zhu_hold_glow_enabled
+		color = visual_theme.xuan_hold_glow_color if is_xuan else visual_theme.zhu_hold_glow_color
+	else:
+		enabled = visual_theme.xuan_tap_glow_enabled if is_xuan else visual_theme.zhu_tap_glow_enabled
+		color = visual_theme.xuan_tap_glow_color if is_xuan else visual_theme.zhu_tap_glow_color
+	instance.call("configure_edge_glow", enabled, color)
 
 
 func _acquire_timing_ring(scene: PackedScene) -> Node2D:
