@@ -332,13 +332,23 @@ func assign_asset(value: StageBackgroundEntry, resource: Resource) -> void:
 		var names := value.sprite_frames.get_animation_names()
 		value.animation = names[0] if not names.is_empty() else &"default"
 
-
+## 在原素材之后复制全部条目属性，并让副本持有独立的材质参数实例。
 func duplicate_selected() -> void:
+	var source_index := index_of(selected_id)
 	var source := editable_entry()
 	if source == null: return
 	var before := snapshot()
-	items.append({"id": _next_id, "sublayer": sublayer_of(selected_id), "entry": source.duplicate(false)})
-	selected_id = _next_id
+	var duplicate := source.duplicate(false) as StageBackgroundEntry
+	if source.material != null:
+		duplicate.material = source.material.duplicate(false) as ShaderMaterial
+	var duplicate_id := _next_id
+	items.insert(source_index + 1, {
+		"id": duplicate_id,
+		"sublayer": sublayer_of(selected_id),
+		"entry": duplicate,
+	})
+	selected_id = duplicate_id
+	selected_sublayer_id = -1
 	_next_id += 1
 	commit("复制素材", before)
 

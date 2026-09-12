@@ -79,10 +79,35 @@ func run() -> void:
 	document.delete_selected()
 	check(document.items.size() == count, "锁定条目不能删除")
 	document.locked.clear()
+	var source_index := document.index_of(id)
+	var source := document.entry(id)
+	source.animation = &"复制测试"
+	source.infinite = true
+	source.random_flip = true
+	source.position = Vector2(123, -45)
+	source.uniform_scale = 1.75
+	var duplicate_shader := Shader.new()
+	duplicate_shader.code = "shader_type canvas_item; uniform float amount = 1.0;"
+	var source_material := ShaderMaterial.new()
+	source_material.shader = duplicate_shader
+	source_material.set_shader_parameter(&"amount", 0.65)
+	source.material = source_material
 	document.duplicate_selected()
 	check(document.items.size() == count + 1, "复制条目")
+	var duplicate_id := document.selected_id
+	var duplicate := document.entry(duplicate_id)
+	check(document.index_of(duplicate_id) == source_index + 1 and document.sublayer_of(duplicate_id) == document.sublayer_of(id), "副本紧邻原素材并保持所属子层")
+	check(duplicate.texture == source.texture and duplicate.sprite_frames == source.sprite_frames and duplicate.animation == source.animation, "副本保留素材与动画属性")
+	check(duplicate.position == source.position and duplicate.uniform_scale == source.uniform_scale, "副本保留位置与缩放")
+	check(duplicate.infinite == source.infinite and duplicate.random_flip == source.random_flip, "副本保留无限拼接属性")
+	check(duplicate.material != source.material and duplicate.material.shader == source.material.shader and duplicate.material.get_shader_parameter(&"amount") == 0.65, "副本保留独立材质及参数")
+	duplicate.material.set_shader_parameter(&"amount", 0.2)
+	check(source.material.get_shader_parameter(&"amount") == 0.65, "修改副本材质不影响原素材")
 	document.history.undo()
 	check(document.items.size() == count, "撤销复制")
+	document.history.redo()
+	check(document.items.size() == count + 1 and document.index_of(duplicate_id) == source_index + 1, "重做恢复副本及层级位置")
+	document.history.undo()
 	var ids: Array[int] = [document.items[0].id, document.items[1].id]
 	var target: int = document.items[2].id
 	var untouched_depth := document.depth_of(ids[1])
