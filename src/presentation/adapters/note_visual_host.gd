@@ -469,7 +469,8 @@ func _update_visual(event_id: String, active_entry: Dictionary) -> void:
 	elif kind == ChartScheduler.KIND_NOTE:
 		visual.position = _sample_approach_path(data, approach)
 		# 不对称灰盒轮廓会沿路径切线转向，才能读成“旋入”；兄弟节点圆环仍保持正圆和正向。
-		visual.rotation = _sample_approach_tangent(data, approach).angle() if orient_notes_along_path else 0.0
+		# Tap 图案保持正向；路径切线只影响位置，不旋转 Tap 自身。
+		visual.rotation = 0.0
 		if visual.has_method("set_approach_progress"):
 			visual.call("set_approach_progress", approach)
 		if visual.has_method("set_hold_progress"):
@@ -616,6 +617,7 @@ func _update_hold_visual(
 			exit_overshoot = maxf(travelled - exit_length, 0.0)
 	else:
 		visual.call("set_approach_progress", approach)
+		# Hold 头部仍沿进场路径切线旋转，保持原有方向表现。
 		visual.rotation = _sample_approach_tangent(data, distance / maxf(route_length, 0.001)).angle() if orient_notes_along_path else 0.0
 		visual.position = _sample_route_distance(affinity, distance)
 	var consumed: float = float(entry.get("hold_visual_progress", 0.0))

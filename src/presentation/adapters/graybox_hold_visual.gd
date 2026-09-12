@@ -1,7 +1,7 @@
 class_name GrayboxHoldVisual
 extends GrayboxNoteVisual
 
-## Hold 从屏幕外以完整头身尾入场，按住后身体从尾端逐渐被消耗。
+## Hold 从屏幕外以完整头身入场，按住后身体从尾端逐渐被消耗。
 ##
 ## Hold 的局部原点始终是头部，局部 +X 指向玩家，身体沿 -X 拖尾。
 ## 身体使用固定步长动态链；只有消耗进度改变有效长度，Seek 清空运动历史。
@@ -31,8 +31,6 @@ var _body_visual_time_sec: float = 0.0
 @export var head_texture: Texture2D
 ## 可沿横向无缝重复的身体贴图；为空时保留程序化身体与纹样。
 @export var body_texture: Texture2D
-## 可选尾部贴图，局部 +X 指向尾尖；为空时保留程序化尾部。
-@export var tail_texture: Texture2D
 @export_group("Hold Material")
 ## 身体纹理沿动态脊线累计弧长重复的像素间距。
 @export_range(1.0, 512.0, 1.0, "or_greater") var body_texture_repeat_px: float = 96.0
@@ -144,28 +142,15 @@ func _draw() -> void:
 	var visual_state: Dictionary = visual_state_snapshot()
 	var head_alpha: float = float(visual_state["head_alpha"])
 	var body_reveal: float = float(visual_state["body_reveal"])
-	var tail_alpha: float = float(visual_state["tail_alpha"])
 
 	var spine := PackedVector2Array()
 	var half_widths := PackedFloat32Array()
 	if _path_spine.size() >= 2:
 		_build_spine(spine, half_widths)
-		# 贴图身体由独立 CanvasItem 绘制，其 Shader 不会覆盖头部与尾部。
+		# 贴图身体由独立 CanvasItem 绘制，其 Shader 不会覆盖头部。
 		if body_texture == null:
 			_draw_body(spine, half_widths, color, body_reveal)
 			_draw_body_marks(spine, color)
-
-	# 尾部始终挂在剩余身体的末端，因此按住时会一路向头部靠近，最终
-	# 在谱面尾点（持续段结束）抵达头部，而不是把整条 Hold 原地缩放或突然抹除。
-	if tail_alpha > 0.0 and body_reveal > 0.0 and spine.size() >= 2:
-		var tail_center: Vector2 = spine[-1]
-		var tail_direction: Vector2 = (spine[-1] - spine[-2]).normalized()
-		if tail_texture != null:
-			draw_set_transform(tail_center, tail_direction.angle(), Vector2.ONE)
-			draw_texture_rect(tail_texture, Rect2(-24.0, -24.0, 48.0, 48.0), false, Color(color, tail_alpha))
-			draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
-		else:
-			_draw_tail(tail_center, tail_direction, color, tail_alpha)
 
 	if head_texture != null:
 		var source_size := head_texture.get_size()
@@ -185,7 +170,6 @@ func visual_state_snapshot() -> Dictionary:
 	return {
 		"head_alpha": 1.0,
 		"body_reveal": 1.0,
-		"tail_alpha": 1.0,
 		"remaining": remaining,
 		"visible_length": body_length * remaining,
 	}
@@ -266,7 +250,9 @@ func _rebuild_body_mesh() -> void:
 		uvs.append(Vector2(u, 1.0))
 	for index: int in range(spine.size() - 1):
 		var base: int = index * 2
-		indices.append_array(PackedInt32Array([base, base + 1, base + 2, base + 1, base + 3, base + 2]))
+		indices.append_array(PackedInt32Array([base, base + 1, base + 2]))
+		if index < spine.size() - 2:
+			indices.append_array(PackedInt32Array([base + 1, base + 3, base + 2]))
 	var arrays: Array = []
 	arrays.resize(Mesh.ARRAY_MAX)
 	arrays[Mesh.ARRAY_VERTEX] = vertices
@@ -322,7 +308,7 @@ func _clear_body_render_state() -> void:
 
 
 func _hold_color() -> Color:
-	## Mesh 与灰盒头身尾共用判定色；不影响领域状态。
+	## Mesh 与灰盒头身共用判定色；不影响领域状态。
 	if missed:
 		return Color("575b66")
 	var color: Color = _affinity_color()
@@ -344,17 +330,18 @@ func _spine_normal(spine: PackedVector2Array, index: int) -> Vector2:
 
 
 func _build_spine(spine: PackedVector2Array, half_widths: PackedFloat32Array) -> void:
-	## 只沿模拟结果绘制宽度，不再移动脊线点或推进角速度。
+	## 前半段保持原宽度，末尾约 50% 平滑收窄，末截面归零形成尖端。
 	var motion_phase: float = _stable_phase + approach_progress * TAU * 0.85 + hold_progress * TAU * 2.2
 	var canvas_to_local: Transform2D = transform.affine_inverse()
 	for index: int in range(_path_spine.size()):
 		var ratio: float = _body_distances[index] / _body_distances[-1]
 		var envelope: float = sin(ratio * PI)
 		var center: Vector2 = canvas_to_local * _path_spine[index]
-		var width: float = lerpf(29.0, 10.0, pow(ratio, 0.82))
+		var tip_ratio: float = smoothstep(0.5, 1.0, ratio)
+		var width: float = lerpf(29.0, 0.0, tip_ratio)
 		width += sin(ratio * TAU * 2.0 + motion_phase) * 3.5 * envelope
 		spine.append(center)
-		half_widths.append(maxf(width, 7.0))
+		half_widths.append(maxf(width, 0.0) if index < _path_spine.size() - 1 else 0.0)
 
 
 func _draw_body(spine: PackedVector2Array, half_widths: PackedFloat32Array, color: Color, reveal: float) -> void:
@@ -370,9 +357,11 @@ func _draw_body(spine: PackedVector2Array, half_widths: PackedFloat32Array, colo
 	# 即使摆幅较大或 Hold 只剩几像素，每一段仍是合法图形。
 	var fill_color := Color(color, fill_alpha)
 	for index: int in range(upper.size() - 1):
-		draw_colored_polygon(PackedVector2Array([
-			upper[index], upper[index + 1], lower[index + 1],
-		]), fill_color)
+		# 末截面的左右顶点重合，只绘制另一侧的非退化三角形。
+		if index < upper.size() - 2:
+			draw_colored_polygon(PackedVector2Array([
+				upper[index], upper[index + 1], lower[index + 1],
+			]), fill_color)
 		draw_colored_polygon(PackedVector2Array([
 			upper[index], lower[index + 1], lower[index],
 		]), fill_color)
@@ -403,23 +392,6 @@ func _draw_body_marks(spine: PackedVector2Array, color: Color) -> void:
 		])
 		draw_colored_polygon(diamond, Color("f3e8ca", 0.62))
 		draw_polyline(PackedVector2Array([diamond[0], diamond[1], diamond[2], diamond[3], diamond[0]]), Color(color, 0.72), 1.2, true)
-
-
-func _draw_tail(center: Vector2, trail_direction: Vector2, color: Color, alpha: float) -> void:
-	if trail_direction.is_zero_approx():
-		trail_direction = Vector2.LEFT
-	var normal := Vector2(-trail_direction.y, trail_direction.x)
-	var tail := PackedVector2Array([
-		center + normal * 12.0,
-		center + trail_direction * 32.0 + normal * 19.0,
-		center + trail_direction * 20.0,
-		center + trail_direction * 32.0 - normal * 19.0,
-		center - normal * 12.0,
-	])
-	draw_colored_polygon(tail, Color(color.darkened(0.24), alpha * 0.90))
-	draw_polyline(PackedVector2Array([tail[0], tail[1], tail[2], tail[3], tail[4]]), Color(color.lightened(0.22), alpha), 2.5, true)
-	var tail_ring_radius: float = 11.0 + (1.0 - hold_progress) * 4.0
-	draw_arc(center, tail_ring_radius, 0.0, TAU, 20, Color("f1e5c8", alpha * 0.76), 2.0, true)
 
 
 func _draw_head(color: Color, alpha: float) -> void:

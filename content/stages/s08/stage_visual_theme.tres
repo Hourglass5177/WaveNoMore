@@ -2,8 +2,9 @@
 
 [ext_resource type="Script" uid="uid://cj8ufxf1hwtdx" path="res://src/content/resources/stage_visual_theme.gd" id="1_theme"]
 [ext_resource type="Texture2D" uid="uid://dtd5y1ywk4tlh" path="res://assets/image/note/hold_note.png" id="2_3obbd"]
-[ext_resource type="Texture2D" uid="uid://cmrit6qwcv0ms" path="res://assets/image/background/tap.png" id="2_dgcur"]
+[ext_resource type="Texture2D" uid="uid://b2e1a7tjcuxmx" path="res://assets/image/note/tap_base.png" id="2_dgcur"]
 [ext_resource type="PackedScene" uid="uid://b31upogsnbgg" path="res://scenes/presentation/actors/lingjun_actor.tscn" id="4_lingjun"]
+[ext_resource type="Material" path="res://shaders/materials/tap_eye.tres" id="5_tap_eye"]
 
 [resource]
 script = ExtResource("1_theme")
@@ -11,7 +12,9 @@ theme_id = "s08_combined_lab_theme"
 life_actor_scene = ExtResource("4_lingjun")
 death_actor_scene = ExtResource("4_lingjun")
 zhu_tap_texture = ExtResource("2_dgcur")
+zhu_tap_material = ExtResource("5_tap_eye")
 xuan_tap_texture = ExtResource("2_dgcur")
+xuan_tap_material = ExtResource("5_tap_eye")
 zhu_hold_head_texture = ExtResource("2_3obbd")
 xuan_hold_head_texture = ExtResource("2_3obbd")
 life_color = Color(0.8, 0.1, 0.085, 1)
