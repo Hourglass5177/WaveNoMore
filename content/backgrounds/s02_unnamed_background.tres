@@ -2,33 +2,32 @@
 
 [ext_resource type="Script" uid="uid://cmdrk3aa03hw6" path="res://src/content/resources/stage_background_definition.gd" id="1_background"]
 [ext_resource type="Script" uid="uid://b14wt0k1s37p" path="res://src/content/resources/stage_background_entry.gd" id="2_entry"]
-[ext_resource type="Texture2D" uid="uid://dgroebfyynokr" path="res://assets/image/background/background-grave-1-c-live.png" id="4_bg_mid_back"]
-[ext_resource type="Texture2D" uid="uid://cgk0qcyopxkt6" path="res://assets/image/background/background-grave-1-b-live.png" id="5_bg_mid_middle"]
-[ext_resource type="Texture2D" uid="uid://c3wvup7lidbmw" path="res://assets/image/background/background-grave-1-a-death.png" id="5_qkwsl"]
-[ext_resource type="Texture2D" uid="uid://cwhc1rwsaa4f4" path="res://assets/image/background/background-grave-1-a-live.png" id="6_bg_mid_front"]
+[ext_resource type="Texture2D" uid="uid://cal67gsgqaqp8" path="res://assets/image/background/background-fire-livebk.png" id="5_1lv6e"]
 [ext_resource type="Texture2D" uid="uid://b5ej2ggcn4efg" path="res://assets/image/background/background-grave-1-b-death.png" id="7_f5ud5"]
 [ext_resource type="Shader" uid="uid://4f34djssu6nd" path="res://shaders/materials/screen_half_material_split_death.gdshader" id="7_pxfxu"]
 [ext_resource type="Texture2D" uid="uid://dg8e4307vs18k" path="res://assets/image/background/background-grave-0-death.png" id="7_rju76"]
-[ext_resource type="Texture2D" uid="uid://cd8bhg07jm8cn" path="res://assets/image/background/background-grave-0-live.png" id="8_f5ud5"]
+[ext_resource type="Texture2D" uid="uid://c3avup1q4skg5" path="res://assets/image/background/background-fire-cloud.png" id="8_jcsrf"]
 [ext_resource type="Shader" uid="uid://dca4ddyalfe3" path="res://shaders/materials/screen_half_material_split_live.gdshader" id="8_screen_split"]
 [ext_resource type="Texture2D" uid="uid://d1wutgpu7yic5" path="res://assets/image/background/background-greve-1-c-death.png" id="9_qqfhi"]
 [ext_resource type="Shader" uid="uid://bj8tilovgk8ay" path="res://shaders/materials/dust_particles.gdshader" id="10_fyfw2"]
 [ext_resource type="Texture2D" uid="uid://cydev6v3nk5tl" path="res://assets/image/particles/particles.png" id="10_hwrvv"]
+[ext_resource type="Texture2D" uid="uid://b1ejk7i5v5p6u" path="res://assets/image/background/background-fire-front.png" id="11_1lv6e"]
 [ext_resource type="Texture2D" uid="uid://ca3hsojh2kcnw" path="res://assets/image/background/edge.png" id="11_pxfxu"]
+[ext_resource type="Texture2D" uid="uid://b6n8iov71qyxg" path="res://assets/image/background/background-fire-mid.png" id="13_jcsrf"]
+[ext_resource type="Texture2D" uid="uid://cylfd6br7l37" path="res://assets/image/background/background-fire-far.png" id="17_1lv6e"]
 [ext_resource type="Texture2D" uid="uid://umwcbdmruags" path="res://assets/image/particles/particles_far.png" id="17_poo7a"]
 [ext_resource type="Script" uid="uid://c4h0bmjpxthu7" path="res://src/content/resources/stage_background_layer.gd" id="layer_schema"]
 [ext_resource type="Script" uid="uid://kmwupvuwcgil" path="res://src/content/resources/stage_background_sublayer.gd" id="sublayer_schema"]
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_1dpc0"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_sh661"]
 shader = ExtResource("8_screen_split")
 
 [sub_resource type="Resource" id="Resource_1lv6e"]
 script = ExtResource("2_entry")
-texture = ExtResource("8_f5ud5")
-material = SubResource("ShaderMaterial_1dpc0")
+texture = ExtResource("5_1lv6e")
+material = SubResource("ShaderMaterial_sh661")
 infinite = true
-position = Vector2(-742.6837, -76.64212)
-uniform_scale = 1.74580807320869
+uniform_scale = 0.45772838698466056
 
 [sub_resource type="Resource" id="Resource_sh661"]
 script = ExtResource("sublayer_schema")
@@ -59,16 +58,11 @@ script = ExtResource("layer_schema")
 depth = 50
 sublayers = Array[ExtResource("sublayer_schema")]([SubResource("Resource_sh661"), SubResource("Resource_wvqij")])
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_fyfw2"]
-shader = ExtResource("8_screen_split")
-
 [sub_resource type="Resource" id="Resource_teouk"]
 script = ExtResource("2_entry")
-texture = ExtResource("6_bg_mid_front")
-material = SubResource("ShaderMaterial_fyfw2")
+texture = ExtResource("8_jcsrf")
 infinite = true
-position = Vector2(-51.245117, -13.923218)
-uniform_scale = 0.7645889008109715
+uniform_scale = 0.45560992332260086
 
 [sub_resource type="Resource" id="Resource_0lxee"]
 script = ExtResource("sublayer_schema")
@@ -76,27 +70,16 @@ display_name = "live"
 velocity = Vector2(-500, 0)
 entries = Array[ExtResource("2_entry")]([SubResource("Resource_teouk")])
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_wv2ar"]
-shader = ExtResource("7_pxfxu")
-
 [sub_resource type="Resource" id="Resource_mw5vp"]
-script = ExtResource("2_entry")
-texture = ExtResource("5_qkwsl")
-material = SubResource("ShaderMaterial_wv2ar")
-infinite = true
-uniform_scale = 0.7247365354382648
-
-[sub_resource type="Resource" id="Resource_vebmg"]
 script = ExtResource("sublayer_schema")
 sublayer_id = "sublayer_11"
 display_name = "death"
 velocity = Vector2(500, 0)
-entries = Array[ExtResource("2_entry")]([SubResource("Resource_mw5vp")])
 
-[sub_resource type="Resource" id="Resource_8hexu"]
+[sub_resource type="Resource" id="Resource_vebmg"]
 script = ExtResource("layer_schema")
 depth = 2
-sublayers = Array[ExtResource("sublayer_schema")]([SubResource("Resource_0lxee"), SubResource("Resource_vebmg")])
+sublayers = Array[ExtResource("sublayer_schema")]([SubResource("Resource_0lxee"), SubResource("Resource_mw5vp")])
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_xu5h3"]
 shader = ExtResource("10_fyfw2")
@@ -112,7 +95,7 @@ shader_parameter/dust_texture = ExtResource("10_hwrvv")
 shader_parameter/random_grid = Vector2(80, 45)
 shader_parameter/is_live = false
 
-[sub_resource type="Resource" id="Resource_5eo0b"]
+[sub_resource type="Resource" id="Resource_8hexu"]
 script = ExtResource("2_entry")
 texture = ExtResource("10_hwrvv")
 material = SubResource("ShaderMaterial_xu5h3")
@@ -121,12 +104,12 @@ random_flip = true
 position = Vector2(-589.60034, -329.56433)
 uniform_scale = 1.231761109580623
 
-[sub_resource type="Resource" id="Resource_pmj0s"]
+[sub_resource type="Resource" id="Resource_5eo0b"]
 script = ExtResource("sublayer_schema")
 sublayer_id = "sublayer_21"
 display_name = "death particles1"
 velocity = Vector2(-500, 0)
-entries = Array[ExtResource("2_entry")]([SubResource("Resource_5eo0b")])
+entries = Array[ExtResource("2_entry")]([SubResource("Resource_8hexu")])
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_x7vhg"]
 shader = ExtResource("10_fyfw2")
@@ -142,7 +125,7 @@ shader_parameter/dust_texture = ExtResource("10_hwrvv")
 shader_parameter/random_grid = Vector2(80, 45)
 shader_parameter/is_live = true
 
-[sub_resource type="Resource" id="Resource_7i3a2"]
+[sub_resource type="Resource" id="Resource_pmj0s"]
 script = ExtResource("2_entry")
 texture = ExtResource("10_hwrvv")
 material = SubResource("ShaderMaterial_x7vhg")
@@ -151,66 +134,64 @@ random_flip = true
 position = Vector2(-589.60034, -329.56433)
 uniform_scale = 1.231761109580623
 
-[sub_resource type="Resource" id="Resource_ci5wx"]
+[sub_resource type="Resource" id="Resource_7i3a2"]
 script = ExtResource("sublayer_schema")
 sublayer_id = "sublayer_26"
 display_name = "live particles1"
 velocity = Vector2(500, 0)
-entries = Array[ExtResource("2_entry")]([SubResource("Resource_7i3a2")])
+entries = Array[ExtResource("2_entry")]([SubResource("Resource_pmj0s")])
 
-[sub_resource type="Resource" id="Resource_lo353"]
+[sub_resource type="Resource" id="Resource_ci5wx"]
 script = ExtResource("layer_schema")
-sublayers = Array[ExtResource("sublayer_schema")]([SubResource("Resource_pmj0s"), SubResource("Resource_ci5wx")])
+sublayers = Array[ExtResource("sublayer_schema")]([SubResource("Resource_5eo0b"), SubResource("Resource_7i3a2")])
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_wusf3"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_8u6qo"]
 shader = ExtResource("8_screen_split")
 
-[sub_resource type="Resource" id="Resource_8u6qo"]
+[sub_resource type="Resource" id="Resource_lo353"]
 script = ExtResource("2_entry")
-texture = ExtResource("5_bg_mid_middle")
-material = SubResource("ShaderMaterial_wusf3")
+texture = ExtResource("11_1lv6e")
+material = SubResource("ShaderMaterial_8u6qo")
 infinite = true
-position = Vector2(-27.105051, 1.4649806)
-uniform_scale = 0.7459003309110498
+uniform_scale = 0.4589033517438796
 
-[sub_resource type="Resource" id="Resource_8tdh0"]
+[sub_resource type="Resource" id="Resource_8u6qo"]
 script = ExtResource("sublayer_schema")
 display_name = "live"
 velocity = Vector2(-500, 0)
-entries = Array[ExtResource("2_entry")]([SubResource("Resource_8u6qo")])
+entries = Array[ExtResource("2_entry")]([SubResource("Resource_lo353")])
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_i2ugf"]
 shader = ExtResource("7_pxfxu")
 
-[sub_resource type="Resource" id="Resource_jwlbb"]
+[sub_resource type="Resource" id="Resource_8tdh0"]
 script = ExtResource("2_entry")
 texture = ExtResource("7_f5ud5")
 material = SubResource("ShaderMaterial_i2ugf")
 infinite = true
 uniform_scale = 0.746636442498509
 
-[sub_resource type="Resource" id="Resource_gjn4a"]
+[sub_resource type="Resource" id="Resource_jwlbb"]
 script = ExtResource("sublayer_schema")
 sublayer_id = "sublayer_50"
 display_name = "death"
 velocity = Vector2(500, 0)
-entries = Array[ExtResource("2_entry")]([SubResource("Resource_jwlbb")])
+entries = Array[ExtResource("2_entry")]([SubResource("Resource_8tdh0")])
 
-[sub_resource type="Resource" id="Resource_ksblr"]
+[sub_resource type="Resource" id="Resource_gjn4a"]
 script = ExtResource("layer_schema")
 depth = 5
-sublayers = Array[ExtResource("sublayer_schema")]([SubResource("Resource_8tdh0"), SubResource("Resource_gjn4a")])
+sublayers = Array[ExtResource("sublayer_schema")]([SubResource("Resource_8u6qo"), SubResource("Resource_jwlbb")])
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_4iaid"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ksblr"]
 shader = ExtResource("8_screen_split")
 
 [sub_resource type="Resource" id="Resource_ccha1"]
 script = ExtResource("2_entry")
-texture = ExtResource("4_bg_mid_back")
-material = SubResource("ShaderMaterial_4iaid")
+texture = ExtResource("13_jcsrf")
+material = SubResource("ShaderMaterial_ksblr")
 infinite = true
-position = Vector2(-19.95945, 13.368315)
-uniform_scale = 0.7364709600817934
+uniform_scale = 0.45686861924206773
 
 [sub_resource type="Resource" id="Resource_rvlb0"]
 script = ExtResource("sublayer_schema")
@@ -237,7 +218,7 @@ entries = Array[ExtResource("2_entry")]([SubResource("Resource_p10g7")])
 
 [sub_resource type="Resource" id="Resource_7earq"]
 script = ExtResource("layer_schema")
-depth = 30
+depth = 20
 sublayers = Array[ExtResource("sublayer_schema")]([SubResource("Resource_rvlb0"), SubResource("Resource_unn00")])
 
 [sub_resource type="Resource" id="Resource_1i8bi"]
@@ -379,6 +360,27 @@ script = ExtResource("layer_schema")
 depth = 17
 sublayers = Array[ExtResource("sublayer_schema")]([SubResource("Resource_m5ufa"), SubResource("Resource_dl45u")])
 
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_noq0h"]
+shader = ExtResource("8_screen_split")
+
+[sub_resource type="Resource" id="Resource_ug1r3"]
+script = ExtResource("2_entry")
+texture = ExtResource("17_1lv6e")
+material = SubResource("ShaderMaterial_noq0h")
+infinite = true
+uniform_scale = 0.46031319242389523
+
+[sub_resource type="Resource" id="Resource_wln0t"]
+script = ExtResource("sublayer_schema")
+display_name = "live"
+velocity = Vector2(-500, 0)
+entries = Array[ExtResource("2_entry")]([SubResource("Resource_ug1r3")])
+
+[sub_resource type="Resource" id="Resource_eu4fc"]
+script = ExtResource("layer_schema")
+depth = 30
+sublayers = Array[ExtResource("sublayer_schema")]([SubResource("Resource_wln0t")])
+
 [resource]
 script = ExtResource("1_background")
-layers = Array[ExtResource("layer_schema")]([SubResource("Resource_74b53"), SubResource("Resource_8hexu"), SubResource("Resource_lo353"), SubResource("Resource_ksblr"), SubResource("Resource_7earq"), SubResource("Resource_alop7"), SubResource("Resource_0c4nc"), SubResource("Resource_noq0h")])
+layers = Array[ExtResource("layer_schema")]([SubResource("Resource_74b53"), SubResource("Resource_vebmg"), SubResource("Resource_ci5wx"), SubResource("Resource_gjn4a"), SubResource("Resource_7earq"), SubResource("Resource_alop7"), SubResource("Resource_0c4nc"), SubResource("Resource_noq0h"), SubResource("Resource_eu4fc")])

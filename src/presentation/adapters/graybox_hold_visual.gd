@@ -78,8 +78,9 @@ func configure_edge_glow(enabled: bool, color: Color) -> void:
 	_ensure_edge_glow_visuals()
 	_edge_head_glow.configure_style(color, true)
 	_edge_body_glow.configure_style(color, true)
-	_edge_head_glow.set_light(1.0 if enabled else 0.0, 12.0)
-	_edge_body_glow.set_light(1.0 if enabled else 0.0, 12.0)
+	# 常驻边缘层使用更宽、更明显的外扩；主体和判定白光保持原参数。
+	_edge_head_glow.set_light(3.0 if enabled else 0.0, 22.0)
+	_edge_body_glow.set_light(3.0 if enabled else 0.0, 22.0)
 	_update_body_material()
 	queue_redraw()
 

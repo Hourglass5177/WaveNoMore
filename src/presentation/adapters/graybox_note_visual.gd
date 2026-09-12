@@ -69,23 +69,9 @@ var _tap_hit_transform := Transform2D.IDENTITY
 
 
 func configure_edge_glow(enabled: bool, color: Color) -> void:
-	## Host 在每次创建或对象池复用时调用；贴图 Shader 和灰盒轮廓共享配置语义。
-	_edge_glow_enabled = enabled
-	_edge_glow_color = color
-	if tap_material != null:
-		if _edge_glow_visual != null:
-			_edge_glow_visual.visible = false
-		tap_material.set_shader_parameter(&"glow_enabled", enabled)
-		tap_material.set_shader_parameter(&"glow_color", color)
-		return
-	if _edge_glow_visual == null:
-		_edge_glow_visual = SOFT_GLOW.new()
-		_edge_glow_visual.name = "EdgeGlow"
-		_edge_glow_visual.show_behind_parent = true
-		_edge_glow_visual.z_index = -1
-		add_child(_edge_glow_visual)
-	_edge_glow_visual.configure_style(color, true)
-	_edge_glow_visual.set_light(1.0 if enabled else 0.0, 12.0)
+	## Host 保留统一调用接口；Tap 已移除常驻边缘泛光。
+	if _edge_glow_visual != null:
+		_edge_glow_visual.visible = false
 
 
 func prepare(view_model: Dictionary) -> void:
