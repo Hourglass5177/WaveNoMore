@@ -40,7 +40,7 @@ func _make_visible(value: bool) -> void:
 
 func _get_unsaved_status(for_scene: String) -> String:
 	if for_scene.is_empty() and is_instance_valid(workspace) and workspace.document.is_dirty():
-		return "背景编辑器有未保存修改：" + workspace.document.background_path
+		return "背景编辑器有未保存修改：" + workspace.document.source_path
 	return ""
 
 

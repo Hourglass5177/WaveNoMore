@@ -440,7 +440,7 @@ func test_loading() -> void:
 	stage.background = null
 	stage.background_resource_path = ""
 	check(stage.dependencies_resolved(), "未配置背景允许加载")
-	stage.background_resource_path = "res://content/stages/s01/stage_background.tres"
+	stage.background_resource_path = "res://content/backgrounds/s00_grave_background.tres"
 	check(not stage.dependencies_resolved() and stage.dependency_paths().has("background"), "显式路径不可静默忽略")
 	check(not stage.assign_dependency("background", Resource.new()), "拒绝错误资源类型")
 	var loader = load("res://src/app/stage_loading_screen.gd").new()
@@ -468,8 +468,11 @@ func test_stage() -> void:
 	var stage: StageDefinition
 	for number in range(1, 9):
 		stage = load("res://content/stages/s%02d/stage_definition.tres" % number).duplicate(true)
-		check(stage.resolve_dependencies_sync(), "s%02d 含背景依赖加载" % number)
-		check(stage.background != null and (number == 8 or stage.background.layers.is_empty()), "s%02d 背景配置（s08 已接入美术）" % number)
+		check(stage.resolve_dependencies_sync(), "s%02d 依赖加载" % number)
+		if number == 8:
+			check(stage.background != null and not stage.background.layers.is_empty(), "s08 引用独立背景资源")
+		else:
+			check(stage.background == null and stage.background_resource_path.is_empty(), "s%02d 未配置背景" % number)
 	var scene = load("res://scenes/stage/stage_root.tscn").instantiate()
 	_viewport.add_child(scene)
 	scene.stage_session.external_preview = true

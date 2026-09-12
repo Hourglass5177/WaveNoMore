@@ -8,7 +8,6 @@ const LayerTree = preload("res://addons/parallax_background_editor/layer_tree.gd
 var document := Document.new()
 var surface: Surface
 var layer_tree: LayerTree
-var _stage_picker: OptionButton
 var _title: Label
 var _status: Label
 var _fields: Dictionary = {}
@@ -91,17 +90,7 @@ func _spin(parent: Node, title: String, step: float = 1.0) -> SpinBox:
 func _build() -> void:
 	var toolbar := HFlowContainer.new()
 	add_child(toolbar)
-	_stage_picker = OptionButton.new()
-	_stage_picker.add_item("选择关卡…")
-	for directory in DirAccess.get_directories_at("res://content/stages"):
-		var path := "res://content/stages".path_join(directory).path_join("stage_definition.tres")
-		if FileAccess.file_exists(path):
-			_stage_picker.add_item(directory)
-			_stage_picker.set_item_metadata(_stage_picker.item_count - 1, path)
-	_stage_picker.item_selected.connect(func(index: int):
-		if index > 0: request_open(_stage_picker.get_item_metadata(index)))
-	toolbar.add_child(_stage_picker)
-	_button(toolbar, "打开资源…", func(): _open_dialog.popup_centered_ratio(0.7))
+	_button(toolbar, "打开背景资源…", func(): _open_dialog.popup_centered_ratio(0.7))
 	_button(toolbar, "保存 Ctrl+S", save_document)
 	_undo = _button(toolbar, "撤销", _undo_action)
 	_redo = _button(toolbar, "重做", _redo_action)
@@ -110,7 +99,7 @@ func _build() -> void:
 	_mode.text = "视差预览"
 	_mode.toggled.connect(_set_preview)
 	toolbar.add_child(_mode)
-	_title = _label(self, "打开关卡或背景资源开始编辑")
+	_title = _label(self, "打开背景资源开始编辑")
 	var split := HSplitContainer.new()
 	split.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	add_child(split)
@@ -257,7 +246,7 @@ func _build() -> void:
 	_handheld.toggled.connect(func(value: bool): surface.handheld = value; _sample(); _update_controls())
 	transport.add_child(_handheld)
 	_status = _label(self, "拖入项目素材添加 · 中键浏览 · 滚轮缩放 · Esc 取消拖动")
-	_open_dialog = _file_dialog(["*.tres ; Godot 资源"])
+	_open_dialog = _file_dialog(["*.tres ; StageBackgroundDefinition 背景资源"])
 	_open_dialog.file_selected.connect(request_open)
 	_asset_dialog = _file_dialog(["*.png,*.jpg,*.jpeg,*.webp,*.svg,*.tres,*.res ; 纹理或 SpriteFrames"])
 	_asset_dialog.file_selected.connect(_asset_chosen)
@@ -285,7 +274,7 @@ func _build() -> void:
 		if save_document(): _continue_pending())
 	_unsaved.custom_action.connect(func(action: StringName):
 		if action == &"discard": _unsaved.hide(); _continue_pending())
-	_unsaved.canceled.connect(func(): _pending = Callable(); _sync_picker())
+	_unsaved.canceled.connect(func(): _pending = Callable())
 	add_child(_unsaved)
 	_external = ConfirmationDialog.new()
 	_external.title = "背景文件已在外部修改"
@@ -352,26 +341,18 @@ func save_document() -> bool:
 		_external.popup_centered()
 		return false
 	var error := document.save()
-	_status.text = "已保存 " + document.background_path if error.is_empty() else error
+	_status.text = "已保存 " + document.source_path if error.is_empty() else error
 	if error.is_empty() and Engine.is_editor_hint():
-		EditorInterface.get_resource_filesystem().update_file(document.background_path)
-		if not document.stage_path.is_empty(): EditorInterface.get_resource_filesystem().update_file(document.stage_path)
+		EditorInterface.get_resource_filesystem().update_file(document.source_path)
 	return error.is_empty()
 
 
 func _document_changed() -> void:
-	_sync_picker()
 	_rebuild_tree()
 	_update_properties()
 	_update_controls()
-	_title.text = ("● " if document.is_dirty() else "") + (document.source_path if not document.source_path.is_empty() else "打开关卡或背景资源开始编辑")
+	_title.text = ("● " if document.is_dirty() else "") + (document.source_path if not document.source_path.is_empty() else "打开背景资源开始编辑")
 	surface.request_refresh()
-
-
-func _sync_picker() -> void:
-	_stage_picker.select(0)
-	for index in range(1, _stage_picker.item_count):
-		if _stage_picker.get_item_metadata(index) == document.source_path: _stage_picker.select(index)
 
 
 func _rebuild_tree() -> void:
@@ -622,7 +603,7 @@ func _cancel_material_config() -> void:
 
 
 func _drop_assets(paths: PackedStringArray, position: Vector2) -> void:
-	if document.source_path.is_empty(): _status.text = "请先打开关卡或背景资源。"; return
+	if document.source_path.is_empty(): _status.text = "请先打开背景资源。"; return
 	for path in paths:
 		if not document.add_asset(load(path), position): _status.text = "跳过非纹理或 SpriteFrames：" + path
 

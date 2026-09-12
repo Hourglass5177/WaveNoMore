@@ -13,9 +13,6 @@ var hidden: Dictionary = {}
 var locked: Dictionary = {}
 var history := UndoRedo.new()
 var source_path := ""
-var background_path := ""
-var stage_path := ""
-var needs_link := false
 var references: Array[Vector2] = [Vector2(270, 235), Vector2(1650, 845), Vector2(350, 280), Vector2(1570, 800)]
 var _next_id := 1
 var _saved: Array = []
@@ -29,46 +26,12 @@ func _notification(what: int) -> void:
 		history.free()
 
 
-## 从关卡入口或独立背景资源打开。失败不覆盖当前草稿。
+## 打开独立背景资源。失败不覆盖当前草稿。
 func open(path: String) -> String:
 	var resource := ResourceLoader.load(path, "Resource", ResourceLoader.CACHE_MODE_IGNORE)
-	var definition: StageBackgroundDefinition
-	var target := path
-	var stage_file := ""
-	var link := false
-	var markers: Array[Vector2] = [Vector2(270, 235), Vector2(1650, 845), Vector2(350, 280), Vector2(1570, 800)]
-	if resource is StageDefinition:
-		stage_file = path
-		definition = resource.background
-		target = resource.background_resource_path
-		if definition != null:
-			target = definition.resource_path
-			if target.is_empty() or target.contains("::"):
-				target = path.get_base_dir().path_join("stage_background.tres")
-				if FileAccess.file_exists(target): return "内嵌背景的另存位置已存在，请先为关卡指定独立背景资源。"
-				link = true
-			else:
-				definition = ResourceLoader.load(target, "Resource", ResourceLoader.CACHE_MODE_IGNORE) as StageBackgroundDefinition
-				if definition == null: return "无法读取指定的背景资源。"
-		elif not target.is_empty():
-			definition = ResourceLoader.load(target, "Resource", ResourceLoader.CACHE_MODE_IGNORE) as StageBackgroundDefinition
-			if definition == null:
-				return "无法读取指定的背景资源。"
-		else:
-			target = path.get_base_dir().path_join("stage_background.tres")
-			if FileAccess.file_exists(target):
-				return "同目录已有未挂接的 stage_background.tres，请先在关卡资源中挂接。"
-			link = true
-		var rules: GameplayRuleSet = resource.rule_set
-		if rules == null and not resource.rule_set_resource_path.is_empty():
-			rules = load(resource.rule_set_resource_path) as GameplayRuleSet
-		if rules != null:
-			markers[2] = rules.life_wave_origin
-			markers[3] = rules.death_wave_origin
-	elif resource is StageBackgroundDefinition:
-		definition = resource
-	else:
-		return "请选择 StageDefinition 或 StageBackgroundDefinition 资源。"
+	if not resource is StageBackgroundDefinition:
+		return "请选择 StageBackgroundDefinition 背景资源。"
+	var definition := resource as StageBackgroundDefinition
 	items.clear()
 	sublayers.clear()
 	selected_id = -1
@@ -84,10 +47,6 @@ func open(path: String) -> String:
 					items.append({"id": _next_id, "sublayer": id, "entry": value.duplicate(false)})
 					_next_id += 1
 	source_path = path
-	background_path = target
-	stage_path = stage_file
-	needs_link = link
-	references = markers
 	_saved = signature()
 	acknowledge_external()
 	changed.emit()
@@ -422,8 +381,8 @@ func external_changed() -> bool:
 func acknowledge_external() -> void:
 	_watched.clear()
 	_asset_times.clear()
-	for path in [source_path, background_path]:
-		if not path.is_empty(): _watched[path] = FileAccess.get_file_as_string(path) if FileAccess.file_exists(path) else ""
+	if not source_path.is_empty():
+		_watched[source_path] = FileAccess.get_file_as_string(source_path) if FileAccess.file_exists(source_path) else ""
 	for item in items:
 		var material: ShaderMaterial = item.entry.material
 		for resource: Resource in [item.entry.texture, item.entry.sprite_frames, material, material.shader if material != null else null]:
@@ -437,30 +396,13 @@ func reload_assets() -> void:
 		ResourceLoader.load(path, "Resource", ResourceLoader.CACHE_MODE_REPLACE)
 
 
-## 保存 .tres。首次挂接只修改关卡 [resource] 的背景字段，不重新序列化关卡依赖。
+## 将当前草稿保存回打开的独立背景资源。
 func save() -> String:
 	var issue := validation_error()
 	if not issue.is_empty(): return issue
-	if background_path.is_empty(): return "请先打开关卡或背景资源。"
-	var link_text := ""
-	if needs_link:
-		link_text = FileAccess.get_file_as_string(stage_path)
-		var at := link_text.find("[resource]")
-		if at < 0: return "关卡不是可编辑的文本资源。"
-		var head := link_text.substr(0, at)
-		var lines := link_text.substr(at).split("\n")
-		var body := PackedStringArray()
-		for line in lines:
-			if not line.begins_with("background =") and not line.begins_with("background_resource_path ="): body.append(line)
-		link_text = head + "\n".join(body).strip_edges() + "\nbackground_resource_path = " + JSON.stringify(background_path) + "\n"
-	var error := ResourceSaver.save(definition(), background_path)
+	if source_path.is_empty(): return "请先打开背景资源。"
+	var error := ResourceSaver.save(definition(), source_path)
 	if error != OK: return "背景保存失败：%s" % error_string(error)
-	if needs_link:
-		var file := FileAccess.open(stage_path, FileAccess.WRITE)
-		if file == null: return "背景已保存，但关卡挂接失败。请重试保存。"
-		file.store_string(link_text)
-		file.close()
-		needs_link = false
 	_saved = signature()
 	acknowledge_external()
 	changed.emit()
