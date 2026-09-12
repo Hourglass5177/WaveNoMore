@@ -18,6 +18,7 @@ var _sublayer_fields: Dictionary = {}
 var _sublayer_name: LineEdit
 var _sublayer_picker: OptionButton
 var _new_sublayer_depth: SpinBox
+var _selected_depth: int = 2147483647
 var _infinite: OptionButton
 var _animations: OptionButton
 var _asset: Label
@@ -127,6 +128,7 @@ func _build() -> void:
 	_new_sublayer_depth = _spin(sublayer_tools, "深度")
 	_new_sublayer_depth.value = 1
 	_edit_buttons.append(_button(sublayer_tools, "添加子层", func(): document.add_sublayer(int(_new_sublayer_depth.value))))
+	_edit_buttons.append(_button(sublayer_tools, "删除子层", func(): document.delete_sublayer(document.selected_sublayer_id)))
 	layer_tree = LayerTree.new()
 	layer_tree.columns = 3
 	layer_tree.hide_root = true
@@ -141,7 +143,9 @@ func _build() -> void:
 	layer_tree.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	layer_tree.item_selected.connect(_tree_selection)
 	layer_tree.item_edited.connect(_tree_edited)
-	layer_tree.reorder_requested.connect(func(id: int, depth: int, target: int, front: bool, sublayer: int): document.reorder(id, depth, target, front, sublayer))
+	layer_tree.reorder_requested.connect(func(id: int, depth: int, target: int, front: bool, sublayer: int):
+		if sublayer >= 0 and target >= 0: document.reorder_sublayer(sublayer, target, front)
+		elif id >= 0: document.reorder(id, depth, target, front, sublayer))
 	left.add_child(layer_tree)
 	var right_split := HSplitContainer.new()
 	right_split.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -225,6 +229,11 @@ func _build() -> void:
 	for label in ["有限素材", "无限拼接"]: _infinite.add_item(label)
 	_infinite.item_selected.connect(func(index: int): _change_entry("infinite", index == 1))
 	properties.add_child(_infinite)
+	var random_flip := CheckButton.new()
+	random_flip.text = "无限拼接随机翻转"
+	random_flip.name = "RandomFlip"
+	random_flip.toggled.connect(func(value: bool): _change_entry("random_flip", value))
+	properties.add_child(random_flip)
 	_label(properties, "动画")
 	_animations = OptionButton.new()
 	_animations.item_selected.connect(func(index: int): _change_entry("animation", StringName(_animations.get_item_text(index))))
@@ -383,7 +392,7 @@ func _rebuild_tree() -> void:
 		var group := layer_tree.create_item(root_item)
 		group.set_text(0, "深度 %d%s" % [depth, " · 静止" if depth == 0 else ""])
 		group.set_metadata(0, {"depth": depth})
-		group.set_selectable(0, false)
+		group.set_editable(0, not surface.preview)
 		for index in range(document.sublayers.size() - 1, -1, -1):
 			var record: Dictionary = document.sublayers[index]
 			if record.depth != depth: continue
@@ -432,12 +441,22 @@ func _tree_selection() -> void:
 		var metadata = item.get_metadata(0)
 		if metadata is Dictionary and metadata.has("id"): document.selected_id = metadata.id
 		elif metadata is Dictionary and metadata.has("sublayer"): document.selected_sublayer_id = metadata.sublayer
+		elif metadata is Dictionary and metadata.has("depth"): _selected_depth = metadata.depth
 	_update_properties()
 
 
 func _tree_edited() -> void:
 	var item := layer_tree.get_edited()
-	var id: int = item.get_metadata(0).id
+	var metadata: Dictionary = item.get_metadata(0)
+	if metadata.has("depth"):
+		var old_depth: int = metadata.depth
+		var text := item.get_text(0).replace(" · 静止", "")
+		var new_depth := int(text.trim_prefix("深度 "))
+		if not document.change_depth(old_depth, new_depth):
+			_status.text = "目标深度存在同标识子层，未修改。"
+		_rebuild_tree()
+		return
+	var id: int = metadata.id
 	var column := layer_tree.get_edited_column()
 	var state: Dictionary = document.hidden if column == 1 else document.locked
 	var active := not item.is_checked(column) if column == 1 else item.is_checked(column)
@@ -470,6 +489,10 @@ func _update_properties() -> void:
 	var editable := document.editable_entry() != null and not surface.preview
 	for field: SpinBox in _fields.values(): field.editable = editable
 	_infinite.disabled = not editable
+	var random_flip: CheckButton = properties.get_node_or_null("RandomFlip")
+	if random_flip != null:
+		random_flip.button_pressed = first.infinite and first.random_flip
+		random_flip.disabled = not editable or not first.infinite
 	_replace.disabled = not editable
 	for button in _material_buttons: button.disabled = not editable
 	_material_buttons[2].disabled = not editable or not Engine.is_editor_hint()

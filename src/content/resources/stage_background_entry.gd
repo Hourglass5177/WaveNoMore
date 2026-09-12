@@ -14,6 +14,8 @@ extends Resource
 @export var material: ShaderMaterial
 ## 是否沿素材矩形在两个方向无限拼接。
 @export var infinite: bool = false
+## 无限拼接时让每个重复单元稳定随机水平/垂直翻转。
+@export var random_flip: bool = false
 ## 素材左上角的设计画布位置。
 @export var position: Vector2 = Vector2.ZERO
 ## 素材自身的等比缩放倍率；与视差深度无关，不允许翻转。

@@ -33,7 +33,7 @@ static func cell_size(object: Node2D) -> Vector2:
 
 
 ## 接收控制中心坐标中的原变换，保持源对象的实际外观变换。
-func configure(object: Node2D, pose: Transform2D, camera: Vector2, value: int, tiled: bool) -> void:
+func configure(object: Node2D, pose: Transform2D, camera: Vector2, value: int, tiled: bool, _random_flip: bool = false) -> void:
 	source = object
 	base_origin = pose.origin
 	camera_origin = camera

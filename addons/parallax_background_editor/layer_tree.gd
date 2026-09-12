@@ -10,11 +10,11 @@ func _get_drag_data(_position: Vector2) -> Variant:
 	var item := get_selected()
 	if item == null: return null
 	var metadata = item.get_metadata(0)
-	if not metadata is Dictionary or not metadata.has("id"): return null
+	if not metadata is Dictionary or (not metadata.has("id") and not metadata.has("sublayer")): return null
 	var label := Label.new()
 	label.text = "移动素材"
 	set_drag_preview(label)
-	return {"type": "background_entry", "id": metadata.id}
+	return {"type": "background_entry", "id": metadata.get("id", -1), "sublayer": metadata.get("sublayer", -1)}
 
 
 func _can_drop_data(position: Vector2, data: Variant) -> bool:
@@ -29,4 +29,4 @@ func _can_drop_data(position: Vector2, data: Variant) -> bool:
 func _drop_data(position: Vector2, data: Variant) -> void:
 	var item := get_item_at_position(position)
 	var metadata: Dictionary = item.get_metadata(0)
-	reorder_requested.emit(data.id, metadata.depth, metadata.get("id", -1), get_drop_section_at_position(position) <= 0, metadata.sublayer)
+	reorder_requested.emit(data.get("id", -1), metadata.depth, metadata.get("id", -1), get_drop_section_at_position(position) <= 0, data.get("sublayer", -1))

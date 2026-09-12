@@ -194,6 +194,42 @@ func change_sublayer(id: int, key: String, value: Variant) -> bool:
 	commit("修改子层属性", before)
 	return true
 
+## 修改整个深度层；同一目标深度的子层标识不能重复。
+func change_depth(old_depth: int, new_depth: int) -> bool:
+	if old_depth == new_depth: return true
+	var moving := sublayers.filter(func(record: Dictionary): return record.depth == old_depth)
+	for source in moving:
+		if _has_sublayer_name(new_depth, source.resource.sublayer_id): return false
+	var before := snapshot()
+	for record in moving: record.depth = new_depth
+	commit("修改深度层", before)
+	return true
+
+## 删除子层及其全部挂载对象；操作进入撤销栈。
+func delete_sublayer(id: int) -> void:
+	var record := sublayer_record(id)
+	if record.is_empty(): return
+	var before := snapshot()
+	sublayers.erase(record)
+	items = items.filter(func(item: Dictionary): return item.sublayer != id)
+	selected_sublayer_id = -1
+	selected_id = -1
+	commit("删除子层", before)
+
+## 在同一深度内调整子层绘制顺序。
+func reorder_sublayer(id: int, target_id: int, in_front: bool) -> void:
+	var moving := sublayer_record(id)
+	if moving.is_empty() or moving.depth != depth_of_sublayer(target_id): return
+	var before := snapshot()
+	sublayers.erase(moving)
+	var target_index := sublayers.find(sublayer_record(target_id))
+	if not in_front: target_index += 1
+	sublayers.insert(clampi(target_index, 0, sublayers.size()), moving)
+	commit("调整子层顺序", before)
+
+func depth_of_sublayer(id: int) -> int:
+	return sublayer_record(id).get("depth", 2147483647)
+
 
 func index_of(id: int) -> int:
 	for index in items.size():
@@ -236,7 +272,7 @@ func signature() -> Array:
 		result.append([record.id, record.depth, record.resource.sublayer_id, record.resource.display_name, record.resource.velocity])
 	for item in items:
 		var value: StageBackgroundEntry = item.entry
-		result.append([item.sublayer, value.texture, value.sprite_frames, value.animation, value.infinite, value.position, value.uniform_scale, value.material])
+		result.append([item.sublayer, value.texture, value.sprite_frames, value.animation, value.infinite, value.random_flip, value.position, value.uniform_scale, value.material])
 	return result
 
 
