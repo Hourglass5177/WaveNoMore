@@ -56,9 +56,14 @@ func _run() -> void:
 	var instance_id: int = host._active[note.event_id].node.get_instance_id()
 	host.set_visual_time(9.5)
 	check(host._active[note.event_id].node.position.is_equal_approx(BossEmissionPath.sample(path, 350000).position), "正式音符沿提前段移动")
+	check(is_zero_approx(host._active[note.event_id].node.rotation), "BOSS Tap 发射段保留正向图案")
 	scheduler.advance(9.75, 9.75); host.set_visual_time(9.75)
 	check(host._active[note.event_id].node.get_instance_id() == instance_id, "入轨保留同一音符实例")
 	check(host._active[note.event_id].node.position.is_equal_approx(rules.life_note_spawn), "Host 入轨位置吻合常规入口")
+	check(is_zero_approx(host._active[note.event_id].node.rotation), "BOSS Tap 入轨后仍保持正向")
+	# 编辑器回拖要重新进入发射段，不能沿用已入轨的位置。
+	host.set_visual_time(9.5)
+	check(host._active[note.event_id].node.position.is_equal_approx(BossEmissionPath.sample(path, 350000).position), "回拖恢复 BOSS 发射路径")
 	var original_start: Vector2 = path.controls[0]
 	stage_root.level_show_player.seek("song", 19000000)
 	check(path.controls[0].is_equal_approx(original_start), "BOSS 后续移动不拖走已发射音符")

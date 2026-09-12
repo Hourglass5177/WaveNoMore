@@ -48,9 +48,12 @@ func run() -> void:
 		quit(1 if failures else 0)
 		return
 	var document := Document.new()
-	check(document.open("res://content/stages/s08/stage_definition.tres").is_empty(), "打开 s08")
-	check(document.items.size() == 5, "还原五层条目")
-	var original: StageBackgroundDefinition = load("res://content/stages/s08/stage_background.tres")
+	check(document.open("res://content/backgrounds/s00_grave_background.tres").is_empty(), "打开 s08 背景资源")
+	var original: StageBackgroundDefinition = load("res://content/backgrounds/s00_grave_background.tres")
+	var original_entry_count := 0
+	for layer in original.layers:
+		for sublayer in layer.sublayers: original_entry_count += sublayer.entries.size()
+	check(document.items.size() == original_entry_count, "还原背景资源中的全部素材")
 	var original_position := original.layers[0].sublayers[0].entries[0].position
 	check(document.entry(document.items[0].id).position == original_position, "还原素材坐标")
 	document.items[0].entry.position.x += 10
@@ -79,10 +82,35 @@ func run() -> void:
 	document.delete_selected()
 	check(document.items.size() == count, "锁定条目不能删除")
 	document.locked.clear()
+	var source_index := document.index_of(id)
+	var source := document.entry(id)
+	source.animation = &"复制测试"
+	source.infinite = true
+	source.random_flip = true
+	source.position = Vector2(123, -45)
+	source.uniform_scale = 1.75
+	var duplicate_shader := Shader.new()
+	duplicate_shader.code = "shader_type canvas_item; uniform float amount = 1.0;"
+	var source_material := ShaderMaterial.new()
+	source_material.shader = duplicate_shader
+	source_material.set_shader_parameter(&"amount", 0.65)
+	source.material = source_material
 	document.duplicate_selected()
 	check(document.items.size() == count + 1, "复制条目")
+	var duplicate_id := document.selected_id
+	var duplicate := document.entry(duplicate_id)
+	check(document.index_of(duplicate_id) == source_index + 1 and document.sublayer_of(duplicate_id) == document.sublayer_of(id), "副本紧邻原素材并保持所属子层")
+	check(duplicate.texture == source.texture and duplicate.sprite_frames == source.sprite_frames and duplicate.animation == source.animation, "副本保留素材与动画属性")
+	check(duplicate.position == source.position and duplicate.uniform_scale == source.uniform_scale, "副本保留位置与缩放")
+	check(duplicate.infinite == source.infinite and duplicate.random_flip == source.random_flip, "副本保留无限拼接属性")
+	check(duplicate.material != source.material and duplicate.material.shader == source.material.shader and duplicate.material.get_shader_parameter(&"amount") == 0.65, "副本保留独立材质及参数")
+	duplicate.material.set_shader_parameter(&"amount", 0.2)
+	check(source.material.get_shader_parameter(&"amount") == 0.65, "修改副本材质不影响原素材")
 	document.history.undo()
 	check(document.items.size() == count, "撤销复制")
+	document.history.redo()
+	check(document.items.size() == count + 1 and document.index_of(duplicate_id) == source_index + 1, "重做恢复副本及层级位置")
+	document.history.undo()
 	var ids: Array[int] = [document.items[0].id, document.items[1].id]
 	var target: int = document.items[2].id
 	var untouched_depth := document.depth_of(ids[1])
@@ -95,18 +123,10 @@ func run() -> void:
 	stage.stage_id = "editor_fixture"
 	stage.description = "保持关卡其他字段"
 	var stage_path := OUTPUT.path_join("stage_definition.tres")
-	# 上次运行生成的背景允许存在，使用本次唯一子目录测试首次挂接。
-	var new_dir := OUTPUT.path_join("new_%d" % Time.get_ticks_usec())
-	DirAccess.make_dir_recursive_absolute(new_dir)
-	stage_path = new_dir.path_join("stage_definition.tres")
 	ResourceSaver.save(stage, stage_path)
-	var stage_text := FileAccess.get_file_as_string(stage_path)
-	check(reopened.open(stage_path).is_empty() and not reopened.external_changed(), "空背景关卡打开")
-	check(reopened.save().is_empty(), "首次保存创建并挂接")
-	check(FileAccess.get_file_as_string(stage_path).begins_with(stage_text.strip_edges()), "挂接保留原关卡内容")
-	var loaded_stage: StageDefinition = ResourceLoader.load(stage_path, "Resource", ResourceLoader.CACHE_MODE_IGNORE)
-	check(loaded_stage.background_resource_path == new_dir.path_join("stage_background.tres"), "延迟路径挂接")
-	var file := FileAccess.open(reopened.background_path, FileAccess.READ_WRITE)
+	var current_source := reopened.source_path
+	check(not reopened.open(stage_path).is_empty() and reopened.source_path == current_source, "拒绝关卡资源且保留当前背景草稿")
+	var file := FileAccess.open(reopened.source_path, FileAccess.READ_WRITE)
 	file.seek_end()
 	file.store_string("\n; external edit\n")
 	file.close()
@@ -143,10 +163,10 @@ func test_sublayer_workspace() -> void:
 	workspace.document.add_asset(make_texture(Color.RED), Vector2(10, 20))
 	var id := workspace.document.selected_id
 	check(workspace.document.sublayer_of(id) == child_id, "新增素材进入选中子层")
-	workspace.document.background_path = OUTPUT.path_join("sublayers.tres")
+	workspace.document.source_path = OUTPUT.path_join("sublayers.tres")
 	check(workspace.document.save().is_empty(), "保存层级与速度")
 	var reopened := Document.new()
-	check(reopened.open(workspace.document.background_path).is_empty(), "重开子层资源")
+	check(reopened.open(workspace.document.source_path).is_empty(), "重开子层资源")
 	var loaded := reopened.definition()
 	check(loaded.layers[0].depth == 2 and loaded.layers[0].sublayers[0].display_name == "流云" and loaded.layers[0].sublayers[0].velocity == Vector2(24, -12), "重开保留子层属性")
 	workspace.surface.song_time = 5
@@ -159,10 +179,35 @@ func test_sublayer_workspace() -> void:
 	workspace._set_preview(false)
 	workspace.document.add_sublayer(2)
 	var target := workspace.document.selected_sublayer_id
-	workspace.document.reorder(id, 2, -1, true, target)
-	check(workspace.document.sublayer_of(id) == target, "挂载对象移动到另一子层")
+	workspace.document.add_asset(make_texture(Color.BLUE), Vector2(30, 40))
+	var target_entry := workspace.document.selected_id
+	workspace.layer_tree._submit_drop(
+		{"type": "background_entry", "id": id, "sublayer": child_id},
+		{"id": target_entry, "depth": 2, "sublayer": target},
+		true
+	)
+	check(workspace.document.sublayer_of(id) == target, "拖到另一子层素材时更改所属子层")
+	check(workspace.document.front_ids().find(id) < workspace.document.front_ids().find(target_entry), "跨子层拖放保留目标前后位置")
 	workspace._undo_action()
 	check(workspace.document.sublayer_of(id) == child_id, "撤销恢复所属子层")
+	workspace._redo_action()
+	check(workspace.document.sublayer_of(id) == target, "重做恢复跨子层移动")
+	workspace.layer_tree._submit_drop(
+		{"type": "background_entry", "id": id, "sublayer": target},
+		{"depth": 2, "sublayer": child_id},
+		true
+	)
+	check(workspace.document.sublayer_of(id) == child_id, "拖到空子层时挂入该子层")
+	check(workspace.document.save().is_empty(), "保存跨子层移动")
+	var moved_reopened := Document.new()
+	check(moved_reopened.open(workspace.document.source_path).is_empty(), "重开跨子层资源")
+	var moved_id := -1
+	for item in moved_reopened.items:
+		if item.entry.position == Vector2(10, 20): moved_id = item.id
+	check(
+		moved_id >= 0 and moved_reopened.sublayer_record(moved_reopened.sublayer_of(moved_id)).resource.display_name == "流云",
+		"重开后保持素材所属子层"
+	)
 	workspace.queue_free()
 	await process_frame
 
@@ -341,7 +386,7 @@ func test_resize(workspace: Workspace) -> void:
 	check(surface.hit(surface.pan + (doc.entry(id).position + Vector2(10, 10)) * surface.zoom) == id, "缩放后命中准确")
 	check(doc.save().is_empty(), "保存缩放配置")
 	var reopened := Document.new()
-	check(reopened.open(doc.background_path).is_empty() and reopened.items[0].entry.uniform_scale == 2.0 and reopened.items[0].entry.position == doc.entry(id).position, "重开保留缩放和固定点坐标")
+	check(reopened.open(doc.source_path).is_empty() and reopened.items[0].entry.uniform_scale == 2.0 and reopened.items[0].entry.position == doc.entry(id).position, "重开保留缩放和固定点坐标")
 	var bounds := surface.selection_bounds()
 	var start := surface.pan + bounds.end * surface.zoom
 	mouse(surface, start, true)
@@ -427,10 +472,10 @@ func test_editor_plugin() -> void:
 	check(plugin_workspace != null, "Godot 主编辑页插件已挂载")
 	if plugin_workspace == null: return
 	EditorInterface.set_main_screen_editor("背景编辑器")
-	plugin_workspace.request_open("res://content/stages/s08/stage_definition.tres")
+	plugin_workspace.request_open("res://content/backgrounds/s00_grave_background.tres")
 	await process_frame
 	await process_frame
-	check(plugin_workspace.surface.controller.get_configured_object(4) != null, "编辑器工具模式执行五层装配")
+	check(plugin_workspace.surface.controller.get_configured_object(11) != null, "编辑器工具模式装配完整背景资源")
 	await test_material_modes(plugin_workspace)
 	if DisplayServer.get_name() != "headless":
 		await RenderingServer.frame_post_draw

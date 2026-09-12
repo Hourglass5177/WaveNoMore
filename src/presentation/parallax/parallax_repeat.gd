@@ -9,6 +9,7 @@ var camera_origin: Vector2
 var depth: int
 var infinite: bool
 var _cell_size := Vector2.ZERO
+var random_flip := false
 
 
 ## 检查当前精灵的矩形；无限动画必须具有统一帧画布。
@@ -33,12 +34,13 @@ static func cell_size(object: Node2D) -> Vector2:
 
 
 ## 接收控制中心坐标中的原变换，保持源对象的实际外观变换。
-func configure(object: Node2D, pose: Transform2D, camera: Vector2, value: int, tiled: bool) -> void:
+func configure(object: Node2D, pose: Transform2D, camera: Vector2, value: int, tiled: bool, flip: bool = false) -> void:
 	source = object
 	base_origin = pose.origin
 	camera_origin = camera
 	depth = value
 	infinite = tiled
+	random_flip = flip and tiled
 	if not infinite:
 		object.reparent(self) if object.get_parent() != null else add_child(object)
 		object.transform = pose
@@ -66,7 +68,7 @@ func update_camera(camera: Vector2) -> void:
 		return
 	if size != _cell_size:
 		_cell_size = size
-		repeat.repeat_size = size
+	repeat.repeat_size = size
 	# 用实际视口在素材坐标中的包围范围计算重复数，支持小图、旋转和窗口变化。
 	var inverse := get_global_transform_with_canvas().affine_inverse()
 	var viewport_rect := get_viewport_rect()

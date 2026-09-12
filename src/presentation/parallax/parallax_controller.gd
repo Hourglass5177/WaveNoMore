@@ -49,7 +49,7 @@ func _ready() -> void:
 ## 注册或更新对象；省略子层 ID 时挂入该深度的 default 子层。
 ## 保留注册时的显示变换；之后按所在子层速度和相机变化移动。
 ## 失败不改动对象；重复相同参数不改变子层内顺序。
-func register_object(object: Node2D, depth: int, infinite: bool = false, sublayer_id: String = "default") -> bool:
+func register_object(object: Node2D, depth: int, infinite: bool = false, sublayer_id: String = "default", random_flip: bool = false) -> bool:
 	if not is_node_ready() or not is_instance_valid(object) or object == self or object.is_ancestor_of(self):
 		return false
 	if sublayer_id.is_empty():
@@ -86,7 +86,7 @@ func register_object(object: Node2D, depth: int, infinite: bool = false, sublaye
 	# 登记对象的根排序由注册顺序管理，注销时归还其原有排序设置。
 	object.z_index = 0
 	object.z_as_relative = true
-	view.configure(object, pose, _camera_position - layer.velocity * _song_time, depth, infinite)
+	view.configure(object, pose, _camera_position - layer.velocity * _song_time, depth, infinite, random_flip)
 	record.exit_callback = _on_object_exiting.bind(id)
 	object.tree_exiting.connect(record.exit_callback)
 	_objects[id] = record
@@ -217,7 +217,7 @@ func _configure_entry(entry: StageBackgroundEntry, depth: int, sublayer_id: Stri
 	object.position = entry.position
 	object.scale = Vector2.ONE * entry.uniform_scale
 	_configured_objects.append(object)
-	if not register_object(object, depth, entry.infinite, sublayer_id):
+	if not register_object(object, depth, entry.infinite, sublayer_id, entry.random_flip):
 		return "背景条目 %d 无法拼接；请检查素材及动画帧画布尺寸。" % (index + 1)
 	return ""
 

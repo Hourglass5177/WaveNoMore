@@ -8,7 +8,6 @@ const LayerTree = preload("res://addons/parallax_background_editor/layer_tree.gd
 var document := Document.new()
 var surface: Surface
 var layer_tree: LayerTree
-var _stage_picker: OptionButton
 var _title: Label
 var _status: Label
 var _fields: Dictionary = {}
@@ -18,6 +17,7 @@ var _sublayer_fields: Dictionary = {}
 var _sublayer_name: LineEdit
 var _sublayer_picker: OptionButton
 var _new_sublayer_depth: SpinBox
+var _selected_depth: int = 2147483647
 var _infinite: OptionButton
 var _animations: OptionButton
 var _asset: Label
@@ -90,17 +90,7 @@ func _spin(parent: Node, title: String, step: float = 1.0) -> SpinBox:
 func _build() -> void:
 	var toolbar := HFlowContainer.new()
 	add_child(toolbar)
-	_stage_picker = OptionButton.new()
-	_stage_picker.add_item("选择关卡…")
-	for directory in DirAccess.get_directories_at("res://content/stages"):
-		var path := "res://content/stages".path_join(directory).path_join("stage_definition.tres")
-		if FileAccess.file_exists(path):
-			_stage_picker.add_item(directory)
-			_stage_picker.set_item_metadata(_stage_picker.item_count - 1, path)
-	_stage_picker.item_selected.connect(func(index: int):
-		if index > 0: request_open(_stage_picker.get_item_metadata(index)))
-	toolbar.add_child(_stage_picker)
-	_button(toolbar, "打开资源…", func(): _open_dialog.popup_centered_ratio(0.7))
+	_button(toolbar, "打开背景资源…", func(): _open_dialog.popup_centered_ratio(0.7))
 	_button(toolbar, "保存 Ctrl+S", save_document)
 	_undo = _button(toolbar, "撤销", _undo_action)
 	_redo = _button(toolbar, "重做", _redo_action)
@@ -109,7 +99,7 @@ func _build() -> void:
 	_mode.text = "视差预览"
 	_mode.toggled.connect(_set_preview)
 	toolbar.add_child(_mode)
-	_title = _label(self, "打开关卡或背景资源开始编辑")
+	_title = _label(self, "打开背景资源开始编辑")
 	var split := HSplitContainer.new()
 	split.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	add_child(split)
@@ -127,6 +117,7 @@ func _build() -> void:
 	_new_sublayer_depth = _spin(sublayer_tools, "深度")
 	_new_sublayer_depth.value = 1
 	_edit_buttons.append(_button(sublayer_tools, "添加子层", func(): document.add_sublayer(int(_new_sublayer_depth.value))))
+	_edit_buttons.append(_button(sublayer_tools, "删除子层", func(): document.delete_sublayer(document.selected_sublayer_id)))
 	layer_tree = LayerTree.new()
 	layer_tree.columns = 3
 	layer_tree.hide_root = true
@@ -141,7 +132,10 @@ func _build() -> void:
 	layer_tree.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	layer_tree.item_selected.connect(_tree_selection)
 	layer_tree.item_edited.connect(_tree_edited)
-	layer_tree.reorder_requested.connect(func(id: int, depth: int, target: int, front: bool, sublayer: int): document.reorder(id, depth, target, front, sublayer))
+	layer_tree.entry_reorder_requested.connect(func(id: int, depth: int, target: int, front: bool, sublayer: int):
+		document.reorder(id, depth, target, front, sublayer))
+	layer_tree.sublayer_reorder_requested.connect(func(id: int, target: int, front: bool):
+		document.reorder_sublayer(id, target, front))
 	left.add_child(layer_tree)
 	var right_split := HSplitContainer.new()
 	right_split.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -225,6 +219,11 @@ func _build() -> void:
 	for label in ["有限素材", "无限拼接"]: _infinite.add_item(label)
 	_infinite.item_selected.connect(func(index: int): _change_entry("infinite", index == 1))
 	properties.add_child(_infinite)
+	var random_flip := CheckButton.new()
+	random_flip.text = "无限拼接随机翻转"
+	random_flip.name = "RandomFlip"
+	random_flip.toggled.connect(func(value: bool): _change_entry("random_flip", value))
+	properties.add_child(random_flip)
 	_label(properties, "动画")
 	_animations = OptionButton.new()
 	_animations.item_selected.connect(func(index: int): _change_entry("animation", StringName(_animations.get_item_text(index))))
@@ -248,7 +247,7 @@ func _build() -> void:
 	_handheld.toggled.connect(func(value: bool): surface.handheld = value; _sample(); _update_controls())
 	transport.add_child(_handheld)
 	_status = _label(self, "拖入项目素材添加 · 中键浏览 · 滚轮缩放 · Esc 取消拖动")
-	_open_dialog = _file_dialog(["*.tres ; Godot 资源"])
+	_open_dialog = _file_dialog(["*.tres ; StageBackgroundDefinition 背景资源"])
 	_open_dialog.file_selected.connect(request_open)
 	_asset_dialog = _file_dialog(["*.png,*.jpg,*.jpeg,*.webp,*.svg,*.tres,*.res ; 纹理或 SpriteFrames"])
 	_asset_dialog.file_selected.connect(_asset_chosen)
@@ -276,7 +275,7 @@ func _build() -> void:
 		if save_document(): _continue_pending())
 	_unsaved.custom_action.connect(func(action: StringName):
 		if action == &"discard": _unsaved.hide(); _continue_pending())
-	_unsaved.canceled.connect(func(): _pending = Callable(); _sync_picker())
+	_unsaved.canceled.connect(func(): _pending = Callable())
 	add_child(_unsaved)
 	_external = ConfirmationDialog.new()
 	_external.title = "背景文件已在外部修改"
@@ -343,26 +342,18 @@ func save_document() -> bool:
 		_external.popup_centered()
 		return false
 	var error := document.save()
-	_status.text = "已保存 " + document.background_path if error.is_empty() else error
+	_status.text = "已保存 " + document.source_path if error.is_empty() else error
 	if error.is_empty() and Engine.is_editor_hint():
-		EditorInterface.get_resource_filesystem().update_file(document.background_path)
-		if not document.stage_path.is_empty(): EditorInterface.get_resource_filesystem().update_file(document.stage_path)
+		EditorInterface.get_resource_filesystem().update_file(document.source_path)
 	return error.is_empty()
 
 
 func _document_changed() -> void:
-	_sync_picker()
 	_rebuild_tree()
 	_update_properties()
 	_update_controls()
-	_title.text = ("● " if document.is_dirty() else "") + (document.source_path if not document.source_path.is_empty() else "打开关卡或背景资源开始编辑")
+	_title.text = ("● " if document.is_dirty() else "") + (document.source_path if not document.source_path.is_empty() else "打开背景资源开始编辑")
 	surface.request_refresh()
-
-
-func _sync_picker() -> void:
-	_stage_picker.select(0)
-	for index in range(1, _stage_picker.item_count):
-		if _stage_picker.get_item_metadata(index) == document.source_path: _stage_picker.select(index)
 
 
 func _rebuild_tree() -> void:
@@ -383,7 +374,7 @@ func _rebuild_tree() -> void:
 		var group := layer_tree.create_item(root_item)
 		group.set_text(0, "深度 %d%s" % [depth, " · 静止" if depth == 0 else ""])
 		group.set_metadata(0, {"depth": depth})
-		group.set_selectable(0, false)
+		group.set_editable(0, not surface.preview)
 		for index in range(document.sublayers.size() - 1, -1, -1):
 			var record: Dictionary = document.sublayers[index]
 			if record.depth != depth: continue
@@ -432,12 +423,22 @@ func _tree_selection() -> void:
 		var metadata = item.get_metadata(0)
 		if metadata is Dictionary and metadata.has("id"): document.selected_id = metadata.id
 		elif metadata is Dictionary and metadata.has("sublayer"): document.selected_sublayer_id = metadata.sublayer
+		elif metadata is Dictionary and metadata.has("depth"): _selected_depth = metadata.depth
 	_update_properties()
 
 
 func _tree_edited() -> void:
 	var item := layer_tree.get_edited()
-	var id: int = item.get_metadata(0).id
+	var metadata: Dictionary = item.get_metadata(0)
+	if metadata.has("depth"):
+		var old_depth: int = metadata.depth
+		var text := item.get_text(0).replace(" · 静止", "")
+		var new_depth := int(text.trim_prefix("深度 "))
+		if not document.change_depth(old_depth, new_depth):
+			_status.text = "目标深度存在同标识子层，未修改。"
+		_rebuild_tree()
+		return
+	var id: int = metadata.id
 	var column := layer_tree.get_edited_column()
 	var state: Dictionary = document.hidden if column == 1 else document.locked
 	var active := not item.is_checked(column) if column == 1 else item.is_checked(column)
@@ -470,6 +471,7 @@ func _update_properties() -> void:
 	var editable := document.editable_entry() != null and not surface.preview
 	for field: SpinBox in _fields.values(): field.editable = editable
 	_infinite.disabled = not editable
+	var random_flip: CheckButton = _properties.get_node_or_null("RandomFlip")
 	_replace.disabled = not editable
 	for button in _material_buttons: button.disabled = not editable
 	_material_buttons[2].disabled = not editable or not Engine.is_editor_hint()
@@ -482,6 +484,9 @@ func _update_properties() -> void:
 		_material.text = "未设置 ShaderMaterial"
 		_updating = false
 		return
+	if random_flip != null:
+		random_flip.button_pressed = first.infinite and first.random_flip
+	random_flip.disabled = not editable or not first.infinite
 	_fields.X.set_value_no_signal(first.position.x)
 	_fields.Y.set_value_no_signal(first.position.y)
 	_fields["深度"].set_value_no_signal(document.depth_of(document.selected_id))
@@ -599,7 +604,7 @@ func _cancel_material_config() -> void:
 
 
 func _drop_assets(paths: PackedStringArray, position: Vector2) -> void:
-	if document.source_path.is_empty(): _status.text = "请先打开关卡或背景资源。"; return
+	if document.source_path.is_empty(): _status.text = "请先打开背景资源。"; return
 	for path in paths:
 		if not document.add_asset(load(path), position): _status.text = "跳过非纹理或 SpriteFrames：" + path
 
