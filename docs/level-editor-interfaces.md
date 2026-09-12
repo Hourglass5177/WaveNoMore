@@ -16,6 +16,45 @@
 
 ## Godot 素材包
 
+### 循环环境扩展（可选，格式版本仍为 1）
+
+`level.json.initial_background` 引用初始环境；省略时沿用关卡基础场景的背景。`show.json.scene_cues` 是可选数组，例如：
+
+```json
+{
+  "id": "scene_river",
+  "name": "渡口",
+  "section": "song",
+  "time_us": 12000000,
+  "asset": "river_background",
+  "difficulties": [],
+  "effect": "fade",
+  "blend_px": 128.0,
+  "static_fade_us": 500000,
+  "layers": {"foreground": {"effect": "none"}}
+}
+```
+
+`asset` 使用素材清单 ID；内置背景使用 `stage:<场景 ID>`。`difficulties` 为空表示公共编排，区段使用 `intro/song/outro`。同一时刻按文档数组顺序处理。`layers` 按对应层标识覆盖效果字段；移除覆盖项恢复继承。保存只保留用户请求时间，实际入画、完成和换速时间不回写文档。
+
+`VisualAssetEntry` 可选 `background: StageBackgroundDefinition` 与已有名称、缩略图一起提供环境素材；背景条目无需 `runtime_scene`。PCK 依赖遍历会收集背景、贴图、序列帧、材质及导入产物。关卡 ZIP 保留引用并包含声明的 PCK；缺失引用可定位到对应请求。更新资源包后仍按既有流程重启工具。
+
+每个 `StageBackgroundSubLayer` 新增可选字段：
+
+| 字段 | 用途及默认值 |
+|---|---|
+| `continuity_id` | 跨场景对应身份；默认空，回退为 `深度/子层 ID` |
+| `cycle_direction` | 循环边界的法向方向；默认零向量，从有效滚动方向推导 |
+| `cycle_start`、`cycle_end` | 沿方向投影的设计像素边界；默认相等，从素材组合外框推导 |
+
+`StageEnvironmentSequence` 使用固定 1920×1080 设计画面和整数微秒安排。曲前映射到负时间，歌曲使用音频时间（包含首拍偏移），曲后接在歌曲尾端。各层在自己的可用边界接续；渐变带的前沿尚未入画才可开始，后沿完全退出才完成。速度和视差深度以累计位移接续；演出镜头参与求值，预览浏览变换及震动不参与排队。修改层覆盖项时复用未受影响层的安排。
+
+`ParallaxController.set_environment/sample_environment` 仅管理背景来源，保留角色和音符注册项。纯单来源直接绘制，接缝附近才使用离屏来源与局部权重合成，长序列只实例化可见来源。原生材质先绘制，再施加接缝权重，保留透明度与生死分屏；未编排换景、未指定初始环境的旧关卡继续原链路。
+
+序列帧按来源入画后的局部时间定位。动态材质声明 `uniform float environment_time = -1.0;`，在非负时使用该时间；普通背景可以在负值时继续使用 `TIME`。现有尘粒材质已接入。需要确定性定位的新材质不能只依赖真实帧数或全局 `TIME`。
+
+### 原生场景素材
+
 在 Game 工程中创建 `VisualAssetManifest`，为每项添加 `VisualAssetEntry`：
 
 - `asset_id`：稳定 ID，关卡对象和反馈通过它引用。

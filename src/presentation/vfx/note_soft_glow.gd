@@ -9,6 +9,7 @@ var _strip := ArrayMesh.new()
 var width_px := 30.0
 var _amount := -1.0
 var _glow_color := Color.WHITE
+var _halo_color := Color.WHITE
 var _edge_only := false
 var _bounds := Rect2()
 var _polygon := PackedVector2Array()
@@ -35,9 +36,11 @@ func set_light(amount: float, width: float) -> void:
 		_shader_material.set_shader_parameter(&"radius_px", width)
 
 
-func configure_style(color: Color, edge_only: bool) -> void:
+func configure_style(color: Color, edge_only: bool, halo_color: Color = Color.TRANSPARENT) -> void:
 	## 设置光效颜色与绘制范围；材质始终属于当前实例，不会回写共享资源。
 	_glow_color = color
+	_halo_color = color if halo_color == Color.TRANSPARENT else halo_color
+	_shader_material.set_shader_parameter(&"halo_color", _halo_color)
 	_edge_only = edge_only
 	_shader_material.set_shader_parameter(&"glow_color", color)
 	_shader_material.set_shader_parameter(&"edge_only", edge_only)
@@ -103,6 +106,7 @@ func body(spine: PackedVector2Array, widths: PackedFloat32Array) -> void:
 		_shader_material.set_shader_parameter(&"radius_px", width_px)
 		_shader_material.set_shader_parameter(&"strength", _amount)
 		_shader_material.set_shader_parameter(&"glow_color", _glow_color)
+		_shader_material.set_shader_parameter(&"halo_color", _halo_color)
 		_shader_material.set_shader_parameter(&"edge_only", _edge_only)
 	var rebuild: bool = _vertices.size() != spine.size() * 2
 	if rebuild:
@@ -118,7 +122,7 @@ func body(spine: PackedVector2Array, widths: PackedFloat32Array) -> void:
 		var tangent: Vector2 = spine[mini(i + 1, spine.size() - 1)] - spine[maxi(i - 1, 0)]
 		var normal := Vector2(-tangent.y, tangent.x).normalized()
 		# 常驻边缘光必须覆盖身体收束出的尖尾；判定白光仍在头尾连接处渐隐。
-		var cap_alpha: float = 1.0 if _edge_only else smoothstep(12.0, 38.0, distance) * smoothstep(0.0, 12.0, total - distance)
+		var cap_alpha: float = smoothstep(12.0, 44.0, distance) * smoothstep(0.0, 16.0, total - distance) if _edge_only else smoothstep(12.0, 38.0, distance) * smoothstep(0.0, 12.0, total - distance)
 		for side_index: int in 2:
 			var side: float = -1.0 if side_index == 0 else 1.0
 			var vertex_index: int = i * 2 + side_index

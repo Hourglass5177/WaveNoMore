@@ -21,6 +21,7 @@ func reset(next: Dictionary, path := "") -> void:
 	changed.emit("project")
 
 func entries(kind: String) -> Array:
+	if not data.show.has(kind): data.show[kind] = []
 	return data.show[kind]
 
 func find(kind: String, entry_id: String) -> Dictionary:

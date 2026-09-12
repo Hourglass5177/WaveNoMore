@@ -119,18 +119,18 @@ func preview_test(doc: StudioDocument) -> void:
 	var actor_pose := actor_state(presentation)
 	check(preview.stage_root.get_parallax_controller().get_camera_position().is_equal_approx(Vector2(60, -10) * 2.2), "自制谱按主题速度与当前歌曲时间移动镜头")
 	await create_timer(0.1).timeout
-	check(actor_state(presentation) == actor_pose, "暂停预览不会继续推进真实 Spine 动画")
+	check(same_actor_state(actor_state(presentation), actor_pose), "暂停预览不会继续推进真实 Spine 动画")
 	await preview.seek_preview(2_000_000); preview.advance(4.2, false); await settle()
-	check(actor_state(presentation) == actor_pose, "真实角色的直接定位与回拖后推进相位一致")
+	check(same_actor_state(actor_state(presentation), actor_pose), "真实角色的直接定位与回拖后推进相位一致")
 	check(background_position(preview).is_equal_approx(pose), "背景运动的直接定位与回拖后推进一致")
 	check(director.get_active_cues() == cues and preview.stage_root.gameplay_coordinator.result_digest() == digest, "演出与判定在循环回放后恢复相同状态")
 	var layer: StageBackgroundLayer = stage.background.layers[0]
 	var sublayer: StageBackgroundSubLayer = layer.sublayers[0]
 	check(preview.stage_root.get_parallax_controller().get_sublayer_velocity(layer.depth, sublayer.sublayer_id) == sublayer.velocity, "预览读取正式背景运动参数")
 	await preview.seek_preview(0)
-	check(presentation._life_actor.get_animation_state().get_num_tracks() == 0 and presentation._death_actor.get_animation_state().get_num_tracks() == 0, "回到首个输入前清除旧角色轨道")
+	check(presentation._life_actor.get_animation_state().get_track(0).get_animation().get_name() == "idle" and presentation._death_actor.get_animation_state().get_track(0).get_animation().get_name() == "idle", "回到首个输入前清除旧攻击并恢复静息")
 	await preview.seek_preview(4_200_000)
-	check(actor_state(presentation) == actor_pose, "从无轨道初态重新定位仍恢复相同角色相位")
+	check(same_actor_state(actor_state(presentation), actor_pose), "从无轨道初态重新定位仍恢复相同角色相位")
 	preview.clear_preview(); preview.queue_free(); view.queue_free(); await settle()
 
 func actor_state(presentation) -> Array:
@@ -138,9 +138,26 @@ func actor_state(presentation) -> Array:
 	for actor in [presentation._life_actor, presentation._death_actor]:
 		var state = actor.get_animation_state()
 		var track = state.get_track(0) if state.get_num_tracks() > 0 else null
-		# 微秒采样允许浮点误差；观察真实轨道及动画状态，避免只检查我们自己的控制变量。
-		values.append([roundi(track.get_track_time() * 1000000.0), track.get_loop()] if track != null else [])
+		# 既比较混合状态，也比较实际骨骼和裙摆，防止轨道相位正确而姿势残留。
+		var poses := []
+		for bone in actor.get_skeleton().get_bones(): poses.append(bone.get_global_transform())
+		var mixing = track.get_mixing_from() if track != null else null
+		values.append({"track": [roundi(track.get_track_time() * 1000000.0), track.get_loop(), roundi(track.get_mix_time() * 1000000.0) if mixing != null else 0, mixing != null] if track != null else [], "poses": poses})
 	return values
+
+func same_actor_state(a: Array, b: Array) -> bool:
+	if a.size() != b.size(): return false
+	for index in a.size():
+		if a[index].track != b[index].track or a[index].poses.size() != b[index].poses.size():
+			print("Actor track mismatch: ", a[index].track, " / ", b[index].track)
+			return false
+		for bone in a[index].poses.size():
+			var aa: Transform2D = a[index].poses[bone]
+			var bb: Transform2D = b[index].poses[bone]
+			if aa.origin.distance_to(bb.origin) > 0.02 or aa.x.distance_to(bb.x) > 0.0002 or aa.y.distance_to(bb.y) > 0.0002:
+				print("Actor bone mismatch: ", bone, " / ", aa, " / ", bb)
+				return false
+	return true
 
 func write_text(path: String, value: String) -> void:
 	var file := FileAccess.open(path, FileAccess.WRITE); file.store_string(value)

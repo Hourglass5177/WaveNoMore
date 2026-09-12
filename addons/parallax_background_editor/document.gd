@@ -228,7 +228,7 @@ func snapshot() -> Dictionary:
 func signature() -> Array:
 	var result: Array = []
 	for record in sublayers:
-		result.append([record.id, record.depth, record.resource.sublayer_id, record.resource.display_name, record.resource.velocity])
+		result.append([record.id, record.depth, record.resource.sublayer_id, record.resource.display_name, record.resource.velocity, record.resource.continuity_id, record.resource.cycle_direction, record.resource.cycle_start, record.resource.cycle_end])
 	for item in items:
 		var value: StageBackgroundEntry = item.entry
 		result.append([item.sublayer, value.texture, value.sprite_frames, value.animation, value.infinite, value.random_flip, value.position, value.uniform_scale, value.material])
@@ -337,10 +337,14 @@ func reorder(id: int, depth: int, target_id: int = -1, in_front: bool = true, su
 ## 保存前逐项校验；无限动画必须等画布，任何无效条目都给出所在序号。
 func validation_error() -> String:
 	var names: Dictionary = {}
+	var identities:Dictionary={}
 	for record in sublayers:
 		var value: StageBackgroundSubLayer = record.resource
 		var key := "%d/%s" % [record.depth, value.sublayer_id]
 		if value.sublayer_id.is_empty() or names.has(key): return "子层标识为空或同深度重复。"
+		var identity:=value.continuity_key(record.depth)
+		if identities.has(identity):return "对应层标识重复："+identity
+		identities[identity]=true
 		if not value.velocity.is_finite(): return "子层速度必须为有限数值。"
 		names[key] = true
 	for index in items.size():

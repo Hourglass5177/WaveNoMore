@@ -4,6 +4,8 @@
 [ext_resource type="Script" uid="uid://1ripw1fv282p" path="res://src/content/resources/visual_asset_entry.gd" id="2_entry"]
 [ext_resource type="PackedScene" path="res://scenes/tools/art_lab/graybox_asset_placeholder.tscn" id="3_placeholder"]
 
+[ext_resource type="PackedScene" path="res://scenes/tools/art_lab/note_effect_preview.tscn" id="4_note_effects"]
+
 [sub_resource type="Resource" id="Entry_life_actor"]
 script = ExtResource("2_entry")
 asset_id = "actor_life"
@@ -43,7 +45,7 @@ required_states = PackedStringArray("idle_loop", "strike", "hold_start", "hold_l
 script = ExtResource("2_entry")
 asset_id = "note_zhu"
 category = &"note"
-runtime_scene = ExtResource("3_placeholder")
+runtime_scene = ExtResource("4_note_effects")
 anchors = {
 "hit_anchor": Vector2(0, 0),
 "progress_anchor": Vector2(0, 92)
@@ -56,7 +58,7 @@ required_states = PackedStringArray("prepare", "approach", "perfect", "good", "p
 script = ExtResource("2_entry")
 asset_id = "note_xuan"
 category = &"note"
-runtime_scene = ExtResource("3_placeholder")
+runtime_scene = ExtResource("4_note_effects")
 anchors = {
 "hit_anchor": Vector2(0, 0),
 "progress_anchor": Vector2(0, -92)
@@ -82,8 +84,8 @@ required_states = PackedStringArray("prepare", "approach", "target_near", "perfe
 script = ExtResource("2_entry")
 asset_id = "note_hold"
 category = &"note"
-runtime_scene = ExtResource("3_placeholder")
-visual_bounds = Rect2(-128, -64, 256, 128)
+runtime_scene = ExtResource("4_note_effects")
+visual_bounds = Rect2(-140, -125, 320, 250)
 anchors = {
 "hit_anchor": Vector2(0, 0),
 "progress_anchor": Vector2(128, 0)

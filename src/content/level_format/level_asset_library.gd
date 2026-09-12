@@ -25,7 +25,7 @@ func resolve(asset: String) -> Resource:
 	if asset.is_empty(): return null
 	if cache.has(asset): return cache[asset]
 	var result: Resource
-	if entries.has(asset): result = entries[asset].runtime_scene
+	if entries.has(asset): result = entries[asset].background if entries[asset].background != null else entries[asset].runtime_scene
 	else:
 		var path := asset if asset.begins_with("res://") else directory.path_join(asset)
 		if not FileAccess.file_exists(path) and not ResourceLoader.exists(path): return null
@@ -47,6 +47,22 @@ func instantiate(asset: String) -> Node:
 	if resource is PackedScene: return resource.instantiate()
 	return null
 
+## 内置环境只借用 StageDefinition 的背景，不切换主题、歌曲或玩法。
+func background(asset: String) -> StageBackgroundDefinition:
+	if asset.begins_with("stage:"):
+		return ChartSceneLibrary.shared().resolve({"scene_id": asset.trim_prefix("stage:")}).get("background") as StageBackgroundDefinition
+	return resolve(asset) as StageBackgroundDefinition
+
+func backgrounds() -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	for stage in ChartSceneLibrary.shared().all_stages():
+		if stage.background == null and stage.background_resource_path.is_empty(): continue
+		result.append({"id": "stage:" + stage.stage_id, "name": stage.display_name, "thumbnail": stage.cover})
+	for asset: String in entries:
+		var entry: VisualAssetEntry = entries[asset]
+		if entry.background != null: result.append({"id": asset, "name": entry.display_name if not entry.display_name.is_empty() else asset, "thumbnail": entry.thumbnail})
+	return result
+
 func anchor(asset: String, anchor_name: String) -> Vector2:
 	if not entries.has(asset): return Vector2.ZERO
 	return LevelFormat.vec(entries[asset].anchors.get(anchor_name, Vector2.ZERO))
@@ -60,12 +76,18 @@ func release_time(asset: String, action: String) -> float:
 
 func list_files(folder := "assets") -> PackedStringArray:
 	var result := PackedStringArray()
+	if not DirAccess.dir_exists_absolute(directory.path_join(folder)): return result
 	for file in DirAccess.get_files_at(directory.path_join(folder)): result.append(folder.path_join(file))
 	for child in DirAccess.get_directories_at(directory.path_join(folder)): result.append_array(list_files(folder.path_join(child)))
 	return result
 
 func validate_level(level: Dictionary) -> Array[Dictionary]:
 	var result: Array[Dictionary] = issues.duplicate(true)
+	var environments: Array = level.show.get("scene_cues", []).duplicate()
+	if not str(level.get("initial_background", "")).is_empty(): environments.append({"asset": level.initial_background, "id": ""})
+	for cue: Dictionary in environments:
+		if background(str(cue.asset)) == null:
+			result.append({"message": "环境场景资源缺失：" + str(cue.asset), "scene_cue_id": str(cue.id), "time_us": cue.get("time_us", 0), "severity": "error"})
 	var references := []
 	if not str(level.get("cover", "")).is_empty(): references.append({"asset":level.cover,"kind":"image"})
 	for object_data: Dictionary in level.show.get("objects", []):

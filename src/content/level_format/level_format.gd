@@ -25,6 +25,9 @@ static func key(time_us: int, value) -> Dictionary:
 static func clip(time_us: int, asset := "", duration_us := 1000000) -> Dictionary:
 	return {"id": id("clip"), "name": "片段", "start_us": time_us, "duration_us": duration_us, "asset": asset, "action": "", "offset_us": 0, "rate": 1.0, "loop": false, "fade_in_us": 0, "fade_out_us": 0, "gain_db": 0.0, "hold_last": false}
 
+static func scene_cue(time_us: int, asset: String, section := "song") -> Dictionary:
+	return {"id": id("scene"), "name": "环境换景", "time_us": time_us, "asset": asset, "section": section, "difficulties": [], "effect": "none", "blend_px": 128.0, "static_fade_us": 500000, "layers": {}}
+
 static func visible_in(track_data: Dictionary, difficulty: String) -> bool:
 	return not track_data.get("muted", false) and (track_data.get("difficulties", []).is_empty() or difficulty in track_data.difficulties)
 

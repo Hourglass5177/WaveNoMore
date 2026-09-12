@@ -6,22 +6,27 @@ extends Node2D
 ## Tap 使用的 ShaderMaterial；运行时由主题注入并复制，避免修改共享资源。
 @export var tap_material: ShaderMaterial
 
+signal effect_requested(key: String, source: Dictionary, at_sec: float, direction: Vector2, kind: StringName)
+const EFFECT_STYLE: NoteEffectStyle = preload("res://content/presentation/note_effect_style.tres")
+const SURFACE_SHADER: Shader = preload("res://shaders/notes/note_surface.gdshader")
+const AURA = preload("res://src/presentation/vfx/note_aura.gd")
+var effect_style: NoteEffectStyle = EFFECT_STYLE
+var _aura: MeshInstance2D
+var _standalone_effects: NoteFragmentHost
+var _finished_effect := false
+var _last_surface_state := Vector3(INF, INF, INF)
 const SOFT_GLOW = preload("res://src/presentation/vfx/note_soft_glow.gd")
 
-@export_group("White Glow")
-## 局部轮廓向外延伸的设计像素；中心纹理仍然保留。
-@export_range(1.0, 64.0, 0.5) var glow_width_px: float = 30.0
-@export_range(0.0, 1.5, 0.05) var glow_strength: float = 1.0
-## 双押 Tap 在判定前开始亮起，按绝对视觉时间求值。
-@export_range(0.01, 1.0, 0.01) var tap_glow_lead_sec: float = 0.60
-@export_range(0.01, 0.5, 0.01) var tap_glow_rise_sec: float = 0.15
-@export_range(0.01, 0.5, 0.01) var hold_glow_rise_sec: float = 0.10
-@export_range(0.01, 0.5, 0.01) var glow_fall_sec: float = 0.08
+# 时间参数取自共享设计资源；保留只读状态接口供表现测试使用。
+var glow_width_px: float = 12.0
+var glow_strength: float = 1.0
+var tap_glow_lead_sec: float = 0.60
+var tap_glow_rise_sec: float = 0.15
+var hold_glow_rise_sec: float = 0.10
+var glow_fall_sec: float = 0.08
 var glow_amount: float = 0.0
 var _glow_visual: MeshInstance2D
 var _edge_glow_visual: MeshInstance2D
-var _edge_glow_enabled: bool = true
-var _edge_glow_color: Color = Color.WHITE
 var _double_tap := false
 var _glow_time := 0.0
 var _glow_target := false
@@ -60,21 +65,84 @@ var _timing_tween: Tween
 var preview_time_driven := false
 var _preview_clock := -INF
 ## Tap 命中印记固定在按键位置，本体继续飞行；接触波前后才进入死亡阶段。
-const TAP_FEEDBACK_SEC := 0.12
-const TAP_BODY_BRIGHTNESS := 0.45
 var _is_tap := true
 var _tap_hit_time := INF
 var _tap_death_time := INF
 var _tap_hit_transform := Transform2D.IDENTITY
 
 
-func configure_edge_glow(enabled: bool, color: Color) -> void:
-	## Host 保留统一调用接口；Tap 已移除常驻边缘泛光。
-	if _edge_glow_visual != null:
-		_edge_glow_visual.visible = false
+func configure_effect_style(style: NoteEffectStyle, side: int) -> void:
+	## ArtLab、正式游戏和写谱器都从同一资源读取设计参数。
+	effect_style = style
+	affinity = side
+	tap_glow_lead_sec = style.tap_lead_sec
+	tap_glow_rise_sec = style.tap_rise_sec
+	hold_glow_rise_sec = style.hold_rise_sec
+	glow_fall_sec = style.fall_sec
+	if tap_material == null:
+		tap_material = ShaderMaterial.new()
+		tap_material.shader = SURFACE_SHADER
+	material = tap_material if tap_texture != null else null
+	style.apply_to(tap_material, side)
+	_last_surface_state = Vector3(INF, INF, INF)
+	if _aura == null:
+		_aura = AURA.new()
+		_aura.name = "AffinityAura"
+		add_child(_aura)
+	_aura.configure(style, side)
+	if _edge_glow_visual == null:
+		_edge_glow_visual = SOFT_GLOW.new()
+		_edge_glow_visual.show_behind_parent = true
+		add_child(_edge_glow_visual)
+	_edge_glow_visual.configure_style(style.rim(side), true)
+	_edge_glow_visual.set_light(style.halo_strength, style.halo_width_px)
+	if _glow_visual != null: _glow_visual.configure_style(style.white_color, false)
+	_sync_effect_surface()
+
+func _sync_effect_surface() -> void:
+	var active := effect_style.enabled and not _tap_body_only() and not missed and not _finished_effect
+	var surface_state := Vector3(glow_amount, 1.0 if active else 0.0, effect_style.accepted_brightness if _tap_body_only() else 1.0)
+	if tap_material != null and surface_state != _last_surface_state:
+		tap_material.set_shader_parameter(&"condition_light", glow_amount)
+		tap_material.set_shader_parameter(&"aura_amount", surface_state.y)
+		tap_material.set_shader_parameter(&"body_brightness", surface_state.z)
+		_last_surface_state = surface_state
+	if _aura != null: _aura.visible = active and tap_texture != null
+	if _edge_glow_visual != null: _edge_glow_visual.visible = active and tap_texture == null
+	if _standalone_effects != null: _standalone_effects.set_time(_glow_time)
+
+func effect_snapshot() -> Dictionary:
+	var result := {"transform": global_transform, "texture": tap_texture, "size": Vector2(96, 96), "affinity": affinity}
+	if tap_material != null and tap_material.get_shader_parameter(&"eye_ball_texture") is Texture2D:
+		result.eye = tap_material.get_shader_parameter(&"eye_ball_texture")
+		result.mask = tap_material.get_shader_parameter(&"musk_texture")
+		# 冻结触发时眼球偏移，碎片散开后眼球不再跨片移动。
+		var screen := get_global_transform_with_canvas()
+		var delta := get_viewport_rect().size * 0.5 - screen.origin
+		var radius := float(tap_material.get_shader_parameter(&"eye_offset_px"))
+		var falloff := float(tap_material.get_shader_parameter(&"eye_falloff_radius_px"))
+		result.eye_offset = screen.basis_xform_inv(delta.normalized() * radius * smoothstep(0.0, falloff, delta.length())) / Vector2(96, 96)
+	return result
+
+func _emit_effect(suffix: String, at_sec: float, kind: StringName, direction := Vector2.RIGHT, source: Dictionary = {}) -> void:
+	if source.is_empty(): source = effect_snapshot()
+	if effect_requested.get_connections().is_empty():
+		# 单独实例化的 ArtLab 素材也能预览；正式宿主会接管此信号。
+		if _standalone_effects == null:
+			_standalone_effects = NoteFragmentHost.new()
+			_standalone_effects.top_level = true
+			# 与本体并列，避免本体隐藏时连带隐藏仍在消散的碎片。
+			get_parent().add_child(_standalone_effects)
+		_standalone_effects.burst(event_id + suffix, source, at_sec, (source.transform as Transform2D).basis_xform_inv(direction), kind)
+	else:
+		effect_requested.emit(event_id + suffix, source, at_sec, direction, kind)
+
+func _exit_tree() -> void:
+	if is_instance_valid(_standalone_effects): _standalone_effects.queue_free()
 
 
 func prepare(view_model: Dictionary) -> void:
+	_finished_effect = false
 	_is_tap = StringName(view_model.get("unit_kind", &"tap")) == &"tap"
 	_tap_hit_time = INF
 	_tap_death_time = INF
@@ -86,6 +154,7 @@ func prepare(view_model: Dictionary) -> void:
 	_reset_glow()
 	event_id = str(view_model.get("event_id", view_model.get("id", view_model.get("unit_id", ""))))
 	affinity = int(view_model.get("affinity", GameplayTypes.Affinity.ZHU))
+	configure_effect_style(EFFECT_STYLE, affinity)
 	approach_progress = 0.0
 	hold_progress = 0.0
 	target_proximity = 0.0
@@ -97,6 +166,7 @@ func prepare(view_model: Dictionary) -> void:
 	visible = true
 	modulate = Color.WHITE
 	scale = Vector2.ONE
+	_sync_effect_surface()
 	queue_redraw()
 
 
@@ -145,8 +215,11 @@ func play_timing_confirmed(grade: int) -> void:
 		modulate = Color.WHITE
 		scale = Vector2.ONE
 		_set_glow_amount(0.0)
+		_emit_effect(":hit", _glow_time, &"hit")
+		_sync_effect_surface()
 		queue_redraw()
 		return
+	if not missed: _emit_effect(":hit", _glow_time, &"hit")
 	if _timing_tween != null:
 		_timing_tween.kill()
 	modulate = Color("a7a9af") if missed else Color("fff3cf")
@@ -167,6 +240,7 @@ func play_wave_contact(_contact: Dictionary) -> void:
 	wave_contacted = true
 	if _tap_body_only():
 		_tap_death_time = float(_contact["contact_us"]) / 1000000.0
+		_emit_effect(":break", _tap_death_time, &"tap", _contact.get("effect_direction", Vector2.RIGHT))
 		_update_tap_feedback()
 		return
 	if _wave_contact_tween != null:
@@ -195,6 +269,8 @@ func play_note_arrival(_arrival: Dictionary) -> void:
 
 
 func reset_for_pool() -> void:
+	if _standalone_effects != null: _standalone_effects.clear()
+	_finished_effect = false
 	_tap_hit_time = INF
 	_tap_death_time = INF
 	_reset_glow()
@@ -218,9 +294,9 @@ func set_preview_time(seconds: float) -> void:
 	preview_time_driven = true
 	var elapsed := maxf(0, seconds - _preview_clock) if is_finite(_preview_clock) else 0.0
 	_preview_clock = maxf(_preview_clock, seconds)
-	if _is_tap:
-		_glow_time = _preview_clock
-		_update_tap_feedback()
+	_glow_time = _preview_clock
+	_update_tap_feedback()
+	_sync_effect_surface()
 	for tween in [_feedback_tween, _wave_contact_tween, _timing_tween]:
 		if tween != null and tween.is_valid(): tween.custom_step(elapsed)
 
@@ -243,16 +319,17 @@ func _play_feedback() -> void:
 
 func _draw() -> void:
 	if tap_texture != null:
-		var extent := Vector2(96.0, 96.0)
-		if tap_material == null and _edge_glow_visual != null and _edge_glow_enabled:
-			_edge_glow_visual.texture_shape(tap_texture, Rect2(-extent * 0.5, extent))
-		draw_texture_rect(tap_texture, Rect2(-extent * 0.5, extent), false, Color.WHITE)
+		var rect := Rect2(Vector2(-48, -48), Vector2(96, 96))
+		if _aura != null and effect_style.enabled and not _tap_body_only() and not missed:
+			_aura.shape(tap_texture, rect)
+		if _glow_visual != null: _glow_visual.visible = false
+		draw_texture_rect(tap_texture, rect, false, Color.WHITE)
 		return
 	var base_color: Color = _affinity_color()
 	if missed:
 		base_color = Color("5c606a")
 	elif _tap_body_only():
-		base_color = base_color.darkened(1.0 - TAP_BODY_BRIGHTNESS)
+		base_color = base_color.darkened(1.0 - effect_style.accepted_brightness)
 	elif judgment_grade == GameplayTypes.JudgmentGrade.PERFECT:
 		base_color = base_color.lightened(0.35)
 
@@ -268,24 +345,20 @@ func _draw() -> void:
 		Vector2(-17.0, 51.0) * pulse,
 		Vector2(-31.0, 16.0) * pulse,
 	])
-	if _edge_glow_visual != null and _edge_glow_enabled:
+	if _edge_glow_visual != null and _edge_glow_visual.visible:
 		_edge_glow_visual.polygon(shape)
 	if _glow_visual != null and _glow_visual.visible:
 		_glow_visual.polygon(shape)
-	var death_progress: float = clampf((_glow_time - _tap_death_time) / TAP_FEEDBACK_SEC, 0.0, 1.0)
-	# 灰盒死亡先收束、消散；正式怪物可在 play_wave_contact 接口替换为死亡动画。
-	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE * (1.0 - death_progress * 0.25))
-	draw_colored_polygon(shape, Color(base_color, 0.88 * (1.0 - death_progress)))
+	# 完整灰盒也由独立碎片替换，不在此继续播放第二套死亡动画。
+	draw_colored_polygon(shape, Color(base_color, 0.88))
 	if not _tap_body_only():
 		draw_polyline(PackedVector2Array([shape[0], shape[2], shape[4], shape[6], shape[8]]), Color("e5ddc8"), 3.0, true)
 	for index: int in range(4):
 		var offset: float = -24.0 + float(index) * 15.0
-		draw_line(Vector2(offset, -27.0), Vector2(offset + 23.0, 30.0), Color(0.02, 0.02, 0.03, 0.36 * (1.0 - death_progress)), 2.0, true)
+		draw_line(Vector2(offset, -27.0), Vector2(offset + 23.0, 30.0), Color(0.02, 0.02, 0.03, 0.36), 2.0, true)
 	draw_set_transform(Vector2.ZERO)
 
-	if _tap_body_only():
-		_draw_tap_hit()
-	elif wave_contacted:
+	if wave_contacted and not _tap_body_only():
 		draw_arc(Vector2.ZERO, 72.0, 0.0, TAU, 56, Color("fff8e8", 0.92), 6.0, true)
 	elif note_arrived:
 		draw_arc(Vector2.ZERO, 70.0, 0.0, TAU, 48, Color("8b8e96", 0.72), 5.0, true)
@@ -306,27 +379,18 @@ func _tap_body_only() -> bool:
 
 func _update_tap_feedback() -> void:
 	if not _tap_body_only(): return
-	visible = _glow_time < _tap_death_time + TAP_FEEDBACK_SEC
+	# 完整本体由独立碎片替换，音符生命周期仍由原调度器结束。
+	visible = _glow_time < _tap_death_time
 	queue_redraw()
 
-func _draw_tap_hit() -> void:
-	var age: float = _glow_time - _tap_hit_time
-	if age < 0.0 or age >= TAP_FEEDBACK_SEC: return
-	var progress: float = age / TAP_FEEDBACK_SEC
-	var fade: float = pow(1.0 - progress, 2.0)
-	# 逆变换抵消本体继续移动、旋转和缩放，印记始终留在按键被接受的位置。
-	draw_set_transform_matrix(global_transform.affine_inverse() * _tap_hit_transform)
-	draw_circle(Vector2.ZERO, 9.0 * (1.0 - progress), Color(1.0, 0.96, 0.85, fade * 0.8))
-	for index: int in 4:
-		var direction := Vector2.from_angle(PI * 0.25 + float(index) * PI * 0.5)
-		var distance: float = lerpf(24.0, 54.0, progress)
-		draw_line(direction * distance, direction * (distance + 15.0 * (1.0 - progress)), Color(1.0, 0.96, 0.85, fade), 3.0, true)
-	draw_set_transform(Vector2.ZERO)
 
 
 func set_tuning_glow(active: bool, seconds: float) -> void:
 	## 同一时间重复快照不会推进过渡；转向从当前亮度开始，避免松开再接管时跳闪。
 	_glow_time = seconds
+	if _finished_effect:
+		_set_glow_amount(0.0)
+		return
 	var duration: float = hold_glow_rise_sec if _glow_target else glow_fall_sec
 	var value: float = lerpf(_glow_from, 1.0 if _glow_target else 0.0, smoothstep(0.0, duration, seconds - _glow_change_time))
 	active = active and not missed
@@ -338,8 +402,10 @@ func set_tuning_glow(active: bool, seconds: float) -> void:
 
 
 func _set_glow_amount(value: float) -> void:
+	if not effect_style.enabled: value = 0.0
 	glow_amount = value
 	if _glow_visual != null: _glow_visual.set_light(value * glow_strength, glow_width_px)
+	_sync_effect_surface()
 	queue_redraw()
 
 
@@ -358,4 +424,4 @@ func _affinity_color() -> Color:
 		GameplayTypes.Affinity.SU:
 			return Color("ddd4ba")
 		_:
-			return Color("ba3b31")
+			return effect_style.life_base

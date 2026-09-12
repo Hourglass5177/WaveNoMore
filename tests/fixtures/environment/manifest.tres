@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="VisualAssetManifest" format=3]
+[ext_resource type="Script" path="res://src/content/resources/visual_asset_manifest.gd" id="1"]
+[ext_resource type="Script" path="res://src/content/resources/visual_asset_entry.gd" id="2"]
+[ext_resource type="Resource" path="res://tests/fixtures/environment/a.tres" id="a"]
+[ext_resource type="Resource" path="res://tests/fixtures/environment/b.tres" id="b"]
+[ext_resource type="Resource" path="res://tests/fixtures/environment/c.tres" id="c"]
+[sub_resource type="Resource" id="a"]
+script = ExtResource("2")
+asset_id = "environment_test_a"
+display_name = "朱红岸边"
+category = &"background"
+background = ExtResource("a")
+placeholder = false
+[sub_resource type="Resource" id="b"]
+script = ExtResource("2")
+asset_id = "environment_test_b"
+display_name = "靛蓝渡口"
+category = &"background"
+background = ExtResource("b")
+placeholder = false
+[sub_resource type="Resource" id="c"]
+script = ExtResource("2")
+asset_id = "environment_test_c"
+display_name = "青绿山林"
+category = &"background"
+background = ExtResource("c")
+placeholder = false
+[resource]
+script = ExtResource("1")
+manifest_id = "environment_test"
+entries = Array[ExtResource("2")]([SubResource("a"),SubResource("b"),SubResource("c")])

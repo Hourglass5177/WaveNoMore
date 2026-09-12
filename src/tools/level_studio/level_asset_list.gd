@@ -5,4 +5,5 @@ func _get_drag_data(at: Vector2) -> Variant:
 	var index := get_item_at_position(at, true)
 	if index < 0: return null
 	var label := Label.new(); label.text = get_item_text(index); set_drag_preview(label)
-	return {"level_asset": get_item_metadata(index)}
+	var id: Variant = get_item_metadata(index)
+	return {"level_asset": id, "level_background": id} if id in get_meta("background_ids",PackedStringArray()) else {"level_asset":id}

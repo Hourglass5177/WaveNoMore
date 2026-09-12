@@ -10,7 +10,3 @@ shader_parameter/musk_texture = ExtResource("2_musk")
 shader_parameter/eye_ball_texture = ExtResource("3_eye_ball")
 shader_parameter/eye_offset_px = 10.0
 shader_parameter/eye_falloff_radius_px = 128.0
-shader_parameter/glow_enabled = true
-shader_parameter/glow_color = Color(0.95, 0.25, 0.2, 1)
-shader_parameter/glow_strength = 1.1
-shader_parameter/glow_width_px = 25.0

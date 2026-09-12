@@ -45,7 +45,7 @@ func test_host(side: int, pair: bool, hit: float) -> void:
 	var contact := {"contact_us": roundi((hit + 0.09) * 1000000.0), "position": Vector2(880, 510)}
 	scheduler.mark_wave_contacted("tap", contact)
 	host.set_visual_time(hit + 0.15)
-	check(tap.position == contact.position and tap.visible, "波接触后在实际位置消散")
+	check(tap.position == contact.position and not tap.visible and host._effects._active.has("tap:break"), "波接触后本体被独立碎片替换")
 	var before := tap._glow_time
 	host.set_visual_time(hit + 0.15)
 	check(tap._glow_time == before and tap.position == contact.position, "暂停保持消散进度和位置")
@@ -71,6 +71,10 @@ func state(preview: Node) -> Dictionary:
 		result[id] = {"position": tap.position, "rotation": tap.rotation, "hit_time": tap._tap_hit_time,
 			"anchor": tap._tap_hit_transform, "death_time": tap._tap_death_time, "visible": tap.visible,
 			"ring": item.timing_ring.visible, "glow": tap.glow_amount}
+	for key: String in host._effects._active:
+		if not key.begins_with("feedback_"): continue
+		var entry: Dictionary = host._effects._active[key]
+		result["fx:" + key] = {"transform": entry.node.transform, "time": entry.time, "age": entry.node.material.get_shader_parameter(&"age")}
 	return result
 
 func test_preview() -> void:

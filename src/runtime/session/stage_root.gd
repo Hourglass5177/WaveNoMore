@@ -341,12 +341,16 @@ func _configure_level_show(stage: StageDefinition) -> void:
 		remove_child(level_show_player); level_show_player.queue_free(); level_show_player = null
 	_level = stage.get_meta("level", {})
 	_level_section = "song"; _pending_level_result.clear()
-	if stage.stage_show.level_data.is_empty(): return
+	if stage.stage_show == null or stage.stage_show.level_data.is_empty(): return
 	level_show_player = LevelShowPlayer.new(); add_child(level_show_player)
 	level_show_player.configure(stage.stage_show.level_data, stage.stage_show.asset_directory, stage.stage_show.asset_packs, stage.chart.difficulty_id)
 	var compiled := LevelBossCompiler.compile(stage, stage_session.compiled_chart.tempo_map, level_show_player)
 	level_show_player.show.tracks.append_array(compiled.tracks)
 	chart_scheduler.configure_boss_emissions(compiled.emissions)
+	var duration_us := roundi((stage_session.get_end_song_time_sec() + stage.song.first_beat_offset_sec) * 1000000.0)
+	level_show_player.configure_environment(get_parallax_controller(), _level, stage.background, Vector3i(int(_level.get("intro_us",0)), duration_us, int(_level.get("outro_us",0))), stage.visual_theme.camera_velocity if stage.visual_theme != null else Vector2.ZERO)
+	var first_beat_offset:=stage.song.first_beat_offset_sec
+	level_show_player.environment_camera_effect=func(at_us:int):return presentation.environment_camera_offset(float(at_us)/1000000.0-first_beat_offset)
 	level_show_player.seek("song", 0)
 
 
@@ -355,7 +359,8 @@ func _update_level_show(sample: ClockSample) -> void:
 	var audio_us := roundi((sample.visual_time_sec + stage_session.stage_definition.song.first_beat_offset_sec) * 1000000.0)
 	level_show_player.advance("song", audio_us, not stage_session.external_preview)
 	# 摄像头只影响环境视差，判定基准和波源坐标不随演出移动。
-	get_parallax_controller().set_camera_position(level_show_player.camera_position)
+	if get_parallax_controller().environment == null:
+		get_parallax_controller().set_camera_position(get_parallax_controller().get_camera_position() + level_show_player.camera_position)
 
 
 func _level_state_changed(_previous: int, current: int, _reason: StringName) -> void:

@@ -2,6 +2,39 @@
 
 日期：2026-09-12；分支：`editor`；引擎及导出模板：Godot 4.7.2 Windows x86_64。
 
+## 本轮：循环环境与分层衔接（工程源码）
+
+代码、素材测试夹具和文档只修改 Game；本轮新测试产物统一在 `../Levels/output/environment/`。没有重新导出工具或游戏，Levels 中已有 EXE 不包含本轮功能。
+
+| 场景 | 验证方式与结果 |
+|---|---|
+| A→B→C 密集请求、多层周期、横向反向、纵向、斜向 | 共用安排器及实际 GPU 画面通过；保留中间场景，分层独立完成 |
+| 接缝渐变、半透明来源、生死分屏材质 | 检查接缝两侧、中心和透明度的实际像素；无白边、暗带或上下屏串位 |
+| 换速、深度接续、镜头回看、任意定位 | 累计位置连续；回拖像素相同；请求前不显示未来场景，回看接缝不重新排队 |
+| 固定装饰与缺少目标层 | 请求时刻交叉淡化，缺失层完整退出；相同层继续播放 |
+| 长编排 | 120 次请求无遗漏；本机无镜头曲线样例安排约 20 ms，只维护当前可见来源；不把此数字外推为所有正式素材的性能 |
+| 背景制作 | Viewport 输入路由检查 6 像素阈值、候选预览、Esc、撤销、精确输入、保存、重开及衔接预览恢复 |
+| 关卡换景编辑 | Viewport 输入路由检查多选、拖动、失焦取消、撤销、复制删除、连续字段、保存重开与恢复稿；重叠请求提供独立选择入口 |
+| 跨区段与预览恢复 | 曲前连续跨入歌曲，退出恢复原区段、位置和视图；保存排除临时衔接预览位置 |
+| 双难度、BOSS、音符与 Replay | 真实示例装配到 StageRoot，角色与注册对象实例保持，首拍偏移换算正确；换景前后编译哈希及 Replay 判定摘要一致 |
+| PCK、ZIP、缺失引用 | 背景依赖打入 PCK；含背景的关卡 ZIP 由正式读取入口重新装入；缺失环境定位到来源请求 |
+| 界面缩放和窗口 | GPU 检查应用内 100%／150%／200%、实际最大化和还原，画布拾取及衔接时间保持一致；查看工作区和背景预览截图 |
+
+新增专项：`run_environment_tests.gd`、`run_environment_authoring_tests.gd`、`run_environment_ui_tests.gd`、`run_environment_runtime_tests.gd`，位于 `tests/editor/`。实际 GPU 为 RTX 4060 Laptop，Compatibility / OpenGL 3.3。截图位于 `environment/seam.png`、`environment/ui/` 和 `environment/authoring/`。
+
+相关回归：时间线交互、背景编辑器、视差、工作区、BOSS、关卡包以及正式预览重演均通过。正式预览检查保留上一完整画面、定位取消、后台暂停及恢复后的判定一致性。BOSS 测试退出时仍报告 2 个 ObjectDB 实例未释放；断言全部通过，本轮环境专项没有该退出告警。工程导入仍有两份已有分屏 shader 的重复 UID 提示。
+
+未实测：真实触摸板手势、Windows 系统 DPI 逐档切换、全部正式美术组合、真实手柄连续演奏，以及重新交付后的独立 EXE。应用内倍率测试不等同于操作系统 DPI 验收。序列帧与现有尘粒采用可定位时间；后续自定义动态材质仍需按接口接入并检查具体素材效果。
+
+从 Game 目录复现本轮专项（`$godotExe` 为本机 Godot 4.7.2 控制台程序）：
+
+```powershell
+& $godotExe --headless --path . --script tests/editor/run_environment_runtime_tests.gd -- --chart-editor
+& $godotExe --path . --rendering-method gl_compatibility --script tests/editor/run_environment_tests.gd -- --chart-editor
+& $godotExe --path . --rendering-method gl_compatibility --script tests/editor/run_environment_authoring_tests.gd -- --chart-editor
+& $godotExe --path . --rendering-method gl_compatibility --script tests/editor/run_environment_ui_tests.gd -- --chart-editor
+```
+
 ## 本轮：操作体验重整（工程源码）
 
 本轮没有导出工具或游戏 EXE。下文旧的 Release 检查属于此前交付版本，不能作为此次界面改动的发布验证。当前结果来自工程内运行；真实试玩使用已有配套游戏检查其正式握手协议。

@@ -15,8 +15,9 @@ func check(value: bool, label: String) -> void:
 
 func _run() -> void:
 	var theme := StageVisualTheme.new()
-	check(theme.zhu_tap_glow_enabled and theme.xuan_tap_glow_enabled, "Tap glow defaults enabled")
-	check(theme.zhu_hold_glow_enabled and theme.xuan_hold_glow_enabled, "Hold glow defaults enabled")
+	var style := GrayboxNoteVisual.EFFECT_STYLE
+	check(style.halo_width_px == 36.0, "全局柔光宽度为 36 设计像素")
+	check(not theme.get_property_list().any(func(p): return str(p.name).contains("_glow_")), "关卡主题不再导出音符光色")
 
 	var host := NoteVisualHost.new()
 	host.visual_theme = theme
@@ -28,25 +29,24 @@ func _run() -> void:
 	var second_tap := GrayboxNoteVisual.new()
 	second_tap.tap_material = first_tap.tap_material.duplicate(false)
 	second_tap.material = second_tap.tap_material
-	host._apply_edge_glow(first_tap, {"affinity": GameplayTypes.Affinity.ZHU, "unit_kind": &"tap"})
-	host._apply_edge_glow(second_tap, {"affinity": GameplayTypes.Affinity.XUAN, "unit_kind": &"tap"})
-	check(first_tap.material != second_tap.material, "Tap glow materials remain per-instance")
-	check(first_tap.tap_material.get_shader_parameter(&"glow_color") == theme.zhu_tap_glow_color, "Zhu Tap receives theme glow")
-	check(second_tap.tap_material.get_shader_parameter(&"glow_color") == theme.xuan_tap_glow_color, "Xuan Tap receives theme glow")
+	host._apply_effect_style(first_tap, {"affinity": GameplayTypes.Affinity.ZHU, "unit_kind": &"tap"})
+	host._apply_effect_style(second_tap, {"affinity": GameplayTypes.Affinity.XUAN, "unit_kind": &"tap"})
+	check(first_tap.tap_material != second_tap.tap_material, "Tap glow materials remain per-instance")
+	check(first_tap.tap_material.get_shader_parameter(&"life_tint") == true, "Zhu Tap receives theme glow")
+	check(second_tap.tap_material.get_shader_parameter(&"life_tint") == false, "Xuan Tap receives theme glow")
 
 	var hold := GrayboxHoldVisual.new()
-	host._apply_edge_glow(hold, {"affinity": GameplayTypes.Affinity.ZHU, "unit_kind": &"hold"})
+	host._apply_effect_style(hold, {"affinity": GameplayTypes.Affinity.ZHU, "unit_kind": &"hold"})
 	check(hold._edge_head_glow != null and hold._edge_body_glow != null, "Hold creates head and body edge passes")
 	check(hold._edge_head_glow.material != hold._edge_body_glow.material, "Hold edge passes have independent materials")
 	var head_material := hold._edge_head_glow.material as ShaderMaterial
-	check(head_material.get_shader_parameter(&"glow_color") == theme.zhu_hold_glow_color, "Zhu Hold receives theme glow")
+	check(head_material.get_shader_parameter(&"glow_color") == style.life_highlight, "Zhu Hold receives theme glow")
 	hold._edge_body_glow.body(PackedVector2Array([Vector2.ZERO, Vector2(-80.0, 0.0)]), PackedFloat32Array([20.0, 0.0]))
 	hold.prepare({"event_id": "pooled_hold", "unit_kind": &"hold", "start_us": 0, "end_us": 1_000_000})
 	check(hold._edge_head_glow.mesh == null and hold._edge_body_glow.mesh == null, "Pooled Hold clears previous edge geometry")
-	theme.xuan_hold_glow_enabled = false
-	host._apply_edge_glow(hold, {"affinity": GameplayTypes.Affinity.XUAN, "unit_kind": &"hold"})
-	check(not hold._edge_head_glow.visible and not hold._edge_body_glow.visible, "Pooled Hold refreshes disabled Xuan glow")
-	check(head_material.get_shader_parameter(&"glow_color") == theme.xuan_hold_glow_color, "Pooled Hold refreshes Xuan color")
+	host._apply_effect_style(hold, {"affinity": GameplayTypes.Affinity.XUAN, "unit_kind": &"hold"})
+	check(hold._edge_head_glow.visible and hold._edge_body_glow.visible, "对象池刷新死侧全局柔光")
+	check(head_material.get_shader_parameter(&"glow_color") == style.death_rim, "Pooled Hold refreshes Xuan color")
 	if DisplayServer.get_name() != "headless":
 		await _render_samples(theme, host)
 
@@ -70,13 +70,12 @@ func _render_samples(theme: StageVisualTheme, host: NoteVisualHost) -> void:
 	var tap := GrayboxNoteVisual.new()
 	sample_root.add_child(tap)
 	tap.prepare({"event_id": "edge_tap", "affinity": GameplayTypes.Affinity.ZHU, "unit_kind": &"tap"})
-	host._apply_edge_glow(tap, {"affinity": GameplayTypes.Affinity.ZHU, "unit_kind": &"tap"})
+	host._apply_effect_style(tap, {"affinity": GameplayTypes.Affinity.ZHU, "unit_kind": &"tap"})
 
 	var sample_hold := GrayboxHoldVisual.new()
 	sample_root.add_child(sample_hold)
 	sample_hold.prepare({"event_id": "edge_hold", "affinity": GameplayTypes.Affinity.XUAN, "unit_kind": &"hold", "start_us": 0, "end_us": 0})
-	theme.xuan_hold_glow_enabled = true
-	host._apply_edge_glow(sample_hold, {"affinity": GameplayTypes.Affinity.XUAN, "unit_kind": &"hold"})
+	host._apply_effect_style(sample_hold, {"affinity": GameplayTypes.Affinity.XUAN, "unit_kind": &"hold"})
 	sample_hold.advance_body(1.0 / 60.0)
 
 	DirAccess.make_dir_recursive_absolute("res://builds/visual-review/note-edge-glow")

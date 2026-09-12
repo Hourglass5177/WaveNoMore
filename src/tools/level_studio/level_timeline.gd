@@ -45,6 +45,8 @@ var _cursor := Control.new()
 var _stack := PopupMenu.new()
 var _stack_hits: Array = []
 var reference_notes: Array = []
+var environment: StageEnvironmentSequence
+signal environment_dropped(asset: String, time_us: int)
 
 const HEADER := 206.0
 const RULER := 82.0
@@ -85,12 +87,16 @@ func bind(doc: LevelDocument) -> void:
 	document = doc
 	document.changed.connect(func(kind):
 		if kind=="saved": return
-		if kind=="project" or document.last_changes.any(func(change): return change.kind in ["objects","tracks","bindings"]): rebuild_rows())
+		if kind=="project" or document.last_changes.any(func(change): return change.kind in ["objects","tracks","bindings","scene_cues"]): rebuild_rows())
 	rebuild_rows()
 
 func rebuild_rows() -> void:
 	rows.clear()
 	if document == null: return
+	rows.append({"environment": true, "object": {"id":"@environment", "name":"环境场景"}, "track": {}})
+	if environment != null and not folded.get("@environment", true):
+		for lane in environment.lanes:
+			rows.append({"environment": true, "layer_id":lane.id, "object":{"id":"@environment","name":lane.name}, "track":{}})
 	for object_data: Dictionary in document.entries("objects"):
 		rows.append({"object": object_data, "track": {}})
 		if folded.get(object_data.id, false): continue
@@ -160,6 +166,8 @@ func _draw() -> void:
 		var y := RULER + index * ROW - row_scroll
 		if y < RULER - ROW or y > size.y: continue
 		var row: Dictionary = rows[index]
+		if row.get("environment",false):
+			_draw_environment_row(row, y); continue
 		var track: Dictionary = _candidate.get(row.track.get("id", ""), row.track)
 		var object_data: Dictionary = row.object
 		draw_rect(Rect2(0, y, HEADER, ROW), Color("25344a") if object_data.id == selected_object else (Color("1e2737") if track.is_empty() else Color("18212f")))
@@ -229,6 +237,8 @@ func _sync_scrollbars() -> void:
 	var end := maxf(waveform_duration,float(time_us)/1000000.0)
 	var start := minf(-5,left_seconds)
 	if document != null:
+		for cue:Dictionary in document.entries("scene_cues"):
+			if cue.get("section","song")==section:start=minf(start,float(cue.time_us)/1000000.0);end=maxf(end,float(cue.time_us)/1000000.0)
 		for track: Dictionary in document.entries("tracks") + generated_tracks:
 			if track.section != section: continue
 			for key: Dictionary in track.keys:
@@ -258,7 +268,7 @@ func _flush_browse() -> void:
 
 func _process(delta: float) -> void:
 	_flush_browse()
-	if _drag.get("mode","") in ["move","trim_start","trim_end","box"] and _drag.get("moved",false):
+	if _drag.get("mode","") in ["move","trim_start","trim_end","box","scene"] and _drag.get("moved",false):
 		var at: Vector2 = _drag.get("current",_drag.origin)
 		var speed := clampf((at.x-(size.x-38))/24,0,1)-clampf((HEADER+24-at.x)/24,0,1)
 		if speed != 0:
@@ -267,6 +277,8 @@ func _process(delta: float) -> void:
 			_gui_input(motion); _sync_scrollbars(); update_cursor()
 
 func _notify_selection() -> void:
+	if selected_track == "@environment":
+		selection_set_changed.emit(PackedStringArray(), selected_track, selected.duplicate()); queue_redraw(); return
 	var ids := PackedStringArray()
 	for track: Dictionary in document.entries("tracks"):
 		if (track.keys+track.clips).any(func(item): return item.id in selected) and not track.object_id in ids: ids.append(track.object_id)
@@ -275,9 +287,25 @@ func _notify_selection() -> void:
 	queue_redraw()
 
 func _choose_hit(hit: Dictionary, at: Vector2, additive: bool, double_click: bool) -> void:
+	if str(hit.kind).begins_with("scene"):
+		if selected_track != "@environment": selected.clear()
+		selected_object=""; selected_track="@environment"
+		if additive:
+			if hit.id in selected: selected.remove_at(selected.find(hit.id))
+			else: selected.append(hit.id)
+		elif not hit.id in selected: selected=PackedStringArray([hit.id])
+		_notify_selection()
+		var cue := document.find("scene_cues", hit.id)
+		if double_click:
+			var target:=time_at(at.x) if hit.kind=="scene_range" else int(hit.get("time",cue.time_us))
+			seek_requested.emit(target); seek_finished.emit(target); return
+		if hit.kind == "scene" and not additive:
+			_drag={"mode":"scene", "origin":at, "anchor":time_at(at.x), "reference":int(cue.time_us), "before":document.entries("scene_cues").filter(func(item):return item.id in selected).duplicate(true), "left":left_seconds,"scroll":row_scroll,"moved":false}
+		return
 	var generated := LevelFormat.find(generated_tracks,hit.track)
 	if not generated.is_empty():
 		binding_requested.emit(hit.object,str(LevelFormat.find(generated.clips,hit.id).get("binding_id",""))); return
+	if selected_track=="@environment":selected.clear()
 	selected_object=hit.object; selected_track=hit.track
 	if additive:
 		if hit.id in selected: selected.remove_at(selected.find(hit.id))
@@ -315,11 +343,12 @@ func _gui_input(event: InputEvent) -> void:
 			elif not event.pressed and _drag.get("mode","")=="pan": _finish_drag()
 			accept_event(); return
 		if event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
+			cancel_drag()
 			_stack_hits=_hits.filter(func(hit): return hit.rect.has_point(event.position))
 			_stack_hits.reverse(); _stack.clear()
 			for hit: Dictionary in _stack_hits:
 				var track:=document.find("tracks",hit.track)
-				var item:=LevelFormat.find(track.get("keys",[])+track.get("clips",[]),hit.id)
+				var item:=document.find("scene_cues",hit.id) if hit.track=="@environment" else LevelFormat.find(track.get("keys",[])+track.get("clips",[]),hit.id)
 				_stack.add_item("选择 · "+str(item.get("name",LevelFormat.PROPERTIES.get(track.get("property",""),"自动编排")))+" · %.3f s"%(float(item.get("time_us",item.get("start_us",0)))/1000000))
 			_stack.add_separator()
 			for pair in [["复制选中事件",1000],["粘贴到游标",1001],["删除选中事件",1002],["在游标处分割",1003]]:_stack.add_item(pair[0],pair[1])
@@ -333,7 +362,9 @@ func _gui_input(event: InputEvent) -> void:
 			if event.position.y>=RULER and index>=0 and index<rows.size():
 				var row: Dictionary=rows[index]
 				if row.track.is_empty() and event.position.x<28:
-					folded[row.object.id]=not folded.get(row.object.id,false); rebuild_rows(); return
+					folded[row.object.id]=not folded.get(row.object.id,row.get("environment",false)); rebuild_rows(); return
+				if row.get("environment",false):
+					selected_object=""; selected_track="@environment"; selected.clear(); _notify_selection();return
 				selected_object=row.object.id; selected_track=str(row.track.get("id","")); selected.clear(); _notify_selection()
 			return
 		if event.position.y < RULER:
@@ -345,8 +376,14 @@ func _gui_input(event: InputEvent) -> void:
 			if _hits[index].rect.has_point(event.position):
 				_choose_hit(_hits[index],event.position,event.shift_pressed or event.ctrl_pressed,event.double_click); return
 		var before_selection := selected.duplicate()
+		var before_track:=selected_track;var before_object:=selected_object
+		var start_row:=floori((event.position.y-RULER+row_scroll)/ROW)
+		var scene_box:bool=start_row>=0 and start_row<rows.size() and rows[start_row].get("environment",false)
+		if scene_box != (selected_track=="@environment"): selected.clear()
+		if scene_box: selected_track="@environment";selected_object=""
+		elif selected_track=="@environment": selected_track=""
 		if not (event.shift_pressed or event.ctrl_pressed): selected.clear()
-		_drag={"mode":"box","origin":event.position,"current":event.position,"previous":selected.duplicate(),"selection_before":before_selection,"left":left_seconds,"scroll":row_scroll,"moved":false}
+		_drag={"mode":"box","origin":event.position,"current":event.position,"previous":selected.duplicate(),"selection_before":before_selection,"track_before":before_track,"object_before":before_object,"scene_box":scene_box,"left":left_seconds,"scroll":row_scroll,"moved":false}
 		_notify_selection()
 	elif event is InputEventMouseMotion and not _drag.is_empty():
 		_drag.current=event.position
@@ -354,6 +391,12 @@ func _gui_input(event: InputEvent) -> void:
 			_drag.moved = _drag.moved or event.position.distance_to(_drag.origin)>=6
 			if not _drag.moved: return
 		match str(_drag.mode):
+			"scene":
+				document.begin_edit()
+				var delta := snap(int(_drag.reference)+time_at(event.position.x)-int(_drag.anchor), event.alt_pressed)-int(_drag.reference)
+				var after: Array = _drag.before.duplicate(true)
+				for cue in after: cue.time_us += delta
+				document.replace("移动环境换景", "scene_cues", _drag.before, after)
 			"pan":
 				left_seconds=_drag.left-(event.position.x-_drag.origin.x)/pixels_per_second
 				row_scroll=clampf(_drag.scroll-(event.position.y-_drag.origin.y),0,maxf(0,rows.size()*ROW-size.y+RULER+14))
@@ -365,6 +408,7 @@ func _gui_input(event: InputEvent) -> void:
 				_drag.current=event.position; selected=_drag.previous.duplicate()
 				var box := Rect2(_drag.origin,event.position-_drag.origin).abs()
 				for hit: Dictionary in _hits:
+					if (hit.track=="@environment")!=_drag.scene_box:continue
 					if box.intersects(hit.rect) and not hit.id in selected and LevelFormat.find(generated_tracks,hit.track).is_empty(): selected.append(hit.id)
 				_notify_selection()
 			_:
@@ -395,6 +439,7 @@ func _selected_tracks() -> Array:
 	return document.entries("tracks").filter(func(track): return not track.locked and document.editable_object(track.object_id) and LevelFormat.visible_in(track,difficulty) and (track.keys.any(func(key): return key.id in selected) or track.clips.any(func(clip): return clip.id in selected))).duplicate(true)
 
 func _finish_drag() -> void:
+	if _drag.get("mode", "") == "scene": document.end_edit()
 	if _drag.get("mode","")=="seek": seek_finished.emit(time_us)
 	if not _candidate.is_empty():
 		var before: Array = _drag.before; var after: Array = _candidate.values().duplicate(true)
@@ -403,15 +448,21 @@ func _finish_drag() -> void:
 	_drag.clear(); queue_redraw()
 
 func cancel_drag() -> void:
+	if _drag.get("mode", "") == "scene": document.end_edit(true)
 	if _drag.is_empty() and _candidate.is_empty(): return
 	if _drag.has("left"): left_seconds=_drag.left; row_scroll=_drag.scroll
-	if _drag.has("selection_before"): selected=_drag.selection_before; _notify_selection()
+	if _drag.has("selection_before"):
+		selected=_drag.selection_before;selected_track=_drag.track_before;selected_object=_drag.object_before;_notify_selection()
 	if _drag.get("mode","")=="loop":
 		loop_start_us=_drag.loop_before.x; loop_end_us=_drag.loop_before.y; loop_changed.emit(loop_start_us,loop_end_us)
 	_browse=Vector2.ZERO; _zoom_pending=0; _sync_scrollbars(); update_cursor()
 	_drag.clear(); _candidate.clear(); candidate_changed.emit([]); queue_redraw()
 
 func delete_selected() -> void:
+	if selected_track == "@environment":
+		var before := document.entries("scene_cues").filter(func(cue):return cue.id in selected)
+		if not before.is_empty(): document.replace("删除环境换景", "scene_cues", before, [])
+		selected.clear(); _notify_selection(); return
 	var before := _selected_tracks(); var after := before.duplicate(true)
 	for track: Dictionary in after:
 		track.keys = track.keys.filter(func(key): return not key.id in selected)
@@ -434,6 +485,8 @@ func split_selected() -> void:
 	if before != after: document.replace("在游标处拆分片段", "tracks", before, after)
 
 func copy_selected() -> void:
+	if selected_track == "@environment":
+		_clipboard=[{"scene_cues":document.entries("scene_cues").filter(func(cue):return cue.id in selected).duplicate(true)}];return
 	_clipboard = _selected_tracks()
 	for track: Dictionary in _clipboard:
 		track.keys = track.keys.filter(func(key): return key.id in selected)
@@ -441,6 +494,14 @@ func copy_selected() -> void:
 
 func paste_selected() -> void:
 	if _clipboard.is_empty(): return
+	if _clipboard[0].has("scene_cues"):
+		var after: Array = _clipboard[0].scene_cues.duplicate(true)
+		if after.is_empty(): return
+		var first: int = after.map(func(cue):return int(cue.time_us)).min()
+		selected.clear(); selected_track="@environment"
+		for cue in after:
+			cue.id=LevelFormat.id("scene");cue.section=section;cue.time_us+=time_us-first;selected.append(cue.id)
+		document.replace("粘贴环境换景","scene_cues",[],after);_notify_selection();return
 	var earliest := 9223372036854775807
 	for track: Dictionary in _clipboard:
 		for key: Dictionary in track.keys: earliest = mini(earliest, int(key.time_us))
@@ -459,3 +520,53 @@ func paste_selected() -> void:
 		after.append(track)
 	if not after.is_empty(): document.replace("粘贴时间线内容", "tracks", before, after)
 	_notify_selection()
+
+func _can_drop_data(at: Vector2, data: Variant) -> bool:
+	return data is Dictionary and data.has("level_background") and at.x >= HEADER
+
+func _drop_data(at: Vector2, data: Variant) -> void:
+	environment_dropped.emit(str(data.level_background), snap(time_at(at.x), Input.is_key_pressed(KEY_ALT)))
+
+func _draw_environment_row(row: Dictionary, y: float) -> void:
+	var font := get_theme_default_font()
+	var layer_id := str(row.get("layer_id", ""))
+	draw_rect(Rect2(0,y,HEADER,ROW), Color("273c38"))
+	var title := str(row.object.name)
+	if layer_id.is_empty(): title=("▸ " if folded.get("@environment",true) else "▾ ")+title
+	draw_string(font,Vector2(8,y+17),title,HORIZONTAL_ALIGNMENT_LEFT,HEADER-16,12,Color("b6d8c0"))
+	var offset := environment.absolute_time(section,0) if environment != null else 0
+	var labelled:Array[float]=[]
+	for cue: Dictionary in document.entries("scene_cues"):
+		if not LevelFormat.visible_in(cue,difficulty): continue
+		var parts: Array = environment.transitions.filter(func(part):return part.cue_id==cue.id and (layer_id.is_empty() or part.layer_id==layer_id)) if environment != null else []
+		var request_us:=environment.absolute_time(str(cue.get("section","song")),int(cue.time_us))-offset if environment!=null else int(cue.time_us)
+		var x := x_at(request_us)
+		var end := x
+		for part in parts:
+			var begin_x:=x_at(int(part.enter_us)-offset)
+			var finish_x:=minf(size.x,x_at(int(part.finish_us)-offset))
+			end=maxf(end,finish_x)
+			var waiting:=Rect2(x,y+2,maxf(0,begin_x-x),2).intersection(Rect2(HEADER,y,size.x-HEADER,ROW))
+			draw_rect(waiting,Color("555b42"))
+			var span:=Rect2(begin_x,y+(19 if layer_id.is_empty() else 6),maxf(2,finish_x-begin_x),3 if layer_id.is_empty() else 15).intersection(Rect2(HEADER,y,size.x-HEADER,ROW))
+			draw_rect(span,Color("688c79") if cue.id in selected else Color("365b51"))
+			if span.size.x>0:_hits.append({"rect":span,"kind":"scene_range","id":cue.id,"object":"","track":"@environment"})
+			if not layer_id.is_empty() and span.size.x>50:
+				var now:=time_us+offset
+				var state:="等待" if now<part.enter_us else ("正在进入" if now<part.finish_us else "已完成 · 新速度")
+				if part.finish_us>environment.end_us:state="结束前未完成"
+				draw_string(font,Vector2(maxf(HEADER+4,begin_x+4),y+17),state,HORIZONTAL_ALIGNMENT_LEFT,maxf(0,span.size.x-8),11,Color("d8e8db"))
+		if layer_id.is_empty() and x>=HEADER and x<size.x-14:
+			draw_line(Vector2(x,y+2),Vector2(x,y+22),Color("ffe0a3") if cue.id in selected else Color("9bd5b3"),3)
+			var label_width:=110.0
+			var nearby:=0
+			for other:Dictionary in document.entries("scene_cues"):
+				if not LevelFormat.visible_in(other,difficulty):continue
+				var other_us:=environment.absolute_time(str(other.get("section","song")),int(other.time_us))-offset if environment!=null else int(other.time_us)
+				var other_x:=x_at(other_us)
+				if absf(other_x-x)<=8:nearby+=1
+				elif other_x>x:label_width=minf(label_width,other_x-x-10)
+			if not labelled.any(func(position):return absf(position-x)<=8):
+				var caption:="%d 次换景（右键选择）"%nearby if nearby>1 else str(cue.get("name","换景"))
+				draw_string(font,Vector2(x+7,y+15),caption,HORIZONTAL_ALIGNMENT_LEFT,maxf(1,label_width),11,Color("d8e8db"));labelled.append(x)
+			_hits.append({"rect":Rect2(x-6,y,12,ROW),"kind":"scene","id":cue.id,"object":"","track":"@environment","time":request_us})

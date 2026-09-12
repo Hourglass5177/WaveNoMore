@@ -65,6 +65,8 @@ signal debug_snapshot_ready(snapshot: Dictionary)
 @export_range(0.0, 5.0, 0.05) var resume_countdown_sec: float = 1.25
 ## 乐曲与玩法结束后等待物理视觉收尾的最短时间，单位为秒。
 @export_range(0.0, 3.0, 0.05) var finish_settle_sec: float = 0.35
+## 角色死亡及末姿停留所需的表现时间；不进入判定规则和 Replay 哈希。
+@export_range(0.0, 3.0, 0.05) var failure_visual_settle_sec: float = 2.1
 ## 窗口失去焦点时是否自动暂停；关闭后仍会清空持续输入，避免卡键。
 @export var pause_on_focus_loss: bool = true
 
@@ -299,7 +301,7 @@ func step(clock_sample: ClockSample) -> void:
 			_complete_result(true)
 	elif state == GameplayTypes.StageState.FAILING:
 		var physical_failure_settle: float = maxf(
-			rule_set.fail_settle_sec,
+			maxf(rule_set.fail_settle_sec, failure_visual_settle_sec),
 			_maximum_post_cue_travel_sec() - float(rule_set.miss_window_ms) / 1000.0
 		)
 		if clock_sample.song_time_sec - _fail_started_song_time_sec >= physical_failure_settle:

@@ -1,0 +1,10 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/presentation/vfx/lingjun_ashes.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/character/lingjun/lingjun_death.png" id="2"]
+
+[node name="Ashes" type="MeshInstance2D"]
+visible = false
+texture = ExtResource("2")
+script = ExtResource("1")
+frame_rect = Rect2(-316.000000, -637.000000, 665.000000, 647.000000)

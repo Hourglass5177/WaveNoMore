@@ -11,6 +11,8 @@ extends Resource
 @export_file var source_file: String = ""
 ## 游戏实际实例化的 Godot 场景。
 @export var runtime_scene: PackedScene
+## 环境条目直接引用背景资源，复用素材包依赖收集和稳定素材 ID。
+@export var background: StageBackgroundDefinition
 ## 素材对齐原点，单位本地像素；X/Y 增大分别向右/向下偏移。
 @export var pivot: Vector2 = Vector2.ZERO
 ## 预期可视边界，单位本地像素；宽高越大，声明的占屏范围越大。

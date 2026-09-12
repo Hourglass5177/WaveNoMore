@@ -29,6 +29,7 @@ var rules: GameplayRuleSet
 var pet_effect := PetEffectProfile.new()
 ## 按实际发生时间记录伤害；last_pet_trigger_us 供视图按歌曲时间恢复短反馈。
 var damages: Array[DamageRecord] = []
+var _pending_damages: Array[DamageRecord] = []
 var last_pet_trigger_us: int = -9000000000000000
 var _notes_by_id: Dictionary = {}
 ## Tap/Hold 的头、持续、尾与乱按绑定判定器。
@@ -99,6 +100,7 @@ func configure(p_compiled: CompiledChart, p_rules: GameplayRuleSet, debug_nonlet
 	_debug_nonlethal = debug_nonlethal
 	pet_effect = pet.duplicate(true) as PetEffectProfile if pet != null else PetEffectProfile.new()
 	damages.clear()
+	_pending_damages.clear()
 	_notes_by_id.clear()
 	last_pet_trigger_us = -9000000000000000
 	for note: Dictionary in compiled.notes: _notes_by_id[str(note.id)] = note
@@ -383,7 +385,7 @@ func accept_input(sample: SemanticInputSample) -> int:
 		if stray.damages:
 			# 帧输入适配器可能复用 sequence；本局乱按记录序号区分每次独立受击。
 			var damage_id := "stray:%d" % (strays.size() - 1)
-			_apply_damage(DamageRecord.create(damage_id, damage_id, sample.timestamp_us, rules.miss_damage))
+			_apply_damage(DamageRecord.create(damage_id, damage_id, sample.timestamp_us, rules.miss_damage, sample.affinity()))
 	# 所有按下都会产生真实传播的波。机制认可时发红/黑彩波，乱按发灰波；
 	# 普通音符还会把唯一目标绑定给波，等待两者实际相遇。
 	if sample.is_press():
@@ -728,7 +730,7 @@ func _collect_engine_records() -> void:
 		score_engine.apply_judgment(record)
 		if score_engine.bonus_score > old_bonus: last_pet_trigger_us = record.finalized_at_us
 		if record.base_grade == GameplayTypes.JudgmentGrade.MISS and not record.missed_head():
-			_apply_damage(DamageRecord.create(record.unit_id, record.damage_group_id, record.finalized_at_us, rules.miss_damage))
+			_apply_damage(DamageRecord.create(record.unit_id, record.damage_group_id, record.finalized_at_us, rules.miss_damage, record.affinity))
 
 
 func _collect_wave_events() -> void:
@@ -737,7 +739,7 @@ func _collect_wave_events() -> void:
 	for arrival: Dictionary in wave_engine.drain_arrivals():
 		_pending_note_arrivals.append(arrival)
 		var note: Dictionary = _notes_by_id[str(arrival.note_id)]
-		_apply_damage(DamageRecord.create(str(arrival.note_id), str(note.damage_group_id), int(arrival.arrival_us), rules.miss_damage))
+		_apply_damage(DamageRecord.create(str(arrival.note_id), str(note.damage_group_id), int(arrival.arrival_us), rules.miss_damage, int(note.affinity)))
 
 
 static func _unit_rank(kind: StringName) -> int:
@@ -752,5 +754,13 @@ static func _unit_rank(kind: StringName) -> int:
 func _apply_damage(record: DamageRecord) -> void:
 	if health_engine.failed or health_engine.has_damage_group(record.group_id): return
 	health_engine.apply_damage(record)
+	record.fatal = health_engine.failed
 	damages.append(record)
+	_pending_damages.append(record)
 	if pet_effect.damage_reduction > 0.0: last_pet_trigger_us = record.timestamp_us
+
+
+func drain_damages() -> Array[DamageRecord]:
+	var result := _pending_damages
+	_pending_damages = []
+	return result

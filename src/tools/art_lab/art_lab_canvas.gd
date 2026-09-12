@@ -34,6 +34,7 @@ var _preview_instance: Node
 var _selected_state: StringName = &"prepare"
 ## 0～1 循环的演示相位，只驱动预览动画和辅助线，不代表歌曲时间。
 var _pulse: float = 0.0
+var _background_time := 0.0
 
 
 func _ready() -> void:
@@ -45,6 +46,8 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_pulse = fposmod(_pulse + delta, 1.0)
+	if _preview_instance is ParallaxController:
+		_background_time+=delta;_preview_instance.set_song_time(_background_time)
 	if _preview_instance != null and _preview_instance.has_method("art_lab_set_progress"):
 		_preview_instance.call("art_lab_set_progress", _pulse)
 	queue_redraw()
@@ -54,6 +57,9 @@ func _process(delta: float) -> void:
 func set_manifest_entry(entry) -> bool:
 	_clear_preview_instance()
 	_entry = entry
+	if entry != null and entry.background != null:
+		_background_time=0;_preview_instance=ParallaxController.new();add_child(_preview_instance)
+		var error:String=_preview_instance.configure(entry.background);_layout_preview_instance();queue_redraw();return error.is_empty()
 	if entry == null or entry.runtime_scene == null or not entry.runtime_scene.can_instantiate():
 		queue_redraw()
 		return false
@@ -119,6 +125,9 @@ func _clear_preview_instance() -> void:
 func _layout_preview_instance() -> void:
 	if _preview_instance == null or _entry == null or size.x <= 1.0 or size.y <= 1.0:
 		return
+	if _preview_instance is ParallaxController:
+		var ratio:=minf(size.x/1920.0,size.y/1080.0)
+		_preview_instance.scale=Vector2.ONE*ratio;_preview_instance.position=(size-Vector2(1920,1080)*ratio)*0.5;return
 	var bounds := _entry.visual_bounds
 	var usable := Vector2(size.x * 0.48, size.y * 0.58)
 	var fit_scale := minf(usable.x / maxf(bounds.size.x, 1.0), usable.y / maxf(bounds.size.y, 1.0))

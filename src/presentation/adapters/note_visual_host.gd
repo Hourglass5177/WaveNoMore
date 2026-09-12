@@ -90,6 +90,7 @@ var _known_tuning_ids: Dictionary[String, bool] = {}
 # 各类型可复用节点的对象池；键是场景类型，值是当前闲置实例数组。
 var _pools: Dictionary[StringName, Array] = {}
 # 调度器发出生成、判定、波接触和回收事件，是本 Host 唯一的音符事件来源。
+var _effects: NoteFragmentHost
 var _scheduler: ChartScheduler
 # 生死两条贝塞尔路线的采样结果及其配置键缓存；配置未变时不重复计算。
 var _path_profiles: Dictionary[int, Dictionary] = {}
@@ -102,6 +103,9 @@ func _ready() -> void:
 	_death_note_slot = get_node(death_note_slot_path) as Node2D
 	_field_slot = get_node(field_slot_path) as Node2D
 	_pool_root = get_node(pool_root_path) as Node2D
+	_effects = NoteFragmentHost.new()
+	_effects.name = "NoteEffects"
+	add_child(_effects)
 
 
 func bind_scheduler(scheduler: ChartScheduler) -> void:
@@ -152,6 +156,9 @@ func configure_rules(rules: GameplayRuleSet) -> void:
 func set_clock_sample(sample: ClockSample) -> void:
 	## 真 Hold 在唯一时钟入口先平滑头部再推进身体；相同时间不重复积分。
 	var delta_sec: float = maxf(sample.judge_time_sec - _last_judge_visual_time, 0.0) if _clock_initialized else 0.0
+	if preview_time_driven and _clock_initialized:
+		# 固定网格外的输入边界只更新目标，避免身体多积分半步。
+		delta_sec = maxf(floor(sample.judge_time_sec * 120.0 + 0.0001) - floor(_last_judge_visual_time * 120.0 + 0.0001), 0.0) / 120.0
 	_clock_initialized = true
 	_last_judge_visual_time = sample.judge_time_sec
 	_judge_visual_time = sample.judge_time_sec
@@ -161,11 +168,16 @@ func set_clock_sample(sample: ClockSample) -> void:
 		var hold_visual: Node2D = hold_entry["node"]
 		if hold_visual is GrayboxHoldVisual:
 			hold_visual.advance_body(delta_sec)
+			if delta_sec > 0.0 and _snapshot_id_set_contains(&"held_hold_ids", hold_visual.event_id) and not bool(hold_entry.get("hold_failed", false)) and not bool(hold_entry.get("hold_finished", false)):
+				var consumed: float = float(hold_entry.get("hold_visual_progress", 0.0))
+				hold_visual.emit_consumption(float(hold_entry.get("hold_effect_progress", 0.0)), consumed, visual_time_sec)
+				hold_entry["hold_effect_progress"] = consumed
 
 
 func set_visual_time(value: float) -> void:
 	## 更新时间目标，不积分；快照和时钟重复通知不会让身体多走一步。
 	visual_time_sec = value
+	if _effects != null: _effects.set_time(value)
 	_update_active_visuals()
 
 
@@ -177,14 +189,15 @@ func set_gameplay_snapshot(snapshot: Dictionary) -> void:
 func restore_preview_motion(snapshot: Dictionary, sample: ClockSample) -> void:
 	## Tap 的位置和动画可在目标时刻求值；只有 Hold 身体与其调频控制需要逐步恢复。
 	_restoring_motion = true
-	set_gameplay_snapshot(snapshot)
-	set_visual_time(sample.visual_time_sec)
+	# 每个固定采样只更新一次目标，避免旧时间、新时间和时钟入口重复重建网格。
+	gameplay_snapshot = snapshot
 	set_clock_sample(sample)
 	_restoring_motion = false
 
 
 func clear() -> void:
 	## Seek、重试、会话结束统一清除实例及其控制目标、插值和脊线状态。
+	if _effects != null: _effects.clear()
 	_clock_initialized = false
 	_judge_visual_time = 0.0
 	_last_judge_visual_time = 0.0
@@ -218,8 +231,9 @@ func _spawn_visual_now(kind: StringName, event_id: String, event_data: Dictionar
 	var pool_key: StringName = _pool_key(kind, event_data)
 	var scene: PackedScene = _scene_for(kind, event_data)
 	var visual: Node2D = _acquire_visual(pool_key, scene)
-	_apply_edge_glow(visual, event_data)
 	_apply_hold_head_texture(visual, event_data)
+	if visual is GrayboxNoteVisual and not visual.effect_requested.is_connected(_on_note_effect):
+		visual.effect_requested.connect(_on_note_effect)
 	var parent_slot: Node2D = _slot_for(kind, event_data)
 	if visual.get_parent() != parent_slot:
 		visual.reparent(parent_slot)
@@ -230,6 +244,7 @@ func _spawn_visual_now(kind: StringName, event_id: String, event_data: Dictionar
 		visual.call("configure_from_rules", gameplay_rules)
 	if visual.has_method("prepare"):
 		visual.call("prepare", event_data)
+	_apply_effect_style(visual, event_data)
 
 	# 圆形时机提示故意与音符美术并列，而不是挂在音符下面；正式素材旋转缩放时不会把圆环压扁。
 	# 调频和疾振已有各自的时间 UI，不再叠一层通用圆环遮住中心。
@@ -291,7 +306,10 @@ func _on_visual_judged(event_id: String, grade: int) -> void:
 			if visual is GrayboxHoldVisual:
 				visual.release_head_control()
 		else:
+			if bool(active_entry.get("hold_finished", false)): return
 			_pin_hold_visual(active_entry)
+			if visual is GrayboxHoldVisual:
+				visual.play_hold_finished(_scheduler.visual_time_sec)
 			active_entry["hold_finished"] = true
 			if visual is GrayboxHoldVisual:
 				visual.release_head_control()
@@ -301,7 +319,7 @@ func _on_visual_judged(event_id: String, grade: int) -> void:
 	var already_confirmed: bool = bool(active_entry.get("timing_confirmed", false))
 	if grade == GameplayTypes.JudgmentGrade.MISS and visual.has_method("play_miss"):
 		visual.call("play_miss")
-	elif visual.has_method("play_judgment"):
+	elif not bool(active_entry.get("hold_finished", false)) and visual.has_method("play_judgment"):
 		visual.call("play_judgment", grade)
 	if is_instance_valid(timing_ring) and not already_confirmed:
 		if grade == GameplayTypes.JudgmentGrade.MISS and timing_ring.has_method("play_miss"):
@@ -321,9 +339,14 @@ func _on_visual_timing_confirmed(event_id: String, grade: int) -> void:
 		_pin_hold_visual(active_entry)
 	var visual: Node2D = active_entry["node"]
 	_sync_preview_time(visual, _scheduler.visual_time_sec)
+	if StringName(active_entry["data"].get("unit_kind", &"")) == &"tap":
+		_place_tap_at(visual, active_entry["data"], _scheduler.visual_time_sec)
 	var timing_ring: Node2D = active_entry.get("timing_ring") as Node2D
 	if visual.has_method("play_timing_confirmed"):
 		visual.call("play_timing_confirmed", grade)
+	if grade != GameplayTypes.JudgmentGrade.MISS and visual is GrayboxNoteVisual and visual._is_tap and is_instance_valid(timing_ring):
+		timing_ring.visible = false
+		return
 	# 这里刻意不回退调用 play_judgment：旧正式素材可能把它用于销毁性的终结特效。
 	# 自定义素材必须明确实现不会销毁音符的 play_timing_confirmed 接口。
 	if is_instance_valid(timing_ring):
@@ -334,12 +357,32 @@ func _on_visual_timing_confirmed(event_id: String, grade: int) -> void:
 
 
 func _on_visual_wave_contacted(event_id: String, contact: Dictionary) -> void:
-	if not _active.has(event_id):
-		return
-	var visual: Node2D = _active[event_id]["node"]
-	_sync_preview_time(visual, float(contact.get("contact_us", 0)) / 1000000.0)
-	if visual.has_method("play_wave_contact"):
-		visual.call("play_wave_contact", contact)
+	if not _active.has(event_id): return
+	var entry: Dictionary = _active[event_id]
+	var visual: Node2D = entry.node
+	if entry.has("tap_contact_position"): return
+	var at_sec := float(contact["contact_us"]) / 1000000.0
+	_sync_preview_time(visual, at_sec)
+	var payload := contact.duplicate()
+	if StringName(entry.data.get("unit_kind", &"tap")) == &"tap":
+		entry["tap_contact_position"] = contact["position"]
+		visual.position = contact["position"]
+		var origin := death_wave_origin if int(entry.data.get("affinity", 0)) == GameplayTypes.Affinity.XUAN else life_wave_origin
+		payload.effect_direction = global_transform.basis_xform((visual.position - origin).normalized())
+	if visual.has_method("play_wave_contact"): visual.call("play_wave_contact", payload)
+
+func _on_note_effect(key: String, source: Dictionary, at_sec: float, direction: Vector2, kind: StringName) -> void:
+	var local_source := source.duplicate()
+	local_source.transform = global_transform.affine_inverse() * (source.transform as Transform2D)
+	var local_direction: Vector2 = (source.transform as Transform2D).basis_xform_inv(direction)
+	_effects.burst(key, local_source, at_sec, local_direction, kind)
+
+func _place_tap_at(visual: Node2D, data: Dictionary, at_sec: float) -> void:
+	if not _place_boss_emission(visual, data, at_sec):
+		var approach := maxf(1.0 - (float(_start_usec(data)) / 1000000.0 - at_sec) / approach_duration_sec, 0.0)
+		visual.position = _sample_approach_path(data, approach)
+		if visual.has_method("set_approach_progress"): visual.call("set_approach_progress", approach)
+	visual.rotation = 0.0
 
 
 func _on_visual_note_arrived(event_id: String, arrival: Dictionary) -> void:
@@ -468,19 +511,11 @@ func _update_visual(event_id: String, active_entry: Dictionary) -> void:
 		if not _active.has(event_id):
 			return
 	elif kind == ChartScheduler.KIND_NOTE:
-		# BOSS 提前段使用发射路径，入轨后接回普通路径；两段的 Tap 都保持正向。
-		if not _place_boss_emission(visual, data, presentation_time):
-			visual.position = _sample_approach_path(data, approach)
-			if visual.has_method("set_approach_progress"):
-				visual.call("set_approach_progress", approach)
-		visual.rotation = 0.0
-		if visual.has_method("set_hold_progress"):
-			var presented_hold_progress: float = float(active_entry.get("hold_visual_progress", 0.0))
-			if hold_active and hold_held:
-				# Hold 头成功且对应键仍按住时才消耗身体；提前松键进入宽限期时冻结长度，不会突然弹回。
-				presented_hold_progress = maxf(presented_hold_progress, region_progress)
-				active_entry["hold_visual_progress"] = presented_hold_progress
-			visual.call("set_hold_progress", presented_hold_progress)
+		if active_entry.has("tap_contact_position"):
+			visual.position = active_entry.tap_contact_position
+		else:
+			_place_tap_at(visual, data, presentation_time)
+		if visual is GrayboxNoteVisual: visual.set_note_glow_time(presentation_time, time_to_hit_sec)
 	elif kind == ChartScheduler.KIND_TUNING:
 		# 调频视觉使用完整设计画布坐标绘制，FieldSlot 原点就是画布左上角；
 		# 不再叠加以画布中心为值的 approach_origin，避免中心被平移到右下角。
@@ -507,6 +542,9 @@ func _update_visual(event_id: String, active_entry: Dictionary) -> void:
 			visual.call("set_rapid_ratio", float(gameplay_snapshot.get("rapid_ratio", 0.0)))
 
 	if is_instance_valid(timing_ring):
+		if visual is GrayboxNoteVisual and visual._tap_body_only():
+			timing_ring.visible = false
+			return
 		# 圆环只认绝对剩余时间，因此回退、暂停和不同帧率会得到同一画面。
 		# Hold 头被接受后，持续环仍固定在中心；独立控制圈不修改现有判定环。
 		if is_hold and hold_active:
@@ -817,21 +855,10 @@ func _apply_hold_head_texture(instance: Node2D, data: Dictionary) -> void:
 	(instance as GrayboxHoldVisual).head_texture = texture
 
 
-## 将当前阵营的主题泛光写入实例；对象池复用时同样刷新，避免继承上一阵营。
-func _apply_edge_glow(instance: Node2D, data: Dictionary) -> void:
-	if visual_theme == null or not instance.has_method("configure_edge_glow"):
-		return
-	var is_xuan := int(data.get("affinity", GameplayTypes.Affinity.ZHU)) == GameplayTypes.Affinity.XUAN
-	var is_hold := StringName(data.get("unit_kind", &"tap")) == &"hold"
-	var enabled: bool
-	var color: Color
-	if is_hold:
-		enabled = visual_theme.xuan_hold_glow_enabled if is_xuan else visual_theme.zhu_hold_glow_enabled
-		color = visual_theme.xuan_hold_glow_color if is_xuan else visual_theme.zhu_hold_glow_color
-	else:
-		enabled = visual_theme.xuan_tap_glow_enabled if is_xuan else visual_theme.zhu_tap_glow_enabled
-		color = visual_theme.xuan_tap_glow_color if is_xuan else visual_theme.zhu_tap_glow_color
-	instance.call("configure_edge_glow", enabled, color)
+## 全局设计资源不再由关卡主题覆盖；素材场景仍由主题选择。
+func _apply_effect_style(instance: Node2D, data: Dictionary) -> void:
+	if instance.has_method("configure_effect_style"):
+		instance.call("configure_effect_style", GrayboxNoteVisual.EFFECT_STYLE, int(data.get("affinity", 0)))
 
 
 func _acquire_timing_ring(scene: PackedScene) -> Node2D:
@@ -929,7 +956,7 @@ func _disconnect_scheduler() -> void:
 
 
 func _sync_preview_time(visual: Node2D, seconds: float) -> void:
-	if preview_time_driven and visual.has_method("set_preview_time"):
+	if (preview_time_driven or visual is GrayboxNoteVisual) and visual.has_method("set_preview_time"):
 		visual.call("set_preview_time", seconds)
 
 
@@ -942,7 +969,7 @@ func _update_tuning_hold_controls() -> void:
 				continue
 			var slider_id: String = str(field_entry["data"]["event_id"])
 			var slider_state: Dictionary = _active_tuning_slider_state(slider_id)
-			if not bool(slider_state.get("dragging", false)):
+			if not bool(slider_state.get("dragging", false)) or not bool(slider_state.get("interaction_open", false)):
 				continue
 			var life: bool = int(slider_state["affinity"]) == GameplayTypes.Affinity.ZHU
 			var hold_id: String = str(gameplay_snapshot.get("life_holding_note_id" if life else "death_holding_note_id", ""))
@@ -961,6 +988,8 @@ func _update_tuning_hold_controls() -> void:
 			controlled[hold_id] = true
 	for hold_id: String in _active:
 		var entry: Dictionary = _active[hold_id]
+		if entry.node is GrayboxHoldVisual:
+			entry.node.set_tuning_glow(controlled.has(hold_id), _judge_visual_time)
 		if not entry.has("tuning_controller") or controlled.has(hold_id):
 			continue
 		var hold: GrayboxHoldVisual = entry["node"] as GrayboxHoldVisual

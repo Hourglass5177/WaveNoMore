@@ -6,15 +6,19 @@ var group_id: String = ""
 var timestamp_us: int = 0
 var base_damage: int = 0
 var actual_damage: int = 0
+## 伤害的实际来源阵营；SU 表示双侧机制。只用于表现，不参与扣血去重。
+var affinity: int = GameplayTypes.Affinity.SU
+var fatal: bool = false
 
-static func create(source: String, group: String, time_us: int, amount: int) -> DamageRecord:
+static func create(source: String, group: String, time_us: int, amount: int, side: int = GameplayTypes.Affinity.SU) -> DamageRecord:
 	var record := DamageRecord.new()
 	record.source_id = source
 	record.group_id = group if not group.is_empty() else source
 	record.timestamp_us = time_us
 	record.base_damage = amount
+	record.affinity = side
 	return record
 
 func to_dictionary() -> Dictionary:
 	return {"source_id": source_id, "group_id": group_id, "timestamp_us": timestamp_us,
-		"base_damage": base_damage, "actual_damage": actual_damage}
+		"base_damage": base_damage, "actual_damage": actual_damage, "affinity": affinity, "fatal": fatal}

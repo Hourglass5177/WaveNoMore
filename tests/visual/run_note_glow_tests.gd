@@ -105,7 +105,7 @@ func _test_hold_control() -> void:
 	_check(is_equal_approx(life.glow_amount, 0.5), "接管 Hold 后平滑亮起")
 	_step_control(host, 1.3)
 	_check(is_equal_approx(life.glow_amount, 1.0) and death.glow_amount == 0.0, "仅所属侧 Hold 全亮，另一侧不误亮")
-	_check(life._glow_visual.visible and life._body_glow.visible and life._tail_glow.visible, "头、身、尾同步发光")
+	_check(life.glow_amount == 1.0 and life._edge_body_glow.visible, "头、身、尾同步发光")
 	_check(life._glow_visual.material != death._glow_visual.material, "各实例参数独立")
 	_step_control(host, 1.3)
 	_check(is_equal_approx(life.glow_amount, 1.0), "稳定持有且不移动仍然发光")
@@ -138,7 +138,7 @@ func _test_hold_control() -> void:
 	_step_control(host, 1.76)
 	_check(is_zero_approx(life.glow_amount), "失败 Hold 不被残留拖动状态点亮")
 	life.reset_for_pool()
-	_check(not life._body_glow.visible and not life._tail_glow.visible, "回收清除身体及尾部光效")
+	_check(not life.visible and life.glow_amount == 0.0, "回收清除身体及尾部光效")
 	host._active.clear()
 	host.queue_free()
 
@@ -152,6 +152,14 @@ func _glow_state(preview: Node) -> Dictionary:
 	for id: String in host._active:
 		var visual: Node2D = host._active[id].node
 		if visual is GrayboxNoteVisual: result[id] = snappedf(visual.glow_amount, 0.0001)
+	return result
+
+func _effect_state(preview: Node) -> Dictionary:
+	var result := {}
+	var host: NoteVisualHost = preview.stage_root.presentation._note_visual_host
+	for key: String in host._effects._active:
+		var item: Dictionary = host._effects._active[key]
+		result[key] = {"time": item.time, "position": item.node.position}
 	return result
 
 func _test_preview() -> void:
@@ -174,9 +182,10 @@ func _test_preview() -> void:
 	root.add_child(preview)
 	preview.sound_enabled = false
 	_check(preview.load_preview(stage, viewport), "白光接入正式 StageRoot 与自动预览")
-	for target: float in [0.225, 0.3, 3.55, 3.8, 4.15, 5.75]:
+	for target: float in [0.225, 0.3, 3.55, 3.8, 4.15, 5.75, 8.06, 9.10]:
 		await preview.seek_preview(roundi(target * 1000000.0))
 		var direct := _glow_state(preview)
+		var direct_effects := _effect_state(preview)
 		if is_equal_approx(target, 0.225):
 			_check(direct.get("glow_tap_0", 0.0) > 0.4 and direct.get("glow_tap_1", 0.0) > 0.4, "实际谱面双押 Tap 接近时亮起")
 		if is_equal_approx(target, 3.8):
@@ -192,6 +201,13 @@ func _test_preview() -> void:
 			at = minf(at + 0.025, target)
 			preview.advance(at, false)
 		var played := _glow_state(preview)
+		var played_effects := _effect_state(preview)
+		var same_effects := direct_effects.keys() == played_effects.keys()
+		for key: String in direct_effects:
+			if not played_effects.has(key): same_effects = false; continue
+			same_effects = same_effects and is_equal_approx(direct_effects[key].time, played_effects[key].time) and direct_effects[key].position.distance_to(played_effects[key].position) < 1.0
+		if not same_effects: print("EFFECT SEEK DIFF ", target, " direct=", direct_effects, " played=", played_effects)
+		_check(same_effects, "碎片与消耗细屑直接定位和连续播放一致 %.3f" % target)
 		if direct != played: print("GLOW DIFF ", target, " seek=", direct, " play=", played)
 		_check(direct == played, "白光直接定位与连续播放一致 %.3f" % target)
 		preview.advance(target, false)
@@ -237,10 +253,9 @@ func _render_samples() -> void:
 			var hold := GrayboxHoldVisual.new()
 			root.add_child(hold)
 			hold.add_to_group("glow_sample")
-			if row > 0: hold.body_texture = load("res://assets/image/fish.png")
+			if row > 0: hold.body_texture = load("res://assets/image/note/hold_body.png")
 			if row == 2:
-				hold.head_texture = load("res://assets/pets/yi_huo_she.svg")
-				hold.tail_texture = load("res://assets/pets/yi_huo_she.svg")
+				hold.head_texture = load("res://assets/image/note/hold_note.png")
 			hold.prepare(_note("sample_hold", LIFE if column == 0 else DEATH, 0, "", "hold"))
 			hold.position = Vector2(560 + column * 620, 360 + row * 205)
 			hold.set_body_target(390 if row < 2 else 190)

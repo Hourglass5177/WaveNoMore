@@ -13,6 +13,8 @@ uniform vec4 halo_color : source_color = vec4(1.0);
 uniform sampler2D dust_texture : source_color, filter_linear, repeat_enable;
 uniform vec2 random_grid = vec2(80.0, 45.0);
 uniform bool is_live = true;
+// 环境时间线显式定位；旧场景没有设置时保留原自动时钟。
+uniform float environment_time = -1.0;
 
 float hash12(vec2 value) {
 	value = fract(value * vec2(123.34, 456.21));
@@ -32,7 +34,7 @@ void fragment() {
         float seed = hash12(particle_cell);
         float phase = seed * TAU;
         float frequency = mix(frequency_min_hz, frequency_max_hz, hash12(particle_cell + 17.13));
-        float wave = 0.5 + 0.5 * sin(TIME * TAU * frequency + phase);
+        float wave = 0.5 + 0.5 * sin((environment_time >= 0.0 ? environment_time : TIME) * TAU * frequency + phase);
         float twinkle = mix(1.0 - twinkle_amount, 1.0 + twinkle_amount, wave);
         float core_alpha = clamp(source_alpha * alpha_strength * twinkle, 0.0, 1.0);
         // 逐纹素覆盖整个圆盘，避免稀疏偏移采样产生重复亮点。

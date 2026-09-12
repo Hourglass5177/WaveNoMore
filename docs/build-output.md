@@ -25,6 +25,16 @@ New-Item -ItemType Directory -Force ../Charts | Out-Null
 
 ## 历史记录
 
+2026-09-13 灵均静息与受击更新：正式角色引用增强呼吸、静息受击、攻击受击及死亡灰烬资源，重新导出 `../Charts/minghe-chart-studio.exe`、`../Levels/minghe-level-studio.exe` 和 `builds/windows/minghe-mvp.exe`，游戏本体及 DLL 同步到两个编辑器的 `game/`。三个导出包均在 Compatibility 下通过 30 项角色姿态、受击、死亡与正式场景接入检查；三个 EXE 图形启动正常退出，配套游戏加载教程2 normal 难度返回 `ready`。导入、导出和运行日志无错误或警告，记录位于 `builds/lingjun-states-release/`。版本沿用 0.1.4.0，本次未更新发行 ZIP。
+
+2026-09-13 白底预览修复：此前记录中的背景 shader UID 重复警告实际会让导出包引用错误材质，不能视为无影响。已修复资源 UID 并重新导出三个程序、同步两个编辑器的配套游戏；直接对三个导出包运行背景图形回归，每个包 17 项通过，1920×1080 与 960×540 的背景均恢复。详情与截图见 [白底修复记录](background-preview-fix.md)，日志在 `builds/background-fix/`。
+
+2026-09-13 音符光效更新：按当前工作区重新导出 `../Charts/minghe-chart-studio.exe`、`../Levels/minghe-level-studio.exe` 和 `builds/windows/minghe-mvp.exe`，本体与 DLL 同步到两个编辑器的 `game/`。三个程序通过 Compatibility 图形启动，配套游戏加载 `教程2/song.json` 的 normal 难度返回 `ready`，均以 0 退出，启动日志无错误或警告。导出仍有既存的背景 shader UID 重复警告。日志在 `builds/note-effects-release/`，版本沿用 0.1.4.0，未更新发行 ZIP。
+
+2026-09-13 灵均两招更新：正式角色使用“下击 → 上挑”及各招末尾约 0.17 秒站姿停顿。已重新导出 `../Charts/minghe-chart-studio.exe`、`../Levels/minghe-level-studio.exe` 和 `builds/windows/minghe-mvp.exe`，并将游戏 EXE、DLL 同步到两个编辑器的 `game/`。三个程序均通过 Compatibility 图形启动；写谱器配套游戏加载 `教程2/song.json` 的 normal 难度返回 `ready`，运行日志无报错。导入与导出保留已有的两份 screen_half_material_split shader UID 重复警告，未影响启动。日志位于 `builds/attack-two-release/`。版本沿用 0.1.4.0，未改动发行 ZIP、识别器或用户工程。
+
+2026-09-12 灵均动画更新：使用修复后的单招及连续裙摆资源，重新导出 `../Charts/minghe-chart-studio.exe`、`../Levels/minghe-level-studio.exe` 和 `builds/windows/minghe-mvp.exe`；游戏本体连同 DLL 同步到 Charts、Levels 的 `game/` 目录。版本沿用 0.1.4.0。三个 preset 补充排除 `build/**` 和 `tools/**`，避免打入动画采样与生成工具。三个 EXE 的 Compatibility 图形启动均正常退出；导出及启动日志保存在 `builds/animation-release/`。本次未更新发行 ZIP，也未覆盖用户工程与识别器。
+
 以下为迁移前的整理与发布记录。
 
 - `chart-studio/`：写谱器、`game/` 配套游戏、识别器及离线模型。这里的 `test/`、示例工程和 `output/` 含用户项目与交付文件，不能作为构建垃圾删除。

@@ -48,6 +48,12 @@ var _replacing := false
 var _updating := false
 var _playing := false
 var _external_elapsed := 0.0
+var _cycle_fields := {}
+var _cycle_identity: LineEdit
+var _cycle_before := {}
+var _cycle_timer: Timer
+var _next_background: FileDialog
+var _cycle_view_before := {}
 var _driver := ParallaxHandheldDriver.new()
 
 
@@ -61,7 +67,10 @@ func _ready() -> void:
 func _button(parent: Node, title: String, action: Callable) -> Button:
 	var button := Button.new()
 	button.text = title
-	button.pressed.connect(action)
+	button.pressed.connect(func():
+		surface.cancel_gesture()
+		_finish_cycle_edit()
+		action.call())
 	parent.add_child(button)
 	return button
 
@@ -99,6 +108,11 @@ func _build() -> void:
 	_mode.text = "视差预览"
 	_mode.toggled.connect(_set_preview)
 	toolbar.add_child(_mode)
+	_button(toolbar, "本场景循环预览", func():_start_cycle_preview(null))
+	_button(toolbar, "接下一个场景预览…", func():_finish_cycle_edit();_next_background.popup_centered_ratio(0.7))
+	_button(toolbar, "退出衔接预览", _end_cycle_preview)
+	_button(toolbar, "上一帧", func():_playing=false;surface.song_time=maxf(0,surface.song_time-1.0/60);_time.set_value_no_signal(surface.song_time);_sample())
+	_button(toolbar, "下一帧", func():_playing=false;surface.song_time+=1.0/60;_time.set_value_no_signal(surface.song_time);_sample())
 	_title = _label(self, "打开背景资源开始编辑")
 	var split := HSplitContainer.new()
 	split.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -196,6 +210,7 @@ func _build() -> void:
 	_label(_sublayer_properties, "速度单位：设计像素/秒。\n实际位移按所属深度折算；深度 0 静止。\n正深度：X 正向右，Y 正向下。\n视差预览中播放时间查看移动。").autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_label(properties, "素材属性")
 	_asset = _label(properties, "未选择")
+	_build_cycle_fields()
 	_asset.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_replace = _button(properties, "替换素材…", func(): _choose_asset(true))
 	_material = _label(properties, "未设置 ShaderMaterial")
@@ -317,6 +332,7 @@ func _continue_pending() -> void:
 
 
 func _open(path: String) -> void:
+	_end_cycle_preview()
 	var error := document.open(path)
 	if not error.is_empty(): _status.text = error; return
 	_mode.button_pressed = false
@@ -328,6 +344,7 @@ func _open(path: String) -> void:
 
 
 func _close_document() -> void:
+	_end_cycle_preview()
 	document = Document.new()
 	document.changed.connect(_document_changed)
 	surface.document = document
@@ -337,6 +354,7 @@ func _close_document() -> void:
 
 
 func save_document() -> bool:
+	_finish_cycle_edit()
 	surface.cancel_gesture()
 	if document.external_changed():
 		_external.popup_centered()
@@ -457,6 +475,7 @@ func _selection_changed() -> void:
 func _update_properties() -> void:
 	_updating = true
 	var record := document.sublayer_record(document.selected_sublayer_id) if document.selected_id < 0 else {}
+	_refresh_cycle_fields(record)
 	_sublayer_properties.visible = not record.is_empty()
 	_properties.visible = record.is_empty()
 	for field: SpinBox in _sublayer_fields.values(): field.editable = not surface.preview
@@ -673,6 +692,12 @@ func _input(event: InputEvent) -> void:
 	if not is_visible_in_tree() or not event is InputEventKey or not event.pressed or event.echo: return
 	if _unsaved.visible or _external.visible or _open_dialog.visible or _asset_dialog.visible or _material_dialog.visible: return
 	if _material_config != null and _material_config.visible: return
+	if _next_background != null and _next_background.visible: return
+	if event.keycode == KEY_ESCAPE:
+		surface.cancel_gesture()
+		_cancel_cycle_edit()
+		get_viewport().set_input_as_handled()
+		return
 	var focus := get_viewport().gui_get_focus_owner()
 	var text_input := focus is LineEdit or focus is TextEdit
 	if event.ctrl_pressed and event.keycode == KEY_S:
@@ -686,3 +711,91 @@ func _input(event: InputEvent) -> void:
 	elif not text_input and not surface.preview and event.keycode == KEY_DELETE: document.delete_selected()
 	else: return
 	get_viewport().set_input_as_handled()
+
+func _build_cycle_fields() -> void:
+	_label(_sublayer_properties,"循环与衔接")
+	_label(_sublayer_properties,"对应层标识（素材制作端）")
+	_cycle_identity=LineEdit.new();_cycle_identity.placeholder_text="留空沿用深度＋子层 ID";_sublayer_properties.add_child(_cycle_identity)
+	_cycle_identity.text_submitted.connect(func(_value):_commit_cycle_identity())
+	_cycle_identity.focus_exited.connect(_commit_cycle_identity)
+	_cycle_timer=Timer.new();_cycle_timer.one_shot=true;_cycle_timer.wait_time=0.35;add_child(_cycle_timer);_cycle_timer.timeout.connect(_finish_cycle_edit)
+	for pair in [["循环起点","cycle_start"],["循环终点","cycle_end"],["方向角度（度）","angle"]]:
+		var spin:=_spin(_sublayer_properties,pair[0],0.1);_cycle_fields[pair[1]]=spin
+		spin.value_changed.connect(_change_cycle_field.bind(pair[1]))
+		spin.get_line_edit().focus_exited.connect(_finish_cycle_edit)
+		spin.gui_input.connect(func(event):
+			if event is InputEventMouseButton and event.button_index==MOUSE_BUTTON_LEFT and not event.pressed:_finish_cycle_edit())
+	_button(_sublayer_properties,"恢复素材默认循环范围",func():
+		_finish_cycle_edit();var record:=document.sublayer_record(document.selected_sublayer_id)
+		if record.is_empty():return
+		var before:=document.snapshot();record.resource.cycle_start=0;record.resource.cycle_end=0;record.resource.cycle_direction=Vector2.ZERO;document.commit("恢复默认循环范围",before))
+	_label(_sublayer_properties,"画布两条线标出循环范围，可拖动调整。
+单位：1920×1080 设计画布像素。
+这里只定义循环位置，不判断美术能否直连。").autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+	var seams:=CheckBox.new();seams.text="显示循环 / 接缝辅助线";seams.button_pressed=true;_sublayer_properties.add_child(seams);seams.toggled.connect(func(value):surface.show_cycle_guides=value;surface.queue_redraw())
+	var solo:=CheckBox.new();solo.text="预览时只看选中层";_sublayer_properties.add_child(solo);solo.toggled.connect(func(value):surface.solo_cycle_layer=value;surface.update_sample())
+	var effect:=OptionButton.new();effect.add_item("无");effect.add_item("淡化");_sublayer_properties.add_child(effect);effect.item_selected.connect(func(index):surface.cycle_effect="fade" if index==1 else "none";surface.request_refresh())
+	_next_background=FileDialog.new();_next_background.title="选择要接入的背景资源";_next_background.file_mode=FileDialog.FILE_MODE_OPEN_FILE;_next_background.filters=PackedStringArray(["*.tres ; 背景资源"]);add_child(_next_background)
+	_next_background.file_selected.connect(func(path):
+		var target:=load(path) as StageBackgroundDefinition
+		if target!=null:_start_cycle_preview(target)
+		else:_status.text="请选择 StageBackgroundDefinition 背景资源")
+
+func _refresh_cycle_fields(record:Dictionary) -> void:
+	if _cycle_identity==null:return
+	_cycle_identity.editable=not surface.preview
+	for field in _cycle_fields.values():field.editable=not surface.preview
+	if record.is_empty() or not _cycle_before.is_empty():return
+	_cycle_identity.text=record.resource.continuity_id
+	var data:Dictionary=surface.cycle_record().resource.cycle(record.depth)
+	_cycle_fields.cycle_start.set_value_no_signal(data.start);_cycle_fields.cycle_end.set_value_no_signal(data.end)
+	_cycle_fields.angle.set_value_no_signal(rad_to_deg(data.direction.angle()))
+
+func _commit_cycle_identity() -> void:
+	if _updating or surface.preview:return
+	var record:=document.sublayer_record(document.selected_sublayer_id)
+	if not record.is_empty() and record.resource.continuity_id!=_cycle_identity.text:document.change_sublayer(record.id,"continuity_id",_cycle_identity.text)
+
+func _change_cycle_field(value:float,key:String) -> void:
+	if _updating or surface.preview:return
+	var record:=document.sublayer_record(document.selected_sublayer_id)
+	if record.is_empty():return
+	if _cycle_before.is_empty():_cycle_before=document.snapshot()
+	var cycle:Dictionary=surface.cycle_record().resource.cycle(record.depth)
+	if key=="angle":record.resource.cycle_direction=Vector2.RIGHT.rotated(deg_to_rad(value))
+	else:
+		record.resource.cycle_start=minf(value,cycle.end-1) if key=="cycle_start" else cycle.start
+		record.resource.cycle_end=maxf(value,cycle.start+1) if key=="cycle_end" else cycle.end
+	surface.request_refresh()
+	if not Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):_cycle_timer.start()
+
+func _finish_cycle_edit() -> void:
+	if _cycle_before.is_empty():return
+	_cycle_timer.stop();var before:=_cycle_before;_cycle_before={};document.commit("调整循环范围",before)
+
+func _cancel_cycle_edit() -> void:
+	if _cycle_before.is_empty():return
+	_cycle_timer.stop()
+	var before:=_cycle_before
+	_cycle_before={}
+	document.restore(before)
+
+func _notification(what:int) -> void:
+	if what==NOTIFICATION_APPLICATION_FOCUS_OUT and is_node_ready():
+		surface.cancel_gesture()
+		_cancel_cycle_edit()
+		_playing=false
+		_play.text="播放"
+
+func _start_cycle_preview(target:StageBackgroundDefinition) -> void:
+	_finish_cycle_edit()
+	if _cycle_view_before.is_empty():_cycle_view_before={"time":surface.song_time,"preview":surface.preview,"playing":_playing,"pan":surface.pan,"zoom":surface.zoom,"camera":surface.camera}
+	_mode.set_pressed_no_signal(true);_set_preview(true);surface.environment_target=target
+	surface.song_time=0;_time.set_value_no_signal(0);surface.request_refresh();_playing=true;_play.text="暂停"
+	_status.text="换景请求位于 1.000 秒；各层等待自己的循环接缝后进入。" if target!=null else "本场景按原素材循环播放。"
+
+func _end_cycle_preview() -> void:
+	if _cycle_view_before.is_empty():return
+	var state:=_cycle_view_before;_cycle_view_before={};surface.environment_target=null
+	_set_preview(state.preview);_mode.set_pressed_no_signal(state.preview);surface.song_time=state.time;surface.pan=state.pan;surface.zoom=state.zoom;surface.camera=state.camera
+	_playing=state.playing;_play.text="暂停" if _playing else "播放";_time.set_value_no_signal(state.time);surface._update_transform();surface.request_refresh()

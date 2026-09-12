@@ -19,6 +19,10 @@ var camera_zoom := 1.0
 var feedbacks := {}
 var effects := {}
 var _audio_from_us := 0
+var environment_controller: ParallaxController
+var environment_camera_effect: Callable
+var _environment_signature := ""
+var _environment_context := ""
 
 func configure(data: Dictionary, directory: String, packs: Array, difficulty_id: String) -> void:
 	stop_audio()
@@ -128,6 +132,7 @@ func _sample(section: String, time_us: int, silent: bool) -> void:
 					target.set_indexed(property,value)
 	_sample_audio(clips, silent)
 	_sample_effects(clips, time_us)
+	_sample_environment()
 	sampled.emit(section, time_us)
 
 func canvas_transform(object_data: Dictionary, section: String, time_us: int) -> Transform2D:
@@ -216,3 +221,50 @@ func _sample_effects(clips: Array, time_us: int) -> void:
 		if age < 0 or age >= int(effect.duration_us) or (not effect.reaction and not active.has(id)):
 			effect.node.queue_free(); effects.erase(id); continue
 		effect.driver.sample([{"id":id,"action":effect.action,"local_us":age,"loop":false,"weight":1.0}], time_us)
+## 只在环境、镜头安排或区段长度改变时重编排；普通选中和播放不走这里。
+func configure_environment(controller: ParallaxController, level: Dictionary, initial: StageBackgroundDefinition, durations: Vector3i, base_velocity := Vector2.ZERO) -> void:
+	var cues: Array = show.get("scene_cues", [])
+	var asset := str(level.get("initial_background", ""))
+	var cameras: Array = show.get("objects", []).filter(func(item): return item.type == "camera")
+	var camera_ids: Array = cameras.map(func(item): return item.id)
+	var tracks: Array = show.get("tracks", []).filter(func(track): return track.object_id in camera_ids)
+	var context:=JSON.stringify([cameras,tracks,difficulty,durations,base_velocity])
+	var signature := JSON.stringify([cues, asset, cameras, tracks, difficulty, durations, base_velocity, initial.get_instance_id() if initial != null else 0])
+	if environment_controller == controller and signature == _environment_signature: return
+	environment_controller = controller; _environment_signature = signature
+	if cues.is_empty() and asset.is_empty():
+		controller.set_environment(null); return
+	if not asset.is_empty(): initial = assets.background(asset)
+	var sequence := StageEnvironmentSequence.new()
+	var snapshot := {"objects": cameras.duplicate(true), "tracks": tracks.duplicate(true)}
+	var current_difficulty := difficulty
+	var camera_at := Callable()
+	if not cameras.is_empty():
+		camera_at = func(at_us: int) -> Vector2:
+			var at_section := "intro" if at_us < 0 else ("outro" if at_us >= durations.y else "song")
+			var local_us := at_us + durations.x if at_us < 0 else (at_us - durations.y if at_section == "outro" else at_us)
+			var offset := Vector2.ZERO
+			for object_data: Dictionary in snapshot.objects:
+				var state := LevelShowSampler.object_state(snapshot, object_data, at_section, local_us, current_difficulty)
+				offset = LevelFormat.vec(state.get("position", [960,540])) - Vector2(960,540)
+			return base_velocity * float(at_us + durations.x) / 1000000.0 + offset
+	sequence.build(initial, cues, assets.background, difficulty, durations, camera_at, base_velocity,controller.environment if context==_environment_context else null)
+	_environment_context=context
+	controller.set_environment(sequence)
+
+func _sample_environment() -> void:
+	if not is_instance_valid(environment_controller) or environment_controller.environment == null: return
+	var sequence := environment_controller.environment
+	var at_us := sequence.absolute_time(current_section, current_us)
+	var steady := sequence.camera_at(at_us)
+	# 震动只移动已排好的空间内容，不改变请求排队与完成时间。
+	var shake := Vector2.ZERO
+	var camera_effect:=Vector2.ZERO
+	if environment_camera_effect.is_valid():camera_effect=environment_camera_effect.call(at_us)
+	for object_data: Dictionary in show.get("objects", []):
+		if object_data.type == "camera":
+			var state := LevelShowSampler.object_state(show, object_data, current_section, current_us, difficulty)
+			var seconds := float(current_us) / 1000000.0
+			shake = Vector2(sin(seconds * 73.1), sin(seconds * 91.7)) * float(state.get("shake", 0.0))
+	environment_controller.set_camera_position(steady + shake + camera_effect)
+	environment_controller.sample_environment(at_us, steady + shake + camera_effect)

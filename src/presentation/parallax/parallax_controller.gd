@@ -32,6 +32,11 @@ var _configured_objects: Array[Node2D] = []
 var _animations: Array[AnimatedSprite2D] = []
 var _leaving := false
 var _song_time := 0.0
+var environment: StageEnvironmentSequence
+var environment_views := {}
+var environment_only_layer := ""
+var environment_time_us := 0
+var environment_render_camera:=Vector2.ZERO
 
 
 func _ready() -> void:
@@ -231,6 +236,9 @@ func set_song_time(song_time: float, apply_motion: bool = true) -> void:
 	for sprite: AnimatedSprite2D in _animations:
 		if not is_instance_valid(sprite):
 			continue
+		sample_animation(sprite, song_time)
+
+static func sample_animation(sprite: AnimatedSprite2D, song_time: float) -> void:
 		var frames := sprite.sprite_frames
 		var animation := sprite.animation
 		var count := frames.get_frame_count(animation)
@@ -251,6 +259,7 @@ func set_song_time(song_time: float, apply_motion: bool = true) -> void:
 
 ## 换关/卸载入口：归还外部对象，释放由配置创建的对象，清空摄像头和动画记录。
 func clear() -> void:
+	clear_environment()
 	for record: Registration in _objects.values():
 		unregister_object(record.object)
 	for object: Node2D in _configured_objects:
@@ -266,6 +275,77 @@ func clear() -> void:
 		layer.get_parent().remove_child(layer)
 		layer.queue_free()
 	_layers.clear()
+
+## 只替换背景配置的显示宿主，真实角色和音符注册项一直保留。
+func set_environment(sequence: StageEnvironmentSequence) -> void:
+	environment = sequence
+	for object in _configured_objects:
+		if is_instance_valid(object): object.visible = sequence == null
+	if sequence == null:
+		clear_environment(); return
+	var alive := {}
+	for lane in sequence.lanes:
+		alive[lane.id] = true
+		if environment_views.has(lane.id): continue
+		var root := Node2D.new()
+		var composite := Sprite2D.new(); composite.centered = false; root.add_child(composite)
+		composite.material = ShaderMaterial.new(); composite.material.shader = preload("res://shaders/environment_seam.gdshader")
+		root.name = "Environment"
+		# 插回原子层位置，尤其不能盖过深度 0 的角色和音符注册项。
+		var first: Dictionary = lane.sources.filter(func(source):return not source.record.is_empty())[0].record
+		var parent := _get_sublayer(lane.depth, first.resource.sublayer_id)
+		parent.add_child(root); parent.move_child(root, 0)
+		environment_views[lane.id] = {"root": root, "composite": composite, "slices": {}}
+	for key in environment_views.keys():
+		if not alive.has(key):
+			var root: Node = environment_views[key].root; root.get_parent().remove_child(root); root.queue_free(); environment_views.erase(key)
+
+func clear_environment() -> void:
+	for view in environment_views.values():
+		view.root.get_parent().remove_child(view.root); view.root.queue_free()
+	environment_views.clear(); environment = null
+
+func sample_environment(time_us: int, render_camera := Vector2(INF, INF)) -> void:
+	if environment == null: return
+	environment_time_us = time_us
+	environment_render_camera=render_camera if render_camera.is_finite() else environment.camera_at(time_us)
+	_sync_canvas_transform()
+	for lane in environment.lanes:
+		var view: Dictionary = environment_views[lane.id]
+		var depth:int=StageEnvironmentSequence.motion_at(lane,time_us).depth
+		var parent:=_get_sublayer(depth,lane.sources.filter(func(source):return not source.record.is_empty())[0].record.resource.sublayer_id)
+		if view.root.get_parent()!=parent:
+			view.root.reparent(parent,false);parent.move_child(view.root,0)
+		view.root.visible = environment_only_layer.is_empty() or environment_only_layer == lane.id
+		var alive := {}
+		var states := environment.visible_sources(lane, time_us,environment_render_camera)
+		var canvas:=get_viewport().get_stretch_transform()*get_global_transform_with_canvas()
+		var inverse := canvas.affine_inverse()
+		var shader: ShaderMaterial = view.composite.material
+		shader.set_shader_parameter("inverse_x", inverse.x); shader.set_shader_parameter("inverse_y", inverse.y); shader.set_shader_parameter("inverse_origin", inverse.origin); shader.set_shader_parameter("direction", lane.direction)
+		shader.set_shader_parameter("opacity", 0.0); shader.set_shader_parameter("next_opacity", 0.0)
+		var bounds:=StageEnvironmentSequence.projected_frame(lane.direction)
+		var direct:bool=states.size()==1 and is_equal_approx(states[0].opacity,1.0) and states[0].low+states[0].low_width*0.5<=bounds.x and states[0].high-states[0].high_width*0.5>=bounds.y
+		view.composite.visible=not direct
+		for ordinal in states.size():
+			var state: Dictionary = states[ordinal]
+			alive[state.index] = true
+			if view.slices.has(state.index) and view.slices[state.index].source_layer != state.source.record.resource:
+				var old: Node = view.slices[state.index]; old.get_parent().remove_child(old); old.queue_free(); view.slices.erase(state.index)
+			if not view.slices.has(state.index):
+				var slice := StageEnvironmentSlice.new(); view.root.add_child(slice)
+				slice.configure(state.source.record.resource); view.slices[state.index] = slice
+			view.slices[state.index].set_direct(view.root,direct,maxf(1.0,canvas.x.length()))
+			view.slices[state.index].sample(state, lane.direction, canvas)
+			if ordinal == 0:
+				view.composite.texture = view.slices[state.index].texture
+				view.composite.scale=Vector2(1920,1080)/Vector2(view.slices[state.index].viewport.size)
+			else: shader.set_shader_parameter("next_texture", view.slices[state.index].texture)
+			shader.set_shader_parameter("limits" if ordinal == 0 else "next_limits", Vector4(state.low, state.high, state.low_width, state.high_width))
+			shader.set_shader_parameter("opacity" if ordinal == 0 else "next_opacity", state.opacity)
+		for key in view.slices.keys():
+			if not alive.has(key):
+				var slice: Node = view.slices[key]; slice.get_parent().remove_child(slice); slice.queue_free(); view.slices.erase(key)
 
 
 func _process(_delta: float) -> void:

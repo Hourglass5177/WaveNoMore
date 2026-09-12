@@ -12,6 +12,9 @@ var rebuilding := false
 var _inputs: Array[SemanticInputSample] = []
 var _cursor := 0
 var _time_us: int = -1000000000
+var _motion_tick: int = -120
+var _motion_ranges: Array[Dictionary] = []
+var _motion_range_cursor: int = 0
 var _request := 0
 var offset_sec := 0.0
 var sound_enabled := true
@@ -81,8 +84,11 @@ func load_preview(stage: StageDefinition, viewport: SubViewport) -> bool:
 	offset_sec = stage.song.first_beat_offset_sec
 	# 只从真实 Tap/Hold 生成敲钟输入，Tuning 追加频率姿态采样。
 	_inputs = StudioPreviewInputs.build(stage_root.stage_session.compiled_chart, stage.rule_set)
+	_build_motion_ranges(stage_root.stage_session.compiled_chart)
 	_cursor = 0
 	_time_us = -1000000000
+	_motion_tick = -120
+	_motion_range_cursor = 0
 	if suspended:
 		stage_root.process_mode = Node.PROCESS_MODE_DISABLED
 		_freeze_frame()
@@ -120,6 +126,8 @@ func seek_preview(audio_us: int) -> void:
 	_cursor = 0
 	_time_us = mini(-1000000, target)
 	if not _inputs.is_empty(): _time_us = mini(_time_us, _inputs[0].timestamp_us - 1)
+	_motion_tick = floori(float(_time_us) * 120.0 / 1000000.0) + 1
+	_motion_range_cursor = 0
 	stage_root.song_clock.publish_external_time(float(_time_us) / 1000000.0)
 	# 8ms 批次限制的是场景树恢复工作，不改变模拟的精确事件时间。
 	var batch_start := Time.get_ticks_usec()
@@ -129,8 +137,14 @@ func seek_preview(audio_us: int) -> void:
 			await tree.process_frame
 			if request != _request or not is_inside_tree(): return
 			batch_start = Time.get_ticks_usec()
-		if _cursor >= _inputs.size() or _inputs[_cursor].timestamp_us > target: break
-		_step_to(_inputs[_cursor].timestamp_us)
+		if _time_us >= target: break
+		var next := mini(target, _inputs[_cursor].timestamp_us) if _cursor < _inputs.size() else target
+		if _motion_range_cursor < _motion_ranges.size():
+			var span: Dictionary = _motion_ranges[_motion_range_cursor]
+			if int(span.begin) < next and int(span.end) > _time_us:
+				# 长 Hold 没有输入事件时也定期让帧，定位可取消；空段仍直接跳过。
+				next = mini(next, maxi(_time_us + 100000, int(span.begin)))
+		_step_to(next)
 		if Time.get_ticks_usec() - batch_start > 8000:
 			await tree.process_frame
 			if request != _request or not is_inside_tree(): return
@@ -177,6 +191,7 @@ func _step_to(target: int) -> void:
 	coordinator.defer_preview_snapshot = true
 	while _cursor < _inputs.size() and _inputs[_cursor].timestamp_us <= target:
 		var at := _inputs[_cursor].timestamp_us
+		_advance_motion_to(at)
 		session.advance_preview(at, false)
 		# 新 Hold 在头判时记录实际姿态；先抵达输入时刻，再改变按住状态。
 		_publish_motion_frame(at)
@@ -187,20 +202,49 @@ func _step_to(target: int) -> void:
 		session.inject_preview_inputs(batch)
 		session.advance_preview(at, true)
 		_publish_motion_frame(at)
+	_advance_motion_to(target)
 	session.advance_preview(target, true)
 	_publish_motion_frame(target)
+	if not already_batched:
+		coordinator.finish_preview_batch()
+		session.publish_preview_state(target)
 	coordinator.defer_preview_snapshot = already_batched
 	_time_us = target
 
 func _publish_motion_frame(time_us: int) -> void:
-	# 动态身体需要输入边界的持续状态，不能把整段历史都合并成最后一张快照。
-	if rebuilding:
-		var sample := ClockSample.new()
-		sample.song_time_sec = float(time_us) / 1000000.0
-		sample.judge_time_sec = sample.song_time_sec
-		sample.visual_time_sec = sample.song_time_sec
-		stage_root.presentation.restore_preview_motion(stage_root.gameplay_coordinator.simulation.motion_snapshot(), sample)
-		return
-	stage_root.gameplay_coordinator.finish_preview_batch()
-	stage_root.stage_session.publish_preview_state(time_us)
-	stage_root.gameplay_coordinator.defer_preview_snapshot = true
+	# 连续播放和历史恢复使用同一运动采样；HUD、背景和相纹仅在帧尾发布。
+	var sample := ClockSample.new()
+	sample.song_time_sec = float(time_us) / 1000000.0
+	sample.judge_time_sec = sample.song_time_sec
+	sample.visual_time_sec = sample.song_time_sec
+	stage_root.presentation.restore_preview_motion(stage_root.gameplay_coordinator.simulation.motion_snapshot(), sample)
+
+func _advance_motion_to(target: int) -> void:
+	var at := roundi(float(_motion_tick) * 1000000.0 / 120.0)
+	while at < target:
+		# 没有 Hold 的整段时间直接跳过，保留原有长谱定位速度。
+		while _motion_range_cursor < _motion_ranges.size() and at > _motion_ranges[_motion_range_cursor].end:
+			_motion_range_cursor += 1
+		if _motion_range_cursor == _motion_ranges.size(): return
+		if at < _motion_ranges[_motion_range_cursor].begin:
+			_motion_tick = ceili(float(_motion_ranges[_motion_range_cursor].begin) * 120.0 / 1000000.0)
+			at = roundi(float(_motion_tick) * 1000000.0 / 120.0)
+			if at >= target: return
+		stage_root.stage_session.advance_preview(at, true)
+		_publish_motion_frame(at)
+		_motion_tick += 1
+		at = roundi(float(_motion_tick) * 1000000.0 / 120.0)
+
+func _build_motion_ranges(chart: CompiledChart) -> void:
+	_motion_ranges.clear()
+	for note: Dictionary in chart.notes:
+		if StringName(note.get("unit_kind", &"tap")) != &"hold": continue
+		var begin: int = stage_root.stage_session.chart_scheduler._spawn_time_usec(ChartScheduler.KIND_NOTE, note)
+		_motion_ranges.append({"begin": begin, "end": int(note.end_us) + 1000000})
+	_motion_ranges.sort_custom(func(a: Dictionary, b: Dictionary): return a.begin < b.begin)
+	var merged: Array[Dictionary] = []
+	for span: Dictionary in _motion_ranges:
+		if not merged.is_empty() and span.begin <= merged[-1].end:
+			merged[-1].end = maxi(merged[-1].end, span.end)
+		else: merged.append(span)
+	_motion_ranges = merged

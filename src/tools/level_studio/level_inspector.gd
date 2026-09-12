@@ -6,6 +6,8 @@ var workspace
 func refresh() -> void:
 	LevelUI.clear(self)
 	if workspace == null: return
+	if workspace.selected_track=="@environment":
+		LevelEnvironmentPanel.build(self,workspace);return
 	var doc: LevelDocument = workspace.document
 	if workspace.inspector_mode=="level": _level();return
 	if workspace.selected_items.size()>1: _many_items();return

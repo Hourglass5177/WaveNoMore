@@ -86,6 +86,10 @@ var _refresh_tree := true
 var _refresh_preview := true
 var _refresh_checks := true
 var _refresh_inspector := true
+var _standalone_environment: ParallaxController
+var _environment_preview := {}
+var _environment_last_redraw := 0
+var _environment_switching := false
 var _loop_toggle: CheckBox
 
 
@@ -103,6 +107,7 @@ func _ready() -> void:
 	surface.viewport = viewport; surface.document = document
 	inspector.workspace = self
 	_build_ui()
+	timeline.environment_dropped.connect(add_environment_cue)
 	timeline.bind(document)
 	document.changed.connect(_document_changed)
 	surface.selection_changed.connect(func(ids): select_objects(ids))
@@ -177,7 +182,7 @@ func _build_ui() -> void:
 	LevelUI.button(%InspectorTabs,"BOSS",open_boss_binding)
 	var assets_panel := VBoxContainer.new(); assets_panel.name = "素材"; _left_panel.add_child(assets_panel)
 	_asset_search.placeholder_text = "搜索素材名称或路径"; assets_panel.add_child(_asset_search); _asset_search.text_changed.connect(func(_value): _refresh_assets())
-	for caption in ["全部","场景 / BOSS","图片","音频","字体"]: _asset_category.add_item(caption)
+	for caption in ["全部","场景 / BOSS","图片","音频","字体","环境场景"]: _asset_category.add_item(caption)
 	assets_panel.add_child(_asset_category); _asset_category.item_selected.connect(func(_index): _refresh_assets())
 	_asset_list.size_flags_vertical = Control.SIZE_EXPAND_FILL; _asset_list.fixed_icon_size = Vector2i(48,48); _asset_list.max_columns = 1
 	assets_panel.add_child(_asset_list); _asset_list.item_activated.connect(func(index): add_asset_object(str(_asset_list.get_item_metadata(index))))
@@ -223,6 +228,9 @@ func _build_ui() -> void:
 		if _follow_suspended:_follow.set_pressed_no_signal(true)
 		_follow_suspended=false;_follow.text="跟随")
 	timeline.manual_browse.connect(func():_follow_suspended=true;_follow.text="跟随暂停")
+	LevelUI.button(transport,"环境场景",open_environment_settings)
+	LevelUI.button(transport,"添加换景",func():choose_environment(func(asset):add_environment_cue(asset,time_us)))
+	LevelUI.button(transport,"退出衔接预览",end_environment_preview)
 	LevelUI.button(transport,"循环起点",func(): timeline.loop_start_us=time_us;audio.loop_start=float(time_us)/1000000;timeline.queue_redraw())
 	LevelUI.button(transport,"循环终点",func(): timeline.loop_end_us=time_us;audio.loop_end=float(time_us)/1000000;timeline.queue_redraw())
 	LevelUI.choice(transport,"吸附",[120,240,480,60,0],120,func(value): timeline.snap_ticks=value,["1/16","1/8","1/4","1/32","关闭"])
@@ -349,8 +357,15 @@ func _refresh_assets() -> void:
 		var entry:VisualAssetEntry=_assets.entries[asset_id]
 		var name:=entry.display_name if not entry.display_name.is_empty() else asset_id
 		if not search.is_empty() and not search in (name+asset_id).to_lower():continue
+		if entry.background != null: continue
 		if category not in [0,1]:continue
 		_asset_list.add_item(name,entry.thumbnail);_asset_list.set_item_metadata(_asset_list.item_count-1,asset_id)
+	var background_ids := PackedStringArray()
+	for entry in _assets.backgrounds():
+		background_ids.append(entry.id)
+		if category not in [0,5] or (not search.is_empty() and not search in str(entry.name).to_lower()):continue
+		_asset_list.add_item("环境 · "+str(entry.name),entry.thumbnail);_asset_list.set_item_metadata(_asset_list.item_count-1,entry.id)
+	_asset_list.set_meta("background_ids",background_ids)
 	if document.directory.is_empty():return
 	for path in _assets.list_files():
 		var extension:=path.get_extension().to_lower();var kind:=2 if extension in ["png","jpg","jpeg","svg","webp"] else (3 if extension in ["wav","ogg","mp3"] else 4)
@@ -374,10 +389,10 @@ func _document_changed(kind:String) -> void:
 					for index in change.after.size():
 						for field: String in ["id","name","parent_id","locked","hidden"]:
 							if change.before[index].get(field)!=change.after[index].get(field): _refresh_tree=true
-			elif change.kind in ["tracks","bindings"]: _refresh_preview=true
+			elif change.kind in ["tracks","bindings","scene_cues"]: _refresh_preview=true
 			elif change.kind=="metadata":
 				for key: String in change.after:
-					if key in ["scene_id","rule_path","packs","show","song_path"]: _refresh_preview=true
+					if key in ["scene_id","rule_path","packs","show","song_path","initial_background","intro_us","outro_us"]: _refresh_preview=true
 		_refresh_inspector=_refresh_inspector or not _field_focused()
 	if document.dirty and kind!="preview": _autosave.start()
 	if _refresh_queued: return
@@ -395,6 +410,8 @@ func _refresh() -> void:
 		for track: Dictionary in document.entries("tracks"):
 			for item: Dictionary in track.keys+track.clips:
 				if item.id in selected_items:valid_items.append(item.id)
+		if selected_track=="@environment":
+			valid_items=PackedStringArray(document.entries("scene_cues").filter(func(cue):return cue.id in selected_items).map(func(cue):return cue.id))
 		if valid_items!=selected_items:
 			selected_items=valid_items;selected_item=selected_items[0] if selected_items.size()==1 else "";timeline.selected=selected_items.duplicate();_refresh_inspector=true
 		surface.selected=selection.duplicate()
@@ -459,6 +476,7 @@ func _update_show() -> void:
 		if compiled.emissions!=preview.stage_root.chart_scheduler.boss_emissions:
 			preview.stage_root.chart_scheduler.configure_boss_emissions(compiled.emissions)
 			if _candidate_objects.is_empty() and _candidate_tracks.is_empty() and not _loading:preview.seek_preview(time_us)
+	_update_environment(player)
 	_sample_show(true);_request_clip_waveforms()
 	if signature!=_asset_signature: _asset_signature=signature;_refresh_assets()
 
@@ -476,11 +494,15 @@ func _request_clip_waveforms() -> void:
 			_wave_jobs.append({"id":task,"asset":clip.asset,"directory":document.directory,"version":modified,"path":path,"holder":holder})
 
 func _sample_show(silent:bool) -> void:
+	if selected_track=="@environment":LevelEnvironmentPanel.update_times(inspector,self)
 	var player:=show_player()
 	if player==null:return
 	player.playing=audio.playing;player.playback_rate=audio.rate
 	player.advance(section,time_us,not silent and audio.playing)
+	surface.environment=timeline.environment
 	surface.queue_redraw()
+	if timeline.environment!=null and Time.get_ticks_msec()-_environment_last_redraw>100:
+		_environment_last_redraw=Time.get_ticks_msec();timeline.queue_redraw()
 
 func _refresh_song_preview() -> void:
 	if song_document.charts.is_empty():return
@@ -488,6 +510,8 @@ func _refresh_song_preview() -> void:
 	var loaded:=LevelProjectLoader.make_stage(document.data,document.directory,difficulty(),{},false)
 	if not loaded.errors.is_empty():_loading=false;message(ChartProjectLoader.describe_issues(loaded.errors));return
 	if is_instance_valid(_standalone):viewport.remove_child(_standalone);_standalone.queue_free();_standalone=null
+	if is_instance_valid(_standalone_environment):
+		viewport.remove_child(_standalone_environment);_standalone_environment.queue_free();_standalone_environment=null
 	_boss_signature=""
 	_stage_signature=str(document.data.scene_id)+"|"+str(document.data.rule_path)+"|"+difficulty()
 	preview.sound_enabled=false
@@ -518,16 +542,19 @@ func _finish_seek() -> void:
 	if inspector_mode!="boss" and not _field_focused(): inspector.refresh()
 
 func set_section(value:String) -> void:
+	if not _environment_preview.is_empty(): end_environment_preview()
 	_store_view(); _prepare_command(); audio.set_playing(false)
 	section=value; timeline.section=value; timeline.rebuild_rows(); _section.select(LevelFormat.SECTIONS.find(value))
 	_loading=true; audio.set_stream(song_document.song.audio_stream if value=="song" and song_document.song!=null else null); _loading=false
 	_restore_view()
 
 func toggle_play() -> void:
+	if not _environment_preview.is_empty():_environment_preview.playing_intent=not audio.playing
 	_follow_suspended=false;_follow.text="跟随"
 	audio.set_playing(not audio.playing)
 
 func _position_changed(seconds:float) -> void:
+	if _environment_position(seconds):return
 	time_us=roundi(seconds*1000000);timeline.time_us=time_us;timeline.update_cursor();_position.text="%8.3f s"%seconds
 	if audio.playing:
 		if _follow.button_pressed and not _follow_suspended:timeline.focus_time(time_us)
@@ -618,11 +645,12 @@ func _cancel_gestures() -> void:
 		if node is LevelCurveEditor: node.cancel_drag()
 
 func _prepare_command() -> void:
-	LevelUI.finish_fields(%RightPanel); document.end_edit(); _cancel_gestures()
+	_cancel_gestures(); LevelUI.finish_fields(%RightPanel); document.end_edit()
 
 func _set_background(value: bool) -> void:
 	_background=value
 	if value:
+		if not _environment_preview.is_empty():_environment_preview.playing_intent=false
 		_cancel_gestures(); document.end_edit(true); audio.set_playing(false); _audition.stop()
 	preview.set_suspended(value); Engine.max_fps=10 if value else 60
 	if not preview.rebuilding: viewport.render_target_update_mode=SubViewport.UPDATE_DISABLED if value else SubViewport.UPDATE_ALWAYS
@@ -635,6 +663,8 @@ func add_object(kind:String) -> void:
 	var id:=document.add_object(kind);select_objects(PackedStringArray([id]));_left_panel.current_tab=1
 
 func add_asset_object(asset:String,at:=Vector2(960,540)) -> void:
+	if asset in _asset_list.get_meta("background_ids", PackedStringArray()):
+		add_environment_cue(asset,time_us);return
 	var resource:=_assets.resolve(asset)
 	var kind:="actor" if resource is PackedScene else ("audio" if resource is AudioStream else "sprite")
 	var object_data:=LevelFormat.object(kind,asset);object_data.fields.position=[at.x,at.y]
@@ -818,6 +848,7 @@ func _save_as_to(path:String) -> bool:
 
 func _new() -> void:
 	_discard_or(func():
+		end_environment_preview()
 		_autosave.stop();audio.set_playing(false);preview.clear_preview();song_document=StudioDocument.new();workspace_state={};_views.clear();document.reset(LevelFormat.new_level())
 		_loading=true;audio.set_stream(null);_loading=false
 		timeline.generated_tracks.clear();timeline.clip_waveforms.clear();_wave_versions.clear()
@@ -836,6 +867,7 @@ func _open_path(path:String) -> void:
 		return
 	var opened:=LevelProjectIO.open_project(path)
 	if not opened.error.is_empty():message(opened.error);return
+	end_environment_preview()
 	audio.set_playing(false);preview.clear_preview();song_document=StudioDocument.new()
 	workspace_state=opened.workspace;document.reset(opened.level,opened.directory);selection.clear();selected_track="";selected_item=""
 	timeline.generated_tracks.clear();timeline.clip_waveforms.clear();_wave_versions.clear()
@@ -915,9 +947,10 @@ func _discard_or(action:Callable) -> void:
 	dialog.canceled.connect(dialog.queue_free);_popup(dialog,Vector2i(520,180))
 
 func _workspace_snapshot() -> Dictionary:
-	_store_view()
+	if _environment_preview.is_empty():_store_view()
 	var visible_layout: Dictionary=_focus_layout if not _focus_layout.is_empty() else {"left":_left_panel.visible,"right":%RightPanel.visible,"bottom":%Bottom.visible}
-	return {"left_width":_left_width,"right_width":_right_width,"timeline_height":_timeline_height,"time_us":time_us,"section":section,"zoom":timeline.pixels_per_second,"left_seconds":timeline.left_seconds,"difficulty":difficulty(),"views":_views.duplicate(true),"panels":visible_layout.duplicate()}
+	var state:=_environment_preview
+	return {"left_width":_left_width,"right_width":_right_width,"timeline_height":_timeline_height,"time_us":state.get("time_us",time_us),"section":state.get("section",section),"zoom":state.get("zoom",timeline.pixels_per_second),"left_seconds":state.get("left",timeline.left_seconds),"difficulty":difficulty(),"views":state.get("views",_views).duplicate(true),"panels":visible_layout.duplicate()}
 
 func _apply_workspace(state:Dictionary) -> void:
 	_left_width=int(state.get("left_width",state.get("left_split",220))); _right_width=int(state.get("right_width",310)); _timeline_height=int(state.get("timeline_height",270)); _queue_layout()
@@ -994,6 +1027,13 @@ func _locate_problem(index:int) -> void:
 	elif issue.has("binding_id"):
 		var binding:=document.find("bindings",str(issue.binding_id))
 		if not binding.is_empty():select_objects(PackedStringArray([str(binding.object_id)]));open_boss_binding(str(binding.id))
+	if issue.has("scene_cue_id"):
+		var cue:=document.find("scene_cues",str(issue.scene_cue_id))
+		if not cue.is_empty():
+			for chart_index in song_document.charts.size():
+				if not LevelFormat.visible_in(cue,difficulty()) and LevelFormat.visible_in(cue,song_document.charts[chart_index].difficulty_id):_difficulty.select(chart_index);_switch_difficulty(chart_index);break
+			if section!=cue.section:set_section(cue.section)
+		_timeline_selection(PackedStringArray(),"@environment",PackedStringArray([str(issue.scene_cue_id)]) if not cue.is_empty() else PackedStringArray())
 	if issue.has("time_us"):seek(int(issue.time_us));timeline.focus_time(time_us)
 
 func _help() -> void:
@@ -1187,6 +1227,7 @@ func _restore_view() -> void:
 	timeline.rebuild_rows(); _sync_selection(); seek(int(view.get("time_us",0)))
 
 func _switch_difficulty(index: int) -> void:
+	end_environment_preview()
 	_store_view(); _prepare_command(); song_document.current=index; _stage_signature=""; _boss_signature=""; _refresh_song_preview(); _restore_view(); _show_inspector("properties")
 
 func resource_field(parent: Node, caption: String, current: String, category: String, commit: Callable) -> void:
@@ -1269,3 +1310,120 @@ func _notification(what: int) -> void:
 	if not is_node_ready():return
 	if what==NOTIFICATION_APPLICATION_FOCUS_OUT:_set_background(true)
 	elif what==NOTIFICATION_APPLICATION_FOCUS_IN:_set_background(false)
+
+func _update_environment(player: LevelShowPlayer) -> void:
+	var controller: ParallaxController
+	var initial: StageBackgroundDefinition
+	var velocity := Vector2.ZERO
+	if is_instance_valid(preview.stage_root):
+		controller=preview.stage_root.get_parallax_controller()
+		var stage:StageDefinition=preview.stage_root.stage_session.stage_definition
+		initial=stage.background
+		if stage.visual_theme!=null:velocity=stage.visual_theme.camera_velocity
+	else:
+		if not is_instance_valid(_standalone_environment):
+			_standalone_environment=ParallaxController.new();viewport.add_child(_standalone_environment)
+		controller=_standalone_environment
+		initial=_assets.background("stage:"+str(document.data.scene_id))
+	var duration:=roundi(timeline.waveform_duration*1000000.0)
+	if song_document.song!=null: duration=roundi(song_document.song.audio_stream.get_length()*1000000.0) if song_document.song.audio_stream!=null else roundi(song_document.song.fallback_duration_sec*1000000.0)
+	if is_instance_valid(preview.stage_root):duration=roundi((preview.stage_root.stage_session.get_end_song_time_sec()+preview.stage_root.stage_session.stage_definition.song.first_beat_offset_sec)*1000000.0)
+	player.configure_environment(controller,document.data,initial,Vector3i(int(document.data.get("intro_us",0)),duration,int(document.data.get("outro_us",0))),velocity)
+	timeline.environment=controller.environment;surface.environment=controller.environment
+	timeline.rebuild_rows()
+
+func open_environment_settings() -> void:
+	_timeline_selection(PackedStringArray(),"@environment",PackedStringArray())
+
+func choose_environment(callback: Callable) -> void:
+	var dialog:=ConfirmationDialog.new();dialog.title="选择环境场景";dialog.ok_button_text="使用此场景"
+	var box:=VBoxContainer.new();dialog.add_child(box)
+	var search:=LineEdit.new();search.placeholder_text="搜索环境场景";box.add_child(search)
+	var list:=ItemList.new();list.custom_minimum_size=Vector2(480,280);box.add_child(list)
+	var choices:=_assets.backgrounds()
+	var refresh:=func(query:String):
+		list.clear()
+		for item in choices:
+			if query.is_empty() or query.to_lower() in str(item.name).to_lower():
+				list.add_item(str(item.name),item.thumbnail);list.set_item_metadata(list.item_count-1,item.id)
+	search.text_changed.connect(refresh);refresh.call("")
+	var accept:=func():
+		if list.get_selected_items().is_empty():return
+		var asset:=str(list.get_item_metadata(list.get_selected_items()[0]));dialog.hide();callback.call(asset);dialog.queue_free()
+	dialog.confirmed.connect(accept);list.item_activated.connect(func(_index):accept.call())
+	dialog.canceled.connect(dialog.queue_free);_popup(dialog,Vector2i(560,400));search.grab_focus()
+
+func environment_name(asset:String) -> String:
+	for entry in _assets.backgrounds():
+		if entry.id==asset:return entry.name
+	return asset
+
+func add_environment_cue(asset:String,at_us:int) -> void:
+	_prepare_command()
+	var cue:=LevelFormat.scene_cue(at_us,asset,section);cue.name=environment_name(asset)
+	cue.difficulties=[difficulty()] if difficulty_only else []
+	document.replace("添加环境换景","scene_cues",[],[cue])
+	_timeline_selection(PackedStringArray(),"@environment",PackedStringArray([cue.id]))
+
+func set_environment_field(key:String,value:Variant) -> void:
+	var before:=document.entries("scene_cues").filter(func(cue):return cue.id in selected_items)
+	var after:=before.duplicate(true)
+	for cue in after:cue[key]=value
+	if not after.is_empty():document.replace("修改环境换景","scene_cues",before,after)
+
+func preview_environment_cue() -> void:
+	if timeline.environment==null or selected_items.is_empty():return
+	var parts:=timeline.environment.transitions.filter(func(part):return part.cue_id in selected_items)
+	if parts.is_empty():message("这些层与前一场景相同，无需换景。");return
+	var start:int=parts.map(func(part):return int(part.enter_us)).min()
+	var end:int=parts.map(func(part):return int(part.finish_us)).max()
+	start=maxi(-timeline.environment.intro_us,start-1000000);end=mini(timeline.environment.end_us,end+1000000)
+	if end<=start:message("该衔接在关卡结束前尚未入画。");return
+	if _environment_preview.is_empty():
+		_store_view()
+		_environment_preview={"section":section,"time_us":time_us,"playing":audio.playing,"loop":audio.loop_enabled,"start":audio.loop_start,"end":audio.loop_end,"left":timeline.left_seconds,"zoom":timeline.pixels_per_second,"scroll":timeline.row_scroll,"pan":surface.pan,"canvas_zoom":surface.zoom,"follow":_follow.button_pressed,"suspended":_follow_suspended,"seams":surface.show_environment_seams,"views":_views.duplicate(true)}
+	_environment_preview.range_start=start;_environment_preview.range_end=end;_environment_preview.playing_intent=true
+	audio.loop_enabled=false;surface.show_environment_seams=true
+	_environment_go_to(start,true)
+
+func _environment_go_to(absolute_us:int,playing:bool) -> void:
+	var sequence:=timeline.environment
+	if sequence==null:return
+	_environment_switching=true;audio.set_playing(false)
+	section="intro" if absolute_us<0 else ("outro" if absolute_us>=sequence.song_us else "song")
+	var local_us:=absolute_us-sequence.absolute_time(section,0)
+	timeline.section=section;_section.select(LevelFormat.SECTIONS.find(section));timeline.rebuild_rows()
+	_loading=true;audio.set_stream(song_document.song.audio_stream if section=="song" and song_document.song!=null else null);_loading=false
+	seek(local_us);_environment_switching=false;audio.set_playing(playing)
+
+func _environment_position(seconds:float) -> bool:
+	if _environment_preview.is_empty() or _environment_switching or not _environment_preview.get("playing_intent",false) or timeline.environment==null:return false
+	var at:=timeline.environment.absolute_time(section,roundi(seconds*1000000))
+	if at>=int(_environment_preview.range_end):_environment_go_to(_environment_preview.range_start,true);return true
+	if (section=="intro" and at>=0) or (section=="song" and at>=timeline.environment.song_us):_environment_go_to(at,true);return true
+	if section=="song" and song_document.song!=null and song_document.song.audio_stream!=null and seconds>=song_document.song.audio_stream.get_length() and not audio.playing:
+		# 歌曲的判定尾段可能长于音频；继续用静音时钟走到片尾，不能卡在文件末端。
+		_environment_switching=true;_loading=true;audio.set_stream(null);_loading=false
+		audio.seek(seconds);audio.set_playing(true);_environment_switching=false
+	return false
+
+func step_environment(direction:int) -> void:
+	if not _environment_preview.is_empty():_environment_preview.playing_intent=false
+	audio.set_playing(false)
+	if not _environment_preview.is_empty() and timeline.environment!=null:
+		_environment_go_to(timeline.environment.absolute_time(section,time_us)+direction*16667,false)
+	else:seek(time_us+direction*16667)
+
+func end_environment_preview() -> void:
+	if _environment_preview.is_empty():return
+	var state:=_environment_preview;_environment_preview={}
+	if timeline.environment!=null:_environment_go_to(timeline.environment.absolute_time(state.section,state.time_us),false)
+	_views=state.views
+	audio.set_playing(false);audio.loop_enabled=state.loop;audio.loop_start=state.start;audio.loop_end=state.end
+	timeline.left_seconds=state.left;timeline.pixels_per_second=state.zoom;timeline.row_scroll=state.scroll
+	surface.pan=state.pan;surface.zoom=state.canvas_zoom;surface.show_environment_seams=state.seams
+	_follow_suspended=state.suspended
+	_follow.set_pressed_no_signal(state.follow)
+	var controller:ParallaxController=show_player().environment_controller if show_player()!=null else null
+	if is_instance_valid(controller):controller.environment_only_layer=""
+	seek(state.time_us);audio.set_playing(state.playing)

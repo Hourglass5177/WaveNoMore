@@ -31,7 +31,7 @@ func _run() -> void:
 	material.set_shader_parameter("musk_texture", solid(Color.WHITE))
 	material.set_shader_parameter("eye_ball_texture", ImageTexture.create_from_image(eye))
 	# 旧断言隔离眼球机制；泛光在后面的独立像素检查中开启。
-	material.set_shader_parameter("glow_enabled", false)
+	material.set_shader_parameter("surface_strength", 0.0)
 	sprite.material = material
 	viewport.add_child(sprite)
 	for dimensions in [Vector2i(640, 360), Vector2i(360, 640)]:
@@ -80,26 +80,6 @@ func _run() -> void:
 	await RenderingServer.frame_post_draw
 	var outside := viewport.get_texture().get_image().get_pixel(180, 100)
 	check(outside.r < 0.02 and absf(outside.a - 0.5) < 0.02, "Out-of-bounds eye is transparent")
-	var glow_source := Image.create(64, 64, false, Image.FORMAT_RGBA8)
-	glow_source.fill(Color.TRANSPARENT)
-	glow_source.fill_rect(Rect2i(24, 24, 16, 16), Color(0.08, 0.08, 0.08, 1.0))
-	sprite.texture = ImageTexture.create_from_image(glow_source)
-	material.set_shader_parameter("musk_texture", solid(Color.BLACK))
-	material.set_shader_parameter("eye_ball_texture", solid(Color.TRANSPARENT))
-	material.set_shader_parameter("glow_enabled", true)
-	material.set_shader_parameter("glow_color", Color(1.0, 0.1, 0.05, 1.0))
-	material.set_shader_parameter("glow_width_px", 16.0)
-	await process_frame
-	await RenderingServer.frame_post_draw
-	var glow_image := viewport.get_texture().get_image()
-	var body_pixel := glow_image.get_pixel(180, 100)
-	var edge_pixel := glow_image.get_pixel(190, 100)
-	check(body_pixel.r < 0.12 and body_pixel.a > 0.98, "Glow preserves opaque Tap body")
-	check(edge_pixel.r > 0.2 and edge_pixel.a > 0.05, "Glow extends colored alpha outside Tap body")
-	material.set_shader_parameter("glow_enabled", false)
-	await process_frame
-	await RenderingServer.frame_post_draw
-	check(viewport.get_texture().get_image().get_pixel(190, 100).a < 0.02, "Disabled glow restores transparent edge")
 	# Render the actual s08 textures using the production Tap visual.
 	sprite.queue_free()
 	viewport.size = Vector2i(640, 360)

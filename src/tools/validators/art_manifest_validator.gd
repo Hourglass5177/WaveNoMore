@@ -25,6 +25,11 @@ static func validate(manifest: VisualAssetManifest, allow_placeholders: bool = t
 			issues.append(_issue("error", location, "asset_id 重复：%s" % entry.asset_id))
 		else:
 			ids[entry.asset_id] = true
+		if entry.background != null:
+			issues.append_array(_validate_background(entry.background,location))
+			if entry.placeholder and not allow_placeholders:
+				issues.append(_issue("error",location,"严格交付禁止占位背景：%s" % entry.asset_id))
+			continue
 		if entry.runtime_scene == null:
 			issues.append(_issue("error", location, "缺少 runtime_scene。"))
 		elif not entry.runtime_scene.can_instantiate():
@@ -41,6 +46,19 @@ static func validate(manifest: VisualAssetManifest, allow_placeholders: bool = t
 				issues.append(_issue("error", location, "Manifest 缺少状态声明：%s" % state_name))
 		if entry.placeholder and not allow_placeholders:
 			issues.append(_issue("error", location, "严格交付禁止 Graybox 占位资产：%s" % entry.asset_id))
+	return issues
+
+## 只检查资源是否完整以及身份是否重复，不判断两个场景的美术接缝。
+static func _validate_background(background:StageBackgroundDefinition,location:String) -> Array[Dictionary]:
+	var issues:Array[Dictionary]=[]
+	var identities:Dictionary={}
+	for layer in background.layers:
+		for sublayer in layer.sublayers:
+			var key:=sublayer.continuity_key(layer.depth)
+			if identities.has(key):issues.append(_issue("error",location,"背景对应层标识重复："+key))
+			identities[key]=true
+			for item in sublayer.entries:
+				if item.texture==null and item.sprite_frames==null:issues.append(_issue("error",location,"背景层缺少图像或序列帧："+sublayer.display_name))
 	return issues
 
 

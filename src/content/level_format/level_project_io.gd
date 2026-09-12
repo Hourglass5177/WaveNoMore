@@ -66,6 +66,8 @@ static func dependencies(level: Dictionary, root: String) -> PackedStringArray:
 	for pack: Dictionary in level.get("packs", []): paths[pack.path] = true
 	var assets := []
 	assets.append(level.get("cover", ""))
+	assets.append(level.get("initial_background", ""))
+	for cue:Dictionary in level.show.get("scene_cues",[]):assets.append(cue.get("asset",""))
 	for object_data: Dictionary in level.show.get("objects", []):
 		assets.append(object_data.get("asset", "")); assets.append(object_data.get("fields", {}).get("font", ""))
 	for track: Dictionary in level.show.get("tracks", []):

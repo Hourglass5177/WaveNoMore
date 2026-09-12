@@ -1,12 +1,22 @@
 [gd_scene format=3 uid="uid://b31upogsnbgg"]
 
-[ext_resource type="SpineSkeletonDataResource" uid="uid://bp0oe84fcd2yx" path="res://assets/character/lingjun/lingjun.tres" id="1_skeleton"]
+[ext_resource type="SpineSkeletonDataResource" path="res://assets/character/lingjun/lingjun_gameplay.tres" id="1_skeleton"]
+[ext_resource type="PackedScene" path="res://assets/character/lingjun/lingjun_ashes.tscn" id="2_ashes"]
 
 [node name="LingjunActor" type="SpineSprite" unique_id=990813055]
 skeleton_data_res = ExtResource("1_skeleton")
+metadata/attack_segments = 2
+metadata/attack_loop = "attack_loop"
+metadata/attack_start_sec = 0.46
+metadata/attack_hit_times = PackedFloat32Array(0.55, 1.5)
+metadata/idle = "idle"
+metadata/hurt = "hurt"
+metadata/death = "death"
 preview_skin = "Default"
 preview_animation = "-- Empty --"
 preview_frame = false
 preview_time = 0.0
 position = Vector2(0, 280.645)
 scale = Vector2(0.405, 0.405)
+
+[node name="Ashes" parent="." instance=ExtResource("2_ashes")]

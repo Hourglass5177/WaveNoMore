@@ -1,0 +1,16 @@
+[remap]
+
+importer="spine.atlas"
+type="SpineAtlasResource"
+uid="uid://d4gy5t83ssvpb"
+path="res://.godot/imported/lingjun_gameplay.atlas-55c8dc575bdd7ea9a26dbe4a2f695466.spatlas"
+
+[deps]
+
+source_file="res://assets/character/lingjun/lingjun_gameplay.atlas"
+dest_files=["res://.godot/imported/lingjun_gameplay.atlas-55c8dc575bdd7ea9a26dbe4a2f695466.spatlas"]
+
+[params]
+
+normal_map_prefix="n"
+specular_map_prefix="s"

@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="StageBackgroundDefinition" load_steps=8 format=3]
+[ext_resource type="Script" path="res://src/content/resources/stage_background_definition.gd" id="1"]
+[ext_resource type="Script" path="res://src/content/resources/stage_background_layer.gd" id="2"]
+[ext_resource type="Script" path="res://src/content/resources/stage_background_sublayer.gd" id="3"]
+[ext_resource type="Script" path="res://src/content/resources/stage_background_entry.gd" id="4"]
+[sub_resource type="Gradient" id="gradient"]
+colors = PackedColorArray(0.06, 0.3, 1, 1, 0.06, 0.3, 1, 1)
+[sub_resource type="GradientTexture2D" id="texture"]
+gradient = SubResource("gradient")
+width = 240
+height = 1080
+[sub_resource type="Resource" id="entry"]
+script = ExtResource("4")
+texture = SubResource("texture")
+infinite = true
+[sub_resource type="Resource" id="sublayer"]
+script = ExtResource("3")
+continuity_id = "ground"
+display_name = "地面"
+velocity = Vector2(720, 0)
+entries = Array[ExtResource("4")]([SubResource("entry")])
+[sub_resource type="Resource" id="layer"]
+script = ExtResource("2")
+depth = 1
+sublayers = Array[ExtResource("3")]([SubResource("sublayer")])
+[resource]
+script = ExtResource("1")
+layers = Array[ExtResource("2")]([SubResource("layer")])

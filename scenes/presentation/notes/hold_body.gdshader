@@ -1,4 +1,5 @@
 shader_type canvas_item;
+#include "res://shaders/notes/note_surface.gdshaderinc"
 
 // UV.x 是从头部开始的累计弧长 / 重复间距，不随当前总长重新归一化。
 uniform sampler2D body_texture : source_color, repeat_enable, filter_linear;
@@ -36,7 +37,8 @@ void fragment() {
 			* smoothstep(0.0, body_edge_softness, 1.0 - UV.y);
 		tail = smoothstep(0.0, body_edge_softness, body_uv_length - UV.x);
 	}
-	vec3 body_rgb = texel.rgb;
+	float eye = smoothstep(0.72, 0.92, min(texel.r, min(texel.g, texel.b)));
+	vec3 body_rgb = note_surface(texel.rgb, eye);
 	if (body_tint_enabled) {
 		// 原阵营、判定染色和中轴高光保留，只有显式开启时使用。
 		float center_light = pow(max(1.0 - abs(UV.y * 2.0 - 1.0), 0.0), 4.0);

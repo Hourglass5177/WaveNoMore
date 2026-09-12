@@ -46,6 +46,18 @@ const NOTE_PARALLAX_DEPTH: int = 0
 ## 试验开关：叠加手持晃动；关闭不影响主题配置的持续移动。
 @export var handheld_camera_enabled: bool = true
 
+@export_group("Actor Rhythm")
+## 3 Hz 发波对应原速，每增减 1 Hz 只改变 0.15 倍敲击速度。
+@export var attack_reference_hz: float = 3.0
+@export var attack_rate_per_hz: float = 0.15
+@export var attack_min_rate: float = 0.65
+@export var attack_max_rate: float = 1.65
+@export var attack_release_mix_sec: float = 0.1
+## 重按只短暂接续旧姿势；过长混合会遮掉右侧向下砸的动作。
+@export var attack_restart_mix_sec: float = 0.025
+## 点按与长按共用敲击上限；多余输入照常判定，不积压角色动作。
+@export var attack_max_strikes_per_sec: float = 2.0
+
 # 以下引用在 _ready() 中按上面的路径取得，集中负责主题装配和事件转发。
 var _backdrop: GrayboxBackdrop
 # 生界美术内容的挂载槽，位于水平分界线上方。
@@ -64,6 +76,9 @@ var _death_attacking := false
 ## 写谱预览由歌曲时间推进角色，暂停与分批重演不使用墙钟时间。
 var _preview_time_driven := false
 var _preview_actor_time_sec := -INF
+var _actor_snapshot_time_sec := -INF
+## 新增伤害按领域时间排队，在下一次动作快照中先推进到事件边界再播放。
+var _actor_events: Array[Dictionary] = []
 # 水平生死分界线素材的挂载槽。
 var _boundary_slot: Node2D
 # 调频期间持续发波并生成相纹的表现节点。
@@ -180,8 +195,7 @@ func configure(stage: StageDefinition) -> void:
 		_death_actor = _instance_if_present(visual_theme.death_actor_scene, _death_actor_slot)
 		_instance_if_present(visual_theme.death_bell_scene, _death_actor_slot)
 		_instance_if_present(visual_theme.boundary_scene, _boundary_slot)
-	if _preview_time_driven:
-		_reset_preview_actors()
+	_reset_preview_actors()
 
 	_song_duration_sec = _calculate_song_duration_sec()
 
@@ -209,6 +223,8 @@ func bind(clock: SongClock, session: StageSession, scheduler: ChartScheduler, _i
 	_disconnect_sources()
 	_clock = clock
 	_session = session
+	if not session.gameplay_coordinator.damage_recorded.is_connected(_queue_actor_damage):
+		session.gameplay_coordinator.damage_recorded.connect(_queue_actor_damage)
 	if not session.waves_reset.is_connected(_tuning_interference_visual.clear):
 		session.waves_reset.connect(_tuning_interference_visual.clear)
 	if not session.waves_reset.is_connected(_reset_preview_actors):
@@ -234,10 +250,7 @@ func bind_show_director(director: Node) -> void:
 
 
 func clear() -> void:
-	if _preview_time_driven:
-		_reset_preview_actors()
-	else:
-		_update_actor_attacks(false, false)
+	_reset_preview_actors()
 	_note_visual_host.clear()
 	_tuning_interference_visual.clear()
 	_rapid_interference_visual.clear()
@@ -273,6 +286,7 @@ func restore_preview_motion(snapshot: Dictionary, sample: ClockSample) -> void:
 func _on_visual_frame_ready(sample: ClockSample) -> void:
 	## Gameplay 写入当前目标后推进身体；原始时钟信号仅设置视觉目标。
 	_note_visual_host.set_clock_sample(sample)
+	if parallax_controller.environment != null: return
 	parallax_controller.set_song_time(sample.song_time_sec)
 	var camera_position := Vector2.ZERO
 	if stage_definition != null and stage_definition.visual_theme != null:
@@ -280,6 +294,10 @@ func _on_visual_frame_ready(sample: ClockSample) -> void:
 	if handheld_camera_enabled:
 		camera_position += _handheld_camera.offset_at(sample.song_time_sec)
 	parallax_controller.set_camera_position(camera_position)
+
+## 环境安排只看稳定演出镜头；手持晃动由共用采样入口最后叠加。
+func environment_camera_offset(song_seconds:float) -> Vector2:
+	return _handheld_camera.offset_at(song_seconds) if handheld_camera_enabled else Vector2.ZERO
 
 
 func _notification(what: int) -> void:
@@ -345,29 +363,174 @@ func _on_wave_launched(wave: Dictionary) -> void:
 
 ## 预览复用正式输入边界；普通游玩仍由 Spine 自身推进动画。
 func _update_actor_snapshot(snapshot: Dictionary) -> void:
-	if _preview_time_driven:
-		var time_sec := float(snapshot.time_us) / 1000000.0
-		var delta := maxf(time_sec - _preview_actor_time_sec, 0.0) if is_finite(_preview_actor_time_sec) else 0.0
-		# 先走完上一段按住/松开的时间，再应用边界输入，才能保留“松开后播完本轮”的语义。
+	# 重置后的领域哨兵不是歌曲时间；首份有效快照再建立静息相位。
+	if int(snapshot.time_us) == -9_000_000_000_000_000: return
+	var time_sec := float(snapshot.time_us) / 1000000.0
+	_actor_events.sort_custom(func(a: Dictionary, b: Dictionary): return a.time < b.time)
+	while not _actor_events.is_empty() and _actor_events[0].time <= time_sec:
+		var event: Dictionary = _actor_events.pop_front()
+		_advance_actor_time(event.time)
 		for actor in [_life_actor, _death_actor]:
-			if is_instance_valid(actor) and actor.is_class("SpineSprite") and actor.get_animation_state().get_num_tracks() > 0:
-				actor.update_skeleton(delta)
-		_preview_actor_time_sec = time_sec
+			var side := GameplayTypes.Affinity.ZHU if actor == _life_actor else GameplayTypes.Affinity.XUAN
+			if event.affinity == GameplayTypes.Affinity.SU or event.affinity == side:
+				_play_actor_reaction(actor, event.death)
+	_advance_actor_time(time_sec)
+	for actor in [_life_actor, _death_actor]:
+		_record_actor_strike(actor)
 	_update_actor_attacks(bool(snapshot.get("life_held", false)), bool(snapshot.get("death_held", false)))
+	# 先推进旧频率的时间区间，再接收边界上的新频率；变速保留当前动作相位。
+	if _life_attacking: _continue_actor_attack(_life_actor, float(snapshot.get("life_frequency_hz", attack_reference_hz)))
+	if _death_attacking: _continue_actor_attack(_death_actor, float(snapshot.get("death_frequency_hz", attack_reference_hz)))
+
+
+func _queue_actor_damage(record: DamageRecord) -> void:
+	if record.actual_damage <= 0: return
+	_actor_events.append({"time": float(record.timestamp_us) / 1000000.0,
+		"affinity": GameplayTypes.Affinity.SU if record.fatal else record.affinity, "death": record.fatal})
+
+
+func _queue_actor_death(time: float, side: int = GameplayTypes.Affinity.SU) -> void:
+	_actor_events.append({"time": time, "affinity": side, "death": true})
+
+
+func _advance_actor_time(time: float) -> void:
+	_actor_snapshot_time_sec = time
+	var delta := maxf(time - _preview_actor_time_sec, 0.0) if is_finite(_preview_actor_time_sec) else 0.0
+	for actor in [_life_actor, _death_actor]:
+		if not is_instance_valid(actor) or not actor.is_class("SpineSprite"): continue
+		if not _preview_time_driven and not actor.has_meta("idle"): continue
+		if actor.get_animation_state().get_num_tracks() == 0: continue
+		if not is_finite(_preview_actor_time_sec) and actor.has_meta("idle"):
+			actor.get_animation_state().get_track(0).set_track_time(fposmod(time, 4.0))
+		_advance_actor_preview(actor, delta, _life_attacking if actor == _life_actor else _death_attacking)
+		if actor.get_meta("_actor_dead", false) and actor.has_node("Ashes"):
+			actor.get_node("Ashes").set_death_age(actor.get_animation_state().get_track(0).get_track_time())
+		# Spine 要在下一次 update 才清理混合；零增量也由基础轨道复位叠加属性。
+		actor.update_skeleton(0.0)
+		var state = actor.get_animation_state()
+		if state.get_num_tracks() > 1 and state.get_track(1) != null and state.get_track(1).is_complete():
+			state.clear_track(1)
+			actor.update_skeleton(0.0)
+	_preview_actor_time_sec = time
+
+
+func _play_actor_reaction(actor: Node, death: bool) -> void:
+	if not is_instance_valid(actor) or not actor.has_meta("death") or actor.get_meta("_actor_dead", false): return
+	var state = actor.get_animation_state()
+	if death:
+		actor.set_meta("_actor_dead", true)
+		state.clear_track(1)
+		var track = state.set_animation(str(actor.get_meta("death")), false, 0)
+		track.set_mix_duration(0.12)
+		track.set_time_scale(1.0)
+	else:
+		if state.get_num_tracks() > 1 and state.get_track(1) != null and not state.get_track(1).is_complete(): return
+		var resting: bool = state.get_track(0).get_animation().get_name() == str(actor.get_meta("idle"))
+		var track = state.set_animation(str(actor.get_meta("hurt")), false, 1)
+		track.set_additive(true)
+		# 静息时允许更完整的收身；攻击期间保持原幅度，不干扰挥槌轨迹。
+		track.set_alpha(1.2 if resting else 1.0)
+		track.set_mix_duration(0.0)
+	actor.update_skeleton(0.0)
+
+
+func _advance_actor_preview(actor: Node, delta: float, held: bool) -> void:
+	var track = actor.get_animation_state().get_track(0)
+	if actor.get_meta("_actor_dead", false):
+		actor.update_skeleton(delta)
+		return
+	var attacking: bool = track.get_animation().get_name() in ["attack", str(actor.get_meta("attack_loop", "attack"))]
+	if not attacking:
+		actor.update_skeleton(delta)
+		return
+	if not held and not track.get_loop() and actor.has_meta("idle"):
+		var finish: float = maxf(track.get_animation_end() - track.get_track_time(), 0.0) / track.get_time_scale()
+		if finish <= delta:
+			actor.update_skeleton(finish)
+			var idle = actor.get_animation_state().set_animation(str(actor.get_meta("idle")), true, 0)
+			idle.set_mix_duration(0.15)
+			idle.set_track_time(fposmod(_actor_snapshot_time_sec - delta + finish, 4.0))
+			actor.update_skeleton(delta - finish)
+			return
+	if held and not track.get_loop() and delta > 0.0:
+		# 限速期间重新按住：在收招与冷却都结束的准确时刻续招，不能等定位终点
+		# 才重新播放，否则一次跨越几秒会与逐帧播放得到不同姿态。
+		var target := _actor_snapshot_time_sec
+		var start := target - delta
+		var speed: float = track.get_time_scale()
+		var phase: float = track.get_track_time()
+		var resume_at := start + maxf(track.get_animation_end() - phase, 0.0) / speed
+		var last_hit: float = actor.get_meta("_attack_last_hit_sec", -INF)
+		for hit: float in actor.get_meta("attack_hit_times", PackedFloat32Array()):
+			if hit > phase and hit <= track.get_animation_end(): last_hit = maxf(last_hit, start + (hit - phase) / speed)
+		resume_at = maxf(resume_at, maxf(last_hit, actor.get_meta("_attack_last_start_sec", -INF)) + 1.0 / attack_max_strikes_per_sec)
+		if resume_at <= target:
+			actor.update_skeleton(maxf(resume_at - start, 0.0))
+			_actor_snapshot_time_sec = resume_at
+			_record_actor_strike(actor)
+			_set_actor_attack(actor, true)
+			actor.update_skeleton(target - resume_at)
+			_actor_snapshot_time_sec = target
+			return
+	actor.update_skeleton(delta)
+
+
+func _continue_actor_attack(actor: Node, frequency: float) -> void:
+	if not is_instance_valid(actor) or not actor.is_class("SpineSprite"): return
+	if actor.get_meta("_actor_dead", false): return
+	var track = actor.get_animation_state().get_track(0)
+	# 限速内的新按下只保持当前动作；若随后一直按住，收招完成后自然续出招。
+	if not track.get_loop() and track.is_complete(): _set_actor_attack(actor, true)
+	_set_actor_frequency(actor, frequency)
+
+
+func _set_actor_frequency(actor: Node, frequency: float) -> void:
+	if is_instance_valid(actor) and actor.is_class("SpineSprite"):
+		var rate := clampf(1.0 + (frequency - attack_reference_hz) * attack_rate_per_hz, attack_min_rate, attack_max_rate)
+		var hits: PackedFloat32Array = actor.get_meta("attack_hit_times", PackedFloat32Array())
+		if hits.size() > 1:
+			var duration: float = actor.get_animation_state().get_track(0).get_animation().get_duration()
+			var gap := duration - hits[-1] + hits[0]
+			for i in range(1, hits.size()): gap = minf(gap, hits[i] - hits[i - 1])
+			rate = minf(rate, gap * attack_max_strikes_per_sec)
+		actor.get_animation_state().get_track(0).set_time_scale(rate)
+
+
+func _record_actor_strike(actor: Node) -> void:
+	if not is_instance_valid(actor) or not actor.has_meta("attack_hit_times"): return
+	var state = actor.get_animation_state()
+	if state.get_num_tracks() == 0: return
+	var track = state.get_track(0)
+	if not track.get_animation().get_name() in ["attack", str(actor.get_meta("attack_loop", "attack"))]: return
+	var phase: float = track.get_track_time()
+	var previous: float = actor.get_meta("_attack_sample_phase", phase)
+	var last_hit := -INF
+	var duration: float = track.get_animation().get_duration()
+	for hit: float in actor.get_meta("attack_hit_times"):
+		var crossed := floorf((phase - hit) / duration) * duration + hit if track.get_loop() else hit
+		if crossed <= phase and (track.get_loop() or crossed <= track.get_animation_end()): last_hit = maxf(last_hit, crossed)
+	if last_hit > previous:
+		# 大步定位可能越过多次敲击，只记录最近一次；不逐圈补播，也不影响真实发波。
+		actor.set_meta("_attack_last_hit_sec", _actor_snapshot_time_sec - (phase - last_hit) / track.get_time_scale())
+	actor.set_meta("_attack_sample_phase", phase)
 
 
 func _reset_preview_actors() -> void:
-	if not _preview_time_driven: return
+	_actor_events.clear()
 	_preview_actor_time_sec = -INF
 	_life_attacking = false
 	_death_attacking = false
 	for actor in [_life_actor, _death_actor]:
 		if is_instance_valid(actor) and actor.is_class("SpineSprite"):
-			actor.set_update_mode(SpineConstant.UpdateMode_Manual)
+			for key in ["_attack_sample_phase", "_attack_last_hit_sec", "_attack_last_start_sec", "_actor_dead"]:
+				if actor.has_meta(key): actor.remove_meta(key)
+			if _preview_time_driven or actor.has_meta("idle"): actor.set_update_mode(SpineConstant.UpdateMode_Manual)
 			actor.get_animation_state().clear_tracks()
+			if actor.has_node("Ashes"): actor.get_node("Ashes").set_death_age(-1.0)
 			actor.get_skeleton().set_to_setup_pose()
 			actor.get_skeleton().set_time(0.0)
 			actor.get_skeleton().update_world_transform(SpineConstant.Physics_Reset)
+			if actor.has_meta("idle"): actor.get_animation_state().set_animation(str(actor.get_meta("idle")), true, 0)
 			actor.update_skeleton(0.0)
 
 
@@ -381,19 +544,40 @@ func _update_actor_attacks(life_held: bool, death_held: bool) -> void:
 		_death_attacking = death_held
 
 
-## 松开只结束循环；本轮结束前重新按住继续原轨道，结束后才重新起播。
+## 松开收完当前单招；新的按下边界重新出招，通过短混合保留瞬间姿态连续性。
 func _set_actor_attack(actor: Node, held: bool) -> void:
 	if is_instance_valid(actor) and actor.is_class("SpineSprite"):
+		if actor.get_meta("_actor_dead", false): return
 		var state = actor.get_animation_state()
 		var track = state.get_track(0) if state.get_num_tracks() > 0 else null
 		if held:
-			if track != null and (track.get_loop() or track.get_track_time() < track.get_animation().get_duration()):
-				track.set_loop(true)
-			else:
-				state.set_animation("attack", true, 0)
-		elif track != null and track.get_loop():
-			# Spine 的轨道时间跨循环累计；折回本轮时间，避免关闭循环后立即跳到末帧。
-			track.set_track_time(fposmod(track.get_track_time(), track.get_animation().get_duration()))
+			var cooldown := 1.0 / attack_max_strikes_per_sec
+			var last_start: float = actor.get_meta("_attack_last_start_sec", -INF)
+			var last_hit: float = actor.get_meta("_attack_last_hit_sec", -INF)
+			if _actor_snapshot_time_sec + 0.000001 < maxf(last_start, last_hit) + cooldown: return
+			var was_attack: bool = track != null and track.get_animation().get_name() in ["attack", str(actor.get_meta("attack_loop", "attack"))]
+			var restarting: bool = was_attack and (not track.is_complete() or track.get_mixing_from() != null)
+			var next = state.set_animation(str(actor.get_meta("attack_loop", "attack")), true, 0)
+			# 从右侧抬槌姿势进入下砸，保留一小段可见的下行轨迹。
+			next.set_track_time(float(actor.get_meta("attack_start_sec", 0.0)))
+			next.set_time_scale(track.get_time_scale() if track != null else 1.0)
+			actor.set_meta("_attack_sample_phase", next.get_track_time())
+			actor.set_meta("_attack_last_start_sec", _actor_snapshot_time_sec)
+			next.set_mix_duration(attack_restart_mix_sec if restarting else 0.0)
+		elif track != null and track.get_loop() and track.get_animation().get_name() != str(actor.get_meta("idle", "")):
+			# attack 由等长的独立招式组成，每段末尾均收回站姿。松开截到当前段末，
+			# 不连带播放下一招；保留原生时间轴，使正式播放与预览跨帧定位完全一致。
+			var duration: float = track.get_animation().get_duration()
+			var section: float = duration / int(actor.get_meta("attack_segments", 1))
+			var local_time := fposmod(track.get_track_time(), duration)
+			if actor.has_meta("attack_loop"):
+				var speed: float = track.get_time_scale()
+				track = state.set_animation("attack", false, 0)
+				track.set_mix_duration(attack_release_mix_sec)
+				track.set_time_scale(speed)
+			track.set_animation_end(minf((floorf(local_time / section) + 1.0) * section, duration))
+			track.set_track_time(local_time)
+			actor.set_meta("_attack_sample_phase", local_time)
 			track.set_loop(false)
 		if _preview_time_driven:
 			actor.update_skeleton(0.0)
@@ -468,6 +652,8 @@ func _disconnect_sources() -> void:
 	if is_instance_valid(_clock) and _clock.sample_published.is_connected(_on_clock_sample):
 		_clock.sample_published.disconnect(_on_clock_sample)
 	if is_instance_valid(_session):
+		if _session.gameplay_coordinator.damage_recorded.is_connected(_queue_actor_damage):
+			_session.gameplay_coordinator.damage_recorded.disconnect(_queue_actor_damage)
 		if _session.waves_reset.is_connected(_reset_preview_actors):
 			_session.waves_reset.disconnect(_reset_preview_actors)
 		if _session.waves_reset.is_connected(_tuning_interference_visual.clear):

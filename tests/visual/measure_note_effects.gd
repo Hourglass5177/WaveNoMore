@@ -1,6 +1,7 @@
 extends SceneTree
 ## 读取实际谱面，在相同输入与采样时间下比较白光及 Ghost 段；不保存或修改用户工程。
 var output := "res://builds/visual-review/note-glow/performance-before.json"
+var effects_enabled := true
 var project_path := ProjectSettings.globalize_path("res://").path_join("../Charts/charts/test/song.json").simplify_path()
 
 func _initialize() -> void: run.call_deferred()
@@ -15,7 +16,14 @@ func stats(values: Array) -> Dictionary:
 func run() -> void:
 	for arg: String in OS.get_cmdline_user_args():
 		if arg.begins_with("--out="): output = arg.trim_prefix("--out=")
+		if arg == "--effects=off": effects_enabled = false
 		if arg.begins_with("--project="): project_path = arg.trim_prefix("--project=")
+	await measure_phase()
+	quit()
+
+func measure_phase() -> Dictionary:
+	var style := GrayboxNoteVisual.EFFECT_STYLE
+	style.enabled = effects_enabled
 	root.size = Vector2i(1920, 1080)
 	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
 	Engine.max_fps = 0
@@ -27,7 +35,7 @@ func run() -> void:
 	var preview = load("res://src/tools/chart_studio/preview_session.gd").new()
 	root.add_child(preview)
 	preview.sound_enabled = false
-	if not preview.load_preview(loaded.stage, viewport): quit(1); return
+	if not preview.load_preview(loaded.stage, viewport): quit(1); return {}
 	var compiled: CompiledChart = preview.stage_root.stage_session.compiled_chart
 	var first: float = float(compiled.su_manifestations[0].time_us) / 1000000.0
 	var start: float = maxf(0, first - 2.75)
@@ -60,11 +68,11 @@ func run() -> void:
 		frames.append(frame_ms)
 		samples.append([at, work_ms, frame_ms, ghosts, lit])
 	var targets: Dictionary = preview.stage_root.gameplay_coordinator.simulation._su_prepared.duplicate(true)
-	var result := {"project": project_path, "start": start, "work": stats(costs), "frame": stats(frames), "events": events, "samples": samples, "targets": var_to_str(targets), "gpu": RenderingServer.get_video_adapter_name()}
+	var result := {"effects_enabled": effects_enabled, "project": project_path, "start": start, "work": stats(costs), "frame": stats(frames), "events": events, "samples": samples, "targets": var_to_str(targets), "gpu": RenderingServer.get_video_adapter_name()}
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(output.get_base_dir()))
 	FileAccess.open(output, FileAccess.WRITE).store_string(JSON.stringify(result, "  "))
 	result.erase("samples"); result.erase("targets")
 	print("EFFECT PERFORMANCE ", JSON.stringify(result))
 	preview.queue_free(); viewport.queue_free()
 	await process_frame
-	quit()
+	return {"frame": result.frame, "work": result.work, "events": result.events}

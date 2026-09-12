@@ -1,10 +1,10 @@
 extends SceneTree
-## 通过真实工作区、控制中心和输入事件验证编辑行为；仅在 builds 下写测试资源。
+## 通过真实工作区、控制中心和输入事件验证编辑行为；产物写到 Levels/output。
 const Document = preload("res://addons/parallax_background_editor/document.gd")
 const Workspace = preload("res://addons/parallax_background_editor/workspace.gd")
 var failures := 0
 var checks := 0
-const OUTPUT := "res://builds/background-editor-validation"
+var OUTPUT := ProjectSettings.globalize_path("res://../Levels/output/environment/background-editor")
 
 
 func _initialize() -> void:

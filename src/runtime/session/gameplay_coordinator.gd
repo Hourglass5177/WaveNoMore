@@ -8,6 +8,8 @@ extends Node
 signal judgment_recorded(record: JudgmentRecord)
 ## 一次输入没有被任何合法玩法对象接收时发出。
 signal stray_input_recorded(record: StrayInputRecord)
+## 扣血去重和减伤完成后的事实，包含来源阵营与是否致命。
+signal damage_recorded(record: DamageRecord)
 ## 生钟或死钟发出一个具有真实传播时间的声波时发出。
 signal wave_launched(wave: Dictionary)
 ## 波前在物理时间线上接触音符时发出。
@@ -177,6 +179,8 @@ func result_digest() -> String:
 
 
 func _drain_domain_events() -> void:
+	for damage: DamageRecord in simulation.drain_damages():
+		damage_recorded.emit(damage)
 	# 同帧内先发布波，再发布判定，使表现层总能先知道结果对应的物理原因。
 	for wave: Dictionary in simulation.drain_wave_launches():
 		wave_launched.emit(wave)

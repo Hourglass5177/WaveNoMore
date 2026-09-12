@@ -1,5 +1,6 @@
 shader_type canvas_item;
 render_mode unshaded, blend_mix;
+#include "res://shaders/notes/note_surface.gdshaderinc"
 
 uniform sampler2D musk_texture : filter_linear, repeat_disable;
 uniform sampler2D eye_ball_texture : source_color, filter_linear, repeat_disable;
@@ -30,5 +31,6 @@ void fragment() {
 	float eye_alpha = eye.a * texture(musk_texture, UV).r * inside;
 	float alpha = eye_alpha + base.a * (1.0 - eye_alpha);
 	vec3 premultiplied = eye.rgb * eye_alpha + base.rgb * base.a * (1.0 - eye_alpha);
-	COLOR = vec4(alpha > 0.0 ? premultiplied / alpha : vec3(0.0), alpha) * item_color;
+	vec3 composed = alpha > 0.0 ? premultiplied / alpha : vec3(0.0);
+	COLOR = vec4(note_surface(composed, texture(musk_texture, UV).r), alpha) * item_color;
 }

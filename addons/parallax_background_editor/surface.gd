@@ -19,6 +19,12 @@ var grid_size := 32.0
 var camera := Vector2.ZERO
 var song_time := 0.0
 var message := ""
+var environment_target: StageBackgroundDefinition
+var cycle_effect := "none"
+var show_cycle_guides := true
+var solo_cycle_layer := false
+var _cycle_axis := Vector2.RIGHT
+var _cycle_id := -1
 var _gesture := ""
 var _start := Vector2.ZERO
 var _last := Vector2.ZERO
@@ -128,10 +134,19 @@ func refresh() -> void:
 	for index in ids.size():
 		var object := controller.get_configured_object(index)
 		if object != null: object.visible = not document.hidden.has(ids[index])
+	if preview and environment_target!=null:
+		var sequence:=StageEnvironmentSequence.new()
+		sequence.build(document.definition(),[{"id":"preview","asset":"next","time_us":1000000,"effect":cycle_effect}],func(_id):return environment_target,"",Vector3i(0,120000000,0))
+		controller.set_environment(sequence);controller.sample_environment(roundi(song_time*1000000))
 	queue_redraw()
 
 
 func update_sample() -> void:
+	if controller.environment!=null:
+		var record:=cycle_record()
+		controller.environment_only_layer=record.resource.continuity_key(record.depth) if solo_cycle_layer and not record.is_empty() else ""
+		controller.set_camera_position(camera)
+		controller.sample_environment(roundi(song_time*1000000),camera);queue_redraw();return
 	controller.set_song_time(song_time, preview)
 	controller.set_camera_position(camera)
 	queue_redraw()
@@ -168,6 +183,9 @@ func hit(point: Vector2) -> int:
 
 func _gui_input(event: InputEvent) -> void:
 	if document == null: return
+	if event is InputEventPanGesture:
+		if not _gesture.begins_with("cycle_"):pan-=event.delta*32;_update_transform()
+		accept_event();return
 	if event is InputEventKey and event.pressed:
 		if _gesture == "resize" and event.keycode != KEY_ESCAPE:
 			accept_event()
@@ -190,7 +208,7 @@ func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		grab_focus()
 		# 缩放过程中不切换浏览手势，确保固定点和撤销快照保持一致。
-		if _gesture == "resize" and event.button_index != MOUSE_BUTTON_LEFT:
+		if (_gesture == "resize" or _gesture.begins_with("cycle_")) and event.button_index != MOUSE_BUTTON_LEFT:
 			accept_event()
 			return
 		if event.pressed and event.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
@@ -211,6 +229,8 @@ func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
 		if _gesture.is_empty(): _update_resize_cursor(event.position)
 		match _gesture:
+			"cycle_start", "cycle_end":
+				_drag_cycle(event.position)
 			"resize":
 				_resize_to(event.position)
 			"pan":
@@ -236,6 +256,7 @@ func _begin(event: InputEventMouseButton) -> void:
 	if preview:
 		_gesture = "camera" if not handheld else ""
 		return
+	if _begin_cycle(event.position):return
 	var handle := resize_handle_at(event.position)
 	if handle >= 0:
 		_before = document.snapshot()
@@ -261,7 +282,11 @@ func _begin(event: InputEventMouseButton) -> void:
 
 
 func _finish(point: Vector2) -> void:
-	if _gesture == "resize":
+	if _gesture.begins_with("cycle_"):
+		# commit 自身过滤无变化；回到起点也不能留下未进入历史的候选值。
+		if point.distance_to(_start)>=6:document.commit("拖动循环边界",_before)
+		else:document.restore(_before)
+	elif _gesture == "resize":
 		_resize_to(point)
 		if not is_equal_approx(document.entry(_resize_id).uniform_scale, _resize_scale):
 			document.commit("等比缩放素材", _before)
@@ -274,7 +299,7 @@ func _finish(point: Vector2) -> void:
 
 
 func cancel_gesture() -> void:
-	if _gesture in ["move", "resize"]: document.restore(_before)
+	if _gesture in ["move", "resize", "cycle_start", "cycle_end"]: document.restore(_before)
 	_gesture = ""
 	message = ""
 	mouse_default_cursor_shape = Control.CURSOR_CROSS
@@ -340,6 +365,7 @@ func _draw() -> void:
 	if viewport != null: draw_texture_rect(viewport.get_texture(), Rect2(Vector2.ZERO, size), false)
 	draw_rect(canvas, Color("7b879b"), false)
 	if document == null: return
+	_draw_cycle_guides()
 	if snap_enabled and grid_size * zoom >= 8:
 		var spacing := grid_size * zoom
 		for x in range(int(fposmod(pan.x, spacing)), int(size.x), maxi(1, int(spacing))): draw_line(Vector2(x, 0), Vector2(x, size.y), Color(1, 1, 1, 0.08))
@@ -374,3 +400,59 @@ func _can_drop_data(_position: Vector2, data: Variant) -> bool:
 
 func _drop_data(position: Vector2, data: Variant) -> void:
 	files_dropped.emit(PackedStringArray(data.files), to_design(position))
+
+func cycle_record() -> Dictionary:
+	var id:=document.selected_sublayer_id
+	if id<0 and document.selected_id>=0:id=document.sublayer_of(document.selected_id)
+	var record:=document.sublayer_record(id)
+	if record.is_empty():return {}
+	var resource:=record.resource.duplicate(false) as StageBackgroundSubLayer
+	resource.entries=[]
+	for item in document.items:
+		if item.sublayer==id:resource.entries.append(item.entry)
+	return {"id":id,"depth":record.depth,"resource":resource}
+
+func _draw_cycle_guides() -> void:
+	if not show_cycle_guides:return
+	var record:=cycle_record()
+	if not record.is_empty() and controller.environment==null:
+		var cycle:Dictionary=record.resource.cycle(record.depth)
+		var axis:Vector2=cycle.direction
+		for pair in [[cycle.start,"循环起点"],[cycle.end,"循环终点"]]:
+			var center:Vector2=axis*pair[0];var tangent:=axis.orthogonal()*2600
+			draw_line(pan+(center-tangent)*zoom,pan+(center+tangent)*zoom,Color("edcc85"),2,true)
+			draw_string(get_theme_default_font(),pan+center*zoom+Vector2(5,18),pair[1],HORIZONTAL_ALIGNMENT_LEFT,-1,13,Color("edcc85"))
+	if controller.environment!=null:
+		var at:=roundi(song_time*1000000)
+		for lane in controller.environment.lanes:
+			if not controller.environment_only_layer.is_empty() and controller.environment_only_layer!=lane.id:continue
+			for part in lane.transitions:
+				if part.static or at<part.ready_us:continue
+				var axis:Vector2=lane.direction
+				var center:Vector2=axis*(part.seam+axis.dot(controller.environment.displacement(lane,at,controller.environment_render_camera)))
+				var tangent:=axis.orthogonal()*2600
+				draw_line(pan+(center-tangent)*zoom,pan+(center+tangent)*zoom,Color("81d7b4"),2,true)
+				for sign_value in [-0.5,0.5]:
+					var edge:Vector2=center+axis*part.width*sign_value
+					draw_line(pan+(edge-tangent)*zoom,pan+(edge+tangent)*zoom,Color("81d7b4",0.4),1,true)
+
+func _begin_cycle(point:Vector2) -> bool:
+	if not show_cycle_guides or document.selected_sublayer_id<0:return false
+	var record:=cycle_record()
+	if record.is_empty():return false
+	var cycle:Dictionary=record.resource.cycle(record.depth)
+	var projection:float=cycle.direction.dot(to_design(point))
+	for key in ["start","end"]:
+		if absf(projection-cycle[key])*zoom<=7:
+			_before=document.snapshot();_cycle_id=record.id;_cycle_axis=cycle.direction;_gesture="cycle_"+key;return true
+	return false
+
+func _drag_cycle(point:Vector2) -> void:
+	if point.distance_to(_start)<6:return
+	var record:=document.sublayer_record(_cycle_id)
+	var cycle:Dictionary=cycle_record().resource.cycle(record.depth)
+	var value:=_cycle_axis.dot(to_design(point))
+	if snap_enabled and not Input.is_key_pressed(KEY_ALT):value=snappedf(value,grid_size)
+	record.resource.cycle_start=minf(value,cycle.end-1) if _gesture=="cycle_start" else cycle.start
+	record.resource.cycle_end=maxf(value,cycle.start+1) if _gesture=="cycle_end" else cycle.end
+	request_refresh();gesture_changed.emit()

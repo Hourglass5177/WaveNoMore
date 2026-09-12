@@ -25,10 +25,10 @@ var _runtime_body_material: ShaderMaterial
 var _body_material_source: ShaderMaterial
 var _body_distances := PackedFloat32Array()
 var _body_visual_time_sec: float = 0.0
-var _hold_edge_glow_enabled: bool = true
-var _hold_edge_glow_color: Color = Color.WHITE
 var _edge_head_glow: MeshInstance2D
 var _edge_body_glow: MeshInstance2D
+var _hold_start_sec: float = 0.0
+var _hold_duration_sec: float = 0.0
 
 @export_group("Hold Textures")
 ## 可选头部贴图，局部 +X 朝前；为空时保留程序化头部。
@@ -71,18 +71,52 @@ var _head_heading_controlled: bool = false
 @export_range(0.001, 0.033333, 0.000001) var integration_step_sec: float = 1.0 / 120.0
 
 
-func configure_edge_glow(enabled: bool, color: Color) -> void:
-	## Host 在每次创建或对象池复用时刷新完整 Hold 的常驻阵营边缘光。
-	_hold_edge_glow_enabled = enabled
-	_hold_edge_glow_color = color
+func configure_effect_style(style: NoteEffectStyle, side: int) -> void:
+	super(style, side)
 	_ensure_edge_glow_visuals()
-	_edge_head_glow.configure_style(color, true)
-	_edge_body_glow.configure_style(color, true)
-	# 常驻边缘层使用更宽、更明显的外扩；主体和判定白光保持原参数。
-	_edge_head_glow.set_light(3.0 if enabled else 0.0, 22.0)
-	_edge_body_glow.set_light(3.0 if enabled else 0.0, 22.0)
-	_update_body_material()
-	queue_redraw()
+	_edge_head_glow.configure_style(style.rim(side), true)
+	_edge_body_glow.configure_style(style.rim(side), true, style.halo(side))
+	_edge_head_glow.set_light(style.halo_strength, style.halo_width_px)
+	_edge_body_glow.set_light(style.halo_strength, style.halo_width_px)
+	material = tap_material if head_texture != null else null
+	_sync_effect_surface()
+
+func _sync_effect_surface() -> void:
+	super()
+	if _aura != null: _aura.visible = effect_style.enabled and head_texture != null and not missed and not _finished_effect
+	if _edge_glow_visual != null: _edge_glow_visual.visible = false
+	if _edge_head_glow != null: _edge_head_glow.visible = effect_style.enabled and head_texture == null and not missed and not _finished_effect
+	if _edge_body_glow != null: _edge_body_glow.visible = effect_style.enabled and not missed and not _finished_effect
+	if _runtime_body_material != null:
+		_runtime_body_material.set_shader_parameter(&"condition_light", glow_amount)
+		_runtime_body_material.set_shader_parameter(&"aura_amount", 0.0 if missed else 1.0)
+
+func effect_snapshot() -> Dictionary:
+	var size := Vector2(96, 96)
+	if head_texture != null: size = head_texture.get_size() * (96.0 / maxf(head_texture.get_width(), head_texture.get_height()))
+	return {"transform": global_transform * Transform2D(0.0, Vector2(1, -1), 0.0, Vector2.ZERO), "texture": head_texture, "size": size, "affinity": affinity}
+
+func play_hold_finished(at_sec: float) -> void:
+	if _finished_effect or missed: return
+	_glow_time = maxf(_glow_time, at_sec)
+	_finished_effect = true
+	_emit_effect(":finish", at_sec, &"hold", global_transform.x.normalized())
+	_set_glow_amount(0.0)
+	visible = false
+
+func emit_consumption(previous_progress: float, current_progress: float, at_sec: float) -> void:
+	## 每跨过固定消耗距离产生一枚细屑，相同进度与暂停不会重复发射。
+	var first := floori(previous_progress * body_length / effect_style.consume_spacing_px)
+	var last := floori(current_progress * body_length / effect_style.consume_spacing_px)
+	if _path_spine.is_empty(): return
+	for i: int in range(first + 1, last + 1):
+		var source := effect_snapshot()
+		var transform: Transform2D = source.transform
+		transform.origin = global_transform * self.transform.affine_inverse() * _path_spine[-1]
+		source.transform = transform
+		# 发射时间来自固定消耗阈值，不取发现阈值的渲染帧时间。
+		var time := _hold_start_sec + _hold_duration_sec * (float(i) * effect_style.consume_spacing_px / body_length)
+		_emit_effect(":consume:%d" % i, minf(time, at_sec), &"dust", -global_transform.x.normalized(), source)
 
 
 func prepare(view_model: Dictionary) -> void:
@@ -93,6 +127,8 @@ func prepare(view_model: Dictionary) -> void:
 	var start_us: int = int(view_model.get("start_us", view_model.get("start_time_us", 0)))
 	var end_us: int = int(view_model.get("end_us", view_model.get("end_time_us", start_us)))
 	var duration_us: int = int(view_model.get("duration_us", end_us - start_us))
+	_hold_start_sec = float(start_us) / 1000000.0
+	_hold_duration_sec = float(duration_us) / 1000000.0
 	body_length = clampf(260.0 + float(duration_us) / 1_000_000.0 * 105.0, 300.0, 700.0)
 	_stable_phase = float(absi(event_id.hash()) % 4096) / 4096.0 * TAU
 	_path_spine.clear()
@@ -165,7 +201,7 @@ func _draw() -> void:
 	var half_widths := PackedFloat32Array()
 	if _path_spine.size() >= 2:
 		_build_spine(spine, half_widths)
-		if _edge_body_glow != null and _hold_edge_glow_enabled:
+		if _edge_body_glow != null and _edge_body_glow.visible:
 			_edge_body_glow.body(spine, half_widths)
 		# 贴图身体由独立 CanvasItem 绘制，其 Shader 不会覆盖头部。
 		if body_texture == null:
@@ -177,14 +213,14 @@ func _draw() -> void:
 		var head_extent := Vector2(96.0, 96.0)
 		if source_size.x > 0.0 and source_size.y > 0.0:
 			head_extent = source_size * (96.0 / maxf(source_size.x, source_size.y))
-		if _edge_head_glow != null and _hold_edge_glow_enabled:
-			_edge_head_glow.scale = Vector2(1.0, -1.0)
-			_edge_head_glow.texture_shape(head_texture, Rect2(-head_extent * 0.5, head_extent))
+		if _aura != null and effect_style.enabled and not missed:
+			_aura.scale = Vector2(1.0, -1.0)
+			_aura.shape(head_texture, Rect2(-head_extent * 0.5, head_extent))
 		draw_set_transform(Vector2.ZERO, 0.0, Vector2(1.0, -1.0))
 		draw_texture_rect(head_texture, Rect2(-head_extent * 0.5, head_extent), false, Color(1.0, 1.0, 1.0, head_alpha))
 		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	else:
-		if _edge_head_glow != null and _hold_edge_glow_enabled:
+		if _edge_head_glow != null and _edge_head_glow.visible:
 			_edge_head_glow.scale = Vector2.ONE
 			_edge_head_glow.polygon(_head_polygon())
 		_draw_head(color, head_alpha)
@@ -196,13 +232,11 @@ func _ensure_edge_glow_visuals() -> void:
 		_edge_head_glow = SOFT_GLOW.new()
 		_edge_head_glow.name = "HeadEdgeGlow"
 		_edge_head_glow.show_behind_parent = true
-		_edge_head_glow.z_index = -1
 		add_child(_edge_head_glow)
 	if _edge_body_glow == null:
 		_edge_body_glow = SOFT_GLOW.new()
 		_edge_body_glow.name = "BodyEdgeGlow"
 		_edge_body_glow.show_behind_parent = true
-		_edge_body_glow.z_index = -2
 		add_child(_edge_body_glow)
 
 
@@ -260,6 +294,7 @@ func _ensure_body_renderer() -> void:
 			_runtime_body_material = ShaderMaterial.new()
 		if _runtime_body_material.shader == null:
 			_runtime_body_material.shader = DEFAULT_BODY_SHADER
+		effect_style.apply_to(_runtime_body_material, affinity)
 		_body_renderer.material = _runtime_body_material
 	if _runtime_body_material.shader == DEFAULT_BODY_SHADER:
 		if not RenderingServer.frame_pre_draw.is_connected(_sync_body_self_modulate):
@@ -358,7 +393,7 @@ func _hold_color() -> Color:
 	if missed:
 		return Color("575b66")
 	var color: Color = _affinity_color()
-	return color.lightened(0.22) if judgment_grade == GameplayTypes.JudgmentGrade.PERFECT else color
+	return color.lerp(effect_style.white_color, glow_amount * effect_style.white_strength)
 
 
 func _spine_normal(spine: PackedVector2Array, index: int) -> Vector2:

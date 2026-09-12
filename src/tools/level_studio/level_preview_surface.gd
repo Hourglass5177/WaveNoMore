@@ -20,6 +20,8 @@ var pan := Vector2.ZERO
 var _gesture := {}
 var _candidate: Array = []
 var _display_rect := Rect2()
+var environment: StageEnvironmentSequence
+var show_environment_seams := false
 
 func _ready() -> void:
 	clip_contents = true; focus_mode = Control.FOCUS_ALL
@@ -50,6 +52,21 @@ func _draw() -> void:
 		for x in range(0, 1921, 120): draw_line(to_view(Vector2(x,0)), to_view(Vector2(x,1080)), Color(0.7,0.8,0.9,0.08))
 		for y in range(0, 1081, 120): draw_line(to_view(Vector2(0,y)), to_view(Vector2(1920,y)), Color(0.7,0.8,0.9,0.08))
 		draw_line(to_view(Vector2(0,1080)), to_view(Vector2(1920,0)), Color(0.7,0.8,0.9,0.25))
+	if show_environment_seams and environment!=null and is_instance_valid(player):
+		var at:=environment.absolute_time(player.current_section,player.current_us)
+		for lane in environment.lanes:
+			var solo:=player.environment_controller.environment_only_layer
+			if not solo.is_empty() and solo!=lane.id:continue
+			for part in lane.transitions:
+				if part.static or at<part.ready_us:continue
+				var axis:Vector2=lane.direction
+				var camera:=player.environment_controller.environment_render_camera
+				var center:Vector2=axis*(float(part.seam)+axis.dot(environment.displacement(lane,at,camera)))
+				var tangent:=axis.orthogonal()*2600
+				draw_line(to_view(center-tangent),to_view(center+tangent),Color("f4dba0"),1.5,true)
+				for sign_value in [-1,1]:
+					var edge:Vector2=center+axis*part.width*0.5*sign_value
+					draw_line(to_view(edge-tangent),to_view(edge+tangent),Color(1,0.85,0.6,0.4),1,true)
 	if not is_instance_valid(player) or document == null: return
 	for id in selected:
 		var object_data := document.find("objects", id)

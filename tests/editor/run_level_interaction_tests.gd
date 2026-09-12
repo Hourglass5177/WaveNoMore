@@ -48,7 +48,7 @@ func _run() -> void:
 	workspace.document.set_key(id,"opacity","song",1000000,0.2);workspace.document.set_key(id,"opacity","song",2000000,0.9);await settle()
 	var track: Dictionary=workspace.document.entries("tracks").filter(func(item):return item.object_id==id)[0]
 	var key1: String=track.keys[0].id;var key2: String=track.keys[1].id
-	var p1:=Vector2(t.x_at(1000000),LevelTimeline.RULER+LevelTimeline.ROW+12)
+	var p1:=Vector2(t.x_at(1000000),LevelTimeline.RULER+LevelTimeline.ROW*2+12)
 	var p2:=Vector2(t.x_at(2000000),p1.y)
 	click(p1);click(p2,true);await settle()
 	check(workspace.selected_items.size()==2 and t.selected.size()==2,"Shift 多选由工作区统一保留")
@@ -69,9 +69,9 @@ func _run() -> void:
 	check(workspace.document.history.size()==before_history+1,"一次拖动一次撤销")
 	workspace.document.undo();await settle()
 	check(workspace.document.find("tracks",track.id).keys[0].time_us==1000000,"撤销恢复拖动前位置")
-	click(Vector2(12,LevelTimeline.RULER+12));await settle()
+	click(Vector2(12,LevelTimeline.RULER+LevelTimeline.ROW+12));await settle()
 	check(t.folded.get(id,false),"独立折叠箭头生效")
-	click(Vector2(t.x_at(1000000),LevelTimeline.RULER+12));await settle()
+	click(Vector2(t.x_at(1000000),LevelTimeline.RULER+LevelTimeline.ROW+12));await settle()
 	check(key1 in workspace.selected_items,"折叠行仍能命中事件")
 	workspace.select_objects(PackedStringArray([id]));await settle()
 	var spin: SpinBox
