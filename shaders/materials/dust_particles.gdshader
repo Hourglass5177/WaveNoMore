@@ -1,5 +1,5 @@
 shader_type canvas_item;
-render_mode unshaded, blend_add;
+render_mode unshaded, blend_mix;
 
 uniform vec4 dust_color : source_color = vec4(1.0, 0.86, 0.62, 1.0);
 uniform float alpha_strength : hint_range(0.0, 2.0, 0.01) = 0.72;
@@ -37,7 +37,7 @@ void fragment() {
         float core_alpha = clamp(source_alpha * alpha_strength * twinkle, 0.0, 1.0);
         // 逐纹素覆盖整个圆盘，避免稀疏偏移采样产生重复亮点。
         float radius = clamp(halo_radius_px, 0.0, 32.0);
-        float halo_sample = 0.0;
+        float halo_alpha = 0.0;
         int bound = int(ceil(radius));
         for (int y = -bound; y <= bound; y++) {
             for (int x = -bound; x <= bound; x++) {
@@ -45,17 +45,19 @@ void fragment() {
                 float radius_squared = dot(offset, offset) / max(radius * radius, 0.0001);
                 if (radius_squared < 1.0) {
                     float weight = exp(-4.5 * radius_squared) * (1.0 - smoothstep(0.75, 1.0, radius_squared));
-                    halo_sample += texture(dust_texture, UV + offset * TEXTURE_PIXEL_SIZE).a * weight;
+                    float sample_alpha = clamp(texture(dust_texture, UV + offset * TEXTURE_PIXEL_SIZE).a * weight, 0.0, 1.0);
+                    halo_alpha += sample_alpha;
                 }
             }
         }
-        float halo_alpha = halo_sample * halo_strength * twinkle;
+        halo_alpha = clamp(halo_alpha * halo_strength * twinkle, 0.0, 1.0);
         if (radius <= 0.0) { halo_alpha = 0.0; }
         float core = core_alpha * dust_color.a;
         float halo = halo_alpha * halo_color.a;
-        float alpha = clamp(core + halo, 0.0, 1.0);
-        vec3 light = dust_color.rgb * core + halo_color.rgb * halo;
-        // blend_add 会再乘 alpha；这里还原直通 RGB，避免光晕被重复衰减。
-        COLOR = vec4(light / max(alpha, 0.00001), alpha);
+        // 核心覆盖光晕，只叠加覆盖透明度，不重复叠加相交区域的亮度。
+        float visible_halo = halo * (1.0 - core);
+        float alpha = core + visible_halo;
+        vec3 color = (dust_color.rgb * core + halo_color.rgb * visible_halo) / max(alpha, 0.00001);
+        COLOR = vec4(color, alpha);
     }
 }

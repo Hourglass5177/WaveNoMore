@@ -130,14 +130,14 @@ entries = Array[ExtResource("2_entry")]([SubResource("Resource_bcqkw")])
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_x7vhg"]
 shader = ExtResource("10_fyfw2")
-shader_parameter/dust_color = Color(0.24705882, 0.1764706, 0.25490198, 1)
+shader_parameter/dust_color = Color(1, 1, 1, 1)
 shader_parameter/alpha_strength = 0.3999999910592
 shader_parameter/twinkle_amount = 0.999999977648
 shader_parameter/frequency_min_hz = 0.16
 shader_parameter/frequency_max_hz = 0.48
 shader_parameter/halo_radius_px = 5.0
 shader_parameter/halo_strength = 0.55
-shader_parameter/halo_color = Color(0.24705882, 0.1764706, 0.25490198, 1)
+shader_parameter/halo_color = Color(1, 1, 1, 1)
 shader_parameter/dust_texture = ExtResource("10_hwrvv")
 shader_parameter/random_grid = Vector2(80, 45)
 shader_parameter/is_live = true
@@ -283,10 +283,39 @@ display_name = "death particle2"
 velocity = Vector2(-500, 0)
 entries = Array[ExtResource("2_entry")]([SubResource("Resource_cy1a1")])
 
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_tb80m"]
+shader = ExtResource("10_fyfw2")
+shader_parameter/dust_color = Color(1, 1, 1, 1)
+shader_parameter/alpha_strength = 0.1999999955296
+shader_parameter/twinkle_amount = 0.999999977648
+shader_parameter/frequency_min_hz = 0.16
+shader_parameter/frequency_max_hz = 0.48
+shader_parameter/halo_radius_px = 2.5
+shader_parameter/halo_strength = 0.55
+shader_parameter/halo_color = Color(1, 1, 1, 1)
+shader_parameter/dust_texture = ExtResource("10_hwrvv")
+shader_parameter/random_grid = Vector2(80, 45)
+shader_parameter/is_live = true
+
 [sub_resource type="Resource" id="Resource_tb80m"]
+script = ExtResource("2_entry")
+texture = ExtResource("10_hwrvv")
+material = SubResource("ShaderMaterial_tb80m")
+infinite = true
+random_flip = true
+uniform_scale = 0.7631043957984558
+
+[sub_resource type="Resource" id="Resource_fncds"]
+script = ExtResource("sublayer_schema")
+sublayer_id = "sublayer_262"
+display_name = "live particles2"
+velocity = Vector2(500, 0)
+entries = Array[ExtResource("2_entry")]([SubResource("Resource_tb80m")])
+
+[sub_resource type="Resource" id="Resource_7cnex"]
 script = ExtResource("layer_schema")
 depth = 3
-sublayers = Array[ExtResource("sublayer_schema")]([SubResource("Resource_onwqa")])
+sublayers = Array[ExtResource("sublayer_schema")]([SubResource("Resource_onwqa"), SubResource("Resource_fncds")])
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_i36ux"]
 shader = ExtResource("10_fyfw2")
@@ -302,7 +331,7 @@ shader_parameter/dust_texture = ExtResource("17_poo7a")
 shader_parameter/random_grid = Vector2(80, 45)
 shader_parameter/is_live = false
 
-[sub_resource type="Resource" id="Resource_fncds"]
+[sub_resource type="Resource" id="Resource_4ov75"]
 script = ExtResource("2_entry")
 texture = ExtResource("10_hwrvv")
 material = SubResource("ShaderMaterial_i36ux")
@@ -310,17 +339,46 @@ infinite = true
 random_flip = true
 uniform_scale = 1.026194169869533
 
-[sub_resource type="Resource" id="Resource_7cnex"]
+[sub_resource type="Resource" id="Resource_payyd"]
 script = ExtResource("sublayer_schema")
 display_name = "death particles3"
 velocity = Vector2(-500, 0)
-entries = Array[ExtResource("2_entry")]([SubResource("Resource_fncds")])
+entries = Array[ExtResource("2_entry")]([SubResource("Resource_4ov75")])
 
-[sub_resource type="Resource" id="Resource_4ov75"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_27xw2"]
+shader = ExtResource("10_fyfw2")
+shader_parameter/dust_color = Color(1, 1, 1, 1)
+shader_parameter/alpha_strength = 0.05999999865888
+shader_parameter/twinkle_amount = 1.0
+shader_parameter/frequency_min_hz = 0.16
+shader_parameter/frequency_max_hz = 0.48
+shader_parameter/halo_radius_px = 1.0
+shader_parameter/halo_strength = 0.55
+shader_parameter/halo_color = Color(1, 1, 1, 1)
+shader_parameter/dust_texture = ExtResource("17_poo7a")
+shader_parameter/random_grid = Vector2(80, 45)
+shader_parameter/is_live = true
+
+[sub_resource type="Resource" id="Resource_qkeip"]
+script = ExtResource("2_entry")
+texture = ExtResource("10_hwrvv")
+material = SubResource("ShaderMaterial_27xw2")
+infinite = true
+random_flip = true
+uniform_scale = 1.026194169869533
+
+[sub_resource type="Resource" id="Resource_7ice6"]
+script = ExtResource("sublayer_schema")
+sublayer_id = "sublayer_292"
+display_name = "live particles3"
+velocity = Vector2(500, 0)
+entries = Array[ExtResource("2_entry")]([SubResource("Resource_qkeip")])
+
+[sub_resource type="Resource" id="Resource_svajl"]
 script = ExtResource("layer_schema")
 depth = 17
-sublayers = Array[ExtResource("sublayer_schema")]([SubResource("Resource_7cnex")])
+sublayers = Array[ExtResource("sublayer_schema")]([SubResource("Resource_payyd"), SubResource("Resource_7ice6")])
 
 [resource]
 script = ExtResource("1_background")
-layers = Array[ExtResource("layer_schema")]([SubResource("Resource_ixtyl"), SubResource("Resource_fa32h"), SubResource("Resource_r30tr"), SubResource("Resource_7ue74"), SubResource("Resource_0ssp7"), SubResource("Resource_lldys"), SubResource("Resource_tb80m"), SubResource("Resource_4ov75")])
+layers = Array[ExtResource("layer_schema")]([SubResource("Resource_ixtyl"), SubResource("Resource_fa32h"), SubResource("Resource_r30tr"), SubResource("Resource_7ue74"), SubResource("Resource_0ssp7"), SubResource("Resource_lldys"), SubResource("Resource_7cnex"), SubResource("Resource_svajl")])
