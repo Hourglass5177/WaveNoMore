@@ -575,7 +575,7 @@ func _test_presentation_timing_cues() -> void:
 	)
 	var expected_arc_length_px: float = expected_radius_px * expected_sweep_rad
 	_expect_near(float(life_slider.tuning_rail_width), 104.0, 0.001, "tuning uses the wide osu-style rail")
-	_expect_near(float(life_slider.tuning_outline_width), 8.0, 0.001, "tuning keeps one restrained outer outline")
+	_expect_near(float(life_slider.tuning_outline_width), 3.0, 0.001, "tuning keeps one fine outer outline")
 	_expect_near(float(life_state["slider_chord_px"]), expected_chord_px, 0.001, "Hz span fixes the visible endpoint distance")
 	_expect_near(float(life_state["slider_length_px"]), expected_arc_length_px, 0.01, "the equivalent circle derives the real rail length from its chord")
 	_expect_near(float(life_state["curve_length_px"]), expected_arc_length_px, 0.08, "the rendered rail follows the shared equivalent circle")

@@ -76,6 +76,9 @@ var _life_note_slot: Node2D
 var _death_note_slot: Node2D
 # 调频和疾振区域提示的显示容器。
 var _field_slot: Node2D
+## 判定提示在折射后绘制；音符与碎片仍留在世界层。
+var _judgment_canvas: CanvasLayer
+var _timing_slot: Node2D
 # 暂未使用实例的停放容器；对象回收后移到这里并隐藏，而非销毁。
 var _pool_root: Node2D
 # 活动表按事件 ID 保存节点、类型和谱面数据；对象池按素材类型保存可复用节点。
@@ -103,10 +106,25 @@ func _ready() -> void:
 	_death_note_slot = get_node(death_note_slot_path) as Node2D
 	_field_slot = get_node(field_slot_path) as Node2D
 	_pool_root = get_node(pool_root_path) as Node2D
+	_judgment_canvas = CanvasLayer.new()
+	_judgment_canvas.name = "JudgmentCanvas"
+	_judgment_canvas.layer = 5
+	add_child(_judgment_canvas)
+	_judgment_canvas.transform = get_global_transform_with_canvas()
+	_field_slot.reparent(_judgment_canvas, false)
+	_timing_slot = Node2D.new()
+	_timing_slot.name = "TimingRings"
+	_judgment_canvas.add_child(_timing_slot)
+	set_notify_transform(true)
 	_effects = NoteFragmentHost.new()
 	_effects.name = "NoteEffects"
 	add_child(_effects)
 
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_TRANSFORM_CHANGED and is_node_ready():
+		_judgment_canvas.transform = get_global_transform_with_canvas()
+	elif what == NOTIFICATION_VISIBILITY_CHANGED and is_node_ready():
+		_judgment_canvas.visible = is_visible_in_tree()
 
 func bind_scheduler(scheduler: ChartScheduler) -> void:
 	clear()
@@ -236,7 +254,7 @@ func _spawn_visual_now(kind: StringName, event_id: String, event_data: Dictionar
 		visual.effect_requested.connect(_on_note_effect)
 	var parent_slot: Node2D = _slot_for(kind, event_data)
 	if visual.get_parent() != parent_slot:
-		visual.reparent(parent_slot)
+		visual.reparent(parent_slot, false)
 	visual.modulate = Color.WHITE
 	visual.z_index = 0
 	visual.visible = true
@@ -251,8 +269,8 @@ func _spawn_visual_now(kind: StringName, event_id: String, event_data: Dictionar
 	var timing_ring: Node2D
 	if kind not in [ChartScheduler.KIND_TUNING, ChartScheduler.KIND_RAPID]:
 		timing_ring = _acquire_timing_ring(_timing_ring_scene())
-		if timing_ring.get_parent() != parent_slot:
-			timing_ring.reparent(parent_slot)
+		if timing_ring.get_parent() != _timing_slot:
+			timing_ring.reparent(_timing_slot, false)
 		timing_ring.visible = true
 		var timing_view_model: Dictionary = event_data.duplicate(true)
 		timing_view_model["_timing_kind"] = kind
@@ -797,7 +815,7 @@ func _release_visual(event_id: String) -> void:
 	visual.modulate = Color.WHITE
 	visual.z_index = 0
 	if visual.get_parent() != _pool_root:
-		visual.reparent(_pool_root)
+		visual.reparent(_pool_root, false)
 	visual.visible = false
 	var pool: Array = _pools.get(pool_key, [])
 	pool.append(visual)
@@ -812,7 +830,7 @@ func _release_visual(event_id: String) -> void:
 			timing_ring.scale = Vector2.ONE
 			timing_ring.modulate = Color.WHITE
 		if timing_ring.get_parent() != _pool_root:
-			timing_ring.reparent(_pool_root)
+			timing_ring.reparent(_pool_root, false)
 		timing_ring.visible = false
 		var ring_pool: Array = _pools.get(TIMING_RING_POOL_KEY, [])
 		ring_pool.append(timing_ring)

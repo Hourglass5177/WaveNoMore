@@ -25,6 +25,10 @@ New-Item -ItemType Directory -Force ../Charts | Out-Null
 
 ## 历史记录
 
+2026-09-13 滑条填充与柔光微调：填充不透明度改为 0.52／贴合 0.62，轮廓与填充光强改为 1.0／0.8。重新构建三个程序并同步两个编辑器的配套游戏及 DLL；工程通过 41 项图形检查，三个导出包各通过 40 项滑条检查，三个 EXE 启动正常，教程2 normal 试玩返回 `ready`。日志位于 `builds/tuning-strength-release/`。更新时临时保留了正在运行的写谱器旧 EXE；用户关闭后已清理，并确认正常入口与最新构建一致。版本保持 0.1.4.0，未更新发行 ZIP。
+
+2026-09-13 调频滑条与局部折射更新：重新导出写谱器、关卡编辑器和 `builds/windows/minghe-mvp.exe`，本体及 DLL 同步到 Charts、Levels 的 `game/`。包含半透明阵营填充、轮廓白光、起点圆帽预填及更集中的声波折射。三个导出包各通过 40 项滑条与 36 项声波图形检查；三个 EXE 的 Compatibility 启动均正常退出，配套游戏加载教程2 normal 难度返回 `ready`。导入、导出及最终运行日志未发现错误或警告，记录在 `builds/tuning-release/`。版本沿用 0.1.4.0，未更新发行 ZIP。
+
 2026-09-13 生死换色与声波折射更新：按当前工作区重新导出写谱器、关卡编辑器及 `builds/windows/minghe-mvp.exe`，本体和 DLL 同步到 Charts、Levels 的 `game/`。三个导出包各通过 31 项背景图形回归与 22 项声波折射像素检查；三个 EXE 的 Compatibility 启动均正常退出，写谱器配套游戏加载教程2 normal 难度返回 `ready`。导入、导出和启动日志无错误或警告，位于 `builds/note-wave-release/`。版本沿用 0.1.4.0，未更新发行 ZIP。
 
 2026-09-13 灵均静息与受击更新：正式角色引用增强呼吸、静息受击、攻击受击及死亡灰烬资源，重新导出 `../Charts/minghe-chart-studio.exe`、`../Levels/minghe-level-studio.exe` 和 `builds/windows/minghe-mvp.exe`，游戏本体及 DLL 同步到两个编辑器的 `game/`。三个导出包均在 Compatibility 下通过 30 项角色姿态、受击、死亡与正式场景接入检查；三个 EXE 图形启动正常退出，配套游戏加载教程2 normal 难度返回 `ready`。导入、导出和运行日志无错误或警告，记录位于 `builds/lingjun-states-release/`。版本沿用 0.1.4.0，本次未更新发行 ZIP。

@@ -45,11 +45,11 @@
 
 ## 声波空间扭曲
 
-`content/presentation/wave_distortion_style.tres` 是全局 `WaveDistortionStyle`：开关、单波位移 2 px、波带半宽 24 px、总位移上限 3 px、波源淡入距离 48 px、远端强度 0.35、画布边缘淡出 24 px。均使用设计画布像素，随窗口和写谱器 SubViewport 整体缩放。
+`content/presentation/wave_distortion_style.tres` 是全局 `WaveDistortionStyle`：开关、单波位移 12 px、主波带半宽 36 px、短尾长度 32 px、短尾相对强度 0.025、总位移上限 14 px、波源淡入距离 120 px、远端强度 0.70、画布边缘淡出 64 px。均使用设计画布像素，随窗口和写谱器 SubViewport 整体缩放。
 
-`TuningInterferenceVisual.render_fronts_changed` 发布已筛选的两侧渲染波前，每侧至多 16 条。`WaveDistortionVisual` 直接消费同一批发射时间、波源、波速和视觉时间，不保存第二套发波历史、不触发 Ghost 查询。波带内部以连续压缩—回弹产生折射，带外位移严格为零；交汇只限制位移，无额外闪光或接触圆环扭曲。
+`TuningInterferenceVisual.render_fronts_changed` 发布已筛选的两侧渲染波前，每侧至多 16 条。`WaveDistortionVisual` 直接消费同一批发射时间、波源、波速和视觉时间，不保存第二套发波历史、不触发 Ghost 查询。每道声波的主峰位于真实波前；主波带前后各 36 px，后缘再接 32 px 的一次微弱反向短尾。按默认波速，明显主波带经过一个位置约 30 ms，轻微短尾约 13 ms。主波带与短尾不重叠，使用三次包络，连接点和外边界的位移、一阶及二阶导数均为零；波源附近连续淡入，交汇以平滑饱和限制位移。单波参数表示饱和前幅度；实际位移还受传播距离与画布边缘衰减影响。
 
-玩法绘制完成后，CanvasLayer 3 使用一次 `BackBufferCopy` 和一次屏幕颜色取样。教程面板在第 4 层，HUD 在第 10 层，因此文字、计分、血条及外部编辑器界面不被扭曲。没有可见波前或关闭效果时，同时停用复制和绘制。背景、钟、声波、Tuning、Ghost 自身色板保持原配置。
+玩法绘制完成后，CanvasLayer 3 使用一次 `BackBufferCopy` 和一次屏幕颜色取样。中央判定框、时机环与调频操作界面在第 5 层，教程面板在第 6 层，HUD 在第 10 层。这些提示与外部编辑器界面保持稳定，背景、角色、Tap/Hold 及碎片一起形变。独立判定画布跟随正式画布变换，节点进出对象池保留设计坐标，避免缩放叠加。没有可见波前或关闭效果时，同时停用复制和绘制。背景、钟、声波、Tuning、Ghost 自身色板保持原配置。
 
 每次裂解使用一个可复用网格节点，网格模板缓存后不逐帧重建。片中心、片编号和类型存入顶点数据，位移、旋转、断面亮度和透明度由 shader 根据绝对事件年龄求值。没有逐碎片节点、运行时大半径模糊或逐音符 SubViewport；初始化阶段只借用现有一次性小视口预热材质。
 
@@ -68,9 +68,11 @@ ArtLab 的 `note_zhu`、`note_xuan`、`note_hold` 条目接入 `note_effect_prev
 - `tests/editor/run_preview_frame_tests.gd`：定位纹理冻结、取消、后台休眠、重建结果一致性。
 - `tests/visual/measure_note_effect_density.gd`：固定密集负载交替关闭／开启特效。
 - `tests/visual/measure_note_effect_comparison.gd`：真实谱面同进程交替采样；默认使用 `../Charts/charts/test/song.json`。`-- --phases=2` 可运行一组关闭／开启。
-- `tests/visual/run_wave_distortion_tests.gd`：实际像素检查有限波带、HUD、留边、缩放、暂停与恢复。
-- `tests/visual/measure_wave_distortion.gd`：实际 Ghost 谱段交替开关折射；`-- --fixed` 固定正式画面并测试 16＋16 条波前，记录 GPU 时间；`-- --capture` 输出 60 fps 连续帧。
+- `tests/visual/run_wave_distortion_tests.gd`：实际像素检查波前主峰、反向短尾、连续发波间隙、叠加上限、HUD、留边、缩放、暂停与恢复。
+- `tests/visual/measure_wave_distortion.gd`：实际 Ghost 谱段交替开关折射；`-- --fixed` 固定正式画面并测试 16＋16 条波前，记录 GPU 时间；`-- --capture` 输出 60 fps 连续帧，每次冻结同一已提交姿态再切换折射开关，分别保存开启／关闭对照。局部波前版输出位于 `builds/visual-review/wave-distortion-focus/`。
 
 截图与原始测量输出位于 `builds/visual-review/note-effects/`，本轮不导出应用。
 
 换色、眼睛与折射结果见 [验证记录](note-wave-effects-validation.md)。早期光效结果保留在 [历史验证记录](note-effects-validation.md)。
+
+调频滑条的半透明配色、起点预填与骨白／阵营柔光见 [调频滑条表现](tuning-visual-style.md)。

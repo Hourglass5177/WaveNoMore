@@ -1,7 +1,7 @@
 extends SceneTree
 
 ## 正式预览路径，真实谱面的 Ghost 段；交替开关时只改变折射。
-const OUTPUT := "res://builds/visual-review/wave-distortion"
+const OUTPUT := "res://builds/visual-review/wave-distortion-focus"
 var capture := false
 var fixed := false
 func _initialize() -> void: run.call_deferred()
@@ -15,6 +15,7 @@ func run() -> void:
 	capture = "--capture" in OS.get_cmdline_user_args()
 	fixed = "--fixed" in OS.get_cmdline_user_args()
 	DirAccess.make_dir_recursive_absolute(OUTPUT + "/frames")
+	DirAccess.make_dir_recursive_absolute(OUTPUT + "/frames-off")
 	root.size = Vector2i(1920, 1080)
 	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
 	Engine.max_fps = 0
@@ -62,8 +63,17 @@ func run() -> void:
 				saw_front = true; first_frame = frame
 			if first_frame >= 0 and frame >= first_frame and frame <= first_frame + 3: first_front_frames.append(elapsed)
 			if capture:
+				# 同一已提交姿态切换折射，排除两次独立重演的其他动画差异。
+				var previous_mode: int = preview.stage_root.process_mode
+				preview.stage_root.process_mode = Node.PROCESS_MODE_DISABLED
 				await RenderingServer.frame_post_draw
 				viewport.get_texture().get_image().save_jpg(OUTPUT + "/frames/%04d.jpg" % frame, 0.97)
+				warp.style.enabled = false; warp.refresh_style()
+				await process_frame
+				await RenderingServer.frame_post_draw
+				viewport.get_texture().get_image().save_jpg(OUTPUT + "/frames-off/%04d.jpg" % frame, 0.97)
+				warp.style.enabled = true; warp.refresh_style()
+				preview.stage_root.process_mode = previous_mode
 		phases.append({"enabled": warp.style.enabled, "frame": stats(frames), "gpu": stats(gpu), "work": stats(work), "first_front_frames_ms": first_front_frames, "max_prepared_ghosts": max_ghosts})
 		print("WAVE PERFORMANCE ", JSON.stringify(phases[-1]))
 	if not capture:

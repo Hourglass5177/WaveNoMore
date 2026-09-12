@@ -38,6 +38,7 @@ var stage_definition: StageDefinition
 @onready var parallax_controller: ParallaxController = $ParallaxController
 @onready var _background_base: CanvasLayer = $BackgroundBase
 @onready var _cue_canvas: CanvasLayer = $CueCanvas
+@onready var _judgment_canvas: CanvasLayer = $CueCanvas/GameplayCueLayer
 @onready var _distortion: WaveDistortionVisual = $WaveDistortion
 @onready var _tutorial_canvas: CanvasLayer = $CueCanvas/ShowCueHost/TutorialCanvas
 
@@ -314,6 +315,7 @@ func _sync_canvas_layers() -> void:
 	var pose := get_global_transform_with_canvas()
 	_background_base.transform = pose
 	_cue_canvas.transform = pose
+	_judgment_canvas.transform = pose
 	_distortion.sync_transform(pose)
 	_tutorial_canvas.transform = pose
 

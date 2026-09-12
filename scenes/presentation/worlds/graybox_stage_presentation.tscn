@@ -97,8 +97,8 @@ layer = 2
 layer = 3
 script = ExtResource("11_distortion")
 
-[node name="GameplayCueLayer" type="Node2D" parent="CueCanvas"]
-z_index = 10
+[node name="GameplayCueLayer" type="CanvasLayer" parent="CueCanvas"]
+layer = 5
 
 [node name="TwinGateCueVisual" type="Node2D" parent="CueCanvas/GameplayCueLayer"]
 script = ExtResource("6_gate")
@@ -122,7 +122,7 @@ tutorial_panel_path = NodePath("TutorialCanvas/TutorialPanel")
 tutorial_label_path = NodePath("TutorialCanvas/TutorialPanel/Label")
 
 [node name="TutorialCanvas" type="CanvasLayer" parent="CueCanvas/ShowCueHost"]
-layer = 4
+layer = 6
 
 [node name="TutorialPanel" type="PanelContainer" parent="CueCanvas/ShowCueHost/TutorialCanvas"]
 offset_left = 560.0
