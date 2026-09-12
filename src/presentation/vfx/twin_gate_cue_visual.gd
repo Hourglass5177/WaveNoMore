@@ -1,6 +1,18 @@
 class_name TwinGateCueVisual
 extends Node2D
 
+const CENTER_CIRCLE: Texture2D = preload("res://assets/image/hud/circle.png")
+const CENTER_CIRCLE_SHADER: Shader = preload("res://shaders/materials/center_circle.gdshader")
+const CENTER_CIRCLE_DISPLAY_REFERENCE_PX: float = 328.0
+# 指数响应率（s⁻¹），约 0.1 秒完成 97% 的变化。
+const CIRCLE_RESPONSE: float = 35.0
+var _center_circle: Sprite2D
+var _circle_material: ShaderMaterial
+var _edge_distances := Vector2.ONE
+var _edge_targets := Vector2.ONE
+var _circle_moves := Vector2.ZERO
+var _move_targets := Vector2.ZERO
+
 ## 生死两路音符共用的中心视觉锚点。类名沿用旧版以兼容场景与主题资源；
 ## 判定、计分及波与音符的接触仍由玩法逻辑层负责。
 
@@ -86,6 +98,14 @@ var _path_profile_keys: Dictionary[int, Array] = {}
 
 
 func _ready() -> void:
+	_center_circle = Sprite2D.new()
+	_center_circle.name = "CenterCircle"
+	_center_circle.texture = CENTER_CIRCLE
+	_circle_material = ShaderMaterial.new()
+	_circle_material.shader = CENTER_CIRCLE_SHADER
+	_center_circle.material = _circle_material
+	add_child(_center_circle)
+	_sync_circle_material()
 	_life_gate_anchor = get_node_or_null(life_gate_anchor_path) as Marker2D
 	_death_gate_anchor = get_node_or_null(death_gate_anchor_path) as Marker2D
 	_sync_markers()
@@ -143,6 +163,11 @@ func bind(clock: SongClock, session: StageSession) -> void:
 
 
 func clear() -> void:
+	_edge_distances = Vector2.ONE
+	_edge_targets = Vector2.ONE
+	_circle_moves = Vector2.ZERO
+	_move_targets = Vector2.ZERO
+	_sync_circle_material()
 	_launch_events.clear()
 	_contact_events.clear()
 	_grade_events.clear()
@@ -151,6 +176,32 @@ func clear() -> void:
 	_tuning_active = false
 	modulate = Color.WHITE
 	queue_redraw()
+
+
+## 生钟控制右侧、死钟控制左侧；重复快照只更新目标，不重启过渡。
+func set_bell_held(life_held: bool, death_held: bool) -> void:
+	_edge_targets = Vector2(0.7 if death_held else 1.0, 0.7 if life_held else 1.0)
+	_move_targets = Vector2(0 if life_held else 0.0, 0 if death_held else 0.0)
+
+
+## 由视觉时钟推进，暂停冻结；松开或快速反向时从当前值继续。
+func _advance_circle(delta_sec: float) -> void:
+	_edge_distances = _edge_distances.lerp(_edge_targets, 1.0 - exp(-CIRCLE_RESPONSE * maxf(delta_sec, 0.0)))
+	_circle_moves = _circle_moves.lerp(_move_targets, 1.0 - exp(-CIRCLE_RESPONSE * maxf(delta_sec, 0.0)))
+	for axis in 2:
+		if absf(_edge_distances[axis] - _edge_targets[axis]) < 0.0001:
+			_edge_distances[axis] = _edge_targets[axis]
+		if absf(_circle_moves[axis] - _move_targets[axis]) < 0.0001:
+			_circle_moves[axis] = _move_targets[axis]
+	_sync_circle_material()
+
+
+func _sync_circle_material() -> void:
+	if _circle_material == null: return
+	_circle_material.set_shader_parameter("left_edge_distance", _edge_distances.x)
+	_circle_material.set_shader_parameter("right_edge_distance", _edge_distances.y)
+	_circle_material.set_shader_parameter("live_move", _circle_moves.x)
+	_circle_material.set_shader_parameter("death_move", _circle_moves.y)
 
 
 func set_tuning_active(active: bool) -> void:
@@ -187,6 +238,7 @@ func _on_clock_sample(sample: ClockSample) -> void:
 	if sample.visual_time_sec + 0.000001 < _visual_time_sec:
 		# 向后跳转时清掉旧的短暂特效，避免工具预览残留跳转前的画面。
 		clear()
+	_advance_circle(sample.visual_time_sec - _visual_time_sec)
 	_visual_time_sec = sample.visual_time_sec
 	_prune_transients()
 	queue_redraw()
@@ -271,20 +323,7 @@ func _draw_route_scaffold() -> void:
 
 
 func _draw_shared_gate(center: Vector2) -> void:
-	draw_circle(center, gate_radius + 6.0, Color(ink_color, 0.30))
-	draw_arc(center, gate_radius + 6.0, 0.0, TAU, 64, Color(bone_color, 0.20), 2.0, true)
-	# 两段半环在同一中心相接，但生、死按键职责仍然分开。
-	draw_arc(center, gate_radius, -PI * 0.75, PI * 0.25, 40, Color(life_color, 0.72), 6.0, true)
-	draw_arc(center, gate_radius, PI * 0.25, PI * 1.25, 40, Color(death_color, 0.78), 6.0, true)
-	draw_arc(center, gate_radius - 10.0, 0.0, TAU, 64, Color(bone_color, 0.22), 2.0, true)
-	var split_axis := Vector2(1.0, -1.0).normalized()
-	var split_normal := Vector2(-split_axis.y, split_axis.x)
-	for side: float in [-1.0, 1.0]:
-		var notch_center: Vector2 = center + split_axis * gate_radius * side
-		draw_line(notch_center - split_normal * 9.0, notch_center + split_normal * 9.0, Color(bone_color, 0.72), 3.0, true)
-	draw_circle(center + Vector2(10.0, -10.0), 7.0, Color(life_color.lightened(0.30), 0.90))
-	draw_circle(center + Vector2(-10.0, 10.0), 7.0, Color(death_color.lightened(0.30), 0.92))
-	draw_circle(center, 3.0, Color(bone_color, 0.92))
+	# 中央圈由独立 Sprite2D 绘制，参数形变不影响按键文字与瞬时反馈。
 	draw_string(
 		ThemeDB.fallback_font,
 		center + Vector2(82.0, -68.0),
@@ -454,6 +493,10 @@ func _trim_event_buffer(events: Array[Dictionary]) -> void:
 
 
 func _sync_markers() -> void:
+	if is_instance_valid(_center_circle):
+		_center_circle.position = (life_gate + death_gate) * 0.5
+		# 透明画布已扩展到 528 px；仍按扩展前 328 px 基准缩放，圆圈本体大小不变。
+		_center_circle.scale = Vector2.ONE * (gate_radius * 2.0 / CENTER_CIRCLE_DISPLAY_REFERENCE_PX)
 	if is_instance_valid(_life_gate_anchor):
 		_life_gate_anchor.position = life_gate
 	if is_instance_valid(_death_gate_anchor):

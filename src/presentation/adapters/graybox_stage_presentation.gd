@@ -342,6 +342,7 @@ func _on_gameplay_snapshot(snapshot: Dictionary) -> void:
 	_note_visual_host.set_gameplay_snapshot(snapshot)
 	_tuning_interference_visual.set_gameplay_snapshot(snapshot)
 	_twin_gate_cue_visual.set_tuning_active(bool(snapshot.get("tuning_field_active", false)))
+	_twin_gate_cue_visual.set_bell_held(bool(snapshot.get("life_held", false)), bool(snapshot.get("death_held", false)))
 	var soul_fire: float = float(snapshot.get("soul_fire", 0.0))
 	var max_soul_fire: float = maxf(float(snapshot.get("max_soul_fire", 100.0)), 1.0)
 	_backdrop.set_soul_fire_ratio(soul_fire / max_soul_fire)
@@ -350,6 +351,7 @@ func _on_gameplay_snapshot(snapshot: Dictionary) -> void:
 func _on_stage_state_changed(_previous: int, current: int, _reason: StringName) -> void:
 	_backdrop.set_failed(current == GameplayTypes.StageState.FAILING)
 	if current == GameplayTypes.StageState.RESULT:
+		_twin_gate_cue_visual.clear()
 		_update_actor_attacks(false, false)
 		# 会话结束不保留动态链；正常收尾在 FINISHING/FAILING 阶段由时钟推进。
 		_note_visual_host.clear()

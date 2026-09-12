@@ -31,4 +31,6 @@
 
 原始日志与各尺寸截图在 `builds/background-fix/`。修复后的写谱器包预览：
 
+同日合并 develop 后，原 `s02_unnamed_background.tres` 更名为 `s00_grave_background2.tres`，并新增两套背景。回归脚本已衔接四套资源，源码图形检查 31 项通过；此前导出包的 17 项记录保留为当时的验证结果。合并检查日志在 `builds/merge-editor-develop/`。
+
 ![修复后的正式背景](screenshots/background-preview-fixed.png)

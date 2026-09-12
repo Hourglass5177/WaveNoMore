@@ -18,8 +18,8 @@ func run() -> void:
 	var options := OS.get_cmdline_user_args()
 	var output := options[0] if not options.is_empty() else ProjectSettings.globalize_path("res://builds/background-fix")
 	DirAccess.make_dir_recursive_absolute(output)
-	# 两套背景都引用过冲突的 UID；仅检查独立 shader 文件不能发现资源错绑。
-	for path in ["res://content/backgrounds/s00_grave_background.tres", "res://content/backgrounds/s02_unnamed_background.tres"]:
+	# 合并后的四套背景共用裁切 shader；直接检查资源引用，覆盖重命名和新增背景。
+	for path in ["res://content/backgrounds/s00_grave_background.tres", "res://content/backgrounds/s00_grave_background2.tres", "res://content/backgrounds/s02_grave2_background.tres", "res://content/backgrounds/s03_grave3_background.tres"]:
 		audit_background(load(path))
 	var stage: StageDefinition
 	if options.size() > 1:
