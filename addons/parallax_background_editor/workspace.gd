@@ -132,9 +132,10 @@ func _build() -> void:
 	layer_tree.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	layer_tree.item_selected.connect(_tree_selection)
 	layer_tree.item_edited.connect(_tree_edited)
-	layer_tree.reorder_requested.connect(func(id: int, depth: int, target: int, front: bool, sublayer: int):
-		if sublayer >= 0 and target >= 0: document.reorder_sublayer(sublayer, target, front)
-		elif id >= 0: document.reorder(id, depth, target, front, sublayer))
+	layer_tree.entry_reorder_requested.connect(func(id: int, depth: int, target: int, front: bool, sublayer: int):
+		document.reorder(id, depth, target, front, sublayer))
+	layer_tree.sublayer_reorder_requested.connect(func(id: int, target: int, front: bool):
+		document.reorder_sublayer(id, target, front))
 	left.add_child(layer_tree)
 	var right_split := HSplitContainer.new()
 	right_split.size_flags_horizontal = Control.SIZE_EXPAND_FILL

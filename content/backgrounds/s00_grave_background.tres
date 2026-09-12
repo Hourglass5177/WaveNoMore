@@ -121,45 +121,46 @@ random_flip = true
 position = Vector2(-589.60034, -329.56433)
 uniform_scale = 1.231761109580623
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_ljtk7"]
+[sub_resource type="Resource" id="Resource_ljtk7"]
+script = ExtResource("sublayer_schema")
+sublayer_id = "sublayer_21"
+display_name = "death particles1"
+velocity = Vector2(-500, 0)
+entries = Array[ExtResource("2_entry")]([SubResource("Resource_bcqkw")])
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_x7vhg"]
 shader = ExtResource("10_fyfw2")
-shader_parameter/dust_color = Color(1, 1, 1, 1)
+shader_parameter/dust_color = Color(0.24705882, 0.1764706, 0.25490198, 1)
 shader_parameter/alpha_strength = 0.3999999910592
 shader_parameter/twinkle_amount = 0.999999977648
 shader_parameter/frequency_min_hz = 0.16
 shader_parameter/frequency_max_hz = 0.48
 shader_parameter/halo_radius_px = 5.0
 shader_parameter/halo_strength = 0.55
-shader_parameter/halo_color = Color(1, 1, 1, 1)
+shader_parameter/halo_color = Color(0.24705882, 0.1764706, 0.25490198, 1)
 shader_parameter/dust_texture = ExtResource("10_hwrvv")
 shader_parameter/random_grid = Vector2(80, 45)
-shader_parameter/is_live = false
+shader_parameter/is_live = true
 
-[sub_resource type="Resource" id="Resource_ljtk7"]
+[sub_resource type="Resource" id="Resource_x7vhg"]
 script = ExtResource("2_entry")
 texture = ExtResource("10_hwrvv")
-material = SubResource("ShaderMaterial_ljtk7")
+material = SubResource("ShaderMaterial_x7vhg")
 infinite = true
 random_flip = true
 position = Vector2(-589.60034, -329.56433)
 uniform_scale = 1.231761109580623
 
-[sub_resource type="Resource" id="Resource_x7vhg"]
-script = ExtResource("sublayer_schema")
-sublayer_id = "sublayer_21"
-display_name = "death particles1"
-velocity = Vector2(-500, 0)
-entries = Array[ExtResource("2_entry")]([SubResource("Resource_bcqkw"), SubResource("Resource_ljtk7")])
-
 [sub_resource type="Resource" id="Resource_uqhqo"]
 script = ExtResource("sublayer_schema")
 sublayer_id = "sublayer_26"
 display_name = "live particles1"
-velocity = Vector2(500, 100)
+velocity = Vector2(500, 0)
+entries = Array[ExtResource("2_entry")]([SubResource("Resource_x7vhg")])
 
 [sub_resource type="Resource" id="Resource_r30tr"]
 script = ExtResource("layer_schema")
-sublayers = Array[ExtResource("sublayer_schema")]([SubResource("Resource_x7vhg"), SubResource("Resource_uqhqo")])
+sublayers = Array[ExtResource("sublayer_schema")]([SubResource("Resource_ljtk7"), SubResource("Resource_uqhqo")])
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_wusf3"]
 shader = ExtResource("8_screen_split")

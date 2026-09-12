@@ -49,8 +49,11 @@ func run() -> void:
 		return
 	var document := Document.new()
 	check(document.open("res://content/backgrounds/s00_grave_background.tres").is_empty(), "打开 s08 背景资源")
-	check(document.items.size() == 12, "还原十二个背景素材")
 	var original: StageBackgroundDefinition = load("res://content/backgrounds/s00_grave_background.tres")
+	var original_entry_count := 0
+	for layer in original.layers:
+		for sublayer in layer.sublayers: original_entry_count += sublayer.entries.size()
+	check(document.items.size() == original_entry_count, "还原背景资源中的全部素材")
 	var original_position := original.layers[0].sublayers[0].entries[0].position
 	check(document.entry(document.items[0].id).position == original_position, "还原素材坐标")
 	document.items[0].entry.position.x += 10
@@ -176,10 +179,35 @@ func test_sublayer_workspace() -> void:
 	workspace._set_preview(false)
 	workspace.document.add_sublayer(2)
 	var target := workspace.document.selected_sublayer_id
-	workspace.document.reorder(id, 2, -1, true, target)
-	check(workspace.document.sublayer_of(id) == target, "挂载对象移动到另一子层")
+	workspace.document.add_asset(make_texture(Color.BLUE), Vector2(30, 40))
+	var target_entry := workspace.document.selected_id
+	workspace.layer_tree._submit_drop(
+		{"type": "background_entry", "id": id, "sublayer": child_id},
+		{"id": target_entry, "depth": 2, "sublayer": target},
+		true
+	)
+	check(workspace.document.sublayer_of(id) == target, "拖到另一子层素材时更改所属子层")
+	check(workspace.document.front_ids().find(id) < workspace.document.front_ids().find(target_entry), "跨子层拖放保留目标前后位置")
 	workspace._undo_action()
 	check(workspace.document.sublayer_of(id) == child_id, "撤销恢复所属子层")
+	workspace._redo_action()
+	check(workspace.document.sublayer_of(id) == target, "重做恢复跨子层移动")
+	workspace.layer_tree._submit_drop(
+		{"type": "background_entry", "id": id, "sublayer": target},
+		{"depth": 2, "sublayer": child_id},
+		true
+	)
+	check(workspace.document.sublayer_of(id) == child_id, "拖到空子层时挂入该子层")
+	check(workspace.document.save().is_empty(), "保存跨子层移动")
+	var moved_reopened := Document.new()
+	check(moved_reopened.open(workspace.document.source_path).is_empty(), "重开跨子层资源")
+	var moved_id := -1
+	for item in moved_reopened.items:
+		if item.entry.position == Vector2(10, 20): moved_id = item.id
+	check(
+		moved_id >= 0 and moved_reopened.sublayer_record(moved_reopened.sublayer_of(moved_id)).resource.display_name == "流云",
+		"重开后保持素材所属子层"
+	)
 	workspace.queue_free()
 	await process_frame
 
