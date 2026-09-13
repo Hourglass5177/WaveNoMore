@@ -15,7 +15,7 @@ var show_grid := true
 var show_paths := true
 var emissions := {}
 var zoom := 1.0
-var record_at_cursor := false
+var record_at_cursor := true
 var pan := Vector2.ZERO
 var _gesture := {}
 var _candidate: Array = []
@@ -114,6 +114,10 @@ func object_bounds(object_data: Dictionary) -> Rect2:
 	if is_instance_valid(player):
 		var texture := player.assets.resolve(str(object_data.asset)) as Texture2D
 		if texture != null: return Rect2(-texture.get_size() * 0.5, texture.get_size())
+		var frames := player.assets.resolve(str(object_data.asset)) as SpriteFrames
+		if frames != null and not frames.get_animation_names().is_empty():
+			var frame:=frames.get_frame_texture(frames.get_animation_names()[0],0)
+			if frame != null:return Rect2(-frame.get_size()*0.5,frame.get_size())
 	return Rect2(-64,-64,128,128)
 
 func _gui_input(event: InputEvent) -> void:
@@ -147,8 +151,8 @@ func _gui_input(event: InputEvent) -> void:
 		var point := to_world(event.position)
 		var objects := document.entries("objects").duplicate()
 		objects.sort_custom(func(a,b):
-			var za: int=player.objects[a.id].z_index if player.objects.has(a.id) else 0
-			var zb: int=player.objects[b.id].z_index if player.objects.has(b.id) else 0
+			var za: int=player.object_render_order(a) if player.objects.has(a.id) else 0
+			var zb: int=player.object_render_order(b) if player.objects.has(b.id) else 0
 			return za<zb if za!=zb else document.entries("objects").find(a)<document.entries("objects").find(b))
 		for index in range(objects.size() - 1, -1, -1):
 			var object_data: Dictionary = objects[index]

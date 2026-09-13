@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="VisualAssetEntry" format=3 uid="uid://d6ji1nk3ws8o"]
+
+[ext_resource type="PackedScene" uid="uid://cd6gk7scbiaqk" path="res://assets/image/animation/monkey/monkey_animation.tscn" id="1_62xj2"]
+[ext_resource type="Script" uid="uid://1ripw1fv282p" path="res://src/content/resources/visual_asset_entry.gd" id="1_oiwp8"]
+
+[resource]
+script = ExtResource("1_oiwp8")
+asset_id = "monkey"
+category = &"monkey"
+runtime_scene = ExtResource("1_62xj2")
+state_names = PackedStringArray()
+required_anchors = PackedStringArray()
+required_states = PackedStringArray()
+metadata/_custom_type_script = "uid://1ripw1fv282p"

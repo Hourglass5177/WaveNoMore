@@ -1,7 +1,7 @@
-[gd_resource type="SpineSkeletonDataResource" format=3]
+[gd_resource type="SpineSkeletonDataResource" format=3 uid="uid://c8jfawtuasw04"]
 
-[ext_resource type="SpineAtlasResource" path="res://assets/character/lingjun/lingjun_gameplay.atlas" id="1_atlas"]
-[ext_resource type="SpineSkeletonFileResource" path="res://assets/character/lingjun/lingjun_gameplay.spine-json" id="2_skeleton"]
+[ext_resource type="SpineAtlasResource" uid="uid://d4gy5t83ssvpb" path="res://assets/character/lingjun/lingjun_gameplay.atlas" id="1_atlas"]
+[ext_resource type="SpineSkeletonFileResource" uid="uid://cx534gbagji6h" path="res://assets/character/lingjun/lingjun_gameplay.spine-json" id="2_skeleton"]
 
 [resource]
 atlas_res = ExtResource("1_atlas")

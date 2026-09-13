@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://cd6gk7scbiaqk"]
+
+[ext_resource type="SpriteFrames" uid="uid://4rresmoxr64t" path="res://assets/image/animation/monkey/monkey.tres" id="1_7gefr"]
+
+[node name="Node2D" type="Node2D" unique_id=1914473289]
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=2093186073]
+sprite_frames = ExtResource("1_7gefr")
+frame_progress = 0.29022655
