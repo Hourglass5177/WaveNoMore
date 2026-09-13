@@ -182,7 +182,7 @@ func _build_ui() -> void:
 	LevelUI.button(%InspectorTabs,"BOSS",open_boss_binding)
 	var assets_panel := VBoxContainer.new(); assets_panel.name = "素材"; _left_panel.add_child(assets_panel)
 	_asset_search.placeholder_text = "搜索素材名称或路径"; assets_panel.add_child(_asset_search); _asset_search.text_changed.connect(func(_value): _refresh_assets())
-	for caption in ["全部","场景 / BOSS","图片","音频","字体","环境场景"]: _asset_category.add_item(caption)
+	for caption in ["全部","场景 / BOSS","图片","音频","字体","环境场景","动画"]: _asset_category.add_item(caption)
 	assets_panel.add_child(_asset_category); _asset_category.item_selected.connect(func(_index): _refresh_assets())
 	_asset_list.size_flags_vertical = Control.SIZE_EXPAND_FILL; _asset_list.fixed_icon_size = Vector2i(48,48); _asset_list.max_columns = 1
 	assets_panel.add_child(_asset_list); _asset_list.item_activated.connect(func(index): add_asset_object(str(_asset_list.get_item_metadata(index))))
@@ -203,6 +203,8 @@ func _build_ui() -> void:
 	for pair in [["移动 W","move"],["旋转 E","rotate"],["缩放 R","scale"]]:
 		var button:=LevelUI.button(top,pair[0],func():_set_transform_mode(pair[1]),"切换画面操纵工具："+pair[0])
 		button.toggle_mode=true;_mode_buttons[pair[1]]=button
+	for action in [["位置关键帧",func():key_property("position")],["游标拆分",func():timeline.split_selected()],["对齐中心",align_center],["动作片段",func():add_clip("action")],["显示区间",func():add_clip("visibility")],["音频片段",func():add_clip("audio")]]:
+		LevelUI.button(top,action[0],action[1])
 	_set_transform_mode("move")
 	LevelUI.button(top,"适应画面",func(): surface.zoom=1;surface.pan=Vector2.ZERO;surface.queue_redraw())
 	LevelUI.button(top,"定位选中",surface.frame_selection)
@@ -234,7 +236,7 @@ func _build_ui() -> void:
 	LevelUI.button(transport,"循环起点",func(): timeline.loop_start_us=time_us;audio.loop_start=float(time_us)/1000000;timeline.queue_redraw())
 	LevelUI.button(transport,"循环终点",func(): timeline.loop_end_us=time_us;audio.loop_end=float(time_us)/1000000;timeline.queue_redraw())
 	LevelUI.choice(transport,"吸附",[120,240,480,60,0],120,func(value): timeline.snap_ticks=value,["1/16","1/8","1/4","1/32","关闭"])
-	LevelUI.toggle(transport,"自动关键帧",false,func(value): auto_key=value;surface.record_at_cursor=value;inspector.refresh())
+	LevelUI.toggle(transport,"自动关键帧",false,func(value): auto_key=value;surface.record_at_cursor=true;inspector.refresh())
 	LevelUI.toggle(transport,"仅当前难度",false,func(value): difficulty_only=value;inspector.refresh())
 	var edit_menu:=MenuButton.new();edit_menu.text="演出";toolbar.add_child(edit_menu)
 	for caption in ["◆ 位置关键帧","在游标处拆分（S）","对齐画布中心","添加动作片段","添加显示区间","添加音频片段"]:edit_menu.get_popup().add_item(caption)
@@ -368,10 +370,11 @@ func _refresh_assets() -> void:
 	_asset_list.set_meta("background_ids",background_ids)
 	if document.directory.is_empty():return
 	for path in _assets.list_files():
-		var extension:=path.get_extension().to_lower();var kind:=2 if extension in ["png","jpg","jpeg","svg","webp"] else (3 if extension in ["wav","ogg","mp3"] else 4)
+		var extension:=path.get_extension().to_lower();var resolved:=_assets.resolve(path);var kind:=2 if extension in ["png","jpg","jpeg","svg","webp"] else (3 if extension in ["wav","ogg","mp3"] else (6 if resolved is SpriteFrames else 4))
 		if category!=0 and category!=kind:continue
 		if not search.is_empty() and not search in path.to_lower():continue
-		var texture:=_assets.resolve(path) as Texture2D if kind==2 else null
+		var texture:=resolved as Texture2D if kind==2 else null
+		if resolved is SpriteFrames and not resolved.get_animation_names().is_empty(): texture=resolved.get_frame_texture(resolved.get_animation_names()[0],0)
 		_asset_list.add_item(path.get_file(),texture);_asset_list.set_item_metadata(_asset_list.item_count-1,path)
 
 func _document_changed(kind:String) -> void:
@@ -666,8 +669,9 @@ func add_asset_object(asset:String,at:=Vector2(960,540)) -> void:
 	if asset in _asset_list.get_meta("background_ids", PackedStringArray()):
 		add_environment_cue(asset,time_us);return
 	var resource:=_assets.resolve(asset)
-	var kind:="actor" if resource is PackedScene else ("audio" if resource is AudioStream else "sprite")
+	var kind:="actor" if resource is PackedScene else ("audio" if resource is AudioStream else ("animated_sprite" if resource is SpriteFrames else "sprite"))
 	var object_data:=LevelFormat.object(kind,asset);object_data.fields.position=[at.x,at.y]
+	if kind == "animated_sprite": object_data.animation = _assets.default_animation(asset)
 	object_data.name=asset.get_file().get_basename() if not _assets.entries.has(asset) else str(_assets.entries[asset].display_name)
 	if object_data.name.is_empty():object_data.name=asset
 	document.replace("从素材库添加对象","objects",[],[object_data]);select_objects(PackedStringArray([object_data.id]))
@@ -680,6 +684,18 @@ func set_object_field(field:String,value:Variant) -> void:
 		if object_data.is_empty():continue
 		before.append(object_data.duplicate(true));object_data=object_data.duplicate(true);object_data[field]=value;after.append(object_data)
 	if before!=after:document.replace("修改对象"+field,"objects",before,after)
+
+## 清除对象对外部素材的引用，但保留对象及其变换和演出轨道。
+func clear_object_asset_reference() -> void:
+	var before:=[];var after:=[]
+	for id in selection:
+		var current:=document.find("objects",id)
+		if current.is_empty() or current.get("locked",false):continue
+		var updated:=current.duplicate(true)
+		updated.asset=""
+		updated.animation=""
+		before.append(current.duplicate(true));after.append(updated)
+	if not before.is_empty():document.replace("删除资源引用", "objects", before, after)
 
 func set_property(property:String,value:Variant) -> void:
 	if auto_key:
@@ -719,20 +735,22 @@ func key_property(property:String) -> void:
 	if not after.is_empty():document.replace("插入关键帧","tracks",before,after)
 
 func _commit_transform(before:Array,after:Array) -> void:
-	if not auto_key:
-		if before!=after:document.replace("变换对象","objects",before,after)
-		return
 	var candidate:=LevelDocument.new();candidate.reset(document.data)
+	var changed:=false
 	for index in after.size():
 		for property in ["position","rotation","scale"]:
-			if before[index].fields[property]!=after[index].fields[property]:candidate.set_key(after[index].id,property,section,time_us,after[index].fields[property],difficulty() if difficulty_only else "")
+			if before[index].fields[property]==after[index].fields[property]:continue
+			var matching:=candidate.entries("tracks").filter(func(track):return track.object_id==after[index].id and track.property==property and track.section==section and track.difficulties==([difficulty()] if difficulty_only else []))
+			if matching.is_empty() or matching[0].keys.filter(func(key):return int(key.time_us)==time_us).is_empty():continue
+			candidate.set_key(after[index].id,property,section,time_us,after[index].fields[property],difficulty() if difficulty_only else "");changed=true
 	var old_tracks:=[];var new_tracks:=[]
 	for track:Dictionary in candidate.entries("tracks"):
 		var original:=document.find("tracks",track.id)
 		if original!=track:
 			if not original.is_empty():old_tracks.append(original.duplicate(true))
 			new_tracks.append(track)
-	if not new_tracks.is_empty():document.replace("记录对象变换","tracks",old_tracks,new_tracks)
+	if changed and not new_tracks.is_empty():document.replace("记录当前关键帧变换","tracks",old_tracks,new_tracks)
+	elif before!=after:message("当前游标没有对应关键帧，未修改对象。请先添加关键帧。")
 
 func set_track_field(id:String,field:String,value:Variant) -> void:
 	var before:=document.find("tracks",id);var after:=before.duplicate(true);after[field]=value
@@ -865,6 +883,11 @@ func _open_path(path:String) -> void:
 			if not error.is_empty():message(error)
 			else:_open_path(folder.path_join("level.json")))
 		return
+	# 关卡工程目录中常见的 show.json 是演出子文档；用户从文件管理器选择它时，
+	# 自动回到同目录的 level.json，避免把子文档误判为不兼容的关卡。
+	if path.get_file().to_lower() == "show.json":
+		var level_path := path.get_base_dir().path_join("level.json")
+		if FileAccess.file_exists(level_path): path = level_path
 	var opened:=LevelProjectIO.open_project(path)
 	if not opened.error.is_empty():message(opened.error);return
 	end_environment_preview()

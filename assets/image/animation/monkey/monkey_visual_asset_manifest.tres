@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="VisualAssetManifest" format=3 uid="uid://q7h54emjiy7u"]
+
+[ext_resource type="Script" uid="uid://1ripw1fv282p" path="res://src/content/resources/visual_asset_entry.gd" id="1_vfhcl"]
+[ext_resource type="Resource" uid="uid://d6ji1nk3ws8o" path="res://assets/image/animation/monkey/monkey_visual_asset_entry.tres" id="2_744vn"]
+[ext_resource type="Script" uid="uid://dw4idp43p5kbu" path="res://src/content/resources/visual_asset_manifest.gd" id="2_vgjql"]
+
+[resource]
+script = ExtResource("2_vgjql")
+entries = Array[ExtResource("1_vfhcl")]([ExtResource("2_744vn")])
+metadata/_custom_type_script = "uid://dw4idp43p5kbu"

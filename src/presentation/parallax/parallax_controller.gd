@@ -32,6 +32,18 @@ var _configured_objects: Array[Node2D] = []
 var _animations: Array[AnimatedSprite2D] = []
 var _leaving := false
 var _song_time := 0.0
+
+## 将外部对象挂入指定背景深度的前方或后方；不改变对象变换或视差移动。
+func set_object_occlusion(object: Node2D, depth: int, order: String) -> void:
+	if not is_instance_valid(object) or order not in ["front", "back"]: return
+	var layer := _get_layer(depth)
+	if object.get_parent() != layer:
+		var pose := object.global_transform
+		if object.get_parent() != null: object.get_parent().remove_child(object)
+		layer.add_child(object)
+		object.global_transform = pose
+	var target_index: int = layer.get_child_count() - 1 if order == "front" else 0
+	layer.move_child(object, target_index)
 var environment: StageEnvironmentSequence
 var environment_views := {}
 var environment_only_layer := ""

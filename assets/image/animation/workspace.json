@@ -1,0 +1,38 @@
+{
+  "left_width": 220,
+  "right_width": 310,
+  "timeline_height": 270,
+  "time_us": 0,
+  "section": "song",
+  "zoom": 100.0,
+  "left_seconds": 0.0,
+  "difficulty": "normal",
+  "views": {
+    "song/normal": {
+      "time_us": 0,
+      "zoom": 100.0,
+      "left_seconds": 0.0,
+      "row_scroll": 0.0,
+      "folded": {},
+      "selection": [],
+      "items": [],
+      "track": "",
+      "target": "objects",
+      "loop": false,
+      "start": 0,
+      "end": 4000000,
+      "pan": [
+        0.0,
+        0.0
+      ],
+      "canvas_zoom": 1.0,
+      "follow": true,
+      "suspended": false
+    }
+  },
+  "panels": {
+    "left": true,
+    "right": true,
+    "bottom": true
+  }
+}

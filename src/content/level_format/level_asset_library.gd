@@ -28,6 +28,9 @@ func resolve(asset: String) -> Resource:
 	if entries.has(asset): result = entries[asset].background if entries[asset].background != null else entries[asset].runtime_scene
 	else:
 		var path := asset if asset.begins_with("res://") else directory.path_join(asset)
+		# Level Studio stores project assets as relative references; resolve them from
+		# the project root when the level package directory does not contain them.
+		if not asset.begins_with("res://") and not FileAccess.file_exists(path) and ResourceLoader.exists("res://" + asset): path = "res://" + asset
 		if not FileAccess.file_exists(path) and not ResourceLoader.exists(path): return null
 		if asset.begins_with("res://"): result = load(path)
 		else:
@@ -46,6 +49,16 @@ func instantiate(asset: String) -> Node:
 	var resource := resolve(asset)
 	if resource is PackedScene: return resource.instantiate()
 	return null
+
+func animation_names(asset: String) -> PackedStringArray:
+	var resource := resolve(asset)
+	if resource is SpriteFrames: return resource.get_animation_names()
+	return PackedStringArray()
+
+func default_animation(asset: String) -> String:
+	var names := animation_names(asset)
+	if names.has("default"): return "default"
+	return names[0] if not names.is_empty() else ""
 
 ## 内置环境只借用 StageDefinition 的背景，不切换主题、歌曲或玩法。
 func background(asset: String) -> StageBackgroundDefinition:
@@ -106,6 +119,7 @@ func validate_level(level: Dictionary) -> Array[Dictionary]:
 		match str(reference.kind):
 			"actor", "environment": valid = resource is PackedScene
 			"image", "sprite": valid = resource is Texture2D
+			"animated_sprite": valid = resource is SpriteFrames
 			"audio": valid = resource is AudioStream
 			"font": valid = resource is Font
 			"effect": valid = resource is PackedScene or resource is Texture2D

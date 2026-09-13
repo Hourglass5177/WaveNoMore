@@ -26,6 +26,10 @@ var _environment_context := ""
 
 func configure(data: Dictionary, directory: String, packs: Array, difficulty_id: String) -> void:
 	stop_audio()
+	if is_instance_valid(environment_controller):
+		for wrapper: Node2D in objects.values():
+			if is_instance_valid(wrapper) and wrapper.get_parent() != self:
+				wrapper.get_parent().remove_child(wrapper); add_child(wrapper)
 	for child in get_children(): remove_child(child); child.queue_free()
 	objects.clear(); drivers.clear(); states.clear(); feedbacks.clear(); effects.clear()
 	show = data.duplicate(true); difficulty = difficulty_id
@@ -42,7 +46,13 @@ func configure(data: Dictionary, directory: String, packs: Array, difficulty_id:
 				var label := RichTextLabel.new(); label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 				label.scroll_active = false; label.bbcode_enabled = false; content = label
 			"sprite", "image":
-				var sprite := Sprite2D.new(); sprite.texture = assets.resolve(str(object_data.asset)) as Texture2D; content = sprite
+				var resource:=assets.resolve(str(object_data.asset))
+				if resource is SpriteFrames:
+					var animated:=AnimatedSprite2D.new();animated.sprite_frames=resource;animated.animation=str(object_data.get("animation",assets.default_animation(str(object_data.asset))));content=animated
+				else:
+					var sprite := Sprite2D.new(); sprite.texture = resource as Texture2D; content = sprite
+			"animated_sprite":
+				var sprite := AnimatedSprite2D.new(); sprite.sprite_frames = assets.resolve(str(object_data.asset)) as SpriteFrames; sprite.animation = str(object_data.get("animation", assets.default_animation(str(object_data.asset)))); sprite.play(); content = sprite
 			"actor", "environment": content = assets.instantiate(str(object_data.asset))
 		if content != null:
 			content.name = "Content"; wrapper.add_child(content)
@@ -109,6 +119,9 @@ func _sample(section: String, time_us: int, silent: bool) -> void:
 				wrapper.modulate = wrapper.modulate.lerp(Color("f9f3d8") if feedback.hit else Color("ad5069"), (1.0 - float(age) / 220000.0) * 0.7)
 			else: feedbacks.erase(object_data.id)
 		wrapper.z_index = 1000 if object_data.layer == "hud" else clampi(int(object_data.get("depth", 0)), -999, 999)
+		var occlusion := _effective_occlusion(object_data)
+		if is_instance_valid(environment_controller) and not occlusion.is_empty() and object_data.layer != "hud":
+			environment_controller.set_object_occlusion(wrapper, int(occlusion[0]), str(occlusion[1]))
 		var object_clips: Array = clips.filter(func(clip): return clip.object_id == object_data.id and clip.type == "action")
 		if drivers.has(object_data.id): drivers[object_data.id].sample(object_clips, time_us)
 		var content := wrapper.get_node_or_null("Content")
@@ -134,6 +147,22 @@ func _sample(section: String, time_us: int, silent: bool) -> void:
 	_sample_effects(clips, time_us)
 	_sample_environment()
 	sampled.emit(section, time_us)
+
+func _effective_occlusion(object_data: Dictionary) -> Array:
+	var current := object_data
+	while not current.is_empty():
+		var order := str(current.get("occlusion_order", "none"))
+		if order in ["front", "back"]:
+			return [int(current.get("occlusion_depth", 0)), order]
+		var parent_id := str(current.get("parent_id", ""))
+		if parent_id.is_empty(): break
+		current = LevelFormat.find(show.objects, parent_id)
+	return []
+
+func object_render_order(object_data: Dictionary) -> int:
+	var occlusion := _effective_occlusion(object_data)
+	if occlusion.is_empty(): return int(object_data.get("depth", 0)) * 2
+	return int(occlusion[0]) * 2 + (1 if occlusion[1] == "front" else -1)
 
 func canvas_transform(object_data: Dictionary, section: String, time_us: int) -> Transform2D:
 	var result := LevelShowSampler.object_transform(show, object_data.id, section, time_us, difficulty)
