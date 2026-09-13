@@ -1,0 +1,77 @@
+{
+  "format": "minghe-animation",
+  "name": "精灵表 · 扩散环",
+  "animations": [
+    {
+      "name": "default",
+      "fps": 12.0,
+      "loop": true,
+      "frames": [
+        {
+          "duration": 1.0,
+          "region": [
+            0.0,
+            0.0,
+            96.0,
+            96.0
+          ],
+          "margin": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "image": "image_0000.png"
+        },
+        {
+          "duration": 1.0,
+          "region": [
+            96.0,
+            0.0,
+            96.0,
+            96.0
+          ],
+          "margin": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "image": "image_0000.png"
+        },
+        {
+          "duration": 1.0,
+          "region": [
+            192.0,
+            0.0,
+            96.0,
+            96.0
+          ],
+          "margin": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "image": "image_0000.png"
+        },
+        {
+          "duration": 1.0,
+          "region": [
+            288.0,
+            0.0,
+            96.0,
+            96.0
+          ],
+          "margin": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "image": "image_0000.png"
+        }
+      ]
+    }
+  ]
+}

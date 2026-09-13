@@ -132,3 +132,19 @@ func level_advance(delta: float, silent: bool) -> void:
 `LevelDocument.begin_edit/end_edit` 汇总字段连续编辑，`last_changes` 提供此次涉及条目；预览修改结束后只提交一次历史。时间线用完整事件选区通知工作区，工作区拥有对象、轨道、事件以及当前编辑目标。BOSS 使用 `LevelBossPanel`，生成轨道保持只读。
 
 关卡试玩沿用 `ChartTrialLaunch` 状态协议（request_id、stage、message），只有 `ready` 表示游戏已经加载；启动进程与编辑器前后台状态分别管理。
+
+## 普通动画资源（2026-09-13）
+
+普通动画继续使用 `animated_sprite` 对象及 `action` 轨道。导入统一输出 `assets/animations/<版本>/asset.animation.json` 和实际 PNG 依赖：
+
+```json
+{"format":"minghe-animation","name":"扩散环","animations":[{"name":"default","fps":12,"loop":true,"frames":[{"image":"image_0000.png","duration":1,"region":[0,0,96,96],"margin":[0,0,0,0]}]}]}
+```
+
+描述还可保存 `default_animation`，优先采用导入时用户所选动作；未指定时依次取 `default` 或首个动作。
+
+`region`、`margin` 可省略，省略表示整张图片。`duration` 是相对于 FPS 的帧时长倍率。同张图集只携带一次。运行时 `LevelAnimationAsset` 从相对 PNG 构造 SpriteFrames，不需要开发机 `.godot/imported`。SpriteFrames 导入在来源工程目录解析依赖，缺失资源由用户定位；读取结束还原临时资源缓存。关卡保存、另存、恢复与 ZIP 沿用版本 1 和原 ID；ZIP 递归包含描述实际使用的图片。
+
+`StageBackgroundLayer.display_name` 是可选的美术显示名称；深度仍决定遮挡位置。对象可选 `occlusion_inherit`：true 沿用父组，false 依据自身 `occlusion_order/depth`；缺失时沿用旧字段解释，旧 `none` 视为继承，旧 front/back 视为明确位置。HUD 不挂入背景。解组把此前有效位置保存为明确配置。
+
+`LevelTransformEdit` 只承担变换候选与提交数据生成，保持区段、难度、时间及插值语义。`LevelShowPlayer` 持有演出对象，`ParallaxController` 的独立 Canvas 只借用挂载；释放与配置清理会归还对象。拾取查询播放器的显示顺序。

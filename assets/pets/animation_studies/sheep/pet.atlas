@@ -1,0 +1,14 @@
+atlas.png
+size:2048,512
+filter:Linear,Linear
+pma:false
+wool
+bounds:4,4,319,267
+tuft
+bounds:327,4,59,36
+hand_l
+bounds:390,4,76,85
+hand_r
+bounds:470,4,63,93
+head
+bounds:537,4,378,302

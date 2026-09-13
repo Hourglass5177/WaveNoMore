@@ -1,0 +1,28 @@
+{
+  "id": "bat",
+  "name": "蝠漆漆",
+  "unit_scale": 0.19851116625310175,
+  "source_anchor": [
+    243.0,
+    246.5
+  ],
+  "idle": 1.2,
+  "trigger": 0.6,
+  "death": 2.05,
+  "bone_death": 1.4,
+  "bone_count": 8,
+  "parts": [
+    "wing_l",
+    "wing_r",
+    "ear_l",
+    "ear_r",
+    "tail",
+    "body"
+  ],
+  "highlight_region": [
+    0.27783203125,
+    0.54296875,
+    0.0185546875,
+    0.1640625
+  ]
+}

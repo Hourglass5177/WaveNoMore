@@ -7,6 +7,7 @@ const RepeatView = preload("res://src/presentation/parallax/parallax_repeat.gd")
 
 class DepthLayer extends Node2D:
 	var depth: int
+	var canvas: CanvasLayer
 
 class SubLayer extends Node2D:
 	var sublayer_id: String
@@ -32,18 +33,56 @@ var _configured_objects: Array[Node2D] = []
 var _animations: Array[AnimatedSprite2D] = []
 var _leaving := false
 var _song_time := 0.0
+var _occlusion := {}
 
-## 将外部对象挂入指定背景深度的前方或后方；不改变对象变换或视差移动。
-func set_object_occlusion(object: Node2D, depth: int, order: String) -> void:
+## 独立 Canvas 保留素材内部 z 层次；只排列 Canvas，不让内部 z 越过背景接缝。
+## Canvas 的大层级仍是 -1 / 1，不改变玩法、波纹和 HUD 的既有层级。
+func set_object_occlusion(object: Node2D, depth: int, order: String, local_order := 0) -> void:
 	if not is_instance_valid(object) or order not in ["front", "back"]: return
-	var layer := _get_layer(depth)
-	if object.get_parent() != layer:
-		var pose := object.global_transform
-		if object.get_parent() != null: object.get_parent().remove_child(object)
-		layer.add_child(object)
-		object.global_transform = pose
-	var target_index: int = layer.get_child_count() - 1 if order == "front" else 0
-	layer.move_child(object, target_index)
+	var id := object.get_instance_id()
+	var record: Dictionary = _occlusion.get(id, {})
+	if record.is_empty():
+		var canvas := CanvasLayer.new(); canvas.name = "ShowOcclusion"; add_child(canvas)
+		record = {"object":object,"parent":weakref(object.get_parent()),"canvas":canvas,"depth":depth,"order":order,"local_order":local_order}
+		_occlusion[id] = record
+		var pose := object.get_global_transform_with_canvas()
+		canvas.transform = _parent_pose(object.get_parent())
+		object.reparent(canvas, false); object.transform = canvas.transform.affine_inverse() * pose
+	elif record.depth == depth and record.order == order and record.local_order == local_order:
+		return
+	record.depth=depth; record.order=order; record.local_order=local_order
+	_get_layer(depth); _sort_canvases()
+
+func release_object_occlusion(object: Node2D) -> void:
+	if not is_instance_valid(object): return
+	var id := object.get_instance_id()
+	if not _occlusion.has(id): return
+	var record: Dictionary = _occlusion[id]; _occlusion.erase(id)
+	var parent: Node = record.parent.get_ref()
+	var pose := object.get_global_transform_with_canvas()
+	object.get_parent().remove_child(object)
+	if is_instance_valid(parent) and not parent.is_queued_for_deletion():
+		parent.add_child(object); object.transform=_parent_pose(parent).affine_inverse()*pose
+	else: object.queue_free()
+	record.canvas.queue_free(); _sort_canvases()
+
+static func _parent_pose(parent: Node) -> Transform2D:
+	if parent is CanvasItem:return parent.get_global_transform_with_canvas()
+	if parent is CanvasLayer:return parent.get_final_transform()
+	return Transform2D.IDENTITY
+
+func _sort_canvases() -> void:
+	var entries := []
+	for layer: DepthLayer in _layers.values(): entries.append({"depth":layer.depth,"slot":1,"order":0,"canvas":layer.canvas})
+	for record: Dictionary in _occlusion.values(): entries.append({"depth":record.depth,"slot":0 if record.order=="back" else 2,"order":record.local_order,"canvas":record.canvas})
+	entries.sort_custom(func(a,b):
+		if a.depth!=b.depth:return a.depth>b.depth
+		if a.slot!=b.slot:return a.slot<b.slot
+		return a.order<b.order)
+	for index in entries.size():
+		var entry: Dictionary=entries[index]
+		move_child(entry.canvas,index)
+		entry.canvas.layer=-1 if entry.depth>=0 else 1
 var environment: StageEnvironmentSequence
 var environment_views := {}
 var environment_only_layer := ""
@@ -271,6 +310,7 @@ static func sample_animation(sprite: AnimatedSprite2D, song_time: float) -> void
 
 ## 换关/卸载入口：归还外部对象，释放由配置创建的对象，清空摄像头和动画记录。
 func clear() -> void:
+	for record: Dictionary in _occlusion.values().duplicate(): release_object_occlusion(record.object)
 	clear_environment()
 	for record: Registration in _objects.values():
 		unregister_object(record.object)
@@ -284,8 +324,7 @@ func clear() -> void:
 	_camera_position = Vector2.ZERO
 	_song_time = 0.0
 	for layer: DepthLayer in _layers.values():
-		layer.get_parent().remove_child(layer)
-		layer.queue_free()
+		layer.canvas.queue_free()
 	_layers.clear()
 
 ## 只替换背景配置的显示宿主，真实角色和音符注册项一直保留。
@@ -331,7 +370,8 @@ func sample_environment(time_us: int, render_camera := Vector2(INF, INF)) -> voi
 		view.root.visible = environment_only_layer.is_empty() or environment_only_layer == lane.id
 		var alive := {}
 		var states := environment.visible_sources(lane, time_us,environment_render_camera)
-		var canvas:=get_viewport().get_stretch_transform()*get_global_transform_with_canvas()
+		var render_scale:Vector2=get_viewport().get_meta(&"render_pixel_scale",Vector2.ONE)
+		var canvas:=Transform2D.IDENTITY.scaled(render_scale)*get_viewport().get_stretch_transform()*get_global_transform_with_canvas()
 		var inverse := canvas.affine_inverse()
 		var shader: ShaderMaterial = view.composite.material
 		shader.set_shader_parameter("inverse_x", inverse.x); shader.set_shader_parameter("inverse_y", inverse.y); shader.set_shader_parameter("inverse_origin", inverse.origin); shader.set_shader_parameter("direction", lane.direction)
@@ -374,6 +414,10 @@ func _sync_canvas_transform() -> void:
 	var pose := get_global_transform_with_canvas()
 	_background.transform = pose
 	_foreground.transform = pose
+	for layer: DepthLayer in _layers.values(): layer.canvas.transform=pose
+	for record: Dictionary in _occlusion.values():
+		var parent: Node=record.parent.get_ref()
+		if is_instance_valid(parent):record.canvas.transform=_parent_pose(parent)
 
 
 func _canvas_pose(object: Node2D) -> Transform2D:
@@ -389,17 +433,10 @@ func _get_layer(depth: int) -> DepthLayer:
 	var layer := DepthLayer.new()
 	layer.depth = depth
 	layer.name = "Depth_%s" % depth
-	var canvas := _background if depth >= 0 else _foreground
-	canvas.add_child(layer)
+	layer.canvas=CanvasLayer.new();layer.canvas.name="DepthCanvas_%s"%depth
+	add_child(layer.canvas); layer.canvas.transform=get_global_transform_with_canvas();layer.canvas.add_child(layer)
 	_layers[depth] = layer
-	var depths: Array = _layers.keys()
-	depths.sort()
-	depths.reverse()
-	var order := 0
-	for value: int in depths:
-		if _layers[value].get_parent() == canvas:
-			canvas.move_child(_layers[value], order)
-			order += 1
+	_sort_canvases()
 	return layer
 
 
@@ -447,6 +484,9 @@ func _remove_exited_view(record: Registration) -> void:
 
 
 func _notification(what: int) -> void:
+	if what == NOTIFICATION_PREDELETE:
+		# 控制器销毁时归还仍由外部播放器拥有的对象。
+		for record: Dictionary in _occlusion.values():release_object_occlusion(record.object)
 	if what == NOTIFICATION_EXIT_TREE:
 		_leaving = true
 		_objects.clear()

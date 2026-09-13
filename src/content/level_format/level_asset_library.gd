@@ -28,11 +28,10 @@ func resolve(asset: String) -> Resource:
 	if entries.has(asset): result = entries[asset].background if entries[asset].background != null else entries[asset].runtime_scene
 	else:
 		var path := asset if asset.begins_with("res://") else directory.path_join(asset)
-		# Level Studio stores project assets as relative references; resolve them from
-		# the project root when the level package directory does not contain them.
-		if not asset.begins_with("res://") and not FileAccess.file_exists(path) and ResourceLoader.exists("res://" + asset): path = "res://" + asset
 		if not FileAccess.file_exists(path) and not ResourceLoader.exists(path): return null
-		if asset.begins_with("res://"): result = load(path)
+		if asset.ends_with(LevelAnimationAsset.SUFFIX): result=LevelAnimationAsset.load_frames(path)
+		elif path.get_extension().to_lower() in ["tres","res"]:result=load(path)
+		elif asset.begins_with("res://"): result = load(path)
 		else:
 			match path.get_extension().to_lower():
 				"png", "jpg", "jpeg", "webp", "svg":
@@ -57,6 +56,9 @@ func animation_names(asset: String) -> PackedStringArray:
 
 func default_animation(asset: String) -> String:
 	var names := animation_names(asset)
+	if asset.ends_with(LevelAnimationAsset.SUFFIX):
+		var preferred:=str(LevelProjectIO.read_json(directory.path_join(asset)).get("default_animation",""))
+		if preferred in names:return preferred
 	if names.has("default"): return "default"
 	return names[0] if not names.is_empty() else ""
 
@@ -81,7 +83,7 @@ func anchor(asset: String, anchor_name: String) -> Vector2:
 	return LevelFormat.vec(entries[asset].anchors.get(anchor_name, Vector2.ZERO))
 
 func actions(asset: String) -> PackedStringArray:
-	return entries[asset].state_names if entries.has(asset) else PackedStringArray()
+	return entries[asset].state_names if entries.has(asset) else animation_names(asset)
 
 func release_time(asset: String, action: String) -> float:
 	if not entries.has(asset): return 0.0
@@ -91,7 +93,10 @@ func list_files(folder := "assets") -> PackedStringArray:
 	var result := PackedStringArray()
 	if not DirAccess.dir_exists_absolute(directory.path_join(folder)): return result
 	for file in DirAccess.get_files_at(directory.path_join(folder)): result.append(folder.path_join(file))
-	for child in DirAccess.get_directories_at(directory.path_join(folder)): result.append_array(list_files(folder.path_join(child)))
+	for child in DirAccess.get_directories_at(directory.path_join(folder)):
+		var nested:=folder.path_join(child)
+		if FileAccess.file_exists(directory.path_join(nested).path_join("asset"+LevelAnimationAsset.SUFFIX)):result.append(nested.path_join("asset"+LevelAnimationAsset.SUFFIX))
+		else:result.append_array(list_files(nested))
 	return result
 
 func validate_level(level: Dictionary) -> Array[Dictionary]:
@@ -113,12 +118,20 @@ func validate_level(level: Dictionary) -> Array[Dictionary]:
 	for binding: Dictionary in level.show.get("bindings", []):
 		for field: String in ["sound","effect","hit_effect","miss_effect"]:
 			if not str(binding.get(field, "")).is_empty(): references.append({"asset":binding[field],"binding_id":binding.id,"kind":"audio" if field=="sound" else "effect"})
+	for track: Dictionary in level.show.get("tracks",[]):
+		if track.type!="action":continue
+		var object_data:=LevelFormat.find(level.show.objects,str(track.object_id))
+		if object_data.is_empty() or str(object_data.asset).is_empty():continue
+		var names:=actions(str(object_data.asset))
+		if names.is_empty():continue
+		for clip: Dictionary in track.clips:
+			if str(clip.action) not in names:result.append({"message":"动作缺失："+str(clip.action)+"；请选择此素材中的动作。","object_id":object_data.id,"track_id":track.id,"item_id":clip.id,"time_us":clip.start_us,"severity":"error"})
 	for reference: Dictionary in references:
 		var resource := resolve(str(reference.asset))
 		var valid := resource != null
 		match str(reference.kind):
 			"actor", "environment": valid = resource is PackedScene
-			"image", "sprite": valid = resource is Texture2D
+			"image", "sprite": valid = resource is Texture2D or resource is SpriteFrames
 			"animated_sprite": valid = resource is SpriteFrames
 			"audio": valid = resource is AudioStream
 			"font": valid = resource is Font
@@ -126,3 +139,15 @@ func validate_level(level: Dictionary) -> Array[Dictionary]:
 		if not valid:
 			var problem := reference.duplicate(); problem.message = "素材缺失或类型不符：" + str(reference.asset); problem.severity="error"; result.append(problem)
 	return result
+
+## 分类不触发图片、字体或声音解码。
+func kind(asset: String) -> String:
+	if entries.has(asset):
+		return "background" if entries[asset].background!=null else "scene"
+	if asset.ends_with(LevelAnimationAsset.SUFFIX):return "animation"
+	var extension:=asset.get_extension().to_lower()
+	if extension in LevelAnimationAsset.IMAGE_EXTENSIONS:return "image"
+	if extension in ["wav","ogg","mp3"]:return "audio"
+	if extension in ["ttf","otf"]:return "font"
+	if extension in ["tres","res"] and resolve(asset) is SpriteFrames:return "animation"
+	return "unknown"

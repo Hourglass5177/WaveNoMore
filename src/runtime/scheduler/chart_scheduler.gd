@@ -51,7 +51,7 @@ var _cursors: Dictionary[StringName, int] = {}
 ## 当前已生成且尚未回收的事件，键为稳定事件 ID，值含类型和事件数据。
 var _active: Dictionary[String, Dictionary] = {}
 ## 仅用于表现；按完整谱面索引，避免另一侧尚未生成时丢失双押提示。
-var _double_tap_ids: Dictionary[String, bool] = {}
+var _double_press_ids: Dictionary[String, bool] = {}
 ## 关卡演出给出的提前发射段；不写入编译谱和 Replay 指纹。
 var boss_emissions: Dictionary = {}
 
@@ -66,7 +66,7 @@ func configure(compiled_chart: Variant, approach_sec: float = 2.25) -> void:
 		KIND_SU: _read_array_member(compiled_chart, &"su_manifestations"),
 	}
 	_sort_tracks()
-	_index_double_taps()
+	_index_double_presses()
 	reset()
 
 
@@ -162,24 +162,32 @@ func advance(target_visual_time_sec: float, tuning_time_sec: float) -> void:
 		_active.erase(active_id)
 
 
-func mark_judged(event_id: String, grade: int) -> void:
+func mark_judged(event_id: String, grade: int, at_sec: float = INF) -> void:
+	var frame_time := visual_time_sec
+	if is_finite(at_sec): visual_time_sec = at_sec
 	visual_judged.emit(event_id, grade)
+	var resolved_us := roundi(visual_time_sec * USEC_PER_SEC)
+	visual_time_sec = frame_time
 	if _active.has(event_id) and StringName(_active[event_id].get("kind", &"")) == KIND_NOTE:
 		var active_entry: Dictionary = _active[event_id]
 		if StringName(active_entry["data"].get("unit_kind", &"")) == &"hold" and grade == GameplayTypes.JudgmentGrade.MISS:
 			return
 		if int(active_entry.get("resolved_us", -1)) < 0:
-			active_entry["resolved_us"] = roundi(visual_time_sec * USEC_PER_SEC)
+			active_entry["resolved_us"] = resolved_us
 
 
-func mark_timing_confirmed(event_id: String, grade: int) -> void:
+func mark_timing_confirmed(event_id: String, grade: int, at_sec: float = INF) -> void:
 	# 时机被接受只用于即时反馈，不能据此解决或删除普通音符。
 	# 音符必须继续飞行，直到绑定波前真实接触，或未命中时抵达钟的位置。
 	if not _active.has(event_id):
 		return
 	if StringName(_active[event_id].get("kind", &"")) != KIND_NOTE:
 		return
+	# 合并画面更新后，反馈仍按事件微秒求值，不借用上一帧的调度时钟。
+	var frame_time := visual_time_sec
+	if is_finite(at_sec): visual_time_sec = at_sec
 	visual_timing_confirmed.emit(event_id, grade)
+	visual_time_sec = frame_time
 
 
 func mark_wave_contacted(event_id: String, contact: Dictionary) -> void:
@@ -223,7 +231,7 @@ func _spawn(kind: StringName, source: Dictionary, fallback_index: int) -> void:
 	var event_id: String = _event_id(entry, kind, fallback_index)
 	entry["event_id"] = event_id
 	if kind == KIND_NOTE:
-		entry["double_tap"] = _double_tap_ids.has(event_id)
+		entry["double_press"] = _double_press_ids.has(event_id)
 		if boss_emissions.has(event_id): entry["boss_emission"] = boss_emissions[event_id]
 	if kind == KIND_SU:
 		su_preparation_requested.emit(event_id)
@@ -234,12 +242,13 @@ func _spawn(kind: StringName, source: Dictionary, fallback_index: int) -> void:
 	visual_spawn_requested.emit(kind, entry)
 
 
-func _index_double_taps() -> void:
-	_double_tap_ids.clear()
+func _index_double_presses() -> void:
+	_double_press_ids.clear()
 	var groups: Dictionary = {}
 	for index: int in _tracks[KIND_NOTE].size():
 		var note: Dictionary = _tracks[KIND_NOTE][index]
-		if StringName(note.get("unit_kind", &"tap")) != &"tap":
+		# 双押只比较两侧按下的头部；Hold 尾端和持续区间不加入索引。
+		if StringName(note.get("unit_kind", &"tap")) not in [&"tap", &"hold"]:
 			continue
 		var side: int = int(note.get("affinity", -1))
 		if side not in [GameplayTypes.Affinity.ZHU, GameplayTypes.Affinity.XUAN]:
@@ -254,7 +263,7 @@ func _index_double_taps() -> void:
 	for pair: Dictionary in groups.values():
 		if pair.size() != 2: continue
 		for ids: Array in pair.values():
-			for id: String in ids: _double_tap_ids[id] = true
+			for id: String in ids: _double_press_ids[id] = true
 
 
 func _sort_tracks() -> void:

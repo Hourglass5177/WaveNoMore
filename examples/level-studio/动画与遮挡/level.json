@@ -1,0 +1,21 @@
+{
+  "format": "minghe-level",
+  "format_version": 1,
+  "level_id": "animation_workflow_example",
+  "title": "动画与遮挡 · 制作流程",
+  "author": "",
+  "description": "三种来源的可携带动画、局部时间、曲前曲后、父组遮挡和空引用恢复。",
+  "cover": "",
+  "order_index": 0,
+  "scene_id": "s08",
+  "song_path": "song/song.json",
+  "intro_us": 2000000,
+  "outro_us": 2000000,
+  "rule_path": "res://content/rules/default_gameplay_rules.tres",
+  "next_stage_id": "",
+  "pet_id": "",
+  "fc_grants_base_pet": true,
+  "ap_grants_advanced_pet": true,
+  "packs": [],
+  "show_path": "show.json"
+}

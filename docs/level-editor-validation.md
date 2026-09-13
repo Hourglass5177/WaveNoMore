@@ -121,3 +121,8 @@
 源码示例和测试脚本继续留在 Game。截图写入 `../Levels/output/ui/`，性能数据写入 `../Levels/output/ux/`，重新生成的 Release 验收包写入 `../Levels/output/release-qa/`。验收探针的中间 Godot 资源使用 `.godot/level-release-staging/` 缓存，避免在 builds 中留下交付副本。
 
 此前测试工程（含 demo 音频）保存在 `../Levels/projects/test-level/`，唯一历史发行 ZIP 保存在 `../Levels/releases/`。旧日志、过期截图和临时 API 探针已清理；旧 Release 验收工程删除被自动审批策略拦截，保留在 `../Levels/archive/旧验收文件/`，其结果 JSON 单独保存在 `../Levels/output/release-reports/`。
+
+
+## 2026-09-13 九项修复
+
+新一轮结果及未覆盖设备条件见 [九项修复验收记录](level-editor-fixes-validation-2026-09-13.md)。旧版静态审计的失败属于修复前基线；当前发布 EXE 尚未同步本轮源码。

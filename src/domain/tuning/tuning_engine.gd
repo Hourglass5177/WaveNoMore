@@ -50,12 +50,18 @@ var _life_drag_state_index: int = -1
 var _death_drag_state_index: int = -1
 var _life_drag_traversal_index: int = -1
 var _death_drag_traversal_index: int = -1
+## 表现预告窗口按起点排序，仅扫描正在可见的滑条；领域端点时间线保持原样。
+var _preview_order: Array[int] = []
+var _preview_cursor := 0
+var _preview_active: Array[int] = []
+var _preview_time := NEVER_TIME_US
 
 
 func configure(compiled: CompiledChart, rules: GameplayRuleSet) -> void:
 	_compiled = compiled
 	_rules = rules
 	_slider_states.clear()
+	_preview_order.clear(); _preview_active.clear(); _preview_cursor = 0; _preview_time = NEVER_TIME_US
 	_group_members.clear()
 	_group_grades.clear()
 	_pending_records.clear()
@@ -78,6 +84,8 @@ func configure(compiled: CompiledChart, rules: GameplayRuleSet) -> void:
 		return
 	_build_field_timeline()
 	_build_slider_states()
+	for index in _slider_states.size(): _preview_order.append(index)
+	_preview_order.sort_custom(func(a: int, b: int): return int(_slider_states[a].slider.start_us) < int(_slider_states[b].slider.start_us))
 	_timeline_events.sort_custom(_sort_timeline_events)
 
 
@@ -375,7 +383,8 @@ func active_field_id() -> String:
 	if not ids.is_empty():
 		return str(ids[0])
 	var pending: Array[Dictionary] = []
-	for state: Dictionary in _slider_states:
+	for state_index in _visible_slider_indices(_current_time_us):
+		var state: Dictionary = _slider_states[state_index]
 		if bool(state["finished"]):
 			continue
 		var slider: Dictionary = state["slider"]
@@ -440,12 +449,35 @@ func death_frequency_hz() -> float:
 	return _value_to_frequency(_death_value)
 
 
+func _visible_slider_indices(time_us: int) -> Array[int]:
+	# 输入子步和表现查询共用时间窗口，保留原编译索引的同侧优先级。
+	if time_us == _preview_time: return _preview_active
+	var preview_lead_us := roundi(maxf(_rule_float(&"approach_duration_sec", 2.25), 0.0) * 1000000.0)
+	if time_us < _preview_time:
+		_preview_cursor = 0; _preview_active.clear()
+	_preview_time = time_us
+	var added := false
+	while _preview_cursor < _preview_order.size():
+		var index := _preview_order[_preview_cursor]
+		if int(_slider_states[index].slider.start_us) - preview_lead_us > time_us: break
+		_preview_active.append(index); _preview_cursor += 1
+		added = true
+	for cursor in range(_preview_active.size() - 1, -1, -1):
+		var state: Dictionary = _slider_states[_preview_active[cursor]]
+		if bool(state.finished) or int(state.judgment_end_us) < time_us: _preview_active.remove_at(cursor)
+	# 删除保留既有顺序；只有加入新窗口后才恢复编译优先级。
+	if added: _preview_active.sort()
+	return _preview_active
+
+
 func active_slider_snapshots() -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
 	var preview_lead_us: int = roundi(
 		maxf(_rule_float(&"approach_duration_sec", 2.25), 0.0) * 1_000_000.0
 	)
-	for state: Dictionary in _slider_states:
+	_visible_slider_indices(_current_time_us)
+	for index in _preview_active:
+		var state: Dictionary = _slider_states[index]
 		if bool(state["finished"]):
 			continue
 		var slider: Dictionary = state["slider"]
@@ -468,7 +500,8 @@ func active_slider_snapshots() -> Array[Dictionary]:
 			else float(slider["start_value"])
 		)
 		var player_progress: float = _value_to_slider_progress(slider, player_value) if input_open else 0.0
-		var snapshot: Dictionary = slider.duplicate(true)
+		# 编译后的曲线和节点只读；本帧只覆盖动态字段，无需复制其嵌套数组。
+		var snapshot: Dictionary = slider.duplicate(false)
 		snapshot["phase"] = &"active" if input_open else &"preview"
 		snapshot["interaction_open"] = input_open
 		snapshot["dragging"] = input_open and _is_slider_dragging(slider)
@@ -793,7 +826,8 @@ func _record_endpoint_entries(
 		time_us: int
 ) -> void:
 	## 行程中只维护玩家是否位于端点区以及进入次数；成功与否只在 target_us 结算。
-	for state: Dictionary in _slider_states:
+	for state_index in _visible_slider_indices(time_us):
+		var state: Dictionary = _slider_states[state_index]
 		if bool(state["finished"]):
 			continue
 		var slider: Dictionary = state["slider"]
@@ -1067,7 +1101,7 @@ func _apply_side_displacement(
 
 func _active_slider_state_index(affinity: int, time_us: int) -> int:
 	# 同侧谱面不应真实重叠；如果预览数据仍有重叠，稳定地取编译排序后的第一条。
-	for index: int in range(_slider_states.size()):
+	for index: int in _visible_slider_indices(time_us):
 		var state: Dictionary = _slider_states[index]
 		if bool(state["finished"]):
 			continue
@@ -1080,7 +1114,8 @@ func _active_slider_state_index(affinity: int, time_us: int) -> int:
 
 
 func _has_pending_slider_window(time_us: int) -> bool:
-	for state: Dictionary in _slider_states:
+	for state_index in _visible_slider_indices(time_us):
+		var state: Dictionary = _slider_states[state_index]
 		if bool(state["finished"]):
 			continue
 		var slider: Dictionary = state["slider"]
@@ -1093,7 +1128,8 @@ func _has_preview_slider_for_side(affinity: int, time_us: int) -> bool:
 	var preview_lead_us: int = roundi(
 		maxf(_rule_float(&"approach_duration_sec", 2.25), 0.0) * 1_000_000.0
 	)
-	for state: Dictionary in _slider_states:
+	for state_index in _visible_slider_indices(time_us):
+		var state: Dictionary = _slider_states[state_index]
 		if bool(state["finished"]):
 			continue
 		var slider: Dictionary = state["slider"]
@@ -1187,10 +1223,9 @@ func _rule_float(property_name: StringName, fallback: float) -> float:
 func _rule_property(property_name: StringName, fallback: Variant) -> Variant:
 	if _rules == null:
 		return fallback
-	for property_data: Dictionary in _rules.get_property_list():
-		if StringName(property_data.get("name", &"")) == property_name:
-			return _rules.get(property_name)
-	return fallback
+	# 规则属性直接读取，不为每次子步查询构造整份属性元数据。
+	var value: Variant = _rules.get(property_name)
+	return fallback if value == null else value
 
 
 ## 同步双 Hold 运行时前置条件；失效只中断调频，不修改 Hold 判定。

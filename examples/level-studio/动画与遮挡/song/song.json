@@ -1,0 +1,20 @@
+{
+  "audio": "click.wav",
+  "charts": [
+    {
+      "chart_id": "example_normal",
+      "difficulty_id": "normal",
+      "path": "charts/normal.json"
+    },
+    {
+      "chart_id": "example_hard",
+      "difficulty_id": "hard",
+      "path": "charts/hard.json"
+    }
+  ],
+  "format": "minghe-song",
+  "format_version": 1,
+  "song_id": "editor_example_song",
+  "title": "渡口 · 测试拍",
+  "artist": "编辑器示例"
+}

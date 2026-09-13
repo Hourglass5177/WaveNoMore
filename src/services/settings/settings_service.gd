@@ -11,6 +11,11 @@ const SETTINGS_PATH := "user://settings.cfg"
 const MIN_TUNING_WAVE_INTENSITY := 0.35
 const MAX_TUNING_WAVE_INTENSITY := 1.0
 const DEFAULT_TUNING_WAVE_INTENSITY := 0.85
+const DESIGN_SIZE := Vector2i(1920, 1080)
+const DEFAULT_RESOLUTION := Vector2i(2560, 1440)
+const RESOLUTIONS: Array[Vector2i] = [Vector2i(1280,720), Vector2i(1600,900), Vector2i(1920,1080), Vector2i(2560,1440), Vector2i(3840,2160)]
+## 渲染分辨率与设计坐标分开；窗口和全屏共用这个像素尺寸。
+var resolution := DEFAULT_RESOLUTION
 
 ## BGM 所在 Music 总线的音量，单位为 dB；数值越小声音越轻。
 var music_volume_db: float = -4.0
@@ -57,6 +62,7 @@ func load_settings() -> void:
 	tuning_wave_intensity = _read_tuning_wave_intensity(config)
 	debug_hud_enabled = bool(config.get_value("development", "debug_hud_enabled", debug_hud_enabled))
 	fullscreen = bool(config.get_value("display", "fullscreen", fullscreen))
+	resolution = read_resolution(config)
 
 
 func save_settings() -> bool:
@@ -77,6 +83,7 @@ func save_settings() -> bool:
 	config.set_value("accessibility", "tuning_wave_intensity", tuning_wave_intensity)
 	config.set_value("development", "debug_hud_enabled", debug_hud_enabled)
 	config.set_value("display", "fullscreen", fullscreen)
+	config.set_value("display", "resolution", resolution)
 	var error := config.save(SETTINGS_PATH)
 	if error != OK:
 		push_error("无法保存设置：%s" % error_string(error))
@@ -94,10 +101,41 @@ func apply_settings() -> void:
 	_set_bus_volume(&"Music", music_volume_db)
 	_set_bus_volume(&"GameplaySFX", gameplay_sfx_volume_db)
 	_set_bus_volume(&"UI", ui_volume_db)
-	DisplayServer.window_set_mode(
-		DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN if fullscreen else DisplayServer.WINDOW_MODE_WINDOWED
-	)
+	if not StudioLaunch.is_active(): apply_display_settings()
 	settings_changed.emit()
+
+func read_resolution(config: ConfigFile) -> Vector2i:
+	var value: Vector2i = config.get_value("display", "resolution", DEFAULT_RESOLUTION)
+	return value if value in RESOLUTIONS else DEFAULT_RESOLUTION
+
+func apply_display_settings() -> void:
+	var window := get_tree().root
+	# Window 保留设计坐标和输入换算；底层渲染目标独立设置实际像素。
+	window.content_scale_size = DESIGN_SIZE
+	window.content_scale_aspect = Window.CONTENT_SCALE_ASPECT_KEEP
+	window.content_scale_mode = Window.CONTENT_SCALE_MODE_VIEWPORT
+	window.content_scale_factor = 1.0
+	if not window.size_changed.is_connected(_apply_render_resolution):
+		window.size_changed.connect(_apply_render_resolution, CONNECT_DEFERRED)
+	window.mode = Window.MODE_EXCLUSIVE_FULLSCREEN if fullscreen else Window.MODE_WINDOWED
+	if not fullscreen and DisplayServer.get_name() != "headless":
+		var usable := DisplayServer.screen_get_usable_rect(window.current_screen)
+		var available := Vector2(usable.size) - Vector2(32, 64)
+		var fit := minf(1.0, minf(available.x / resolution.x, available.y / resolution.y))
+		window.size = Vector2i(Vector2(resolution) * fit)
+		window.position = usable.position + (usable.size - window.size) / 2
+
+	_apply_render_resolution()
+
+func _apply_render_resolution() -> void:
+	# Window 的缩放因子会连同逻辑坐标一起改变，因此保持它为 1。
+	# 与引擎的嵌入窗口一样，直接调整既有 Viewport 的目标和最终画布矩阵。
+	var window := get_tree().root
+	var pixel_scale := Vector2(resolution) / Vector2(DESIGN_SIZE)
+	window.set_meta(&"render_pixel_scale", pixel_scale)
+	window.set_oversampling_override(pixel_scale.x)
+	RenderingServer.viewport_set_size(window.get_viewport_rid(), resolution.x, resolution.y)
+	RenderingServer.viewport_set_global_canvas_transform(window.get_viewport_rid(), Transform2D.IDENTITY.scaled(pixel_scale) * window.global_canvas_transform)
 
 
 func total_judgment_offset_us() -> int:

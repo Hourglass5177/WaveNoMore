@@ -22,6 +22,8 @@ enum GameplayOperationKind {
 ## 一局玩法的纯逻辑总入口，统一调度普通音符、调频、疾振、物理波、计分和魂火。
 ## 外部只能按绝对微秒推进或提交语义输入，不能依赖 Node、帧 delta 或画面碰撞。
 
+## 同一次领域推进内复用只读运动状态；新输入或推进会整体替换缓存。
+var _motion_cache: Dictionary = {}
 ## 本局编译谱；configure 后只读，所有机制共用其中的确定性微秒时间轴。
 var compiled: CompiledChart
 ## 本局规则表；判定窗、计分、魂火和物理坐标均从此读取。
@@ -92,9 +94,18 @@ var _last_input_owner: int = GameplayTypes.InputOwner.NONE
 var _paused_for_rearm: bool = false
 ## 非致死调试标志；为 true 时魂火可为负，但 HealthEngine 不进入 failed。
 var _debug_nonlethal: bool = false
+## 只累计新记录；实时 HUD 不必每帧重新扫描整局历史。
+var _summary_judgments := 0
+var _summary_strays := 0
+var _summary_misses := 0
+var _summary_nonperfect := 0
+var _summary_stray_breaks := 0
+var _su_results_snapshot: Array = []
+var _su_targets_snapshot: Array = []
 
 
 func configure(p_compiled: CompiledChart, p_rules: GameplayRuleSet, debug_nonlethal: bool = false, pet: PetEffectProfile = null) -> void:
+	_motion_cache = {}
 	compiled = p_compiled
 	rules = p_rules
 	_debug_nonlethal = debug_nonlethal
@@ -123,6 +134,9 @@ func configure(p_compiled: CompiledChart, p_rules: GameplayRuleSet, debug_nonlet
 		_operation_table.append({"exists": false, "timestamp_us": -1})
 	judgments.clear()
 	strays.clear()
+	_summary_judgments = 0; _summary_strays = 0
+	_summary_misses = 0; _summary_nonperfect = 0; _summary_stray_breaks = 0
+	_su_results_snapshot = []; _su_targets_snapshot = []
 	_pending_judgments.clear()
 	_pending_strays.clear()
 	_pending_wave_launches.clear()
@@ -159,6 +173,7 @@ func advance_to(time_us: int, inclusive: bool = true) -> void:
 
 ## 同刻先结算调频端点，再退出 Hold，最后同步拖动资格并应用频率变化。
 func _advance_systems_to(time_us: int, inclusive: bool) -> void:
+	_motion_cache = {}
 	current_time_us = time_us
 	if _paused_for_rearm:
 		return
@@ -331,6 +346,7 @@ func _process_operation_table() -> void:
 			continue
 		accept_input(SemanticInputSample.create(int(entry["timestamp_us"]), 0, semantic_kind, vector))
 func accept_input(sample: SemanticInputSample) -> int:
+	_motion_cache = {}
 	if sample == null or compiled == null or rules == null or health_engine.failed or _paused_for_rearm:
 		return GameplayTypes.InputOwner.NONE
 	#print("[GameplayCore] semantic kind=%d timestamp=%d" % [sample.kind, sample.timestamp_us])
@@ -410,6 +426,7 @@ func accept_input(sample: SemanticInputSample) -> int:
 
 
 func force_finish() -> void:
+	_motion_cache = {}
 	if compiled == null:
 		return
 	# Hold 与调频都在谱面尾点完成；只有普通音符还需等待 Miss 窗。
@@ -419,6 +436,7 @@ func force_finish() -> void:
 
 
 func begin_pause_rearm() -> Dictionary:
+	_motion_cache = {}
 	_paused_for_rearm = true
 	var note_state: Dictionary = note_engine.begin_pause_rearm()
 	var tuning_state: Dictionary = tuning_engine.begin_pause_rearm()
@@ -434,6 +452,7 @@ func begin_pause_rearm() -> Dictionary:
 
 
 func apply_resume_rearm(rearm_state: Dictionary) -> void:
+	_motion_cache = {}
 	_life_input_channel = _rearm_channel(rearm_state, true, _life_input_channel)
 	_death_input_channel = _rearm_channel(rearm_state, false, _death_input_channel)
 	life_held = _life_input_channel != GameplayTypes.BellInputChannel.NONE
@@ -493,7 +512,9 @@ func input_owner() -> int:
 
 func motion_snapshot() -> Dictionary:
 	## 重演身体只依赖当前控制状态，无需反复扫描整场成绩和载波历史。
-	return {
+	if not _motion_cache.is_empty(): return _motion_cache
+	var profile_started := GameplayFrameProfile.begin()
+	var result := {
 		"time_us": current_time_us,
 		"input_owner": input_owner(),
 		"tuning_field_active": tuning_engine.field_active(),
@@ -515,10 +536,27 @@ func motion_snapshot() -> Dictionary:
 		"held_hold_ids": note_engine.active_hold_ids(true),
 	}
 
+	GameplayFrameProfile.end(&"motion_snapshot", profile_started)
+	_motion_cache = result
+	return result
+
 
 func snapshot() -> Dictionary:
-	var evaluated: ResultSummary = result_summary()
-	var result := motion_snapshot()
+	while _summary_judgments < judgments.size():
+		var grade := judgments[_summary_judgments].grade
+		if grade == GameplayTypes.JudgmentGrade.MISS: _summary_misses += 1
+		if grade != GameplayTypes.JudgmentGrade.PERFECT: _summary_nonperfect += 1
+		_summary_judgments += 1
+	while _summary_strays < strays.size():
+		if strays[_summary_strays].breaks_combo: _summary_stray_breaks += 1
+		_summary_strays += 1
+	if _su_results_snapshot.size() != _su_manifestations.size():
+		_su_results_snapshot = _su_manifestations.duplicate(true)
+	if _su_targets_snapshot.size() != _su_prepared.size():
+		_su_targets_snapshot = _su_prepared.values().duplicate(true)
+	var cleared := not health_engine.failed and judgments.size() == compiled.theoretical_unit_count and wave_engine.next_arrival_us() == 9223372036854775807
+	var full_combo := cleared and _summary_misses == 0 and _summary_stray_breaks == 0
+	var result := motion_snapshot().duplicate(false)
 	result.merge({
 		"score": score_engine.total_score(),
 		"pet_trigger_us": last_pet_trigger_us,
@@ -534,13 +572,13 @@ func snapshot() -> Dictionary:
 		"emitted_wave_count": wave_engine.wave_count(),
 		"carrier_wave_count": carrier_engine.emission_count(),
 		"carrier_wavefronts": carrier_engine.visible_wavefronts(current_time_us),
-		"su_manifestations": _su_manifestations.duplicate(true),
-		"su_prepared_targets": _su_prepared.values().duplicate(true),
+		"su_manifestations": _su_results_snapshot,
+		"su_prepared_targets": _su_targets_snapshot,
 		"paused_for_rearm": _paused_for_rearm,
-		"cleared": evaluated.cleared,
-		"fc": evaluated.full_combo,
-		"ap": evaluated.all_perfect,
-		"miss_count": evaluated.miss_count,
+		"cleared": cleared,
+		"fc": full_combo,
+		"ap": full_combo and not judgments.is_empty() and _summary_nonperfect == 0,
+		"miss_count": _summary_misses,
 		"expected_judgment_count": compiled.theoretical_unit_count,
 		"content_hash": compiled.content_hash,
 	})
@@ -602,6 +640,7 @@ func request_su_preparation(event_id: String) -> void:
 
 
 func reset_su_timeline(time_us: int) -> void:
+	_su_results_snapshot = []; _su_targets_snapshot = []
 	## Seek/清场丢弃旧目标；早于新时间的事件不再生成结果或打印历史 Miss。
 	_su_pending.clear()
 	_su_prepared.clear()
@@ -618,6 +657,7 @@ func reset_su_timeline(time_us: int) -> void:
 
 
 func clear_su_targets() -> void:
+	_su_results_snapshot = []; _su_targets_snapshot = []
 	## 会话结束释放预读请求、目标、结果和去重状态，不改变其他玩法数据。
 	_su_pending.clear()
 	_su_prepared.clear()

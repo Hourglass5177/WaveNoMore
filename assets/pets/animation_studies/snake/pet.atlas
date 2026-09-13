@@ -1,0 +1,12 @@
+atlas.png
+size:2048,1024
+filter:Linear,Linear
+pma:false
+neck_middle
+bounds:4,4,168,169
+neck_right
+bounds:176,4,193,261
+body
+bounds:373,4,465,559
+neck_left
+bounds:842,4,162,139

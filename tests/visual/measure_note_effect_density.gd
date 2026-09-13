@@ -24,7 +24,7 @@ func run() -> void:
 		var tap := GrayboxNoteVisual.new()
 		tap.tap_texture = theme.zhu_tap_texture; tap.tap_material = theme.zhu_tap_material.duplicate(false)
 		stage.add_child(tap)
-		tap.prepare({"event_id": "dense%d" % i, "affinity": i % 2, "double_tap": true})
+		tap.prepare({"event_id": "dense%d" % i, "affinity": i % 2, "double_press": true})
 		tap.position = Vector2(140 + (i % 8) * 230, 110 + (i / 8) * 180)
 		tap.set_approach_progress(1.0); notes.append(tap)
 	for i: int in 4:

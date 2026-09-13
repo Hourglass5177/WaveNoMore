@@ -201,10 +201,16 @@ func _step_to(target: int) -> void:
 			_cursor += 1
 		session.inject_preview_inputs(batch)
 		session.advance_preview(at, true)
-		_publish_motion_frame(at)
+		# 输入后的同刻没有身体积分；下一采样直接读取新控制状态。
+		# 角色的播放速度仍在这个精确边界切换，不能推迟到下一画面帧。
+		var sim := coordinator.simulation
+		stage_root.presentation._note_visual_host.sync_preview_controls(sim.motion_snapshot(), float(at) / 1000000.0)
+		stage_root.presentation._update_actor_snapshot({"time_us":at, "life_held":sim.life_held,
+			"death_held":sim.death_held, "life_frequency_hz":sim.tuning_engine.life_frequency_hz(),
+			"death_frequency_hz":sim.tuning_engine.death_frequency_hz()})
 	_advance_motion_to(target)
 	session.advance_preview(target, true)
-	_publish_motion_frame(target)
+	if already_batched: _publish_motion_frame(target)
 	if not already_batched:
 		coordinator.finish_preview_batch()
 		session.publish_preview_state(target)

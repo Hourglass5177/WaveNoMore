@@ -122,7 +122,24 @@ func _ready() -> void:
 	clear()
 
 
+var _frame_driven := false
+var _defer_runtime_upload := false
+
+func set_frame(sample: ClockSample, snapshot: Dictionary) -> void:
+	# 帧尾只提交一次波前；对齐淡入也使用歌曲时间，暂停不漂移。
+	var delta := maxf(sample.visual_time_sec - _visual_time_sec, 0.0)
+	_frame_driven = true
+	_defer_runtime_upload = true
+	set_clock_sample(sample)
+	set_gameplay_snapshot(snapshot)
+	_update_alignment(delta)
+	_defer_runtime_upload = false
+	_push_runtime_state()
+
 func _process(delta: float) -> void:
+	if not _frame_driven: _update_alignment(delta)
+
+func _update_alignment(delta: float) -> void:
 	var previous_life: float = _life_alignment_strength
 	var previous_death: float = _death_alignment_strength
 	_life_alignment_strength = _approach_alignment_strength(
@@ -826,6 +843,7 @@ func _push_configuration() -> void:
 
 
 func _push_runtime_state() -> void:
+	if _defer_runtime_upload: return
 	if not is_inside_tree():
 		return
 	_ensure_material()

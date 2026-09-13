@@ -18,7 +18,7 @@ func tap(parent: Node, side: int, at: Vector2) -> GrayboxNoteVisual:
 	item.tap_texture = THEME.zhu_tap_texture
 	item.tap_material = THEME.zhu_tap_material.duplicate(false)
 	parent.add_child(item)
-	item.prepare({"event_id": str(at), "affinity": side, "unit_kind": &"tap", "double_tap": true})
+	item.prepare({"event_id": str(at), "affinity": side, "unit_kind": &"tap", "double_press": true})
 	item.position = at
 	item.rotation = 0.0 if side == 0 else PI
 	item.set_approach_progress(1.0)

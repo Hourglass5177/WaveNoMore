@@ -43,6 +43,7 @@ func open(path: String) -> String:
 		for layer in definition.layers:
 			for sublayer in layer.sublayers:
 				var id := _append_sublayer(layer.depth, sublayer)
+				sublayer_record(id)["layer_name"]=layer.display_name
 				for value in sublayer.entries:
 					items.append({"id": _next_id, "sublayer": id, "entry": value.duplicate(false)})
 					_next_id += 1
@@ -63,6 +64,7 @@ func definition() -> StageBackgroundDefinition:
 		if layer == null:
 			layer = StageBackgroundLayer.new()
 			layer.depth = record.depth
+			layer.display_name=str(record.get("layer_name",""))
 			result.layers.append(layer)
 		var sublayer := record.resource.duplicate(false) as StageBackgroundSubLayer
 		sublayer.entries = []
@@ -221,14 +223,14 @@ func snapshot() -> Dictionary:
 	var result: Array[Dictionary] = []
 	for item in items: result.append({"id": item.id, "sublayer": item.sublayer, "entry": item.entry.duplicate(false)})
 	var layers: Array[Dictionary] = []
-	for record in sublayers: layers.append({"id": record.id, "depth": record.depth, "resource": record.resource.duplicate(false)})
+	for record in sublayers: layers.append({"id": record.id, "depth": record.depth, "resource": record.resource.duplicate(false),"layer_name":record.get("layer_name","")})
 	return {"items": result, "sublayers": layers}
 
 
 func signature() -> Array:
 	var result: Array = []
 	for record in sublayers:
-		result.append([record.id, record.depth, record.resource.sublayer_id, record.resource.display_name, record.resource.velocity, record.resource.continuity_id, record.resource.cycle_direction, record.resource.cycle_start, record.resource.cycle_end])
+		result.append([record.get("layer_name",""),record.id, record.depth, record.resource.sublayer_id, record.resource.display_name, record.resource.velocity, record.resource.continuity_id, record.resource.cycle_direction, record.resource.cycle_start, record.resource.cycle_end])
 	for item in items:
 		var value: StageBackgroundEntry = item.entry
 		result.append([item.sublayer, value.texture, value.sprite_frames, value.animation, value.infinite, value.random_flip, value.position, value.uniform_scale, value.material])
@@ -257,7 +259,7 @@ func _apply(state: Dictionary) -> void:
 	items.clear()
 	for item in state.items: items.append({"id": item.id, "sublayer": item.sublayer, "entry": item.entry.duplicate(false)})
 	sublayers.clear()
-	for record in state.sublayers: sublayers.append({"id": record.id, "depth": record.depth, "resource": record.resource.duplicate(false)})
+	for record in state.sublayers: sublayers.append({"id": record.id, "depth": record.depth, "resource": record.resource.duplicate(false),"layer_name":record.get("layer_name","")})
 	if index_of(selected_id) < 0: selected_id = -1
 	if sublayer_record(selected_sublayer_id).is_empty(): selected_sublayer_id = -1
 	changed.emit()
@@ -411,3 +413,9 @@ func save() -> String:
 	acknowledge_external()
 	changed.emit()
 	return ""
+
+func set_layer_name(depth: int, value: String) -> void:
+	var before:=snapshot()
+	for record in sublayers:
+		if record.depth==depth:record.layer_name=value
+	commit("命名背景层",before);changed.emit()

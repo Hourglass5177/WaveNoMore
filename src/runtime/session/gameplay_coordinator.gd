@@ -18,7 +18,7 @@ signal wave_contacted(contact: Dictionary)
 signal note_arrived(arrival: Dictionary)
 ## 重开后所有旧波和接触记录均已失效，表现层应清空波纹。
 signal waves_reset
-## 可供 HUD 和表现层读取的玩法快照变化时发出；传出的是深拷贝。
+## 本帧快照仅供读取；需要持有可修改副本的外部调用使用 snapshot()。
 signal snapshot_changed(snapshot: Dictionary)
 ## 当前输入所有权变化时发出；`owner` 是 GameplayTypes.InputOwner 枚举值。
 signal input_owner_changed(owner: int)
@@ -32,7 +32,7 @@ var simulation: GameplaySimulation
 ## `configure()` 是否已成功完成；为 false 时所有推进和输入接口都直接返回。
 var configured: bool = false
 
-## 最近一次从玩法内核取得的完整快照，向外返回时仍会复制，避免被表现层修改。
+## 最近一次完整快照；内部链路共享读取，显式 snapshot() 查询返回独立副本。
 var _last_snapshot: Dictionary = {}
 ## 上次已发布的输入所有权，用于只在实际变化时发送信号。
 var _last_owner: int = GameplayTypes.InputOwner.NONE
@@ -85,7 +85,9 @@ func process_input_frame() -> void:
 	#print("[GameplayCoordinator] process_input_frame configured=%s" % str(configured))
 	if not configured or simulation == null:
 		return
+	var started := GameplayFrameProfile.begin()
 	simulation.process_input_frame(get_tree().root.get_node("InputEventBuffer"))
+	GameplayFrameProfile.end(&"domain_input", started)
 	_drain_domain_events()
 	_refresh_snapshot()
 
@@ -93,7 +95,9 @@ func process_input_frame() -> void:
 func advance_to(timestamp_us: int, inclusive: bool = true) -> void:
 	if not configured or simulation == null:
 		return
+	var started := GameplayFrameProfile.begin()
 	simulation.advance_to(timestamp_us, inclusive)
+	GameplayFrameProfile.end(&"domain_advance", started)
 	_drain_domain_events()
 	_refresh_snapshot()
 
@@ -126,6 +130,10 @@ func apply_resume_rearm(held_snapshot: Dictionary) -> void:
 
 func snapshot() -> Dictionary:
 	return _last_snapshot.duplicate(true)
+
+func frame_snapshot() -> Dictionary:
+	## 内部消费者不修改快照；下一帧整体替换，旧帧内容不会被回写。
+	return _last_snapshot
 
 
 func request_su_preparation(event_id: String) -> void:
@@ -204,8 +212,10 @@ func _refresh_snapshot() -> void:
 	if defer_preview_snapshot: return
 	if not configured or simulation == null:
 		return
+	var started := GameplayFrameProfile.begin()
 	var next_snapshot: Dictionary = simulation.snapshot()
-	_last_snapshot = next_snapshot.duplicate(true)
+	_last_snapshot = next_snapshot
+	GameplayFrameProfile.end(&"snapshot", started)
 
 	var next_owner: int = int(next_snapshot.get(
 		"input_owner",
@@ -227,7 +237,7 @@ func _refresh_snapshot() -> void:
 		)
 		tuning_capture_changed.emit(_tuning_capture_active, initial_value)
 
-	snapshot_changed.emit(_last_snapshot.duplicate(true))
+	snapshot_changed.emit(_last_snapshot)
 
 ## 无声历史重演仍发送全部领域事件，只把昂贵的表现汇总推迟到目标时刻。
 var defer_preview_snapshot := false

@@ -8,20 +8,22 @@ uniform float eye_falloff_radius_px : hint_range(1.0, 1000.0, 1.0) = 128.0;
 
 varying vec2 center_screen_uv;
 varying vec4 item_color;
+varying float design_pixel_scale;
 
 void vertex() {
 	vec4 center = SCREEN_MATRIX * CANVAS_MATRIX * MODEL_MATRIX * vec4(0.0, 0.0, 0.0, 1.0);
 	center_screen_uv = center.xy / center.w * 0.5 + 0.5;
 	item_color = COLOR;
+	design_pixel_scale = length(CANVAS_MATRIX[0].xy);
 }
 
 void fragment() {
 	vec2 to_center = (vec2(0.5) - center_screen_uv) / SCREEN_PIXEL_SIZE;
-	float distance_px = length(to_center);
+	float distance_px = length(to_center) / max(design_pixel_scale, 0.0001);
 	// 仅在屏幕中心附近平滑减小半径；超过作用范围后保持默认固定值。
 	float falloff = smoothstep(0.0, eye_falloff_radius_px, distance_px);
-	vec2 offset_px = distance_px > 0.0001 ? to_center / distance_px * eye_offset_px * falloff : vec2(0.0);
-	// Reverse sampling moves the eye toward the center in screen space.
+	vec2 offset_px = distance_px > 0.0001 ? normalize(to_center) * eye_offset_px * design_pixel_scale * falloff : vec2(0.0);
+	// 位移半径使用设计像素，渲染分辨率改变时保持眼球运动幅度。
 	vec2 eye_uv = UV - dFdx(UV) * offset_px.x - dFdy(UV) * offset_px.y;
 	vec4 base = texture(TEXTURE, UV);
 	COLOR = note_eye(base, UV, eye_uv) * item_color;

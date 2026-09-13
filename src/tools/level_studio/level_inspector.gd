@@ -22,26 +22,56 @@ func refresh() -> void:
 	if object_data.is_empty(): _level(); return
 	LevelUI.label(self, "对象属性", 18)
 	LevelUI.text_field(self,"名称",object_data.name,func(value): workspace.set_object_field("name",value))
-	workspace.resource_field(self,"素材",object_data.asset,"all",func(value): workspace.set_object_field("asset",value))
-	var asset_actions:=HFlowContainer.new();add_child(asset_actions)
-	LevelUI.button(asset_actions,"删除资源引用",workspace.clear_object_asset_reference)
-	LevelUI.button(asset_actions,"删除对象",workspace.delete_selection)
-	LevelUI.choice(self,"坐标层",["world","life","death","hud"],object_data.layer,func(value): workspace.set_object_field("layer",value),["世界","生界","死界（中心对称）","屏幕 HUD"])
-	LevelUI.number(self,"层级",float(object_data.depth),func(value): workspace.set_object_field("depth",value),1,-999,999)
-	LevelUI.number(self,"背景遮挡深度",float(object_data.get("occlusion_depth",0)),func(value): workspace.set_object_field("occlusion_depth",roundi(value)),1,-999,999)
-	LevelUI.choice(self,"背景遮挡",["none","front","back"],str(object_data.get("occlusion_order","none")),func(value): workspace.set_object_field("occlusion_order",value),["不参与","背景前","背景后"])
-	LevelUI.toggle(self,"锁定对象",object_data.locked,func(value): workspace.set_object_field("locked",value))
-	LevelUI.toggle(self,"隐藏对象",object_data.hidden,func(value): workspace.set_object_field("hidden",value))
-	LevelUI.label(self,("当前动画值 · 自动关键帧开启" if workspace.auto_key else "基础属性 · 自动关键帧关闭")+"\n"+str({"intro":"曲前","song":"歌曲","outro":"曲后"}[workspace.section])+" · "+("当前难度 "+workspace.difficulty() if workspace.difficulty_only else "所有难度"),12)
+
+	LevelUI.label(self,workspace.transform_caption(),12)
 	if workspace.selection.size()>1: LevelUI.label(self,"已选 %d 个对象；共同属性批量修改"%workspace.selection.size(),12)
-	var fields: Dictionary = object_data.fields
-	if workspace.auto_key: fields = LevelShowSampler.object_state(doc.data.show,object_data,workspace.section,workspace.time_us,workspace.difficulty())
+	var fields: Dictionary = object_data.fields.duplicate(true)
+	var sampled:=LevelShowSampler.object_state(doc.data.show,object_data,workspace.section,workspace.time_us,workspace.difficulty())
+	if workspace.auto_key:fields=sampled
+	else:
+		for property: String in LevelTransformEdit.PROPERTIES:fields[property]=sampled[property]
 	LevelUI.vector(self,"位置",LevelFormat.vec(fields.position),func(value): workspace.set_property("position",value))
 	LevelUI.number(self,"旋转 °",float(fields.rotation),func(value): workspace.set_property("rotation",value),0.5)
 	LevelUI.vector(self,"大小",LevelFormat.vec(fields.scale),func(value): workspace.set_property("scale",value),0.01)
 	LevelUI.number(self,"透明度",float(fields.opacity),func(value): workspace.set_property("opacity",value),0.01,0,1)
 	LevelUI.color(self,"颜色",str(fields.color),func(value): workspace.set_property("color",value))
 	LevelUI.toggle(self,"显示",bool(fields.visible),func(value): workspace.set_property("visible",value))
+	LevelUI.label(self,"素材与显示",16)
+	workspace.resource_field(self,"素材",object_data.asset,workspace.object_asset_category(object_data),workspace.set_object_asset)
+	var asset_actions:=HFlowContainer.new();add_child(asset_actions)
+	var clear_button:=LevelUI.button(asset_actions,"清除引用",workspace.clear_object_asset_reference,"保留对象与演出，移除素材引用")
+	clear_button.disabled=Array(workspace.selection).all(func(id):return str(doc.find("objects",id).asset).is_empty())
+	LevelUI.button(asset_actions,"删除对象",workspace.delete_objects)
+	LevelUI.choice(self,"坐标层",["world","life","death","hud"],object_data.layer,func(value): workspace.set_object_field("layer",value),["世界","生界","死界（中心对称）","屏幕 HUD"])
+	LevelUI.number(self,"对象排序／视差",float(object_data.depth),func(value): workspace.set_object_field("depth",value),1,-999,999)
+	LevelUI.label(self,"背景遮挡",16)
+	var choices: Dictionary=workspace.background_layer_choices()
+	var current_depth:=int(object_data.get("occlusion_depth",0))
+	if not choices.has(current_depth):choices[current_depth]="深度 %d（当前环境无此层）"%current_depth
+	var depths: Array=choices.keys();depths.sort();var layer_captions:=[]
+	for depth in depths:layer_captions.append(choices[depth])
+	LevelUI.choice(self,"背景层",depths,int(object_data.get("occlusion_depth",0)),func(value):workspace.set_object_field("occlusion_depth",value),layer_captions)
+	var mode: String="inherit" if object_data.get("occlusion_inherit",object_data.get("occlusion_order","none")=="none") else str(object_data.get("occlusion_order","none"))
+	LevelUI.choice(self,"前后位置",["inherit","none","front","back"],mode,workspace.set_occlusion_mode,["沿用父组","不参与","背景前","背景后"])
+	var relation:=LevelShowPlayer.effective_occlusion(doc.data.show,object_data)
+	LevelUI.label(self,"当前生效："+("不参与背景遮挡" if relation.is_empty() else "深度 %s · %s"%[relation[0],"背景前" if relation[1]=="front" else "背景后"]),12)
+	LevelUI.toggle(self,"锁定对象",object_data.locked,func(value): workspace.set_object_field("locked",value))
+	LevelUI.toggle(self,"隐藏对象",object_data.hidden,func(value): workspace.set_object_field("hidden",value))
+	if not str(object_data.asset).is_empty():
+		LevelUI.button(self,"定位使用此素材的对象",func():workspace.select_asset_users(object_data.asset))
+		if workspace.assets().kind(object_data.asset)=="animation":
+			var names: PackedStringArray=workspace.assets().actions(object_data.asset)
+			LevelUI.choice(self,"默认动作",Array(names),str(object_data.get("animation",workspace.assets().default_animation(object_data.asset))),func(value):workspace.set_object_field("animation",value))
+			LevelUI.button(self,"重新导入此动画",func():workspace.import_animation(object_data.asset))
+	var bases:=VBoxContainer.new();add_child(bases);bases.hide()
+	var base_toggle:=LevelUI.button(self,"高级：直接编辑全局基础值",func():bases.visible=not bases.visible)
+	move_child(base_toggle,bases.get_index())
+	LevelUI.number(bases,"背景深度",current_depth,func(value):workspace.set_object_field("occlusion_depth",int(value)),1,-999,999)
+	LevelUI.label(bases,"基础值用于没有动画覆盖的时刻；修改会影响所有区段。",12)
+	LevelUI.vector(bases,"基础位置",LevelFormat.vec(object_data.fields.position),func(value):workspace.set_base_property("position",value))
+	LevelUI.number(bases,"基础旋转",float(object_data.fields.rotation),func(value):workspace.set_base_property("rotation",value),0.5)
+	LevelUI.vector(bases,"基础大小",LevelFormat.vec(object_data.fields.scale),func(value):workspace.set_base_property("scale",value))
+
 	if object_data.type == "text":
 		LevelUI.text_field(self,"文字",str(fields.text),func(value): workspace.set_property("text",value))
 		workspace.resource_field(self,"字体",str(fields.font),"font",func(value): workspace.set_property("font",value))
@@ -136,6 +166,9 @@ func _clip(track: Dictionary,clip: Dictionary) -> void:
 func _level() -> void:
 	var level: Dictionary = workspace.document.data
 	LevelUI.label(self,"关卡设置",18)
+	var scene_ids:=[];var scene_names:=[]
+	for stage in ChartSceneLibrary.shared().all_stages():scene_ids.append(stage.stage_id);scene_names.append(stage.display_name)
+	LevelUI.choice(self,"基础主题",scene_ids,str(level.scene_id),func(value):workspace.document.fields("切换基础主题",{"scene_id":value}),scene_names)
 	LevelUI.text_field(self,"关卡 ID",str(level.level_id),func(value):workspace.document.fields("关卡标识",{"level_id":value}))
 	for pair in [["标题","title"],["作者","author"],["说明","description"],["封面素材","cover"],["下一关 ID","next_stage_id"]]:
 		LevelUI.text_field(self,pair[0],str(level.get(pair[1],"")),func(value): workspace.document.fields("修改关卡设置",{pair[1]:value}))
@@ -160,7 +193,7 @@ func edit_document() -> LevelDocument: return workspace.document
 
 func _mark_mixed() -> void:
 	if workspace.selection.size()<2: return
-	var names := {"名称":"name","素材":"asset","坐标层":"layer","层级":"depth","位置":"position","旋转 °":"rotation","大小":"scale","透明度":"opacity","颜色":"color","显示":"visible","文字":"text","字体":"font","字号":"font_size","区域尺寸":"size","对齐":"alignment","打字进度":"visible_ratio","音量 dB":"volume_db","镜头缩放":"zoom","震动强度":"shake"}
+	var names := {"名称":"name","素材":"asset","坐标层":"layer","对象排序／视差":"depth","背景层":"occlusion_depth","前后位置":"occlusion_order","位置":"position","旋转 °":"rotation","大小":"scale","透明度":"opacity","颜色":"color","显示":"visible","文字":"text","字体":"font","字号":"font_size","区域尺寸":"size","对齐":"alignment","打字进度":"visible_ratio","音量 dB":"volume_db","镜头缩放":"zoom","震动强度":"shake"}
 	for row in get_children():
 		if not row is HBoxContainer or row.get_child_count()<2 or not row.get_child(0) is Label: continue
 		var caption: String=row.get_child(0).text
@@ -168,8 +201,10 @@ func _mark_mixed() -> void:
 		var property: String=names[caption]; var values := []
 		for id in workspace.selection:
 			var object_data: Dictionary=workspace.document.find("objects",id)
-			var fields: Dictionary=LevelShowSampler.object_state(workspace.document.data.show,object_data,workspace.section,workspace.time_us,workspace.difficulty()) if workspace.auto_key else object_data.fields
-			values.append(object_data.get(property,fields.get(property)))
+			var fields: Dictionary=LevelShowSampler.object_state(workspace.document.data.show,object_data,workspace.section,workspace.time_us,workspace.difficulty())
+			if property=="occlusion_order":values.append("inherit" if object_data.get("occlusion_inherit",object_data.get("occlusion_order","none")=="none") else object_data.get("occlusion_order","none"))
+			elif property in LevelTransformEdit.PROPERTIES or workspace.auto_key:values.append(object_data.get(property,fields.get(property)))
+			else:values.append(object_data.get(property,object_data.fields.get(property)))
 		if values.all(func(value):return value==values[0]): continue
 		row.get_child(0).text=caption+" · 多个值"
 		for control in row.get_children():

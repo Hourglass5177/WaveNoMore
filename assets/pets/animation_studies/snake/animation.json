@@ -1,0 +1,95 @@
+{
+  "id": "snake",
+  "name": "苹果蛇",
+  "unit_scale": 0.125,
+  "source_anchor": [
+    322.0,
+    437.0
+  ],
+  "idle": 3.2,
+  "trigger": 0.8,
+  "death": 2.05,
+  "bone_death": 1.4,
+  "bone_count": 10,
+  "parts": [
+    "neck_middle",
+    "neck_right",
+    "body",
+    "neck_left"
+  ],
+  "breath": [
+    {
+      "bindings": [
+        {
+          "bone": "root",
+          "weight": 0.002210700303585722,
+          "point": [
+            16.0,
+            -220.0
+          ]
+        },
+        {
+          "bone": "neck_middle",
+          "weight": 0.3618969572998375,
+          "point": [
+            87.0,
+            -90.0
+          ]
+        },
+        {
+          "bone": "head_middle",
+          "weight": 0.6358923423965768,
+          "point": [
+            63.0,
+            -8.0
+          ]
+        }
+      ],
+      "direction": [
+        0.2,
+        0.98
+      ],
+      "start": 0.18,
+      "duration": 0.44,
+      "length_px": 8
+    },
+    {
+      "bindings": [
+        {
+          "bone": "head_right",
+          "weight": 1.0,
+          "point": [
+            74.0,
+            -30.0
+          ]
+        }
+      ],
+      "direction": [
+        1.0,
+        -0.04
+      ],
+      "start": 0.26,
+      "duration": 0.44,
+      "length_px": 10
+    },
+    {
+      "bindings": [
+        {
+          "bone": "head_left",
+          "weight": 1.0,
+          "point": [
+            -39.0,
+            57.0
+          ]
+        }
+      ],
+      "direction": [
+        -0.72,
+        0.69
+      ],
+      "start": 0.32,
+      "duration": 0.44,
+      "length_px": 9
+    }
+  ]
+}

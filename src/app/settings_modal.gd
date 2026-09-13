@@ -19,6 +19,7 @@ var _flash: HSlider
 var _tuning_wave_intensity: HSlider
 ## 是否使用全屏窗口的开关。
 var _fullscreen: CheckButton
+var _resolution: OptionButton
 ## 是否在关卡中显示开发调试 HUD 的开关。
 var _debug: CheckButton
 
@@ -58,6 +59,18 @@ func _ready() -> void:
 	_fullscreen.button_pressed = SettingsService.fullscreen
 	_fullscreen.add_theme_font_size_override("font_size", 22)
 	column.add_child(_fullscreen)
+	var resolution_row := HBoxContainer.new()
+	var resolution_label := Label.new(); resolution_label.text = "分辨率"
+	resolution_label.custom_minimum_size.x = 260
+	MingheUiStyle.style_body(resolution_label, 21)
+	resolution_row.add_child(resolution_label)
+	_resolution = OptionButton.new()
+	_resolution.name = "Resolution"
+	_resolution.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	for size: Vector2i in SettingsService.RESOLUTIONS:
+		_resolution.add_item("%d × %d" % [size.x, size.y])
+		if size == SettingsService.resolution: _resolution.select(_resolution.item_count - 1)
+	resolution_row.add_child(_resolution); column.add_child(resolution_row)
 	_debug = CheckButton.new()
 	_debug.text = "显示调试 HUD"
 	_debug.button_pressed = SettingsService.debug_hud_enabled
@@ -124,6 +137,7 @@ func _save_and_close() -> void:
 	SettingsService.flash_scale = _flash.value
 	SettingsService.tuning_wave_intensity = _tuning_wave_intensity.value
 	SettingsService.fullscreen = _fullscreen.button_pressed
+	SettingsService.resolution = SettingsService.RESOLUTIONS[_resolution.selected]
 	SettingsService.debug_hud_enabled = _debug.button_pressed
 	SettingsService.save_settings()
 	close_requested.emit()

@@ -13,6 +13,7 @@ const DEFAULT_TUNING_SCENE: PackedScene = preload("res://scenes/presentation/fie
 const DEFAULT_RAPID_SCENE: PackedScene = preload("res://scenes/presentation/fields/graybox_rapid_field.tscn")
 # 倒计时圆环也单独进入对象池；键名不能与音符场景的资源路径冲突。
 const DEFAULT_TIMING_RING_SCENE: PackedScene = preload("res://scenes/presentation/notes/default_timing_ring.tscn")
+const TIMING_CUE_STYLE: TimingCueStyle = preload("res://content/presentation/timing_cue_style.tres")
 # 判定进度环在对象池中的固定分类键，供创建和回收时找到同一池。
 const TIMING_RING_POOL_KEY: StringName = &"timing_ring"
 ## 中断 Hold 的离场曲线仅在 Miss 时采样一次，之后按绝对时间查询弧长。
@@ -76,6 +77,9 @@ var _life_note_slot: Node2D
 var _death_note_slot: Node2D
 # 调频和疾振区域提示的显示容器。
 var _field_slot: Node2D
+## 判定提示在折射后绘制；音符与碎片仍留在世界层。
+var _judgment_canvas: CanvasLayer
+var _timing_slot: Node2D
 # 暂未使用实例的停放容器；对象回收后移到这里并隐藏，而非销毁。
 var _pool_root: Node2D
 # 活动表按事件 ID 保存节点、类型和谱面数据；对象池按素材类型保存可复用节点。
@@ -103,10 +107,25 @@ func _ready() -> void:
 	_death_note_slot = get_node(death_note_slot_path) as Node2D
 	_field_slot = get_node(field_slot_path) as Node2D
 	_pool_root = get_node(pool_root_path) as Node2D
+	_judgment_canvas = CanvasLayer.new()
+	_judgment_canvas.name = "JudgmentCanvas"
+	_judgment_canvas.layer = 5
+	add_child(_judgment_canvas)
+	_judgment_canvas.transform = get_global_transform_with_canvas()
+	_field_slot.reparent(_judgment_canvas, false)
+	_timing_slot = Node2D.new()
+	_timing_slot.name = "TimingRings"
+	_judgment_canvas.add_child(_timing_slot)
+	set_notify_transform(true)
 	_effects = NoteFragmentHost.new()
 	_effects.name = "NoteEffects"
 	add_child(_effects)
 
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_TRANSFORM_CHANGED and is_node_ready():
+		_judgment_canvas.transform = get_global_transform_with_canvas()
+	elif what == NOTIFICATION_VISIBILITY_CHANGED and is_node_ready():
+		_judgment_canvas.visible = is_visible_in_tree()
 
 func bind_scheduler(scheduler: ChartScheduler) -> void:
 	clear()
@@ -154,6 +173,7 @@ func configure_rules(rules: GameplayRuleSet) -> void:
 
 
 func set_clock_sample(sample: ClockSample) -> void:
+	var profile_started := GameplayFrameProfile.begin()
 	## 真 Hold 在唯一时钟入口先平滑头部再推进身体；相同时间不重复积分。
 	var delta_sec: float = maxf(sample.judge_time_sec - _last_judge_visual_time, 0.0) if _clock_initialized else 0.0
 	if preview_time_driven and _clock_initialized:
@@ -167,11 +187,17 @@ func set_clock_sample(sample: ClockSample) -> void:
 	for hold_entry: Dictionary in _active.values():
 		var hold_visual: Node2D = hold_entry["node"]
 		if hold_visual is GrayboxHoldVisual:
+			hold_visual.defer_geometry = _restoring_motion
 			hold_visual.advance_body(delta_sec)
 			if delta_sec > 0.0 and _snapshot_id_set_contains(&"held_hold_ids", hold_visual.event_id) and not bool(hold_entry.get("hold_failed", false)) and not bool(hold_entry.get("hold_finished", false)):
 				var consumed: float = float(hold_entry.get("hold_visual_progress", 0.0))
 				hold_visual.emit_consumption(float(hold_entry.get("hold_effect_progress", 0.0)), consumed, visual_time_sec)
 				hold_entry["hold_effect_progress"] = consumed
+	GameplayFrameProfile.end(&"presentation", profile_started)
+
+func flush_hold_geometry() -> void:
+	for entry: Dictionary in _active.values():
+		if entry.node is GrayboxHoldVisual: entry.node.flush_geometry()
 
 
 func set_visual_time(value: float) -> void:
@@ -182,9 +208,15 @@ func set_visual_time(value: float) -> void:
 
 
 func set_gameplay_snapshot(snapshot: Dictionary) -> void:
-	gameplay_snapshot = snapshot.duplicate(true)
-	_update_active_visuals()
+	gameplay_snapshot = snapshot
+	# 同一帧的时钟入口随后统一更新；避免以旧视觉时间绘制新领域状态。
 
+
+func sync_preview_controls(snapshot: Dictionary, time_sec: float) -> void:
+	# 零时间输入只切换接管状态和白光，不重复更新整场音符或上传身体。
+	gameplay_snapshot = snapshot
+	_judge_visual_time = time_sec
+	_update_tuning_hold_controls()
 
 func restore_preview_motion(snapshot: Dictionary, sample: ClockSample) -> void:
 	## Tap 的位置和动画可在目标时刻求值；只有 Hold 身体与其调频控制需要逐步恢复。
@@ -199,6 +231,7 @@ func clear() -> void:
 	## Seek、重试、会话结束统一清除实例及其控制目标、插值和脊线状态。
 	if _effects != null: _effects.clear()
 	_clock_initialized = false
+	visual_time_sec = 0.0
 	_judge_visual_time = 0.0
 	_last_judge_visual_time = 0.0
 	var ids: Array[String] = []
@@ -206,6 +239,7 @@ func clear() -> void:
 	for event_id: String in ids:
 		_release_visual(event_id)
 	_known_tuning_ids.clear()
+	_tuning_order_phases.clear()
 
 
 func _on_visual_spawn_requested(kind: StringName, event_data: Dictionary) -> void:
@@ -236,7 +270,7 @@ func _spawn_visual_now(kind: StringName, event_id: String, event_data: Dictionar
 		visual.effect_requested.connect(_on_note_effect)
 	var parent_slot: Node2D = _slot_for(kind, event_data)
 	if visual.get_parent() != parent_slot:
-		visual.reparent(parent_slot)
+		visual.reparent(parent_slot, false)
 	visual.modulate = Color.WHITE
 	visual.z_index = 0
 	visual.visible = true
@@ -251,13 +285,15 @@ func _spawn_visual_now(kind: StringName, event_id: String, event_data: Dictionar
 	var timing_ring: Node2D
 	if kind not in [ChartScheduler.KIND_TUNING, ChartScheduler.KIND_RAPID]:
 		timing_ring = _acquire_timing_ring(_timing_ring_scene())
-		if timing_ring.get_parent() != parent_slot:
-			timing_ring.reparent(parent_slot)
+		if timing_ring.get_parent() != _timing_slot:
+			timing_ring.reparent(_timing_slot, false)
 		timing_ring.visible = true
 		var timing_view_model: Dictionary = event_data.duplicate(true)
 		timing_view_model["_timing_kind"] = kind
 		if timing_ring.has_method("prepare"):
 			timing_ring.call("prepare", timing_view_model)
+		if timing_ring.has_method("configure_timing_style"):
+			timing_ring.call("configure_timing_style", TIMING_CUE_STYLE)
 
 	_active[event_id] = {
 		"node": visual,
@@ -288,12 +324,13 @@ func _on_visual_judged(event_id: String, grade: int) -> void:
 	if preview_time_driven and active_entry["data"].get("unit_kind") == &"hold" and grade != GameplayTypes.JudgmentGrade.MISS:
 		active_entry["hold_visual_progress"] = 1.0
 	var visual: Node2D = active_entry["node"]
+	_sync_preview_time(visual, _scheduler.visual_time_sec)
 	if StringName(active_entry["data"].get("unit_kind", &"")) == &"hold":
 		if grade == GameplayTypes.JudgmentGrade.MISS:
 			# 重复结果不得重置离场时间、起点或已冻结的路线。
 			if not bool(active_entry.get("hold_failed", false)):
 				active_entry["hold_failed"] = true
-				active_entry["hold_resume_time"] = visual_time_sec
+				active_entry["hold_resume_time"] = _scheduler.visual_time_sec
 				if active_entry.has("hold_anchor_distance"):
 					var data: Dictionary = active_entry["data"]
 					var affinity: int = int(data.get("affinity", GameplayTypes.Affinity.ZHU))
@@ -321,7 +358,8 @@ func _on_visual_judged(event_id: String, grade: int) -> void:
 		visual.call("play_miss")
 	elif not bool(active_entry.get("hold_finished", false)) and visual.has_method("play_judgment"):
 		visual.call("play_judgment", grade)
-	if is_instance_valid(timing_ring) and not already_confirmed:
+	if is_instance_valid(timing_ring) and (not already_confirmed or StringName(active_entry["data"].get("unit_kind", &"")) == &"hold"):
+		_sync_timing_ring_time(timing_ring, _scheduler.visual_time_sec)
 		if grade == GameplayTypes.JudgmentGrade.MISS and timing_ring.has_method("play_miss"):
 			timing_ring.call("play_miss")
 		elif timing_ring.has_method("play_judgment"):
@@ -350,6 +388,10 @@ func _on_visual_timing_confirmed(event_id: String, grade: int) -> void:
 	# 这里刻意不回退调用 play_judgment：旧正式素材可能把它用于销毁性的终结特效。
 	# 自定义素材必须明确实现不会销毁音符的 play_timing_confirmed 接口。
 	if is_instance_valid(timing_ring):
+		# Hold 头命中后持续环继续计时，只在最终结果时淡出。
+		if StringName(active_entry["data"].get("unit_kind", &"")) == &"hold" and grade != GameplayTypes.JudgmentGrade.MISS:
+			return
+		_sync_timing_ring_time(timing_ring, _scheduler.visual_time_sec)
 		if grade == GameplayTypes.JudgmentGrade.MISS and timing_ring.has_method("play_miss"):
 			timing_ring.call("play_miss")
 		elif timing_ring.has_method("play_judgment"):
@@ -411,9 +453,19 @@ func _update_active_visuals() -> void:
 		_update_visual(event_id, _active[event_id])
 
 
+var _tuning_order_phases: Dictionary = {}
+
 func _update_tuning_preview_presentation() -> void:
 	## 当前条与未来条可以同时存在；这里只分配层级、亮度和共享顺序号，
 	## 不改变任何事件的位置、时序或判定状态。
+	var phases: Dictionary = {}
+	for event_id: String in _active:
+		var entry: Dictionary = _active[event_id]
+		if entry.kind != ChartScheduler.KIND_TUNING: continue
+		var state := _active_tuning_slider_state(event_id)
+		phases[event_id] = 0 if bool(state.get("interaction_open", false)) else (1 if _start_usec(entry.data) > roundi(_judge_visual_time * 1000000.0) else 2)
+	if phases == _tuning_order_phases: return
+	_tuning_order_phases = phases
 	var groups: Dictionary[String, Dictionary] = {}
 	for event_id: String in _active.keys():
 		var entry: Dictionary = _active[event_id]
@@ -515,6 +567,7 @@ func _update_visual(event_id: String, active_entry: Dictionary) -> void:
 		_update_hold_visual(event_id, active_entry, approach, region_progress, hold_active, hold_held)
 		if not _active.has(event_id):
 			return
+		if visual is GrayboxHoldVisual: visual.set_note_glow_time(presentation_time, time_to_hit_sec)
 	elif kind == ChartScheduler.KIND_NOTE:
 		if active_entry.has("tap_contact_position"):
 			visual.position = active_entry.tap_contact_position
@@ -547,6 +600,7 @@ func _update_visual(event_id: String, active_entry: Dictionary) -> void:
 			visual.call("set_rapid_ratio", float(gameplay_snapshot.get("rapid_ratio", 0.0)))
 
 	if is_instance_valid(timing_ring):
+		_sync_timing_ring_time(timing_ring, visual_time_sec)
 		if visual is GrayboxNoteVisual and visual._tap_body_only():
 			timing_ring.visible = false
 			return
@@ -797,7 +851,7 @@ func _release_visual(event_id: String) -> void:
 	visual.modulate = Color.WHITE
 	visual.z_index = 0
 	if visual.get_parent() != _pool_root:
-		visual.reparent(_pool_root)
+		visual.reparent(_pool_root, false)
 	visual.visible = false
 	var pool: Array = _pools.get(pool_key, [])
 	pool.append(visual)
@@ -812,7 +866,7 @@ func _release_visual(event_id: String) -> void:
 			timing_ring.scale = Vector2.ONE
 			timing_ring.modulate = Color.WHITE
 		if timing_ring.get_parent() != _pool_root:
-			timing_ring.reparent(_pool_root)
+			timing_ring.reparent(_pool_root, false)
 		timing_ring.visible = false
 		var ring_pool: Array = _pools.get(TIMING_RING_POOL_KEY, [])
 		ring_pool.append(timing_ring)
@@ -862,8 +916,14 @@ func _apply_hold_head_texture(instance: Node2D, data: Dictionary) -> void:
 
 ## 全局设计资源不再由关卡主题覆盖；素材场景仍由主题选择。
 func _apply_effect_style(instance: Node2D, data: Dictionary) -> void:
+	if instance.has_method("configure_timing_style"):
+		instance.call("configure_timing_style", TIMING_CUE_STYLE)
 	if instance.has_method("configure_effect_style"):
 		instance.call("configure_effect_style", GrayboxNoteVisual.EFFECT_STYLE, int(data.get("affinity", 0)))
+
+func _sync_timing_ring_time(ring: Node2D, at_sec: float) -> void:
+	if ring.has_method("set_visual_time"):
+		ring.call("set_visual_time", at_sec)
 
 
 func _acquire_timing_ring(scene: PackedScene) -> Node2D:

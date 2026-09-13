@@ -38,6 +38,7 @@ var stage_definition: StageDefinition
 @onready var parallax_controller: ParallaxController = $ParallaxController
 @onready var _background_base: CanvasLayer = $BackgroundBase
 @onready var _cue_canvas: CanvasLayer = $CueCanvas
+@onready var _judgment_canvas: CanvasLayer = $CueCanvas/GameplayCueLayer
 @onready var _distortion: WaveDistortionVisual = $WaveDistortion
 @onready var _tutorial_canvas: CanvasLayer = $CueCanvas/ShowCueHost/TutorialCanvas
 
@@ -270,8 +271,6 @@ func set_song_duration(duration_sec: float) -> void:
 
 
 func _on_clock_sample(sample: ClockSample) -> void:
-	_note_visual_host.set_visual_time(sample.visual_time_sec)
-	_tuning_interference_visual.set_clock_sample(sample)
 	_backdrop.set_song_progress(sample.song_time_sec / maxf(_song_duration_sec, 0.001))
 
 func set_preview_time_driven() -> void:
@@ -289,6 +288,8 @@ func restore_preview_motion(snapshot: Dictionary, sample: ClockSample) -> void:
 func _on_visual_frame_ready(sample: ClockSample) -> void:
 	## Gameplay 写入当前目标后推进身体；原始时钟信号仅设置视觉目标。
 	_note_visual_host.set_clock_sample(sample)
+	_note_visual_host.flush_hold_geometry()
+	_tuning_interference_visual.set_frame(sample, _pending_wave_snapshot)
 	if parallax_controller.environment != null: return
 	parallax_controller.set_song_time(sample.song_time_sec)
 	var camera_position := Vector2.ZERO
@@ -314,6 +315,7 @@ func _sync_canvas_layers() -> void:
 	var pose := get_global_transform_with_canvas()
 	_background_base.transform = pose
 	_cue_canvas.transform = pose
+	_judgment_canvas.transform = pose
 	_distortion.sync_transform(pose)
 	_tutorial_canvas.transform = pose
 
@@ -342,10 +344,12 @@ func attach_notes_to_parallax() -> void:
 			parallax_controller.register_object(slot, NOTE_PARALLAX_DEPTH)
 
 
+var _pending_wave_snapshot: Dictionary = {}
+
 func _on_gameplay_snapshot(snapshot: Dictionary) -> void:
 	_update_actor_snapshot(snapshot)
 	_note_visual_host.set_gameplay_snapshot(snapshot)
-	_tuning_interference_visual.set_gameplay_snapshot(snapshot)
+	_pending_wave_snapshot = snapshot
 	_twin_gate_cue_visual.set_tuning_active(bool(snapshot.get("tuning_field_active", false)))
 	_twin_gate_cue_visual.set_bell_held(bool(snapshot.get("life_held", false)), bool(snapshot.get("death_held", false)))
 	var soul_fire: float = float(snapshot.get("soul_fire", 0.0))
@@ -372,6 +376,7 @@ func _on_wave_launched(wave: Dictionary) -> void:
 func _update_actor_snapshot(snapshot: Dictionary) -> void:
 	# 重置后的领域哨兵不是歌曲时间；首份有效快照再建立静息相位。
 	if int(snapshot.time_us) == -9_000_000_000_000_000: return
+	var profile_started := GameplayFrameProfile.begin()
 	var time_sec := float(snapshot.time_us) / 1000000.0
 	_actor_events.sort_custom(func(a: Dictionary, b: Dictionary): return a.time < b.time)
 	while not _actor_events.is_empty() and _actor_events[0].time <= time_sec:
@@ -389,6 +394,8 @@ func _update_actor_snapshot(snapshot: Dictionary) -> void:
 	if _life_attacking: _continue_actor_attack(_life_actor, float(snapshot.get("life_frequency_hz", attack_reference_hz)))
 	if _death_attacking: _continue_actor_attack(_death_actor, float(snapshot.get("death_frequency_hz", attack_reference_hz)))
 
+	GameplayFrameProfile.end(&"actors", profile_started)
+
 
 func _queue_actor_damage(record: DamageRecord) -> void:
 	if record.actual_damage <= 0: return
@@ -401,6 +408,7 @@ func _queue_actor_death(time: float, side: int = GameplayTypes.Affinity.SU) -> v
 
 
 func _advance_actor_time(time: float) -> void:
+	if time == _preview_actor_time_sec: return
 	_actor_snapshot_time_sec = time
 	var delta := maxf(time - _preview_actor_time_sec, 0.0) if is_finite(_preview_actor_time_sec) else 0.0
 	for actor in [_life_actor, _death_actor]:

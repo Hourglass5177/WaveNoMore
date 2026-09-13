@@ -9,20 +9,12 @@ extends Node2D
 @export_range(24.0, 160.0, 1.0) var note_radius: float = 66.0
 ## 调频或疾振提示环半径，单位为像素；当前 Host 不为这两类事件创建通用圆环。
 @export_range(24.0, 200.0, 1.0) var field_radius: float = 96.0
-## 固定轨道和亮弧的线宽，单位为像素；数值越大越醒目。
-@export_range(1.0, 16.0, 0.5) var track_width: float = 6.0
 ## 进场外圈相对固定轨道多出的半径，单位为像素；数值越大，收束运动越明显。
 @export_range(0.0, 80.0, 1.0) var outer_approach_offset: float = 30.0
 ## 目标时刻过后仍允许圆环停留的秒数；数值越大，迟到反馈保留越久。
 @export_range(0.0, 0.5, 0.01) var post_hit_linger_sec: float = 0.22
 
 @export_group("Palette")
-## 生音符圆环颜色，对应手柄 R1、右键或 J。
-@export var life_color: Color = Color("fff0cf")
-## 死音符圆环颜色，对应手柄 L1、左键或 F。
-@export var death_color: Color = Color("d8e1ff")
-## 生死共同事件的圆环颜色，使用骨白以区别单侧红黑提示。
-@export var shared_color: Color = Color("fff8e8")
 ## 未填充轨道底色；透明度越高，背景上的圆环底轨越明显。
 @export var track_color: Color = Color(0.03, 0.035, 0.05, 0.72)
 
@@ -47,8 +39,35 @@ var _judged: bool = false
 var _missed: bool = false
 # 相对基础半径的像素偏移；正值把环向外扩，负值向内缩。
 var _radius_offset: float = 0.0
-# 保存当前反馈 Tween，节点回收到对象池时必须先停止它。
-var _feedback_tween: Tween
+## 主线和柔光统一读取全局样式，反馈年龄由宿主时钟驱动。
+var cue_style: TimingCueStyle = preload("res://content/presentation/timing_cue_style.tres")
+var _glow: TimingCueGlow
+var _visual_time: float = 0.0
+var _judged_at: float = INF
+
+func _ready() -> void:
+	_glow = TimingCueGlow.new()
+	_glow.name = "TimingCueGlow"
+	add_child(_glow)
+
+func configure_timing_style(style: TimingCueStyle) -> void:
+	cue_style = style
+	set_visual_time(_visual_time)
+	queue_redraw()
+
+func set_visual_time(value: float) -> void:
+	_visual_time = value
+	if not _judged:
+		modulate.a = cue_style.note_opacity
+		return
+	# 反馈不使用 Tween；同一绝对时刻的淡出和缩放在暂停、定位后完全一致。
+	var age := maxf(value - _judged_at, 0.0)
+	var ratio := clampf(age / 0.13, 0.0, 1.0)
+	var eased := 1.0 + 2.70158 * pow(ratio - 1.0, 3.0) + 1.70158 * pow(ratio - 1.0, 2.0)
+	scale = Vector2.ONE * lerpf(1.10 if _missed else 0.88, 1.0, eased)
+	modulate.a = cue_style.note_opacity * (1.0 - pow(clampf(age / 0.15, 0.0, 1.0), 2.0))
+	visible = age < 0.15
+	queue_redraw()
 
 
 func prepare(view_model: Dictionary) -> void:
@@ -62,16 +81,17 @@ func prepare(view_model: Dictionary) -> void:
 	_judged = false
 	_missed = false
 	_radius_offset = 0.0
-	if _feedback_tween != null:
-		_feedback_tween.kill()
-	_feedback_tween = null
+	_judged_at = INF
+	_visual_time = 0.0
+	if _glow != null: _glow.clear()
 	visible = true
-	modulate = Color.WHITE
+	modulate = Color(1.0, 1.0, 1.0, cue_style.note_opacity)
 	scale = Vector2.ONE
 	queue_redraw()
 
 
 func set_timing(time_to_hit_sec: float, approach_duration_sec: float) -> void:
+	if _judged: return
 	_time_to_hit_sec = time_to_hit_sec
 	_approach_duration_sec = maxf(approach_duration_sec, 0.001)
 	_sustain_mode = false
@@ -83,6 +103,7 @@ func set_timing(time_to_hit_sec: float, approach_duration_sec: float) -> void:
 
 
 func set_sustain_progress(region_progress: float) -> void:
+	if _judged: return
 	# Hold 头命中后，圆环改为尾段引导，并按谱面区间的绝对进度重新从 0 填到 1。
 	_sustain_mode = true
 	_progress = clampf(region_progress, 0.0, 1.0)
@@ -97,19 +118,13 @@ func set_radius_offset(value: float) -> void:
 
 
 func play_judgment(grade: int) -> void:
+	if _judged: return
 	_judged = true
+	_judged_at = _visual_time
 	_missed = grade == GameplayTypes.JudgmentGrade.MISS
 	visible = true
 	_progress = 1.0
-	if _feedback_tween != null:
-		_feedback_tween.kill()
-	modulate = Color.WHITE
-	scale = Vector2(1.10, 1.10) if _missed else Vector2(0.88, 0.88)
-	_feedback_tween = create_tween()
-	_feedback_tween.set_parallel(true)
-	_feedback_tween.tween_property(self, "scale", Vector2.ONE, 0.13).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	_feedback_tween.tween_property(self, "modulate:a", 0.0, 0.15).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-	_feedback_tween.chain().tween_callback(func() -> void: visible = false)
+	set_visual_time(_visual_time)
 	queue_redraw()
 
 
@@ -118,9 +133,9 @@ func play_miss() -> void:
 
 
 func reset_for_pool() -> void:
-	if _feedback_tween != null:
-		_feedback_tween.kill()
-	_feedback_tween = null
+	_judged_at = INF
+	_visual_time = 0.0
+	if _glow != null: _glow.clear()
 	event_id = ""
 	_progress = 0.0
 	_time_to_hit_sec = INF
@@ -136,6 +151,7 @@ func reset_for_pool() -> void:
 
 
 func _draw() -> void:
+	var track_width := cue_style.progress_width
 	var radius: float = field_radius if timing_kind == &"tuning" or timing_kind == &"rapid" else note_radius + _radius_offset
 	var color: Color = _ring_color()
 	if _missed:
@@ -143,7 +159,9 @@ func _draw() -> void:
 
 	# 外圈在目标时刻收束到固定轨道，亮弧则从十二点方向顺时针填满。
 	var outer_radius: float = radius + outer_approach_offset * (1.0 - _progress)
-	draw_arc(Vector2.ZERO, outer_radius, 0.0, TAU, 72, Color(color, 0.18 + _progress * 0.12), 2.0, true)
+	var approach_alpha := cue_style.approach_alpha(_progress)
+	draw_arc(Vector2.ZERO, outer_radius, 0.0, TAU, 72, Color(track_color, 0.55), cue_style.approach_width + 2.0, true)
+	draw_arc(Vector2.ZERO, outer_radius, 0.0, TAU, 72, Color(color, approach_alpha), cue_style.approach_width, true)
 	draw_arc(Vector2.ZERO, radius, 0.0, TAU, 72, track_color, track_width + 3.0, true)
 	draw_arc(Vector2.ZERO, radius, 0.0, TAU, 72, Color(color, 0.24), track_width, true)
 	if _progress > 0.0001:
@@ -152,17 +170,17 @@ func _draw() -> void:
 		var point_count: int = maxi(4, ceili(72.0 * _progress))
 		draw_arc(Vector2.ZERO, radius, start_angle, end_angle, point_count, color, track_width, true)
 		var leading_point := Vector2(cos(end_angle), sin(end_angle)) * radius
-		draw_circle(leading_point, track_width * 0.62, color, true, -1.0, true)
+		draw_circle(leading_point, track_width * 0.62, cue_style.note_style.white_color, true, -1.0, true)
 
 	# 固定的十二点标记给出明确起点和闭合点，繁杂背景下也能看清。
 	var top := Vector2(0.0, -radius)
-	draw_circle(top, track_width * 0.72, Color("fff5d8"), true, -1.0, true)
+	draw_circle(top, track_width * 0.72, cue_style.note_style.white_color, true, -1.0, true)
 	var marker := PackedVector2Array([
 		Vector2(-6.0, -radius - 17.0),
 		Vector2(6.0, -radius - 17.0),
 		Vector2(0.0, -radius - 7.0),
 	])
-	draw_colored_polygon(marker, Color("fff5d8"))
+	draw_colored_polygon(marker, cue_style.note_style.white_color)
 
 	if _progress >= 0.999:
 		draw_arc(Vector2.ZERO, radius - track_width * 1.35, 0.0, TAU, 72, Color(color.lightened(0.28), 0.62), 2.0, true)
@@ -170,15 +188,15 @@ func _draw() -> void:
 		var cross_extent: float = radius * 0.34
 		draw_line(Vector2(-cross_extent, -cross_extent), Vector2(cross_extent, cross_extent), Color("d3d0c8"), 5.0, true)
 		draw_line(Vector2(cross_extent, -cross_extent), Vector2(-cross_extent, cross_extent), Color("d3d0c8"), 5.0, true)
+	_sync_glow(radius, outer_radius, approach_alpha)
+
+func _sync_glow(radius: float, outer_radius: float, approach_alpha: float) -> void:
+	if _missed or not cue_style.glow_enabled:
+		_glow.clear()
+		return
+	var extent := radius + outer_approach_offset + maxf(cue_style.progress_glow_width + cue_style.progress_width * 0.5, cue_style.approach_glow_width + cue_style.approach_width * 0.5)
+	_glow.set_rings(radius, outer_radius, _progress, approach_alpha, extent, cue_style, affinity)
 
 
 func _ring_color() -> Color:
-	if timing_kind == &"tuning" or timing_kind == &"rapid":
-		return shared_color
-	match affinity:
-		GameplayTypes.Affinity.ZHU:
-			return life_color
-		GameplayTypes.Affinity.XUAN:
-			return death_color
-		_:
-			return shared_color
+	return cue_style.line_color(affinity)

@@ -60,6 +60,10 @@ static func prepare(host: Node) -> void:
 	hold.position = Vector2(22, 22)
 	hold.scale = Vector2(0.04, 0.04)
 	hold.advance_body(0.0)
+	var rail := GrayboxFieldVisual.new()
+	viewport.add_child(rail)
+	rail.prepare({"event_id": "warmup_rail", "affinity": 0})
+	rail.scale = Vector2.ONE * 0.02
 	var copy := BackBufferCopy.new()
 	copy.copy_mode = BackBufferCopy.COPY_MODE_VIEWPORT
 	viewport.add_child(copy)

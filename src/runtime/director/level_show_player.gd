@@ -23,15 +23,17 @@ var environment_controller: ParallaxController
 var environment_camera_effect: Callable
 var _environment_signature := ""
 var _environment_context := ""
+var _render_ids := PackedStringArray()
+var _render_signature := ""
 
 func configure(data: Dictionary, directory: String, packs: Array, difficulty_id: String) -> void:
 	stop_audio()
 	if is_instance_valid(environment_controller):
 		for wrapper: Node2D in objects.values():
-			if is_instance_valid(wrapper) and wrapper.get_parent() != self:
-				wrapper.get_parent().remove_child(wrapper); add_child(wrapper)
+			environment_controller.release_object_occlusion(wrapper)
 	for child in get_children(): remove_child(child); child.queue_free()
 	objects.clear(); drivers.clear(); states.clear(); feedbacks.clear(); effects.clear()
+	_render_signature=""
 	show = data.duplicate(true); difficulty = difficulty_id
 	# 编译时排序一次，播放过程中直接使用稳定轨道顺序。
 	for track: Dictionary in show.get("tracks", []): track.keys.sort_custom(func(a, b): return int(a.time_us) < int(b.time_us))
@@ -48,11 +50,15 @@ func configure(data: Dictionary, directory: String, packs: Array, difficulty_id:
 			"sprite", "image":
 				var resource:=assets.resolve(str(object_data.asset))
 				if resource is SpriteFrames:
-					var animated:=AnimatedSprite2D.new();animated.sprite_frames=resource;animated.animation=str(object_data.get("animation",assets.default_animation(str(object_data.asset))));content=animated
+					var animated:=AnimatedSprite2D.new();animated.sprite_frames=resource;animated.animation=str(object_data.get("animation","")) if resource.has_animation(str(object_data.get("animation",""))) else assets.default_animation(str(object_data.asset));content=animated
 				else:
 					var sprite := Sprite2D.new(); sprite.texture = resource as Texture2D; content = sprite
 			"animated_sprite":
-				var sprite := AnimatedSprite2D.new(); sprite.sprite_frames = assets.resolve(str(object_data.asset)) as SpriteFrames; sprite.animation = str(object_data.get("animation", assets.default_animation(str(object_data.asset)))); sprite.play(); content = sprite
+				var frames := assets.resolve(str(object_data.asset)) as SpriteFrames
+				if frames != null:
+					var sprite := AnimatedSprite2D.new(); sprite.sprite_frames=frames
+					var action := str(object_data.get("animation",""))
+					sprite.animation=action if frames.has_animation(action) else assets.default_animation(str(object_data.asset)); content=sprite
 			"actor", "environment": content = assets.instantiate(str(object_data.asset))
 		if content != null:
 			content.name = "Content"; wrapper.add_child(content)
@@ -87,6 +93,7 @@ func advance(section: String, time_us: int, audible := true) -> void:
 	_sample(section, time_us, not audible)
 
 func _sample(section: String, time_us: int, silent: bool) -> void:
+	_sync_render_order()
 	current_section = section; current_us = time_us; states.clear()
 	var clips := LevelShowSampler.active_clips(show, section, time_us, difficulty)
 	camera_position = Vector2.ZERO; camera_zoom = 1.0
@@ -118,12 +125,18 @@ func _sample(section: String, time_us: int, silent: bool) -> void:
 			if age >= 0 and age < 220000:
 				wrapper.modulate = wrapper.modulate.lerp(Color("f9f3d8") if feedback.hit else Color("ad5069"), (1.0 - float(age) / 220000.0) * 0.7)
 			else: feedbacks.erase(object_data.id)
-		wrapper.z_index = 1000 if object_data.layer == "hud" else clampi(int(object_data.get("depth", 0)), -999, 999)
+		wrapper.z_index = 1000 if _root_layer(object_data) == "hud" else clampi(int(object_data.get("depth", 0)), -999, 999)
 		var occlusion := _effective_occlusion(object_data)
 		if is_instance_valid(environment_controller) and not occlusion.is_empty() and object_data.layer != "hud":
-			environment_controller.set_object_occlusion(wrapper, int(occlusion[0]), str(occlusion[1]))
+			environment_controller.set_object_occlusion(wrapper, int(occlusion[0]), str(occlusion[1]),object_render_order(object_data))
+			wrapper.z_index=0
+		elif is_instance_valid(environment_controller):environment_controller.release_object_occlusion(wrapper)
 		var object_clips: Array = clips.filter(func(clip): return clip.object_id == object_data.id and clip.type == "action")
-		if drivers.has(object_data.id): drivers[object_data.id].sample(object_clips, time_us)
+		if drivers.has(object_data.id):
+			var animation:=str(object_data.get("animation",""))
+			for sprite: AnimatedSprite2D in drivers[object_data.id].sprites:
+				if sprite.sprite_frames!=null and sprite.sprite_frames.has_animation(animation):sprite.set_meta("level_default_animation",animation)
+			drivers[object_data.id].sample(object_clips, time_us)
 		var content := wrapper.get_node_or_null("Content")
 		if content is RichTextLabel:
 			content.size = LevelFormat.vec(state.get("size", [560, 100])); content.position = -content.size * 0.5
@@ -149,20 +162,49 @@ func _sample(section: String, time_us: int, silent: bool) -> void:
 	sampled.emit(section, time_us)
 
 func _effective_occlusion(object_data: Dictionary) -> Array:
+	return effective_occlusion(show,object_data)
+
+static func effective_occlusion(data: Dictionary, object_data: Dictionary) -> Array:
 	var current := object_data
+	var top:=object_data
+	while not str(top.get("parent_id","")).is_empty():top=LevelFormat.find(data.objects,top.parent_id)
+	if top.get("layer","")=="hud":return []
 	while not current.is_empty():
+		if current.get("layer","")=="hud":return []
 		var order := str(current.get("occlusion_order", "none"))
-		if order in ["front", "back"]:
+		var inherited: bool=bool(current.get("occlusion_inherit",order=="none"))
+		if not inherited and order in ["front", "back"]:
 			return [int(current.get("occlusion_depth", 0)), order]
+		if not inherited:return []
 		var parent_id := str(current.get("parent_id", ""))
 		if parent_id.is_empty(): break
-		current = LevelFormat.find(show.objects, parent_id)
+		current = LevelFormat.find(data.objects, parent_id)
 	return []
 
 func object_render_order(object_data: Dictionary) -> int:
-	var occlusion := _effective_occlusion(object_data)
-	if occlusion.is_empty(): return int(object_data.get("depth", 0)) * 2
-	return int(occlusion[0]) * 2 + (1 if occlusion[1] == "front" else -1)
+	return _render_ids.find(str(object_data.id))
+
+func _sync_render_order() -> void:
+	var signature := JSON.stringify(show.get("objects",[]).map(func(item):return [item.id,item.parent_id,item.layer,item.depth,item.get("occlusion_depth",0),item.get("occlusion_order","none"),item.get("occlusion_inherit")]))
+	if signature==_render_signature:return
+	_render_signature=signature
+	var sorted: Array = show.get("objects",[]).duplicate()
+	sorted.sort_custom(func(a,b):
+		var ka:=_render_key(a);var kb:=_render_key(b)
+		for index in ka.size():
+			if ka[index]!=kb[index]:return ka[index]<kb[index]
+		return show.objects.find(a)<show.objects.find(b))
+	_render_ids=PackedStringArray(sorted.map(func(item):return str(item.id)))
+
+func _render_key(object_data: Dictionary) -> Array:
+	var relation:=_effective_occlusion(object_data)
+	if relation.is_empty():return [0,0,0,1000 if _root_layer(object_data)=="hud" else int(object_data.depth)]
+	return [-1 if int(relation[0])>=0 else 1,-int(relation[0]),0 if relation[1]=="back" else 2,int(object_data.depth)]
+
+func _exit_tree() -> void:
+	if is_instance_valid(environment_controller):
+		for wrapper in objects.values():
+			if is_instance_valid(wrapper):environment_controller.release_object_occlusion(wrapper)
 
 func canvas_transform(object_data: Dictionary, section: String, time_us: int) -> Transform2D:
 	var result := LevelShowSampler.object_transform(show, object_data.id, section, time_us, difficulty)
@@ -297,3 +339,8 @@ func _sample_environment() -> void:
 			shake = Vector2(sin(seconds * 73.1), sin(seconds * 91.7)) * float(state.get("shake", 0.0))
 	environment_controller.set_camera_position(steady + shake + camera_effect)
 	environment_controller.sample_environment(at_us, steady + shake + camera_effect)
+
+func _root_layer(object_data: Dictionary) -> String:
+	var top:=object_data
+	while not str(top.get("parent_id","")).is_empty():top=LevelFormat.find(show.objects,top.parent_id)
+	return str(top.get("layer","world"))

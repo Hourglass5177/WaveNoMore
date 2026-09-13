@@ -1,0 +1,21 @@
+{
+  "id": "sheep",
+  "name": "羊头仔",
+  "unit_scale": 0.18691588785046728,
+  "source_anchor": [
+    234.0,
+    263.0
+  ],
+  "idle": 3.6,
+  "trigger": 0.6,
+  "death": 2.05,
+  "bone_death": 1.4,
+  "bone_count": 6,
+  "parts": [
+    "wool",
+    "tuft",
+    "hand_l",
+    "hand_r",
+    "head"
+  ]
+}

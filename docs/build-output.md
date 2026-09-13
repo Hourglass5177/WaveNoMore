@@ -25,6 +25,12 @@ New-Item -ItemType Directory -Force ../Charts | Out-Null
 
 ## 历史记录
 
+2026-09-14 性能与 2K 设置构建：重新导出 `../Charts/minghe-chart-studio.exe`、`../Levels/minghe-level-studio.exe` 和 `builds/windows/minghe-mvp.exe`，本体及 DLL 同步到两个编辑器的 `game/`。包含关卡性能优化、720p～4K 分辨率设置、混合双押与计时提示，以及当前工作区的关卡编辑器、动画改动。版本保持 0.1.4.0，未生成发行 ZIP。三个导出包各通过 40 项滑条图形检查和 63 项分辨率／真实波前像素检查；三个实际 EXE 启动以 0 退出，配套游戏加载教程2 normal 返回 `ready`。首次导入发现临时 `build/pet-animation` 资源 UID 重复，给不被正式素材引用的 `build/` 增加本地 `.gdignore` 后重新导入，最终导入、导出及启动日志无错误或警告。日志在 `builds/performance-release/`，性能数据和限制见 [关卡性能与分辨率](performance-and-resolution.md)。
+
+2026-09-13 滑条填充与柔光微调：填充不透明度改为 0.52／贴合 0.62，轮廓与填充光强改为 1.0／0.8。重新构建三个程序并同步两个编辑器的配套游戏及 DLL；工程通过 41 项图形检查，三个导出包各通过 40 项滑条检查，三个 EXE 启动正常，教程2 normal 试玩返回 `ready`。日志位于 `builds/tuning-strength-release/`。更新时临时保留了正在运行的写谱器旧 EXE；用户关闭后已清理，并确认正常入口与最新构建一致。版本保持 0.1.4.0，未更新发行 ZIP。
+
+2026-09-13 调频滑条与局部折射更新：重新导出写谱器、关卡编辑器和 `builds/windows/minghe-mvp.exe`，本体及 DLL 同步到 Charts、Levels 的 `game/`。包含半透明阵营填充、轮廓白光、起点圆帽预填及更集中的声波折射。三个导出包各通过 40 项滑条与 36 项声波图形检查；三个 EXE 的 Compatibility 启动均正常退出，配套游戏加载教程2 normal 难度返回 `ready`。导入、导出及最终运行日志未发现错误或警告，记录在 `builds/tuning-release/`。版本沿用 0.1.4.0，未更新发行 ZIP。
+
 2026-09-13 生死换色与声波折射更新：按当前工作区重新导出写谱器、关卡编辑器及 `builds/windows/minghe-mvp.exe`，本体和 DLL 同步到 Charts、Levels 的 `game/`。三个导出包各通过 31 项背景图形回归与 22 项声波折射像素检查；三个 EXE 的 Compatibility 启动均正常退出，写谱器配套游戏加载教程2 normal 难度返回 `ready`。导入、导出和启动日志无错误或警告，位于 `builds/note-wave-release/`。版本沿用 0.1.4.0，未更新发行 ZIP。
 
 2026-09-13 灵均静息与受击更新：正式角色引用增强呼吸、静息受击、攻击受击及死亡灰烬资源，重新导出 `../Charts/minghe-chart-studio.exe`、`../Levels/minghe-level-studio.exe` 和 `builds/windows/minghe-mvp.exe`，游戏本体及 DLL 同步到两个编辑器的 `game/`。三个导出包均在 Compatibility 下通过 30 项角色姿态、受击、死亡与正式场景接入检查；三个 EXE 图形启动正常退出，配套游戏加载教程2 normal 难度返回 `ready`。导入、导出和运行日志无错误或警告，记录位于 `builds/lingjun-states-release/`。版本沿用 0.1.4.0，本次未更新发行 ZIP。
@@ -64,3 +70,13 @@ New-Item -ItemType Directory -Force ../Charts | Out-Null
 制作完整 ZIP 使用 `tools/package_chart_studio_release.py --version 0.1.4 --base builds/冥河写谱器-v0.1.3-Windows.zip`。脚本同时更新场景说明、接口说明和根目录使用说明中的链接；上一版已有的玩法说明不会重复追加。
 
 2026-09-12 更新仍使用 v0.1.4：新谱默认目录最后一个场景（目前为 s08），覆盖上述 EXE 与 ZIP。重新打包继续使用 v0.1.3 包作为依赖来源，不能同时读取并覆盖同一个 ZIP。发布检查记录保存在 `builds/release-0.1.4-verification.json`。
+
+
+## 关卡动画修复产物（2026-09-13）
+
+本轮不导出 EXE。事件测试、GPU 截图、隔离加载工程与日志位于 `Levels/output/editor-fixes/`。猴子动画作者资源仍在 `Game/assets/image/animation/monkey/`；其生成 PCK 与描述文件已移到 `Levels/output/asset-packs/monkey/`。已有渡口示例的 `packs/example.pck` 是示例运行依赖，继续保留。
+
+已比对内容相同且无引用的 `assets/image/animation/assets/monkey.tres` 副本被移除，消除重复 UID。Godot 热重载的两个 `~*.dll` 临时文件不再纳入版本控制，并加入对应忽略规则；原 DLL 保留。原动画目录中的既有工程和图片未按临时文件删除。
+
+
+2026-09-13 关卡编辑器九项修复构建：使用现有 Windows Release 预设导出编辑器和配套游戏，版本保持 0.1.4.0。程序及 DLL 已更新至 Levels 正式入口，新示例放入 Levels/examples/动画与遮挡，既有 example 与 projects 保留。构建日志、临时程序及实际 EXE 验收记录位于 Levels/output/editor-build-20260913；编辑器 20 项、游戏 8 项检查通过，试玩 ready。另存的 Windows 分隔符问题在实际 EXE 验收中修复并重建。未生成完整发行 ZIP，也未更新 Charts。

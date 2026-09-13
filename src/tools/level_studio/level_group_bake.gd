@@ -12,6 +12,9 @@ static func changes(source: Dictionary, ids: PackedStringArray, difficulties: Pa
 		var children: Array = old.objects.filter(func(object_data): return object_data.get("parent_id", "") == id)
 		for object_data: Dictionary in children:
 			var child := LevelFormat.find(show.objects, object_data.id)
+			var relation:=LevelShowPlayer.effective_occlusion(old,object_data)
+			child.occlusion_inherit=false;child.occlusion_order="none" if relation.is_empty() else relation[1]
+			if not relation.is_empty():child.occlusion_depth=relation[0]
 			child.parent_id = group.parent_id; child.layer = group.layer; child.hidden = false
 			child.fields.opacity = 1.0
 			show.tracks = show.tracks.filter(func(track): return track.object_id != child.id or (track.type != "visibility" and track.property not in FIELDS))

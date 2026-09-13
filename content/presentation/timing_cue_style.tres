@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="TimingCueStyle" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://src/content/resources/timing_cue_style.gd" id="1"]
+[ext_resource type="Resource" path="res://content/presentation/note_effect_style.tres" id="2"]
+
+[resource]
+script = ExtResource("1")
+note_style = ExtResource("2")

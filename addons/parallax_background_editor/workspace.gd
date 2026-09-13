@@ -126,12 +126,13 @@ func _build() -> void:
 	_edit_buttons.append(_button(tools, "添加", func(): _choose_asset(false)))
 	_edit_buttons.append(_button(tools, "复制", func(): document.duplicate_selected()))
 	_edit_buttons.append(_button(tools, "删除", func(): document.delete_selected()))
-	var sublayer_tools := HBoxContainer.new()
+	var sublayer_tools := HFlowContainer.new()
 	left.add_child(sublayer_tools)
 	_new_sublayer_depth = _spin(sublayer_tools, "深度")
 	_new_sublayer_depth.value = 1
 	_edit_buttons.append(_button(sublayer_tools, "添加子层", func(): document.add_sublayer(int(_new_sublayer_depth.value))))
 	_edit_buttons.append(_button(sublayer_tools, "删除子层", func(): document.delete_sublayer(document.selected_sublayer_id)))
+	_edit_buttons.append(_button(sublayer_tools,"命名背景层",_name_depth))
 	layer_tree = LayerTree.new()
 	layer_tree.columns = 3
 	layer_tree.hide_root = true
@@ -799,3 +800,16 @@ func _end_cycle_preview() -> void:
 	var state:=_cycle_view_before;_cycle_view_before={};surface.environment_target=null
 	_set_preview(state.preview);_mode.set_pressed_no_signal(state.preview);surface.song_time=state.time;surface.pan=state.pan;surface.zoom=state.zoom;surface.camera=state.camera
 	_playing=state.playing;_play.text="暂停" if _playing else "播放";_time.set_value_no_signal(state.time);surface._update_transform();surface.request_refresh()
+
+func _name_depth() -> void:
+	var depth:=_selected_depth
+	if depth==2147483647:
+		for record in document.sublayers:
+			if record.id==document.selected_sublayer_id:depth=record.depth;break
+	if depth==2147483647:return
+	var dialog:=ConfirmationDialog.new();dialog.title="深度 %d 的显示名称"%depth
+	var edit:=LineEdit.new();edit.placeholder_text="例如：近景芦苇";dialog.add_child(edit)
+	for record in document.sublayers:
+		if record.depth==depth:edit.text=str(record.get("layer_name",""));break
+	add_child(dialog);dialog.confirmed.connect(func():document.set_layer_name(depth,edit.text);dialog.queue_free())
+	dialog.canceled.connect(dialog.queue_free);dialog.popup_centered(Vector2i(440,140));edit.grab_focus()

@@ -9,3 +9,6 @@
 *.url
 /AGENTS.md
 __pycache__/
+
+# Godot 编辑器热重载的临时副本
+/bin/**/~*.dll

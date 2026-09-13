@@ -8,6 +8,8 @@ var surface := ShaderMaterial.new()
 var copy := BackBufferCopy.new()
 var pass_rect := ColorRect.new()
 var _fronts: Dictionary = {}
+var _uploaded: Dictionary = {}
+var _pixel_transform := Transform2D(0, Vector2(INF, INF))
 
 func _ready() -> void:
 	layer = 3
@@ -33,12 +35,18 @@ func set_fronts(fronts: Dictionary) -> void:
 	pass_rect.visible = active
 	if not active: return
 	pass_rect.size = fronts.canvas_size
-	for key: String in fronts: surface.set_shader_parameter(key, fronts[key])
+	for key: String in fronts:
+		if _uploaded.has(key) and _uploaded[key] == fronts[key]: continue
+		_uploaded[key] = fronts[key]
+		surface.set_shader_parameter(key, fronts[key])
 	sync_transform(transform)
 
 func sync_transform(pose: Transform2D) -> void:
 	transform = pose
 	# Window 拉伸与编辑器 SubViewport 都以实际目标像素换算偏移。
-	var pixels := get_viewport().get_stretch_transform() * pose
+	var render_scale: Vector2 = get_viewport().get_meta(&"render_pixel_scale", Vector2.ONE)
+	var pixels := Transform2D.IDENTITY.scaled(render_scale) * get_viewport().get_stretch_transform() * pose
+	if pixels == _pixel_transform: return
+	_pixel_transform = pixels
 	surface.set_shader_parameter(&"pixel_x", pixels.x)
 	surface.set_shader_parameter(&"pixel_y", pixels.y)

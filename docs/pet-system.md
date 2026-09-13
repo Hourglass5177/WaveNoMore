@@ -49,6 +49,8 @@
 
 ## 美术替换
 
+三只彩色随从已制作独立动画审看素材，见[三只随从动画审看](pet-animation-studies.md)。这些素材尚未替换本节所述正式随从表现。
+
 白盒 SVG 位于 `assets/pets/`，128 × 128，中心为轮廓基准；三个轮廓分别是蝠翼、羊角和蛇形。菜单使用 `base_icon / advanced_icon`，保持纵横比。进阶图未配置时使用基础图。
 
 局内入口是 `PetDefinition.base_scene / advanced_scene`，默认场景为 `scenes/presentation/pets/pet_visual.tscn`。表现层在两个角色槽下各建立一个 `PetAnchor`；二者共用技能结果，不重复计算效果。锚点继承角色所在世界变换，死界旋转 180°。`world_offset` 使用 1920 × 1080 设计坐标，相对生界角色默认 `(-96, 70)`；`world_scale` 控制整体尺寸。

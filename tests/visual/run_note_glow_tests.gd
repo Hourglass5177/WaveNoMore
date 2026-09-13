@@ -43,21 +43,21 @@ func _test_pairs() -> void:
 	root.add_child(scheduler)
 	scheduler.configure({"notes": notes})
 	var seen: Dictionary = {}
-	scheduler.visual_spawn_requested.connect(func(_kind: StringName, data: Dictionary): seen[data.event_id] = data.double_tap)
+	scheduler.visual_spawn_requested.connect(func(_kind: StringName, data: Dictionary): seen[data.event_id] = data.double_press)
 	scheduler.advance(5.6, 5.6)
 	_check(seen.a and seen.b, "同 tick、无组合的双侧 Tap 发光")
 	_check(seen.c and seen.d, "同非空组合、不同 tick 的双侧 Tap 发光")
-	_check(not seen.e and not seen.f and not seen.g and not seen.h, "Tap + Hold 与同侧组合不误亮")
+	_check(seen.e and seen.f and not seen.g and not seen.h, "Tap + Hold 混合双押亮起，同侧组合不误亮")
 	_check(notes == before, "双押表现标记不写回编译谱数据")
 	scheduler.seek(0.85, 0.85)
-	_check(scheduler._active.a.data.double_tap, "Seek 后仍从完整谱面识别双押")
+	_check(scheduler._active.a.data.double_press, "Seek 后仍从完整谱面识别双押")
 	scheduler.queue_free()
 
 func _test_tap() -> void:
 	var tap := GrayboxNoteVisual.new()
 	root.add_child(tap)
 	var data := _note("tap", LIFE, 1000)
-	data.double_tap = true
+	data.double_press = true
 	tap.prepare(data)
 	tap.set_note_glow_time(0.3, 0.7)
 	_check(tap.glow_amount == 0.0, "接近前保持原样")
@@ -243,7 +243,7 @@ func _render_samples() -> void:
 			root.add_child(tap)
 			tap.add_to_group("glow_sample")
 			var data := _note("sample", side, 1000)
-			data.double_tap = true
+			data.double_press = true
 			tap.prepare(data)
 			tap.position = Vector2(x + (-74 if side == LIFE else 74), 170)
 			tap.set_note_glow_time(1.0, [0.7, 0.525, 0.45][column])
@@ -287,7 +287,7 @@ func _render_samples() -> void:
 			var tap := GrayboxNoteVisual.new()
 			root.add_child(tap)
 			var data := _note("dense_%d" % i, i % 2, 1000)
-			data.double_tap = true
+			data.double_press = true
 			tap.prepare(data)
 			tap.position = Vector2(76 + (i % 8) * 160, row * 450 + 95 + (i / 8) * 128)
 			tap.rotation = i * 0.23

@@ -475,10 +475,9 @@ func _rule_vector(property_name: StringName, fallback: Vector2) -> Vector2:
 func _rule_property(property_name: StringName, fallback: Variant) -> Variant:
 	if _rules == null:
 		return fallback
-	for property_data: Dictionary in _rules.get_property_list():
-		if StringName(property_data.get("name", &"")) == property_name:
-			return _rules.get(property_name)
-	return fallback
+	# 规则属性直接读取，不为每次子步查询构造整份属性元数据。
+	var value: Variant = _rules.get(property_name)
+	return fallback if value == null else value
 
 
 func _origin_for(affinity: int) -> Vector2:

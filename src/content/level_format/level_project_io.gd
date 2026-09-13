@@ -57,6 +57,8 @@ static func import_file(source: String, root: String, folder := "assets") -> Dic
 	return {"error": "", "path": relative}
 
 static func dependencies(level: Dictionary, root: String) -> PackedStringArray:
+	# 文件选择器可能给出 Windows 分隔符；派生依赖的相对路径使用同一表示。
+	root=root.replace("\\","/").simplify_path()
 	var paths := {"level.json": true, "show.json": true}
 	var song_path := str(level.get("song_path", "song/song.json"))
 	paths[song_path] = true
@@ -75,7 +77,12 @@ static func dependencies(level: Dictionary, root: String) -> PackedStringArray:
 	for binding: Dictionary in level.show.get("bindings", []):
 		for key in ["sound", "effect", "hit_effect", "miss_effect"]: assets.append(binding.get(key, ""))
 	for asset: String in assets:
-		if asset.begins_with("assets/"): paths[asset] = true
+		if asset.begins_with("assets/"):
+			paths[asset] = true
+			if asset.ends_with(LevelAnimationAsset.SUFFIX):
+				for dependency in LevelAnimationAsset.dependencies(root.path_join(asset)):
+					var relative:=dependency.trim_prefix(root.trim_suffix("/")+"/")
+					paths[relative]=true
 	return PackedStringArray(paths.keys())
 
 static func export_zip(level: Dictionary, root: String, path: String) -> String:
