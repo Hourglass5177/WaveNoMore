@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="NoteEffectStyle" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="NoteEffectStyle" format=3 uid="uid://boatwxml3lcxh"]
 
-[ext_resource type="Script" path="res://src/content/resources/note_effect_style.gd" id="1"]
+[ext_resource type="Script" uid="uid://jc8r32p37k1w" path="res://src/content/resources/note_effect_style.gd" id="1"]
 
 [resource]
 script = ExtResource("1")

@@ -1,75 +1,84 @@
-[gd_resource type="Theme" load_steps=12 format=3]
-[ext_resource type="FontFile" path="res://assets/fonts/huiwen.otf" id="font"]
-[ext_resource type="Texture2D" path="res://assets/ui/art/设置页面/选中目录.png" id="button"]
-[ext_resource type="Texture2D" path="res://assets/ui/toggle_on.svg" id="toggle_on"]
-[ext_resource type="Texture2D" path="res://assets/ui/toggle_off.svg" id="toggle_off"]
+[gd_resource type="Theme" format=3 uid="uid://cngkn8pf5vdea"]
+
+[ext_resource type="Texture2D" uid="uid://boimuusyeuunu" path="res://assets/ui/art/设置页面/选中目录.png" id="button"]
+[ext_resource type="FontFile" uid="uid://swqjg003riw5" path="res://assets/fonts/huiwen.otf" id="font"]
+[ext_resource type="Texture2D" uid="uid://cnidv8ks3yt4h" path="res://assets/ui/toggle_off.svg" id="toggle_off"]
+[ext_resource type="Texture2D" uid="uid://dr727foh2srud" path="res://assets/ui/toggle_on.svg" id="toggle_on"]
+
 [sub_resource type="StyleBoxTexture" id="button"]
-texture = ExtResource("button")
 content_margin_left = 18.0
-content_margin_right = 18.0
 content_margin_top = 8.0
+content_margin_right = 18.0
 content_margin_bottom = 8.0
+texture = ExtResource("button")
+
 [sub_resource type="StyleBoxFlat" id="focus"]
-bg_color = Color(0,0,0,0)
+bg_color = Color(0, 0, 0, 0)
 border_width_bottom = 2
-border_color = Color(0.90,0.87,0.78,0.8)
-[sub_resource type="StyleBoxFlat" id="track"]
-bg_color = Color(0.12,0.12,0.16,1)
-content_margin_top = 3.0
-content_margin_bottom = 3.0
-corner_radius_top_left = 3
-corner_radius_top_right = 3
-corner_radius_bottom_left = 3
-corner_radius_bottom_right = 3
-[sub_resource type="StyleBoxFlat" id="fill"]
-bg_color = Color(0.56,0.18,0.25,1)
-content_margin_top = 3.0
-content_margin_bottom = 3.0
-[sub_resource type="StyleBoxFlat" id="input"]
-bg_color = Color(0.12,0.12,0.16,0.8)
-content_margin_left = 12.0
-content_margin_right = 12.0
-content_margin_top = 6.0
-content_margin_bottom = 6.0
+border_color = Color(0.9, 0.87, 0.78, 0.8)
+
+[sub_resource type="StyleBoxEmpty" id="empty"]
+
 [sub_resource type="Gradient" id="bone"]
-colors = PackedColorArray(0.91,0.86,0.75,1,0.91,0.86,0.75,1)
+colors = PackedColorArray(0.91, 0.86, 0.75, 1, 0.91, 0.86, 0.75, 1)
+
 [sub_resource type="GradientTexture2D" id="grab"]
 gradient = SubResource("bone")
 width = 12
 height = 24
-[sub_resource type="StyleBoxEmpty" id="empty"]
+
+[sub_resource type="StyleBoxFlat" id="fill"]
+content_margin_top = 3.0
+content_margin_bottom = 3.0
+bg_color = Color(0.56, 0.18, 0.25, 1)
+
+[sub_resource type="StyleBoxFlat" id="track"]
+content_margin_top = 3.0
+content_margin_bottom = 3.0
+bg_color = Color(0.12, 0.12, 0.16, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="input"]
+content_margin_left = 12.0
+content_margin_top = 6.0
+content_margin_right = 12.0
+content_margin_bottom = 6.0
+bg_color = Color(0.12, 0.12, 0.16, 0.8)
+
 [resource]
 default_font = ExtResource("font")
 default_font_size = 28
-Button/styles/normal = SubResource("button")
-Button/styles/hover = SubResource("button")
-Button/styles/pressed = SubResource("button")
+Button/colors/font_color = Color(0.91, 0.88, 0.81, 1)
+Button/colors/font_disabled_color = Color(0.6, 0.57, 0.56, 1)
 Button/styles/disabled = SubResource("button")
 Button/styles/focus = SubResource("focus")
-Button/colors/font_color = Color(0.91,0.88,0.81,1)
-Button/colors/font_disabled_color = Color(0.60,0.57,0.56,1)
-Label/colors/font_color = Color(0.91,0.88,0.81,1)
-HSlider/styles/slider = SubResource("track")
-HSlider/styles/grabber_area = SubResource("fill")
-HSlider/styles/grabber_area_highlight = SubResource("fill")
+Button/styles/hover = SubResource("button")
+Button/styles/normal = SubResource("button")
+Button/styles/pressed = SubResource("button")
+CheckButton/icons/checked = ExtResource("toggle_on")
+CheckButton/icons/checked_disabled = ExtResource("toggle_on")
+CheckButton/icons/unchecked = ExtResource("toggle_off")
+CheckButton/icons/unchecked_disabled = ExtResource("toggle_off")
+CheckButton/styles/focus = SubResource("focus")
+CheckButton/styles/normal = SubResource("empty")
 HSlider/icons/grabber = SubResource("grab")
 HSlider/icons/grabber_highlight = SubResource("grab")
-OptionButton/styles/normal = SubResource("input")
-OptionButton/styles/hover = SubResource("input")
-OptionButton/styles/pressed = SubResource("input")
-OptionButton/styles/focus = SubResource("focus")
-LineEdit/styles/normal = SubResource("input")
+HSlider/styles/grabber_area = SubResource("fill")
+HSlider/styles/grabber_area_highlight = SubResource("fill")
+HSlider/styles/slider = SubResource("track")
+Label/colors/font_color = Color(0.91, 0.88, 0.81, 1)
 LineEdit/styles/focus = SubResource("focus")
-PopupMenu/styles/panel = SubResource("input")
+LineEdit/styles/normal = SubResource("input")
+OptionButton/styles/focus = SubResource("focus")
+OptionButton/styles/hover = SubResource("input")
+OptionButton/styles/normal = SubResource("input")
+OptionButton/styles/pressed = SubResource("input")
 PopupMenu/styles/hover = SubResource("fill")
-CheckButton/styles/normal = SubResource("empty")
-CheckButton/styles/focus = SubResource("focus")
-
-CheckButton/icons/checked = ExtResource("toggle_on")
-CheckButton/icons/unchecked = ExtResource("toggle_off")
-CheckButton/icons/checked_disabled = ExtResource("toggle_on")
-CheckButton/icons/unchecked_disabled = ExtResource("toggle_off")
-VScrollBar/styles/scroll = SubResource("track")
+PopupMenu/styles/panel = SubResource("input")
 VScrollBar/styles/grabber = SubResource("fill")
 VScrollBar/styles/grabber_highlight = SubResource("fill")
 VScrollBar/styles/grabber_pressed = SubResource("fill")
+VScrollBar/styles/scroll = SubResource("track")

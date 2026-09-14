@@ -24,7 +24,6 @@ default_bus_layout="res://assets/audio/default_bus_layout.tres"
 [autoload]
 
 GameFont="*res://src/app/ui/game_font.gd"
-
 AppRouter="*res://src/services/navigation/app_router.gd"
 ContentCatalog="*res://src/services/catalog/content_catalog.gd"
 SaveService="*res://src/services/save/save_service.gd"

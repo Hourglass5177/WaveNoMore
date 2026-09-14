@@ -1,6 +1,8 @@
 class_name StageHud
 extends CanvasLayer
 
+@export var judgment_textures: JudgmentTextureSet = preload("res://content/presentation/judgment_textures.tres")
+
 ## 关卡 HUD。监听 Session 和 SongClock，显示魂火、得分、连击、判定与歌曲进度。
 
 @export_group("Scene Wiring")
@@ -26,7 +28,7 @@ var _score_label: Label
 # 显示当前连击数的文字节点。
 var _combo_label: Label
 # 短暂显示本次 Perfect、Good 或 Miss 结果的文字节点。
-var _judgment_label: Label
+var _judgment_label: TextureRect
 # 显示歌曲播放进度的进度条节点；0 是开头，满值是关卡结束。
 var _song_progress: ProgressBar
 # 歌曲时长单位为秒，至少为 0.001；用于换算总进度条百分比。
@@ -45,7 +47,7 @@ func _ready() -> void:
 	_soul_fire_value = get_node(soul_fire_value_path) as Label
 	_score_label = get_node(score_label_path) as Label
 	_combo_label = get_node(combo_label_path) as Label
-	_judgment_label = get_node(judgment_label_path) as Label
+	_judgment_label = get_node(judgment_label_path) as TextureRect
 	_song_progress = get_node(song_progress_path) as ProgressBar
 	_soul_fire_bar.step = 0.0
 	_song_progress.step = 0.0
@@ -104,16 +106,17 @@ func _on_score_changed(score: int, combo: int) -> void:
 
 
 func _on_judgment_recorded(record: JudgmentRecord) -> void:
-	var grade_name: String = GameplayTypes.grade_name(record.grade)
-	_judgment_label.text = grade_name
-	_judgment_label.modulate = _grade_color(record.grade)
+	_judgment_label.texture = _judgment_texture(record.grade)
+	_judgment_label.modulate = Color.WHITE
+	_apply_judgment_layout()
 	_judgment_label.modulate.a = 1.0
-	_judgment_label.scale = Vector2(1.25, 0.78)
+	var display_scale := maxf(0.01, judgment_textures.scale) if judgment_textures != null else 1.0
+	_judgment_label.scale = Vector2(display_scale * 1.25, display_scale * 0.78)
 	if _judgment_tween != null:
 		_judgment_tween.kill()
 	_judgment_tween = create_tween()
 	_judgment_tween.set_parallel(true)
-	_judgment_tween.tween_property(_judgment_label, "scale", Vector2.ONE, 0.13).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_judgment_tween.tween_property(_judgment_label, "scale", Vector2.ONE * display_scale, 0.13).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	_judgment_tween.tween_property(_judgment_label, "modulate:a", 0.0, 0.42).set_delay(0.20)
 
 
@@ -125,17 +128,25 @@ func _set_displayed_score(value: float) -> void:
 	_displayed_score = roundi(value)
 	_score_label.text = "%08d" % _displayed_score
 
-
-func _grade_color(grade: int) -> Color:
+func _judgment_texture(grade: int) -> Texture2D:
+	if judgment_textures == null: return null
 	match grade:
-		GameplayTypes.JudgmentGrade.PERFECT:
-			return Color("eee5ce")
-		GameplayTypes.JudgmentGrade.GOOD:
-			return Color("c7ad7b")
-		GameplayTypes.JudgmentGrade.PASS:
-			return Color("9d8972")
-		_:
-			return Color("6f7380")
+		GameplayTypes.JudgmentGrade.PERFECT: return judgment_textures.perfect
+		GameplayTypes.JudgmentGrade.GOOD: return judgment_textures.good
+		GameplayTypes.JudgmentGrade.PASS: return judgment_textures.pass_texture
+		GameplayTypes.JudgmentGrade.MISS: return judgment_textures.miss
+	return null
+
+func _apply_judgment_layout() -> void:
+	if judgment_textures == null: return
+	var texture := _judgment_label.texture
+	if texture == null: return
+	var base_size := texture.get_size()
+	_judgment_label.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	_judgment_label.size = base_size
+	_judgment_label.pivot_offset = base_size * 0.5
+	_judgment_label.scale = Vector2.ONE * maxf(0.01, judgment_textures.scale)
+	_judgment_label.position = Vector2(960.0, 540.0) - base_size * 0.5 + judgment_textures.offset
 
 
 func _set_mouse_filter_recursive(node: Node, filter: Control.MouseFilter) -> void:

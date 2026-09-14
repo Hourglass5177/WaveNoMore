@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="JudgmentTextureSet" format=3 uid="uid://bcpmq3yfbng4n"]
+
+[ext_resource type="Script" uid="uid://bnay2cdbndo47" path="res://src/content/resources/judgment_texture_set.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://daoavdavb4twk" path="res://assets/image/hud/臻良过失/良1.png" id="1_klaik"]
+[ext_resource type="Texture2D" uid="uid://c0lbm7uvdr2t5" path="res://assets/image/hud/臻良过失/失1.png" id="2_f0p7b"]
+[ext_resource type="Texture2D" uid="uid://dj11ox0i53kr6" path="res://assets/image/hud/臻良过失/过1.png" id="3_jjt4p"]
+[ext_resource type="Texture2D" uid="uid://b36drsv76hmhe" path="res://assets/image/hud/臻良过失/臻1.png" id="4_lktr2"]
+
+[resource]
+script = ExtResource("1")
+perfect = ExtResource("4_lktr2")
+good = ExtResource("1_klaik")
+pass_texture = ExtResource("3_jjt4p")
+miss = ExtResource("2_f0p7b")
+scale = 0.25
