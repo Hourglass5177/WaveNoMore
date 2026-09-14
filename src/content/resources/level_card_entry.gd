@@ -5,6 +5,10 @@ extends Resource
 @export var title: String = "未命名关卡"
 @export var stage_id: String = ""
 @export var image: Texture2D
+## 眼睛图标的选中状态纹理。
+@export var eye_icon_selected: Texture2D
+## 眼睛图标的未选中状态纹理。
+@export var eye_icon_unselected: Texture2D
 ## 卡片背景素材；为空时沿用 image。
 @export var background: Texture2D
 ## 相对于背景素材原始尺寸的等比缩放；不影响卡片主图或文字。
@@ -14,4 +18,6 @@ extends Resource
 @export var background_effect_frames: SpriteFrames
 @export var background_effect_animation: StringName = &"default"
 @export_range(0.01, 10.0, 0.01, "or_greater") var background_effect_scale: float = 1.0
+## 相对于卡片中心的局部偏移，单位为卡片设计像素。
+@export var background_effect_offset: Vector2 = Vector2.ZERO
 @export_multiline var description: String = ""

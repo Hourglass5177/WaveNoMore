@@ -6,6 +6,9 @@ var _effect_animation := &"default"
 var _effect_frame := 0
 var _effect_elapsed := 0.0
 var _effect_scale := 1.0
+var _effect_offset := Vector2.ZERO
+var _eye_selected: Texture2D
+var _eye_unselected: Texture2D
 
 ## 背景围绕卡片中心等比缩放，1.0 对应素材原始尺寸。
 @export_range(0.01, 10.0, 0.01, "or_greater") var background_scale: float = 1.0:
@@ -21,6 +24,8 @@ func _ready() -> void:
 		$MonsterIcon.material = $MonsterIcon.material.duplicate(false)
 	if $Background.material is ShaderMaterial:
 		$Background.material = $Background.material.duplicate(false)
+	if $BackgroundEffect.material is ShaderMaterial:
+		$BackgroundEffect.material = $BackgroundEffect.material.duplicate(false)
 	$Background.resized.connect(_update_background_scale)
 	_update_background_scale()
 
@@ -34,7 +39,9 @@ func configure(data: Dictionary, index: int) -> void:
 	$Rating.text = str(data.get("rating", data.get("title", "未命名关卡")))
 	$Description.text = str(data.get("description", ""))
 	$MonsterIcon.texture = data.get("monster_icon", data.get("image")) as Texture2D
-	$EyeIcon.texture = data.get("eye_icon") as Texture2D
+	_eye_selected = data.get("eye_icon_selected") as Texture2D
+	_eye_unselected = data.get("eye_icon_unselected") as Texture2D
+	$EyeIcon.texture = _eye_unselected if _eye_unselected != null else _eye_selected
 	$Background.texture = (data.get("background") as Texture2D) if data.get("background") != null else data.get("image") as Texture2D
 	background_scale = float(data.get("background_scale", background_scale))
 	_effect_frames = data.get("background_effect_frames") as SpriteFrames
@@ -42,6 +49,8 @@ func configure(data: Dictionary, index: int) -> void:
 	_effect_animation = StringName(str(animation_value)) if animation_value != null and not str(animation_value).is_empty() else &"default"
 	var scale_value: Variant = data.get("background_effect_scale", 1.0)
 	_effect_scale = float(scale_value) if scale_value != null and is_finite(float(scale_value)) and float(scale_value) > 0.0 else 1.0
+	var offset_value: Variant = data.get("background_effect_offset", Vector2.ZERO)
+	_effect_offset = offset_value if offset_value is Vector2 else Vector2.ZERO
 	_effect_frame = 0; _effect_elapsed = 0.0; _update_effect_frame()
 	_layout_effect()
 
@@ -67,7 +76,7 @@ func _layout_effect() -> void:
 	$BackgroundEffect.size = texture_size
 	$BackgroundEffect.pivot_offset = texture_size * 0.5
 	$BackgroundEffect.scale = Vector2.ONE * _effect_scale
-	$BackgroundEffect.position = size * 0.5 - texture_size * 0.5
+	$BackgroundEffect.position = size * 0.5 - texture_size * 0.5 + _effect_offset
 
 ## 供轮播或编辑器在运行中修改特效倍率，并立即应用到当前帧。
 func set_background_effect_scale(value: float) -> void:
@@ -82,6 +91,10 @@ func set_selection_weight(weight: float) -> void:
 	var background_material := $Background.material as ShaderMaterial
 	if background_material != null:
 		background_material.set_shader_parameter("k", clampf(weight, 0.0, 1.0))
+	var effect_material := $BackgroundEffect.material as ShaderMaterial
+	if effect_material != null:
+		effect_material.set_shader_parameter("k", clampf(weight, 0.0, 1.0))
+	$EyeIcon.texture = _eye_selected if weight >= 0.5 and _eye_selected != null else _eye_unselected
 
 ## 重构后的卡片不含锁定遮罩；使用提示，并转交材质支持的锁定效果。
 func set_locked(value: bool) -> void:

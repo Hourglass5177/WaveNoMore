@@ -5,17 +5,32 @@
 [ext_resource type="Shader" uid="uid://b8u7fxj7h4hso" path="res://shaders/materials/level_card.gdshader" id="2_whbbo"]
 [ext_resource type="Texture2D" uid="uid://fqk1j3qtj2q6" path="res://assets/image/ui/选关/框/选关-未选中框.png" id="3_sjihi"]
 [ext_resource type="Texture2D" uid="uid://baxvg3rsk8igc" path="res://assets/image/ui/选关/shadow_texture_blur_2px.png" id="5_sjihi"]
+[ext_resource type="Shader" uid="uid://dn1t6cg4kqe03" path="res://shaders/materials/level_card_effect.gdshader" id="6_effect"]
+[ext_resource type="FontFile" uid="uid://mslrg5rekk5d" path="res://assets/fonts/中文 - Huiwen.otf" id="7_s3cit"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_whbbo"]
 shader = ExtResource("2_whbbo")
 shader_parameter/k = 1.0
 shader_parameter/unchosen_texture = ExtResource("3_sjihi")
 
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_effect"]
+shader = ExtResource("6_effect")
+shader_parameter/k = 0.0
+
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_fkwas"]
 shader = ExtResource("2_euxft")
 shader_parameter/shadow_offset = Vector2(-50, 100)
 shader_parameter/image_transparency = 1.0
 shader_parameter/shadow_texture = ExtResource("5_sjihi")
+
+[sub_resource type="LabelSettings" id="LabelSettings_s3cit"]
+font = ExtResource("7_s3cit")
+font_size = 30
+
+[sub_resource type="LabelSettings" id="LabelSettings_vpojg"]
+line_spacing = 7.0
+font = ExtResource("7_s3cit")
+font_size = 20
 
 [node name="LevelCard" type="Panel" unique_id=1675962168]
 offset_right = 360.0
@@ -35,6 +50,7 @@ expand_mode = 1
 stretch_mode = 3
 
 [node name="BackgroundEffect" type="TextureRect" parent="." unique_id=1411203270]
+material = SubResource("ShaderMaterial_effect")
 layout_mode = 0
 mouse_filter = 2
 
@@ -51,33 +67,37 @@ stretch_mode = 5
 [node name="EyeIcon" type="TextureRect" parent="." unique_id=148945664]
 layout_mode = 0
 offset_left = 38.0
-offset_top = 314.0
+offset_top = 437.0
 offset_right = 324.0
-offset_bottom = 444.0
+offset_bottom = 567.0
 expand_mode = 1
 stretch_mode = 5
 
 [node name="Score" type="Label" parent="." unique_id=1896376124]
 layout_mode = 0
 offset_left = 24.0
-offset_top = 350.0
+offset_top = -89.0
 offset_right = 336.0
-offset_bottom = 380.0
+offset_bottom = -58.0
+text = "999999"
+label_settings = SubResource("LabelSettings_s3cit")
 horizontal_alignment = 1
 
 [node name="Rating" type="Label" parent="." unique_id=1398757528]
 layout_mode = 0
 offset_left = 24.0
-offset_top = 380.0
+offset_top = 83.0
 offset_right = 336.0
-offset_bottom = 410.0
+offset_bottom = 113.0
 horizontal_alignment = 1
 
 [node name="Description" type="Label" parent="." unique_id=1380135218]
 layout_mode = 0
 offset_left = 24.0
-offset_top = 325.0
+offset_top = 365.0
 offset_right = 336.0
-offset_bottom = 385.0
-horizontal_alignment = 1
+offset_bottom = 425.0
+text = "文字测试"
+label_settings = SubResource("LabelSettings_vpojg")
+vertical_alignment = 1
 autowrap_mode = 2

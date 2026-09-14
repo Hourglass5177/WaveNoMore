@@ -5,45 +5,61 @@
 [ext_resource type="Texture2D" uid="uid://ci6su6vgfj5bt" path="res://assets/image/ui/选关/怪物/蝙蝠.png" id="2_7ogen"]
 [ext_resource type="SpriteFrames" uid="uid://c1lbb3ibs2mb1" path="res://assets/image/ui/选关/火框燃烧_8帧_透明PNG/level_card_fire.tres" id="2_dwpdq"]
 [ext_resource type="Texture2D" uid="uid://cilhj5hlvcyre" path="res://assets/image/ui/选关/顶部文字/壹.png" id="2_fkwas"]
+[ext_resource type="Texture2D" uid="uid://85ubl17xm0jc" path="res://assets/image/ui/选关/眼睛/微信图片_20260914121932_1932_127.png" id="3_4asjf"]
 [ext_resource type="Texture2D" uid="uid://ctd7kmx186akd" path="res://assets/image/ui/选关/怪物/蛇.png" id="4_7xqlx"]
+[ext_resource type="Texture2D" uid="uid://bw3lgioico46q" path="res://assets/image/ui/选关/眼睛/微信图片_20260914122042_1935_127.png" id="4_nx3ka"]
 [ext_resource type="Texture2D" uid="uid://cj2dort6m3lq8" path="res://assets/image/ui/选关/顶部文字/贰.png" id="5_dwpdq"]
 [ext_resource type="Texture2D" uid="uid://d0gqtw2mljow2" path="res://assets/image/ui/选关/怪物/羊头.png" id="5_lehv5"]
 [ext_resource type="Texture2D" uid="uid://dmac2774erc0o" path="res://assets/image/ui/选关/框/框选中.png" id="6_heading"]
 [ext_resource type="Texture2D" uid="uid://bmot3maukwdp6" path="res://assets/image/ui/选关/顶部文字/叁.png" id="7_2s8gp"]
+[ext_resource type="Texture2D" uid="uid://38aqj6yocvkf" path="res://assets/image/ui/选关/眼睛/微信图片_20260914121916_1930_127.png" id="8_w757c"]
+[ext_resource type="Texture2D" uid="uid://cailj53um32cg" path="res://assets/image/ui/选关/眼睛/微信图片_20260914122028_1933_127.png" id="9_63cwa"]
+[ext_resource type="Texture2D" uid="uid://dulroojx18ou2" path="res://assets/image/ui/选关/眼睛/微信图片_20260914121925_1931_127.png" id="12_y8xns"]
+[ext_resource type="Texture2D" uid="uid://wwhav6o4pgco" path="res://assets/image/ui/选关/眼睛/微信图片_20260914122035_1934_127.png" id="13_1uasq"]
 
 [sub_resource type="Resource" id="Entry1"]
 script = ExtResource("2")
 title = "示例关卡 01"
 stage_id = "s08"
 image = ExtResource("2_7ogen")
+eye_icon_selected = ExtResource("3_4asjf")
+eye_icon_unselected = ExtResource("4_nx3ka")
 background = ExtResource("6_heading")
 background_scale = 0.7
 heading_texture = ExtResource("2_fkwas")
 background_effect_frames = ExtResource("2_dwpdq")
-background_effect_scale = 1.9000000000000001
-description = "蝙蝠"
+background_effect_scale = 2.0
+background_effect_offset = Vector2(0, -25)
+description = "〔蝙蝠描述〕"
 
 [sub_resource type="Resource" id="Entry2"]
 script = ExtResource("2")
 title = "示例关卡 02"
 image = ExtResource("4_7xqlx")
+eye_icon_selected = ExtResource("8_w757c")
+eye_icon_unselected = ExtResource("9_63cwa")
 background = ExtResource("6_heading")
 background_scale = 0.7
 heading_texture = ExtResource("5_dwpdq")
 background_effect_frames = ExtResource("2_dwpdq")
-background_effect_scale = 0.7
-description = "蛇"
+background_effect_scale = 2.0
+background_effect_offset = Vector2(0, -25)
+description = "    〔别着香草的美人，
+               烧光了整片沼泽。〕"
 
 [sub_resource type="Resource" id="Resource_s6mt0"]
 script = ExtResource("2")
 title = "test3"
 image = ExtResource("5_lehv5")
+eye_icon_selected = ExtResource("12_y8xns")
+eye_icon_unselected = ExtResource("13_1uasq")
 background = ExtResource("6_heading")
 background_scale = 0.7
 heading_texture = ExtResource("7_2s8gp")
 background_effect_frames = ExtResource("2_dwpdq")
-background_effect_scale = 0.7
-description = "羊头"
+background_effect_scale = 2.0
+background_effect_offset = Vector2(0, -25)
+description = "〔羊头描述〕"
 metadata/_custom_type_script = "uid://hdbtdjofj14n"
 
 [resource]
