@@ -122,7 +122,24 @@ func _ready() -> void:
 	clear()
 
 
+var _frame_driven := false
+var _defer_runtime_upload := false
+
+func set_frame(sample: ClockSample, snapshot: Dictionary) -> void:
+	# 帧尾只提交一次波前；对齐淡入也使用歌曲时间，暂停不漂移。
+	var delta := maxf(sample.visual_time_sec - _visual_time_sec, 0.0)
+	_frame_driven = true
+	_defer_runtime_upload = true
+	set_clock_sample(sample)
+	set_gameplay_snapshot(snapshot)
+	_update_alignment(delta)
+	_defer_runtime_upload = false
+	_push_runtime_state()
+
 func _process(delta: float) -> void:
+	if not _frame_driven: _update_alignment(delta)
+
+func _update_alignment(delta: float) -> void:
 	var previous_life: float = _life_alignment_strength
 	var previous_death: float = _death_alignment_strength
 	_life_alignment_strength = _approach_alignment_strength(
@@ -160,9 +177,9 @@ func configure_from_rules(rules: GameplayRuleSet) -> void:
 
 
 func configure_palette(p_life_color: Color, p_death_color: Color, p_overlap_color: Color) -> void:
-	life_color = p_life_color.lightened(0.10)
-	# 死界本身接近黑色，持续波需保留玄色倾向同时抬高亮度。
-	death_color = p_death_color.lerp(Color("a8b0c2"), 0.62)
+	# 使用统一阵营色，去掉旧版仅把死波染回蓝灰的补色。
+	life_color = p_life_color
+	death_color = p_death_color
 	overlap_color = p_overlap_color
 	if is_instance_valid(_su_overlay):
 		_su_overlay.set("bone_color", overlap_color)
@@ -445,6 +462,7 @@ func _consume_su_manifestations(snapshot: Dictionary) -> void:
 	var judge_time_sec: float = float(snapshot.get("time_us", 0)) / 1_000_000.0
 	_su_overlay.set("canvas_size", canvas_size)
 	for target: Dictionary in snapshot.get("su_prepared_targets", []):
+		if int(snapshot.get("time_us",0)) < int(target.get("visible_from_us",-9223372036854775807)): continue
 		var event_id: String = str(target["event_id"])
 		if _prepared_su_ids.has(event_id):
 			continue
@@ -826,6 +844,7 @@ func _push_configuration() -> void:
 
 
 func _push_runtime_state() -> void:
+	if _defer_runtime_upload: return
 	if not is_inside_tree():
 		return
 	_ensure_material()

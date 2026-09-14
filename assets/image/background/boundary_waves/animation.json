@@ -1,0 +1,23 @@
+{
+  "canvas": [
+    384,
+    256
+  ],
+  "anchor": [
+    280,
+    232
+  ],
+  "crash_phase": 0.75,
+  "frames": 128,
+  "key_times": [
+    0.0,
+    0.22,
+    0.4,
+    0.6,
+    0.69,
+    0.75,
+    0.86,
+    1.0
+  ],
+  "source": "edge.png + source/keyposes-green.png"
+}

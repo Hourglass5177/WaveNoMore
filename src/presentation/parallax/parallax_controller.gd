@@ -7,6 +7,7 @@ const RepeatView = preload("res://src/presentation/parallax/parallax_repeat.gd")
 
 class DepthLayer extends Node2D:
 	var depth: int
+	var canvas: CanvasLayer
 
 class SubLayer extends Node2D:
 	var sublayer_id: String
@@ -30,20 +31,61 @@ var _layers: Dictionary[int, DepthLayer] = {}
 var _objects: Dictionary[int, Registration] = {}
 var _configured_objects: Array[Node2D] = []
 var _animations: Array[AnimatedSprite2D] = []
+var boundary_motion := BoundaryMotion.new()
+var _boundary_materials: Array[Dictionary] = []
+var _background_scenes: Array[Node2D] = []
 var _leaving := false
 var _song_time := 0.0
+var _occlusion := {}
 
-## 将外部对象挂入指定背景深度的前方或后方；不改变对象变换或视差移动。
-func set_object_occlusion(object: Node2D, depth: int, order: String) -> void:
+## 独立 Canvas 保留素材内部 z 层次；只排列 Canvas，不让内部 z 越过背景接缝。
+## Canvas 的大层级仍是 -1 / 1，不改变玩法、波纹和 HUD 的既有层级。
+func set_object_occlusion(object: Node2D, depth: int, order: String, local_order := 0) -> void:
 	if not is_instance_valid(object) or order not in ["front", "back"]: return
-	var layer := _get_layer(depth)
-	if object.get_parent() != layer:
-		var pose := object.global_transform
-		if object.get_parent() != null: object.get_parent().remove_child(object)
-		layer.add_child(object)
-		object.global_transform = pose
-	var target_index: int = layer.get_child_count() - 1 if order == "front" else 0
-	layer.move_child(object, target_index)
+	var id := object.get_instance_id()
+	var record: Dictionary = _occlusion.get(id, {})
+	if record.is_empty():
+		var canvas := CanvasLayer.new(); canvas.name = "ShowOcclusion"; add_child(canvas)
+		record = {"object":object,"parent":weakref(object.get_parent()),"canvas":canvas,"depth":depth,"order":order,"local_order":local_order}
+		_occlusion[id] = record
+		var pose := object.get_global_transform_with_canvas()
+		canvas.transform = _parent_pose(object.get_parent())
+		object.reparent(canvas, false); object.transform = canvas.transform.affine_inverse() * pose
+	elif record.depth == depth and record.order == order and record.local_order == local_order:
+		return
+	record.depth=depth; record.order=order; record.local_order=local_order
+	_get_layer(depth); _sort_canvases()
+
+func release_object_occlusion(object: Node2D) -> void:
+	if not is_instance_valid(object): return
+	var id := object.get_instance_id()
+	if not _occlusion.has(id): return
+	var record: Dictionary = _occlusion[id]; _occlusion.erase(id)
+	var parent: Node = record.parent.get_ref()
+	var pose := object.get_global_transform_with_canvas()
+	object.get_parent().remove_child(object)
+	if is_instance_valid(parent) and not parent.is_queued_for_deletion():
+		parent.add_child(object); object.transform=_parent_pose(parent).affine_inverse()*pose
+	else: object.queue_free()
+	record.canvas.queue_free(); _sort_canvases()
+
+static func _parent_pose(parent: Node) -> Transform2D:
+	if parent is CanvasItem:return parent.get_global_transform_with_canvas()
+	if parent is CanvasLayer:return parent.get_final_transform()
+	return Transform2D.IDENTITY
+
+func _sort_canvases() -> void:
+	var entries := []
+	for layer: DepthLayer in _layers.values(): entries.append({"depth":layer.depth,"slot":1,"order":0,"canvas":layer.canvas})
+	for record: Dictionary in _occlusion.values(): entries.append({"depth":record.depth,"slot":0 if record.order=="back" else 2,"order":record.local_order,"canvas":record.canvas})
+	entries.sort_custom(func(a,b):
+		if a.depth!=b.depth:return a.depth>b.depth
+		if a.slot!=b.slot:return a.slot<b.slot
+		return a.order<b.order)
+	for index in entries.size():
+		var entry: Dictionary=entries[index]
+		move_child(entry.canvas,index)
+		entry.canvas.layer=-1 if entry.depth>=0 else 1
 var environment: StageEnvironmentSequence
 var environment_views := {}
 var environment_only_layer := ""
@@ -208,8 +250,8 @@ func configure(definition: StageBackgroundDefinition, apply_materials: bool = tr
 
 func _configure_entry(entry: StageBackgroundEntry, depth: int, sublayer_id: String, apply_materials: bool) -> String:
 	var index := _configured_objects.size()
-	if entry == null or (entry.texture == null) == (entry.sprite_frames == null):
-		return "背景条目 %d 必须指定贴图或 SpriteFrames，且只能指定一项。" % (index + 1)
+	if entry == null or entry.source_count() != 1:
+		return "背景条目 %d 必须指定贴图、SpriteFrames 或场景，且只能指定一项。" % (index + 1)
 	if not is_finite(entry.uniform_scale) or entry.uniform_scale < 0.01:
 		return "背景条目 %d 的缩放倍率必须至少为 0.01。" % (index + 1)
 	var object: Node2D
@@ -218,6 +260,14 @@ func _configure_entry(entry: StageBackgroundEntry, depth: int, sublayer_id: Stri
 		sprite.texture = entry.texture
 		sprite.centered = false
 		object = sprite
+	elif entry.scene != null:
+		var instance := entry.scene.instantiate()
+		if not instance is Node2D or entry.infinite:
+			instance.free()
+			return "背景场景必须以 Node2D 为根，并使用有限素材。"
+		object=instance
+		if object.has_method("configure_boundary_scene"): object.configure_boundary_scene(boundary_motion)
+		_background_scenes.append(object)
 	else:
 		if not entry.sprite_frames.has_animation(entry.animation) or entry.sprite_frames.get_frame_count(entry.animation) == 0:
 			return "背景条目 %d 的动画不存在或没有帧。" % (index + 1)
@@ -230,6 +280,9 @@ func _configure_entry(entry: StageBackgroundEntry, depth: int, sublayer_id: Stri
 		object = sprite
 	if apply_materials and entry.material != null:
 		object.material = entry.material.duplicate(false) as ShaderMaterial
+		if BoundaryMotion.accepts(object.material):
+			boundary_motion.apply(object.material, entry.uniform_scale)
+			_boundary_materials.append({"material": object.material, "scale": entry.uniform_scale})
 	add_child(object)
 	object.position = entry.position
 	object.scale = Vector2.ONE * entry.uniform_scale
@@ -244,11 +297,27 @@ func _configure_entry(entry: StageBackgroundEntry, depth: int, sublayer_id: Stri
 ## 外部注册的 AnimatedSprite2D 保留自己的动画播放控制。
 func set_song_time(song_time: float, apply_motion: bool = true) -> void:
 	_song_time = maxf(song_time, 0.0) if apply_motion else 0.0
+	var beat := boundary_motion.beat_at(song_time)
+	for item in _boundary_materials:
+		BoundaryMotion.sample(item.material, song_time, beat)
+	for object in _background_scenes:
+		if object.has_method("sample_background"): object.sample_background(song_time)
 	set_camera_position(_camera_position)
 	for sprite: AnimatedSprite2D in _animations:
 		if not is_instance_valid(sprite):
 			continue
 		sample_animation(sprite, song_time)
+
+## 一局只装载一次策划值；共享贴图与材质资源不被回写。
+func configure_boundary(chart: SongChart, first_beat_offset: float, planning: Dictionary) -> void:
+	boundary_motion.tempo_map = TempoMap.from_chart(chart) if chart != null else null
+	boundary_motion.meters.clear()
+	if chart != null: boundary_motion.meters.append_array(chart.meter_events)
+	boundary_motion.meters.sort_custom(func(a, b): return a.tick < b.tick)
+	boundary_motion.audio_offset_sec = first_beat_offset
+	boundary_motion.style = BoundaryMotion.DEFAULT_STYLE.duplicate()
+	PlanningParameters.apply_values(boundary_motion.style, "boundary", planning)
+	for item in _boundary_materials: boundary_motion.apply(item.material, item.scale)
 
 static func sample_animation(sprite: AnimatedSprite2D, song_time: float) -> void:
 		var frames := sprite.sprite_frames
@@ -271,6 +340,7 @@ static func sample_animation(sprite: AnimatedSprite2D, song_time: float) -> void
 
 ## 换关/卸载入口：归还外部对象，释放由配置创建的对象，清空摄像头和动画记录。
 func clear() -> void:
+	for record: Dictionary in _occlusion.values().duplicate(): release_object_occlusion(record.object)
 	clear_environment()
 	for record: Registration in _objects.values():
 		unregister_object(record.object)
@@ -281,11 +351,12 @@ func clear() -> void:
 			object.queue_free()
 	_configured_objects.clear()
 	_animations.clear()
+	_boundary_materials.clear()
+	_background_scenes.clear()
 	_camera_position = Vector2.ZERO
 	_song_time = 0.0
 	for layer: DepthLayer in _layers.values():
-		layer.get_parent().remove_child(layer)
-		layer.queue_free()
+		layer.canvas.queue_free()
 	_layers.clear()
 
 ## 只替换背景配置的显示宿主，真实角色和音符注册项一直保留。
@@ -317,8 +388,11 @@ func clear_environment() -> void:
 		view.root.get_parent().remove_child(view.root); view.root.queue_free()
 	environment_views.clear(); environment = null
 
-func sample_environment(time_us: int, render_camera := Vector2(INF, INF)) -> void:
+func sample_environment(time_us: int, render_camera := Vector2(INF, INF), song_time_sec := NAN) -> void:
 	if environment == null: return
+	# 演出坐标是音频位置；正式游戏显式传入未应用画面提前量的歌曲主时钟。
+	var seconds := song_time_sec if is_finite(song_time_sec) else float(time_us) / 1000000.0 - boundary_motion.audio_offset_sec
+	var beat := boundary_motion.beat_at(seconds)
 	environment_time_us = time_us
 	environment_render_camera=render_camera if render_camera.is_finite() else environment.camera_at(time_us)
 	_sync_canvas_transform()
@@ -331,7 +405,8 @@ func sample_environment(time_us: int, render_camera := Vector2(INF, INF)) -> voi
 		view.root.visible = environment_only_layer.is_empty() or environment_only_layer == lane.id
 		var alive := {}
 		var states := environment.visible_sources(lane, time_us,environment_render_camera)
-		var canvas:=get_viewport().get_stretch_transform()*get_global_transform_with_canvas()
+		var render_scale:Vector2=get_viewport().get_meta(&"render_pixel_scale",Vector2.ONE)
+		var canvas:=Transform2D.IDENTITY.scaled(render_scale)*get_viewport().get_stretch_transform()*get_global_transform_with_canvas()
 		var inverse := canvas.affine_inverse()
 		var shader: ShaderMaterial = view.composite.material
 		shader.set_shader_parameter("inverse_x", inverse.x); shader.set_shader_parameter("inverse_y", inverse.y); shader.set_shader_parameter("inverse_origin", inverse.origin); shader.set_shader_parameter("direction", lane.direction)
@@ -346,9 +421,10 @@ func sample_environment(time_us: int, render_camera := Vector2(INF, INF)) -> voi
 				var old: Node = view.slices[state.index]; old.get_parent().remove_child(old); old.queue_free(); view.slices.erase(state.index)
 			if not view.slices.has(state.index):
 				var slice := StageEnvironmentSlice.new(); view.root.add_child(slice)
-				slice.configure(state.source.record.resource); view.slices[state.index] = slice
+				slice.configure(state.source.record.resource, boundary_motion); view.slices[state.index] = slice
 			view.slices[state.index].set_direct(view.root,direct,maxf(1.0,canvas.x.length()))
 			view.slices[state.index].sample(state, lane.direction, canvas)
+			view.slices[state.index].sample_boundary(seconds, beat)
 			if ordinal == 0:
 				view.composite.texture = view.slices[state.index].texture
 				view.composite.scale=Vector2(1920,1080)/Vector2(view.slices[state.index].viewport.size)
@@ -374,6 +450,10 @@ func _sync_canvas_transform() -> void:
 	var pose := get_global_transform_with_canvas()
 	_background.transform = pose
 	_foreground.transform = pose
+	for layer: DepthLayer in _layers.values(): layer.canvas.transform=pose
+	for record: Dictionary in _occlusion.values():
+		var parent: Node=record.parent.get_ref()
+		if is_instance_valid(parent):record.canvas.transform=_parent_pose(parent)
 
 
 func _canvas_pose(object: Node2D) -> Transform2D:
@@ -389,17 +469,10 @@ func _get_layer(depth: int) -> DepthLayer:
 	var layer := DepthLayer.new()
 	layer.depth = depth
 	layer.name = "Depth_%s" % depth
-	var canvas := _background if depth >= 0 else _foreground
-	canvas.add_child(layer)
+	layer.canvas=CanvasLayer.new();layer.canvas.name="DepthCanvas_%s"%depth
+	add_child(layer.canvas); layer.canvas.transform=get_global_transform_with_canvas();layer.canvas.add_child(layer)
 	_layers[depth] = layer
-	var depths: Array = _layers.keys()
-	depths.sort()
-	depths.reverse()
-	var order := 0
-	for value: int in depths:
-		if _layers[value].get_parent() == canvas:
-			canvas.move_child(_layers[value], order)
-			order += 1
+	_sort_canvases()
 	return layer
 
 
@@ -447,6 +520,9 @@ func _remove_exited_view(record: Registration) -> void:
 
 
 func _notification(what: int) -> void:
+	if what == NOTIFICATION_PREDELETE:
+		# 控制器销毁时归还仍由外部播放器拥有的对象。
+		for record: Dictionary in _occlusion.values():release_object_occlusion(record.object)
 	if what == NOTIFICATION_EXIT_TREE:
 		_leaving = true
 		_objects.clear()

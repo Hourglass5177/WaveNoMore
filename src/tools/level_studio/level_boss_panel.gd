@@ -16,6 +16,12 @@ var _updating := false
 var _preview_signature := ""
 var _create: Button
 var _content := VBoxContainer.new()
+var _search := ""
+var _note_type := "全部类型"
+var _note_side := "全部侧"
+var _note_scope := "全部绑定"
+var _note_from := 0.0
+var _note_to := 0.0
 
 func edit_document() -> LevelDocument: return workspace.document
 
@@ -27,7 +33,12 @@ func _ready() -> void:
 	_content.add_child(_binding_select); _binding_select.item_selected.connect(_select_binding)
 	LevelUI.button(_content,"复制动作配置并重新选音符",_copy_settings)
 	var search := LineEdit.new(); search.placeholder_text="搜索音符时间或 ID"; _content.add_child(search)
-	search.text_changed.connect(func(value): _populate_notes(value))
+	search.text_changed.connect(func(value): _search=value;_populate_notes())
+	LevelUI.choice(_content,"类型",["全部类型","Tap","Hold","调频幽灵"],"全部类型",func(value):_note_type=value;_populate_notes())
+	LevelUI.choice(_content,"生死侧",["全部侧","生","死","双侧幽灵"],"全部侧",func(value):_note_side=value;_populate_notes())
+	LevelUI.choice(_content,"绑定",["全部绑定","未绑定","当前绑定","其他绑定"],"全部绑定",func(value):_note_scope=value;_populate_notes())
+	LevelUI.number(_content,"段落起点 秒",0,func(value):_note_from=value;_populate_notes(),0.1,0,100000)
+	LevelUI.number(_content,"段落终点（0=全曲）",0,func(value):_note_to=value;_populate_notes(),0.1,0,100000)
 	LevelUI.label(_content,"只读谱面 · 选择 BOSS 音符",12)
 	_notes.custom_minimum_size.y=130; _notes.select_mode=ItemList.SELECT_MULTI; _content.add_child(_notes)
 	_notes.multi_selected.connect(func(_index,_selected):
@@ -40,17 +51,20 @@ func _ready() -> void:
 	_notes.item_activated.connect(func(index):
 		var note: Resource=workspace.song_document.find_note(str(_notes.get_item_metadata(index)))
 		if note!=null: workspace.seek(workspace.song_document.tempo_map().tick_to_us(note.tick)); workspace.timeline.focus_time(workspace.time_us))
-	LevelUI.button(_content,"全选此难度 BOSS 音符",func():
-		var ids := []
-		for note in ChartEditEvents.all(workspace.song_document.chart()):
-			if (note is NoteEvent or note is GhostEvent) and note.boss: ids.append(note.event_id)
-		_change("note_ids",ids); _populate_notes())
+	LevelUI.button(_content,"全选筛选结果",func():
+		var ids: Array=data.note_ids.duplicate()
+		for index in _notes.item_count:
+			var id: String=str(_notes.get_item_metadata(index))
+			if id not in ids:ids.append(id)
+		_change("note_ids",ids);_populate_notes())
 	_viewport.size=Vector2i(640,360); _viewport.size_2d_override=Vector2i(640,360); _viewport.size_2d_override_stretch=true
 	_viewport.render_target_update_mode=SubViewport.UPDATE_DISABLED; add_child(_viewport); _viewport.add_child(_preview)
 	var image := TextureRect.new(); image.texture=_viewport.get_texture(); image.expand_mode=TextureRect.EXPAND_IGNORE_SIZE; image.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED; image.custom_minimum_size.y=140; _content.add_child(image)
 	LevelUI.label(_content,"动作局部时间（秒）",12)
 	_slider.min_value=0; _slider.max_value=3; _slider.step=0.001; _content.add_child(_slider)
 	_slider.value_changed.connect(func(_value): _sample_action())
+	var stepping:=HBoxContainer.new();_content.add_child(stepping)
+	LevelUI.button(stepping,"上一素材帧",func():_step_material_frame(-1));LevelUI.button(stepping,"下一素材帧",func():_step_material_frame(1))
 	LevelUI.button(_content,"将当前动作帧设为出手帧",func(): _change("release_sec",_slider.value); _rebuild_form())
 	_content.add_child(_release_label); _release_label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 	_content.add_child(_form)
@@ -59,7 +73,7 @@ func _ready() -> void:
 	LevelUI.button(_content,"删除当前绑定",func():
 		var existing: Dictionary=workspace.document.find("bindings",binding_id)
 		if not existing.is_empty(): workspace.document.replace("删除 BOSS 绑定","bindings",[existing],[])
-		open(object_id))
+		if workspace.document.last_error.is_empty():open(object_id))
 	var feedback := HFlowContainer.new(); _content.add_child(feedback)
 	LevelUI.button(feedback,"预览命中反馈",func(): workspace.test_feedback(true))
 	LevelUI.button(feedback,"预览失误反馈",func(): workspace.test_feedback(false))
@@ -96,13 +110,24 @@ func _copy_settings() -> void:
 		if key not in ["id","object_id","difficulty","note_ids"]: data[key]=copied[key]
 	_rebuild_form(); workspace._status.text="动作配置已复制，请为新绑定选择音符"
 
-func _populate_notes(search := "") -> void:
+func _populate_notes() -> void:
 	_updating=true; _notes.clear()
 	var tempo: TempoMap=workspace.song_document.tempo_map()
 	for note in ChartEditEvents.all(workspace.song_document.chart()):
 		if not (note is NoteEvent or note is GhostEvent) or not note.boss: continue
-		var caption := "%.3f s · %s"%[float(tempo.tick_to_us(note.tick))/1000000,note.event_id]
-		if not search.is_empty() and not search.to_lower() in caption.to_lower(): continue
+		var seconds:=float(tempo.tick_to_us(note.tick))/1000000
+		var kind:= "调频幽灵" if note is GhostEvent else ("Tap" if note.kind==GameplayTypes.NoteKind.TAP else "Hold")
+		var side: String="双侧幽灵" if note is GhostEvent else ("生" if note.affinity==GameplayTypes.Affinity.ZHU else "死")
+		if _note_side!="全部侧" and side!=_note_side:continue
+		var owners: Array=workspace.document.entries("bindings").filter(func(binding):return binding.difficulty==workspace.difficulty() and note.event_id in binding.note_ids)
+		if _note_type!="全部类型" and kind!=_note_type:continue
+		if seconds<_note_from or (_note_to>0 and seconds>_note_to):continue
+		if _note_scope=="未绑定" and not owners.is_empty():continue
+		if _note_scope=="当前绑定" and not note.event_id in data.note_ids:continue
+		if _note_scope=="其他绑定" and not owners.any(func(binding):return binding.id!=binding_id):continue
+		var owner_names: Array=owners.map(func(binding):return str(workspace.document.find("objects",binding.object_id).get("name","失效对象"))+" / "+str(binding.action))
+		var caption := "%.3f s · %s · %s\n%s"%[seconds,side+" · "+kind,note.event_id,"未绑定" if owners.is_empty() else "、".join(owner_names)]
+		if not _search.is_empty() and not _search.to_lower() in caption.to_lower(): continue
 		_notes.add_item(caption); _notes.set_item_metadata(_notes.item_count-1,note.event_id)
 		if note.event_id in data.get("note_ids",[]): _notes.select(_notes.item_count-1,false)
 	for id: String in data.get("note_ids",[]):
@@ -114,7 +139,9 @@ func _change(key: String, value: Variant) -> void:
 	data[key]=value
 	if not binding_id.is_empty():
 		var before: Dictionary=workspace.document.find("bindings",binding_id).duplicate(true)
-		if not before.is_empty(): workspace.document.replace("修改 BOSS "+key,"bindings",[before],[data.duplicate(true)])
+		if not before.is_empty():
+			workspace.document.replace("修改 BOSS "+key,"bindings",[before],[data.duplicate(true)])
+			if not workspace.document.last_error.is_empty():data=before;_rebuild_form()
 	_update_times(); _sample_action()
 
 func _rebuild_form() -> void:
@@ -138,18 +165,19 @@ func _rebuild_form() -> void:
 	for pair in [["发射音效","sound","audio"],["发射特效","effect","effect"],["命中特效","hit_effect","effect"],["失误特效","miss_effect","effect"]]:
 		workspace.resource_field(_form,pair[0],str(data.get(pair[1],"")),pair[2],func(value):_change(pair[1],value))
 	for pair in [["生弹射手柄","life_handle",Vector2(1700,-100)],["死弹射手柄","death_handle",Vector2(-1700,100)]]:
-		LevelUI.vector(_form,pair[0],LevelFormat.vec(data.get(pair[1],[]),pair[2]),func(value):_change(pair[1],value))
+		LevelUI.vector(_form,pair[0],LevelFormat.vec(data.get(pair[1],[]),pair[2]),func(value):_change(pair[1],value),1,func(axis,value):
+			var next:=LevelFormat.vec(data.get(pair[1],[]),pair[2]);next[axis]=value;_change(pair[1],[next.x,next.y]))
 	LevelUI.label(_form,"手柄相对发射点；入轨端切线自动衔接普通路径。",11)
-	_slider.max_value=float(data.action_duration_us)/1000000; _update_times(); _sample_action()
+	_slider.max_value=maxf(float(data.action_duration_us)/1000000*float(data.rate),float(data.release_sec)); _update_times(); _sample_action()
 
 func _sample_action() -> void:
 	var object_data: Dictionary=workspace.document.find("objects",object_id).duplicate(true)
 	if object_data.is_empty(): return
 	object_data.fields.position=[320,180]; object_data.fields.scale=[1,1]; object_data.fields.rotation=0; object_data.parent_id=""; object_data.layer="world"
 	var track:=LevelFormat.track(object_id,"action","song","action")
-	var clip:=LevelFormat.clip(0,"",int(data.action_duration_us)); clip.action=data.action; clip.rate=data.rate; track.clips=[clip]
+	var clip:=LevelFormat.clip(0,"",maxi(1,roundi(_slider.max_value*1000000))); clip.action=data.action; clip.rate=1.0; track.clips=[clip]
 	var show:={"objects":[object_data],"tracks":[track],"bindings":[]}
-	var signature: String = str(object_data.asset)+workspace.document.directory+JSON.stringify(workspace.document.data.packs)
+	var signature: String = str(object_data.id)+"|"+str(object_data.asset)+workspace.document.directory+JSON.stringify(workspace.document.data.packs)
 	if signature!=_preview_signature: _preview.configure(show,workspace.document.directory,workspace.document.data.packs,workspace.difficulty()); _preview_signature=signature
 	else: _preview.show=show
 	_preview.seek("song",roundi(_slider.value*1000000)); _viewport.render_target_update_mode=SubViewport.UPDATE_ONCE
@@ -159,15 +187,38 @@ func _update_times() -> void:
 	_create.visible=binding_id.is_empty(); _create.disabled=data.get("note_ids",[]).is_empty()
 	_create.tooltip_text="先选择至少一个 BOSS 音符" if _create.disabled else "创建绑定（可撤销）"
 	if data.get("note_ids",[]).is_empty(): _release_label.text="选择音符后，主时间线显示攻击时序。"; return
-	var note: Resource=workspace.song_document.find_note(str(data.note_ids[0]))
-	if note==null: _release_label.text="关联音符已失效，请重新选择。"; return
-	var hit := float(workspace.song_document.tempo_map().tick_to_us(note.tick))/1000000
 	var approach := 2.25
 	if is_instance_valid(workspace.preview.stage_root): approach=workspace.preview.stage_root.stage_session.rule_set.approach_duration_sec
-	var release := hit-approach-float(data.return_us)/1000000
-	_release_label.text="歌曲时间\n动作开始 %.3f s\n发射 %.3f s → 入轨 %.3f s\n判定 %.3f s"%[release-float(data.release_sec)/float(data.rate),release,hit-approach,hit]
+	var lines:=PackedStringArray(["新建草稿" if binding_id.is_empty() else "已创建绑定","歌曲时间 · 开始 / 发射 / 入轨 / 判定"])
+	var first:=INF;var last:=-INF
+	for id: String in data.note_ids:
+		var note: Resource=workspace.song_document.find_note(id)
+		if note==null:lines.append("失效关联 · "+id);continue
+		var hit:=float(workspace.song_document.tempo_map().tick_to_us(note.tick))/1000000
+		var release:=hit-approach-float(data.return_us)/1000000
+		var start:=release-float(data.release_sec)/float(data.rate)
+		first=minf(first,start);last=maxf(last,hit)
+		lines.append("%s：%.3f / %.3f / %.3f / %.3f s"%[id,start,release,hit-approach,hit])
+	if first!=INF:lines.insert(1,"覆盖 %.3f → %.3f s"%[first,last])
+	_release_label.text="\n".join(lines)
+
+## 非均匀帧长按素材边界逐帧，主时间线速率不改变这里的读数。
+func _step_material_frame(direction: int) -> void:
+	var entry: Dictionary=workspace.document.find("objects",object_id)
+	var resource: Resource=workspace.assets().resolve(str(entry.get("asset","")))
+	var boundaries: Array[float]=[0.0]
+	if resource is SpriteFrames and resource.has_animation(data.action):
+		var at:=0.0
+		for index in resource.get_frame_count(data.action):
+			at+=resource.get_frame_duration(data.action,index)/resource.get_animation_speed(data.action);boundaries.append(at)
+	else:
+		# 场景动作没有离散图片帧时采用制作帧率 60 fps。
+		_slider.value=clampf((floorf(_slider.value*60+0.0001)+direction)/60,0,_slider.max_value);return
+	if direction<0:boundaries.reverse()
+	for at: float in boundaries:
+		if (at-_slider.value)*direction>0.00001:_slider.value=at;return
 
 func _apply() -> void:
 	if data.note_ids.is_empty(): return
 	workspace.document.replace("创建 BOSS 绑定","bindings",[],[data.duplicate(true)])
-	open(object_id,str(data.id))
+	if workspace.document.last_error.is_empty():open(object_id,str(data.id))

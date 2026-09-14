@@ -1,0 +1,527 @@
+{
+  "format": "minghe-show",
+  "format_version": 1,
+  "objects": [
+    {
+      "id": "effects_group",
+      "name": "扩散环组（背景前）",
+      "type": "group",
+      "asset": "",
+      "animation": "",
+      "parent_id": "",
+      "layer": "world",
+      "depth": 0.0,
+      "occlusion_depth": 1,
+      "occlusion_order": "front",
+      "locked": false,
+      "hidden": false,
+      "fields": {
+        "position": [
+          0,
+          0
+        ],
+        "rotation": 0.0,
+        "scale": [
+          1.0,
+          1.0
+        ],
+        "opacity": 1.0,
+        "color": "ffffffff",
+        "visible": true,
+        "size": [
+          560.0,
+          100.0
+        ],
+        "text": "在此输入文字",
+        "font_size": 36,
+        "alignment": 1,
+        "font": "",
+        "visible_ratio": 1.0,
+        "volume_db": 0.0,
+        "zoom": 1.0,
+        "shake": 0.0
+      },
+      "occlusion_inherit": false
+    },
+    {
+      "id": "animation_0",
+      "name": "连续帧",
+      "type": "animated_sprite",
+      "asset": "assets/animations/animation_afa2aa489d105cac/asset.animation.json",
+      "animation": "default",
+      "parent_id": "effects_group",
+      "layer": "world",
+      "depth": 0.0,
+      "occlusion_depth": 0,
+      "occlusion_order": "none",
+      "locked": false,
+      "hidden": false,
+      "fields": {
+        "position": [
+          550,
+          600
+        ],
+        "rotation": 0.0,
+        "scale": [
+          2.4,
+          2.4
+        ],
+        "opacity": 1.0,
+        "color": "ffffffff",
+        "visible": true,
+        "size": [
+          560.0,
+          100.0
+        ],
+        "text": "在此输入文字",
+        "font_size": 36,
+        "alignment": 1,
+        "font": "",
+        "visible_ratio": 1.0,
+        "volume_db": 0.0,
+        "zoom": 1.0,
+        "shake": 0.0
+      }
+    },
+    {
+      "id": "animation_1",
+      "name": "精灵表",
+      "type": "animated_sprite",
+      "asset": "assets/animations/animation_3445a3ea95a95614/asset.animation.json",
+      "animation": "default",
+      "parent_id": "effects_group",
+      "layer": "world",
+      "depth": 0.0,
+      "occlusion_depth": 0,
+      "occlusion_order": "none",
+      "locked": false,
+      "hidden": false,
+      "fields": {
+        "position": [
+          950,
+          600
+        ],
+        "rotation": 0.0,
+        "scale": [
+          2.4,
+          2.4
+        ],
+        "opacity": 1.0,
+        "color": "ffffffff",
+        "visible": true,
+        "size": [
+          560.0,
+          100.0
+        ],
+        "text": "在此输入文字",
+        "font_size": 36,
+        "alignment": 1,
+        "font": "",
+        "visible_ratio": 1.0,
+        "volume_db": 0.0,
+        "zoom": 1.0,
+        "shake": 0.0
+      }
+    },
+    {
+      "id": "animation_2",
+      "name": "SpriteFrames",
+      "type": "animated_sprite",
+      "asset": "assets/animations/animation_2bdae2a08aef7cb3/asset.animation.json",
+      "animation": "pulse",
+      "parent_id": "effects_group",
+      "layer": "world",
+      "depth": 0.0,
+      "occlusion_depth": 0,
+      "occlusion_order": "none",
+      "locked": false,
+      "hidden": false,
+      "fields": {
+        "position": [
+          1350,
+          600
+        ],
+        "rotation": 0.0,
+        "scale": [
+          2.4,
+          2.4
+        ],
+        "opacity": 1.0,
+        "color": "ffffffff",
+        "visible": true,
+        "size": [
+          560.0,
+          100.0
+        ],
+        "text": "在此输入文字",
+        "font_size": 36,
+        "alignment": 1,
+        "font": "",
+        "visible_ratio": 1.0,
+        "volume_db": 0.0,
+        "zoom": 1.0,
+        "shake": 0.0
+      }
+    },
+    {
+      "id": "instructions",
+      "name": "操作提示",
+      "type": "text",
+      "asset": "",
+      "animation": "",
+      "parent_id": "",
+      "layer": "hud",
+      "depth": 0.0,
+      "occlusion_depth": 0,
+      "occlusion_order": "none",
+      "locked": false,
+      "hidden": false,
+      "fields": {
+        "position": [
+          960,
+          210
+        ],
+        "rotation": 0.0,
+        "scale": [
+          1.0,
+          1.0
+        ],
+        "opacity": 1.0,
+        "color": "ffffffff",
+        "visible": true,
+        "size": [
+          1400,
+          200
+        ],
+        "text": "三种动画来源 · 从当前游标开始编排\n关闭自动关键帧拖动：整体调整当前区段动画",
+        "font_size": 36,
+        "alignment": 1,
+        "font": "",
+        "visible_ratio": 1.0,
+        "volume_db": 0.0,
+        "zoom": 1.0,
+        "shake": 0.0
+      }
+    },
+    {
+      "id": "empty_rebind",
+      "name": "空引用对象 · 选中后重新绑定",
+      "type": "animated_sprite",
+      "asset": "",
+      "animation": "",
+      "parent_id": "",
+      "layer": "world",
+      "depth": 0.0,
+      "occlusion_depth": 0,
+      "occlusion_order": "none",
+      "locked": false,
+      "hidden": false,
+      "fields": {
+        "position": [
+          960,
+          850
+        ],
+        "rotation": 0.0,
+        "scale": [
+          1.0,
+          1.0
+        ],
+        "opacity": 1.0,
+        "color": "ffffffff",
+        "visible": true,
+        "size": [
+          560.0,
+          100.0
+        ],
+        "text": "在此输入文字",
+        "font_size": 36,
+        "alignment": 1,
+        "font": "",
+        "visible_ratio": 1.0,
+        "volume_db": 0.0,
+        "zoom": 1.0,
+        "shake": 0.0
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "id": "track_83355631dfcb15cf",
+      "object_id": "animation_0",
+      "property": "action",
+      "type": "action",
+      "section": "song",
+      "difficulties": [],
+      "muted": false,
+      "locked": false,
+      "keys": [],
+      "clips": [
+        {
+          "id": "clip_cd6ebf968caac19b",
+          "name": "连续帧 · 可裁剪／拆分",
+          "start_us": 0,
+          "duration_us": 18000000,
+          "asset": "",
+          "action": "default",
+          "offset_us": 0,
+          "rate": 1.0,
+          "loop": true,
+          "fade_in_us": 0,
+          "fade_out_us": 0,
+          "gain_db": 0.0,
+          "hold_last": false
+        }
+      ]
+    },
+    {
+      "id": "track_6b9743a799f1af74",
+      "object_id": "animation_0",
+      "property": "position",
+      "type": "property",
+      "section": "song",
+      "difficulties": [],
+      "muted": false,
+      "locked": false,
+      "keys": [
+        {
+          "id": "key_5e4f525d0f835880",
+          "time_us": 2000000,
+          "value": [
+            550,
+            600
+          ],
+          "interpolation": "bezier",
+          "out_handle": [
+            0.333333,
+            0.333333
+          ],
+          "in_handle": [
+            0.666667,
+            0.666667
+          ]
+        },
+        {
+          "id": "key_8043558bce3ba636",
+          "time_us": 7000000,
+          "value": [
+            550,
+            420
+          ],
+          "interpolation": "linear",
+          "out_handle": [
+            0.333333,
+            0.333333
+          ],
+          "in_handle": [
+            0.666667,
+            0.666667
+          ]
+        },
+        {
+          "id": "key_2600bd8b18d255e0",
+          "time_us": 14000000,
+          "value": [
+            550,
+            600
+          ],
+          "interpolation": "linear",
+          "out_handle": [
+            0.333333,
+            0.333333
+          ],
+          "in_handle": [
+            0.666667,
+            0.666667
+          ]
+        }
+      ],
+      "clips": []
+    },
+    {
+      "id": "track_2a6318ae3d967f5e",
+      "object_id": "animation_1",
+      "property": "action",
+      "type": "action",
+      "section": "song",
+      "difficulties": [],
+      "muted": false,
+      "locked": false,
+      "keys": [],
+      "clips": [
+        {
+          "id": "clip_7767c56307b410a9",
+          "name": "精灵表 · 可裁剪／拆分",
+          "start_us": 500000,
+          "duration_us": 18000000,
+          "asset": "",
+          "action": "default",
+          "offset_us": 100000,
+          "rate": 0.75,
+          "loop": true,
+          "fade_in_us": 0,
+          "fade_out_us": 0,
+          "gain_db": 0.0,
+          "hold_last": false
+        }
+      ]
+    },
+    {
+      "id": "track_7695e387bb59d11c",
+      "object_id": "animation_1",
+      "property": "position",
+      "type": "property",
+      "section": "song",
+      "difficulties": [],
+      "muted": false,
+      "locked": false,
+      "keys": [
+        {
+          "id": "key_c521ef08929f2dc9",
+          "time_us": 2000000,
+          "value": [
+            950,
+            600
+          ],
+          "interpolation": "bezier",
+          "out_handle": [
+            0.333333,
+            0.333333
+          ],
+          "in_handle": [
+            0.666667,
+            0.666667
+          ]
+        },
+        {
+          "id": "key_2f5989cc26f18e90",
+          "time_us": 7000000,
+          "value": [
+            950,
+            420
+          ],
+          "interpolation": "linear",
+          "out_handle": [
+            0.333333,
+            0.333333
+          ],
+          "in_handle": [
+            0.666667,
+            0.666667
+          ]
+        },
+        {
+          "id": "key_cf204aeb2d7dc020",
+          "time_us": 14000000,
+          "value": [
+            950,
+            600
+          ],
+          "interpolation": "linear",
+          "out_handle": [
+            0.333333,
+            0.333333
+          ],
+          "in_handle": [
+            0.666667,
+            0.666667
+          ]
+        }
+      ],
+      "clips": []
+    },
+    {
+      "id": "track_db849ec45208177d",
+      "object_id": "animation_2",
+      "property": "action",
+      "type": "action",
+      "section": "song",
+      "difficulties": [],
+      "muted": false,
+      "locked": false,
+      "keys": [],
+      "clips": [
+        {
+          "id": "clip_5581c8104d83fbc0",
+          "name": "SpriteFrames · 可裁剪／拆分",
+          "start_us": 1000000,
+          "duration_us": 18000000,
+          "asset": "",
+          "action": "pulse",
+          "offset_us": 200000,
+          "rate": 1.5,
+          "loop": true,
+          "fade_in_us": 0,
+          "fade_out_us": 0,
+          "gain_db": 0.0,
+          "hold_last": false
+        }
+      ]
+    },
+    {
+      "id": "track_be1a86d8e5c4989b",
+      "object_id": "animation_2",
+      "property": "position",
+      "type": "property",
+      "section": "song",
+      "difficulties": [],
+      "muted": false,
+      "locked": false,
+      "keys": [
+        {
+          "id": "key_6b8a8552e7f3dc69",
+          "time_us": 2000000,
+          "value": [
+            1350,
+            600
+          ],
+          "interpolation": "bezier",
+          "out_handle": [
+            0.333333,
+            0.333333
+          ],
+          "in_handle": [
+            0.666667,
+            0.666667
+          ]
+        },
+        {
+          "id": "key_d7dbf5f444a3ecc5",
+          "time_us": 7000000,
+          "value": [
+            1350,
+            420
+          ],
+          "interpolation": "linear",
+          "out_handle": [
+            0.333333,
+            0.333333
+          ],
+          "in_handle": [
+            0.666667,
+            0.666667
+          ]
+        },
+        {
+          "id": "key_92e5254e1700c475",
+          "time_us": 14000000,
+          "value": [
+            1350,
+            600
+          ],
+          "interpolation": "linear",
+          "out_handle": [
+            0.333333,
+            0.333333
+          ],
+          "in_handle": [
+            0.666667,
+            0.666667
+          ]
+        }
+      ],
+      "clips": []
+    }
+  ],
+  "bindings": [],
+  "sequences": []
+}

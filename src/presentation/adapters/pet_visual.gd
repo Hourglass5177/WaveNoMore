@@ -15,9 +15,7 @@ func bind(pet: PetDefinition, advanced: bool) -> void:
 	if texture == null: texture = pet.icon(advanced)
 	queue_redraw()
 
-func set_state(song_time: float, trigger_us: Variant = null) -> void:
-	# UI 动画快照新增事件接口；保留当前关卡宿主的微秒触发参数。
-	if trigger_us != null: _trigger_at = float(trigger_us)/1000000.0
+func set_state(song_time: float) -> void:
 	_song_time = song_time
 	_trigger_age = song_time - _trigger_at
 	visible = _death_at<0 or song_time-_death_at<2.05

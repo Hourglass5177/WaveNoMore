@@ -9,6 +9,8 @@ var _source: Texture2D
 var _rect := Rect2()
 var _width: float = 36.0
 var _available := false
+var _rim_color := Color.WHITE
+var _applied_rim := Color.TRANSPARENT
 
 func _init() -> void:
 	_surface.shader = SHADER
@@ -17,6 +19,8 @@ func _init() -> void:
 	show_behind_parent = true
 
 func configure(style: NoteEffectStyle, side: int) -> void:
+	_rim_color = style.rim(side)
+	_applied_rim = _rim_color
 	_width = style.halo_width_px
 	_surface.set_shader_parameter(&"halo_color", style.halo(side))
 	_surface.set_shader_parameter(&"rim_color", style.rim(side))
@@ -24,6 +28,13 @@ func configure(style: NoteEffectStyle, side: int) -> void:
 	_surface.set_shader_parameter(&"radius_px", style.halo_width_px)
 	_surface.set_shader_parameter(&"rim_px", style.rim_width_px)
 	_rect = Rect2()
+
+func set_condition_light(amount: float, white: Color) -> void:
+	## 只让贴图近轮廓转白，外晕仍保持阵营色；不改变遮罩或网格。
+	var color := _rim_color.lerp(white, amount)
+	if color == _applied_rim: return
+	_applied_rim = color
+	_surface.set_shader_parameter(&"rim_color", color)
 
 func shape(source: Texture2D, rect: Rect2) -> void:
 	if source == _source and rect == _rect:

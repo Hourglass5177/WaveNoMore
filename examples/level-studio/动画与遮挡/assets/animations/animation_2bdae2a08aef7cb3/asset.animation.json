@@ -1,0 +1,29 @@
+{
+  "format": "minghe-animation",
+  "name": "SpriteFrames · 不等帧时长",
+  "animations": [
+    {
+      "name": "pulse",
+      "fps": 12.0,
+      "loop": true,
+      "frames": [
+        {
+          "duration": 1.0,
+          "image": "image_0000.png"
+        },
+        {
+          "duration": 1.0,
+          "image": "image_0001.png"
+        },
+        {
+          "duration": 1.0,
+          "image": "image_0002.png"
+        },
+        {
+          "duration": 2.0,
+          "image": "image_0003.png"
+        }
+      ]
+    }
+  ]
+}

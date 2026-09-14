@@ -28,7 +28,7 @@ var glow_fall_sec: float = 0.08
 var glow_amount: float = 0.0
 var _glow_visual: MeshInstance2D
 var _edge_glow_visual: MeshInstance2D
-var _double_tap := false
+var _double_press := false
 var _glow_time := 0.0
 var _glow_target := false
 var _glow_from := 0.0
@@ -104,9 +104,9 @@ func configure_effect_style(style: NoteEffectStyle, side: int) -> void:
 
 func _sync_effect_surface() -> void:
 	var active := effect_style.enabled and not _tap_body_only() and not missed and not _finished_effect
-	var surface_state := Vector3(glow_amount, 1.0 if active else 0.0, effect_style.accepted_brightness if _tap_body_only() else 1.0)
+	var surface_state := Vector3(_surface_glow_amount(), 1.0 if active else 0.0, effect_style.accepted_brightness if _tap_body_only() else 1.0)
 	if tap_material != null and surface_state != _last_surface_state:
-		tap_material.set_shader_parameter(&"condition_light", glow_amount)
+		tap_material.set_shader_parameter(&"condition_light", surface_state.x)
 		tap_material.set_shader_parameter(&"aura_amount", surface_state.y)
 		tap_material.set_shader_parameter(&"body_brightness", surface_state.z)
 		_last_surface_state = surface_state
@@ -115,6 +115,7 @@ func _sync_effect_surface() -> void:
 		tap_material.set_shader_parameter(&"eye_hit_progress", eye_progress)
 		_last_eye_progress = eye_progress
 	if _aura != null: _aura.visible = active and tap_texture != null
+	if _aura != null: _aura.set_condition_light(surface_state.x * effect_style.white_strength, effect_style.white_color)
 	if _edge_glow_visual != null: _edge_glow_visual.visible = active and tap_texture == null
 	if _standalone_effects != null: _standalone_effects.set_time(_glow_time)
 
@@ -165,7 +166,7 @@ func prepare(view_model: Dictionary) -> void:
 		_glow_visual = SOFT_GLOW.new()
 		_glow_visual.name = "WhiteGlow"
 		add_child(_glow_visual)
-	_double_tap = bool(view_model.get("double_tap", false)) and StringName(view_model.get("unit_kind", &"tap")) == &"tap"
+	_double_press = bool(view_model.get("double_press", false))
 	_reset_glow()
 	event_id = str(view_model.get("event_id", view_model.get("id", view_model.get("unit_id", ""))))
 	affinity = int(view_model.get("affinity", GameplayTypes.Affinity.ZHU))
@@ -387,7 +388,7 @@ func set_note_glow_time(seconds: float, time_to_hit: float) -> void:
 	elif missed:
 		_set_glow_amount(_glow_from * (1.0 - smoothstep(0.0, glow_fall_sec, seconds - _glow_change_time)))
 	else:
-		_set_glow_amount(smoothstep(0.0, tap_glow_rise_sec, tap_glow_lead_sec - time_to_hit) if _double_tap else 0.0)
+		_set_glow_amount(smoothstep(0.0, tap_glow_rise_sec, tap_glow_lead_sec - time_to_hit) if _double_press else 0.0)
 
 func _tap_body_only() -> bool:
 	return _is_tap and timing_confirmed and not missed
@@ -422,6 +423,9 @@ func _set_glow_amount(value: float) -> void:
 	if _glow_visual != null: _glow_visual.set_light(value * glow_strength, glow_width_px)
 	_sync_effect_surface()
 	queue_redraw()
+
+func _surface_glow_amount() -> float:
+	return glow_amount
 
 
 func _reset_glow() -> void:

@@ -48,18 +48,12 @@ func run() -> void:
 	var reference: Array[Vector2] = []
 	for step in [33_333, 16_667, 6_944, 197_777]:
 		var simulation := GameplaySimulation.new(); simulation.carrier_engine = engine()
-		var saw_partial := false
 		var batch := event("three", 3)
-		for at in range(0, TARGET, step):
+		for at in range(120000, 250000, step):
 			simulation.carrier_engine.advance_to(at)
-			var candidates := simulation.carrier_engine.find_constructive_intersections(TARGET, REGION, 3)
-			simulation._try_prepare_su(batch, at)
-			if candidates.size() > 0 and candidates.size() < 3:
-				saw_partial = true
-				check(not simulation._su_prepared.has("three"), "首次少量交点不能提前冻结 %d" % step)
-			if simulation._su_prepared.has("three"): break
+		simulation.carrier_engine.advance_to(250000)
+		simulation._try_prepare_su(batch,250000)
 		check(simulation._su_prepared.has("three"), "命中前准备整批 %d" % step)
-		if step < 100_000: check(saw_partial, "细帧步实际经过不足量阶段 %d" % step)
 		if not simulation._su_prepared.has("three"): continue
 		var points: Array[Vector2] = simulation._su_prepared.three.points
 		check(points.size() == 3, "预读生成完整三个目标 %d" % step)
@@ -68,17 +62,18 @@ func run() -> void:
 		simulation.carrier_engine.advance_to(TARGET)
 		simulation._try_prepare_su(batch, TARGET)
 		check(simulation._su_prepared.three.points == points, "后续发波不改变已经冻结的目标 %d" % step)
-		var direct := GameplaySimulation.new(); direct.carrier_engine = engine(); direct.carrier_engine.advance_to(TARGET)
-		direct._try_prepare_su(batch, TARGET)
+		var direct := GameplaySimulation.new(); direct.carrier_engine = engine(); direct.carrier_engine.advance_to(250000)
+		direct._try_prepare_su(batch, 250000)
 		check(direct._su_prepared.three.points == points, "直接恢复与逐段预读选择相同目标 %d" % step)
 
 	var shortage := GameplaySimulation.new(); shortage.carrier_engine = engine(); shortage.carrier_engine.advance_to(TARGET)
 	var available := shortage.carrier_engine.find_constructive_intersections(TARGET, REGION, 1000).size()
 	var impossible := event("shortage", 16)
-	shortage._try_prepare_su(impossible, TARGET - 1)
-	check(shortage._su_prepared.is_empty(), "不足时继续等待，不提前宣告完成")
+	shortage._try_prepare_su(impossible, TARGET)
+	check(shortage._su_prepared.has("shortage"), "预测不足也冻结并报告，不追随之后的错误操作补点")
 	shortage.compiled = CompiledChart.new(); shortage.compiled.su_manifestations.append(impossible)
+	shortage.rules = GameplayRuleSet.new(); shortage.health_engine.configure(shortage.rules, true)
 	shortage._process_su_manifestations(TARGET, true)
-	check(shortage._su_manifestations[0].points.size() == available and shortage._su_manifestations[0].generation_issue == &"insufficient_constructive_intersections", "到时不足保留真实点并报告指定数与实际数")
+	check(shortage._su_manifestations[0].points.size() == available and shortage._su_manifestations[0].generation_issue == &"insufficient_predicted_intersections", "到时不足保留预测点并报告指定数与实际数")
 	print("GHOST SELECTION TESTS: ", failures)
 	quit(1 if failures else 0)

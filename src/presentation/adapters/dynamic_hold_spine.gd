@@ -93,6 +93,18 @@ func get_points() -> PackedVector2Array:
 	## 返回只读用途的副本，不推进模拟。
 	return _points.duplicate()
 
+func capture_motion() -> Dictionary:
+	# 固定步长余量和角速度必须同时保存，只存折线不能继续等价积分。
+	return {"points": _points.duplicate(), "angles": _angles.duplicate(), "velocities": _velocities.duplicate(),
+		"head": _head, "heading": _heading, "target_head": _target_head, "target_heading": _target_heading,
+		"length": _length, "remainder": _remainder}
+
+func restore_motion(state: Dictionary) -> void:
+	_points = state.points.duplicate(); _angles = state.angles.duplicate(); _velocities = state.velocities.duplicate()
+	_head = state.head; _heading = state.heading
+	_target_head = state.target_head; _target_heading = state.target_heading
+	_length = state.length; _remainder = state.remainder
+
 
 func clear() -> void:
 	## 会话、Seek、对象回收均清空积累的运动状态与时间余量。

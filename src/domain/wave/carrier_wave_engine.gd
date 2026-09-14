@@ -238,6 +238,18 @@ func history_copy() -> Array[Dictionary]:
 	return result
 
 
+func fork_prediction() -> CarrierWaveEngine:
+	## 只复制当前仍可见的真实波和两钟相位，未来改频在副本中进行。
+	## 历史波字典只读；预测追加新波，不复制整曲历史或触碰正式发射队列。
+	var result := CarrierWaveEngine.new()
+	result.configure(_rules)
+	result._current_time_us = _current_time_us
+	result._serial = _serial
+	result._sources = _sources.duplicate(true)
+	for front: Dictionary in visible_wavefronts(_current_time_us): result._history.append(front)
+	return result
+
+
 func emission_count() -> int:
 	return _history.size()
 
@@ -513,7 +525,6 @@ func _rule_vector(property_name: StringName, fallback: Vector2) -> Vector2:
 func _rule_property(property_name: StringName, fallback: Variant) -> Variant:
 	if _rules == null:
 		return fallback
-	for property_data: Dictionary in _rules.get_property_list():
-		if StringName(property_data.get("name", &"")) == property_name:
-			return _rules.get(property_name)
-	return fallback
+	# 规则属性直接读取，不为每次子步查询构造整份属性元数据。
+	var value: Variant = _rules.get(property_name)
+	return fallback if value == null else value

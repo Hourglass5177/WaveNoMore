@@ -132,3 +132,34 @@ func level_advance(delta: float, silent: bool) -> void:
 `LevelDocument.begin_edit/end_edit` 汇总字段连续编辑，`last_changes` 提供此次涉及条目；预览修改结束后只提交一次历史。时间线用完整事件选区通知工作区，工作区拥有对象、轨道、事件以及当前编辑目标。BOSS 使用 `LevelBossPanel`，生成轨道保持只读。
 
 关卡试玩沿用 `ChartTrialLaunch` 状态协议（request_id、stage、message），只有 `ready` 表示游戏已经加载；启动进程与编辑器前后台状态分别管理。
+
+## 普通动画资源（2026-09-13）
+
+普通动画继续使用 `animated_sprite` 对象及 `action` 轨道。导入统一输出 `assets/animations/<版本>/asset.animation.json` 和实际 PNG 依赖：
+
+```json
+{"format":"minghe-animation","name":"扩散环","animations":[{"name":"default","fps":12,"loop":true,"frames":[{"image":"image_0000.png","duration":1,"region":[0,0,96,96],"margin":[0,0,0,0]}]}]}
+```
+
+描述还可保存 `default_animation`，优先采用导入时用户所选动作；未指定时依次取 `default` 或首个动作。
+
+`region`、`margin` 可省略，省略表示整张图片。`duration` 是相对于 FPS 的帧时长倍率。同张图集只携带一次。运行时 `LevelAnimationAsset` 从相对 PNG 构造 SpriteFrames，不需要开发机 `.godot/imported`。SpriteFrames 导入在来源工程目录解析依赖，缺失资源由用户定位；读取结束还原临时资源缓存。关卡保存、另存、恢复与 ZIP 沿用版本 1 和原 ID；ZIP 递归包含描述实际使用的图片。
+
+`StageBackgroundLayer.display_name` 是可选的美术显示名称；深度仍决定遮挡位置。对象可选 `occlusion_inherit`：true 沿用父组，false 依据自身 `occlusion_order/depth`；缺失时沿用旧字段解释，旧 `none` 视为继承，旧 front/back 视为明确位置。HUD 不挂入背景。解组把此前有效位置保存为明确配置。
+
+`LevelTransformEdit` 只承担变换候选与提交数据生成，保持区段、难度、时间及插值语义。`LevelShowPlayer` 持有演出对象，`ParallaxController` 的独立 Canvas 只借用挂载；释放与配置清理会归还对象。拾取查询播放器的显示顺序。
+
+
+## 2026-09-14 编辑器内部约定
+
+关卡和演出格式仍为版本 1。分量提交、粘贴作用域、选区历史和变更影响判断属于编辑器内部能力，不改变歌曲、判定或 Replay 数据。
+
+`LevelDocument` 在提交前整批检查对象、父组及轨道限制。历史可附带前后选区；普通撤销恢复对应区段和难度，不恢复整套旧布局。字段预览合并后一次写入历史，取消恢复文档与控件。
+
+`LevelProjectIO.references` 返回引用及文档路径、对象／轨道／事件／绑定定位信息，覆盖模板与字体键；`dependencies` 递归展开动画描述的图片。普通导入用独立路径表达版本。资源包沿用原描述，已挂载版本切换通过 `--resume-level-session` 读取本地重启会话，恢复文档、历史、保存游标、剪贴板和工作区；该会话不写入正式关卡或运行 ZIP。
+
+`workspace.json` 可选保存轨道筛选、对象搜索、各区段和难度视图、面板显隐与待应用的资源包。恢复稿按关卡 ID 和目录区分；恢复前的未保存文档另留一份，兼容旧单文件恢复稿。
+
+`LevelShowPlayer.refresh_visuals` 重采样外观时保留现有声音；`seek` 是明确时间跳转，会清理旧音。`update_show` 只重建更换类型／素材的对象。一次采样内部复用已求值对象状态，任意时间的锚点查询仍独立求值；没有改变时间函数或插值语义。
+
+后台复制和 ZIP 压缩由 `level_package_job.gd` 协调，文件块间检查取消，工作线程不访问 UI。临时 ZIP 仅在完整关闭后发布，取消不发布半成品。另存未完成时保留原工程为当前工程，已复制的独立资源可留在目标目录中。

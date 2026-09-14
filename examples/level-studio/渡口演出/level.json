@@ -4,7 +4,7 @@
   "level_id": "editor_example_ferry",
   "title": "渡口演出示例",
   "author": "编辑器示例",
-  "description": "两种难度共用场景；曲前引导、BOSS 弹射、换景与曲后演出。",
+  "description": "双难度、字幕、声音、循环动画与 BOSS；包含可独立插入的演出模板。通过整关审片检查曲前、歌曲、曲后，另存和试玩验证完整依赖。",
   "cover": "assets/cover.svg",
   "order_index": 0,
   "scene_id": "s08",

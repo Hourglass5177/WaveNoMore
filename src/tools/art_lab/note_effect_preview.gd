@@ -42,7 +42,8 @@ func _reset() -> void:
 		var note := _notes[index]
 		var is_hold := note is GrayboxHoldVisual
 		note.reset_for_pool()
-		note.prepare({"event_id": "art_note%d" % index, "affinity": index if is_hold else (1 if _entry.asset_id == "note_xuan" else 0), "unit_kind": &"hold" if is_hold else &"tap", "start_us": 0, "end_us": 1000000, "double_tap": true})
+		var start_us := 1000000 if _state == &"approach" else 0
+		note.prepare({"event_id": "art_note%d" % index, "affinity": index if is_hold else (1 if _entry.asset_id == "note_xuan" else 0), "unit_kind": &"hold" if is_hold else &"tap", "start_us": start_us, "end_us": start_us + 1000000, "double_press": not is_hold or _state == &"approach"})
 		note.position = Vector2(110, -66 + index * 132) if is_hold else Vector2.ZERO
 		note.set_approach_progress(1.0)
 		if not is_hold: note.rotation = 0.0 if note.affinity == GameplayTypes.Affinity.ZHU else PI
@@ -68,6 +69,7 @@ func art_lab_set_progress(pulse: float) -> void:
 	for note: GrayboxNoteVisual in _notes:
 		note.set_preview_time(_elapsed)
 		if note is GrayboxHoldVisual:
+			note.set_note_glow_time(_elapsed, 1.0 - _elapsed if _state == &"approach" else 2.0)
 			note.set_tuning_glow(_state == &"hold", _elapsed)
 			if _state == &"hold":
 				note.emit_consumption(note.hold_progress, _elapsed * 0.7, _elapsed)

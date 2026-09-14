@@ -90,7 +90,7 @@ func bind(_pet: PetDefinition, _advanced: bool) -> void:
 func _draw() -> void:
 	pass
 
-func set_state(song_time: float, _trigger_us: Variant = null) -> void:
+func set_state(song_time: float) -> void:
 	sample(song_time)
 
 func set_world(side: int) -> void:

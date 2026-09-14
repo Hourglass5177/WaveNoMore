@@ -6,7 +6,7 @@
 [ext_resource type="Texture2D" uid="uid://fqk1j3qtj2q6" path="res://assets/image/ui/选关/框/选关-未选中框.png" id="3_sjihi"]
 [ext_resource type="Texture2D" uid="uid://baxvg3rsk8igc" path="res://assets/image/ui/选关/shadow_texture_blur_2px.png" id="5_sjihi"]
 [ext_resource type="Shader" uid="uid://dn1t6cg4kqe03" path="res://shaders/materials/level_card_effect.gdshader" id="6_effect"]
-[ext_resource type="FontFile" uid="uid://mslrg5rekk5d" path="res://assets/fonts/中文 - Huiwen.otf" id="7_s3cit"]
+[ext_resource type="FontFile" path="res://assets/fonts/huiwen.otf" id="7_s3cit"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_whbbo"]
 shader = ExtResource("2_whbbo")

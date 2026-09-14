@@ -80,7 +80,7 @@ static func _median(values: Array[float]) -> float:
 static func generate(doc: StudioDocument, span: Vector2, every_beat: bool, side: int, exclusions: Array) -> Dictionary:
 	var chart := doc.chart()
 	var map := doc.tempo_map()
-	var rules: GameplayRuleSet = load("res://content/rules/default_gameplay_rules.tres")
+	var rules: GameplayRuleSet = PlanningParameters.default_rules()
 	var occupied := ChartValidator.input_intervals(chart, rules)
 	occupied.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return int(a.start) < int(b.start))
 	var next_interval := 0

@@ -13,6 +13,7 @@ static func build(panel: VBoxContainer, workspace) -> void:
 	if cues.is_empty():
 		LevelUI.label(panel,"将环境素材拖入时间线。标记表示请求换景，各层等待自己的循环接缝后滚入。",12);return
 	var cue:Dictionary=cues[0]
+	if cues.size()==1:_environment_pair(panel,workspace,cue)
 	LevelUI.label(panel,"已选 %d 次换景"%cues.size() if cues.size()>1 else str(cue.name),16)
 	if cues.size()==1:
 		LevelUI.number(panel,"请求时间（秒）",float(cue.time_us)/1000000.0,func(value):workspace.set_environment_field("time_us",roundi(value*1000000)),0.001)
@@ -41,7 +42,9 @@ static func build(panel: VBoxContainer, workspace) -> void:
 	LevelUI.choice(panel,"预览层",ids,controller.environment_only_layer,func(value):controller.environment_only_layer=value;workspace._sample_show(true),names)
 	for part in sequence.transitions:
 		if not part.cue_id in workspace.selected_items:continue
-		LevelUI.label(panel,str(part.name),14)
+		LevelUI.button(panel,str(part.name)+" · 单独预览并定位",func():
+			workspace.preview_environment_cue();controller.environment_only_layer=part.layer_id
+			workspace.seek(maxi(0,int(part.enter_us)-sequence.absolute_time(str(part.section),0)));workspace.timeline.focus_time(workspace.time_us))
 		var readout:=LevelUI.label(panel,"",12);readout.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 		readout.set_meta("environment_part",[part.cue_id,part.layer_id])
 		if cues.size()!=1:continue
@@ -68,6 +71,11 @@ static func build(panel: VBoxContainer, workspace) -> void:
 static func update_times(panel:Control,workspace) -> void:
 	var sequence:StageEnvironmentSequence=workspace.timeline.environment
 	if sequence==null:return
+	var cues: Array=workspace.document.entries("scene_cues").filter(func(cue):return cue.id in workspace.selected_items)
+	if not cues.is_empty():
+		for row in panel.get_children():
+			var field: String={"请求时间（秒）":"time_us","衔接效果":"effect","渐变宽度（设计像素）":"blend_px","固定装饰淡化（秒）":"static_fade_us"}.get(str(row.get_meta("caption","")),"")
+			if not field.is_empty():LevelUI.sync_row(row,cues.map(func(cue):return float(cue.get(field,0))/1000000 if field.ends_with("_us") else cue.get(field)))
 	for label in panel.find_children("*","Label",true,false):
 		if not label.has_meta("environment_part"):continue
 		var identity:Array=label.get_meta("environment_part")
@@ -75,7 +83,7 @@ static func update_times(panel:Control,workspace) -> void:
 		for part in sequence.transitions:
 			if part.cue_id!=identity[0] or part.layer_id!=identity[1]:continue
 			var offset:=sequence.absolute_time(str(part.section),0)
-			text="入画 %.3f s → 完成并采用新速度 %.3f s"%[float(int(part.enter_us)-offset)/1000000.0,float(int(part.finish_us)-offset)/1000000.0] if part.finish_us<900000000000000 else "当前行进下无法完成"
+			text="等待 %.3f → %.3f s\n入画 %.3f s → 完成并采用新速度 %.3f s"%[float(int(part.request_us)-offset)/1000000.0,float(int(part.enter_us)-offset)/1000000.0,float(int(part.enter_us)-offset)/1000000.0,float(int(part.finish_us)-offset)/1000000.0] if part.finish_us<900000000000000 else "当前行进下无法完成"
 			if part.ready_us>part.request_us:text+="\n排队：等待此层上一场景完成衔接"
 			if part.finish_us>sequence.end_us:text+="\n结束前未完成；保持原歌曲和片尾长度"
 			break
@@ -89,3 +97,23 @@ static func _effect_fields(panel:Control,data:Dictionary,change:Callable,cues:Ar
 		if cues.is_empty() or cues.all(func(item):return item.get(field[1],field[2])==data.get(field[1],field[2])):continue
 		if field[0] is SpinBox:field[0].get_line_edit().text="";field[0].get_line_edit().placeholder_text="多个值"
 		else:field[0].select(-1);field[0].text="多个值"
+
+static func _environment_pair(panel: Control, workspace, cue: Dictionary) -> void:
+	var sequence: StageEnvironmentSequence=workspace.timeline.environment
+	if sequence==null:return
+	var previous: String=workspace.document.data.get("initial_background","")
+	if previous.is_empty():previous="stage:"+str(workspace.document.data.scene_id)
+	var ordered: Array=workspace.document.entries("scene_cues").filter(func(item):return LevelFormat.visible_in(item,workspace.difficulty())).duplicate()
+	ordered.sort_custom(func(a,b):return sequence.absolute_time(a.section,int(a.time_us))<sequence.absolute_time(b.section,int(b.time_us)))
+	for item in ordered:
+		if item.id==cue.id:break
+		previous=item.asset
+	var row:=HBoxContainer.new();panel.add_child(row)
+	var backgrounds: Array=workspace.assets().backgrounds()
+	for asset: String in [previous,str(cue.asset)]:
+		if asset!=previous:LevelUI.label(row,"→",18)
+		var box:=VBoxContainer.new();box.size_flags_horizontal=Control.SIZE_EXPAND_FILL;row.add_child(box)
+		var image:=TextureRect.new();image.custom_minimum_size=Vector2(90,50);image.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;image.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED;box.add_child(image)
+		for item in backgrounds:
+			if item.id==asset:image.texture=item.thumbnail;break
+		LevelUI.label(box,workspace.environment_name(asset),12)

@@ -14,8 +14,8 @@ extends Resource
 @export var base_scene: PackedScene
 @export var advanced_scene: PackedScene
 ## 1920×1080 设计坐标中相对生界角色的偏移；死界由父级中心对称变换。
-@export var world_offset := Vector2(-96, 70)
-@export var world_scale: float = 1.0
+@export var world_offset := Vector2(-136, 70)
+@export var world_scale: float = 1.5
 
 func effect(advanced: bool) -> PetEffectProfile:
 	var profile := advanced_effect if advanced else base_effect

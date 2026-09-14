@@ -103,6 +103,7 @@ func frame_selection() -> void:
 func entry_size(id: int) -> Vector2:
 	var entry := document.entry(id)
 	if entry.texture != null: return entry.texture.get_size()
+	if entry.scene != null: return entry.scene_size()
 	if entry.sprite_frames != null and entry.sprite_frames.has_animation(entry.animation) and entry.sprite_frames.get_frame_count(entry.animation) > 0:
 		var image := entry.sprite_frames.get_frame_texture(entry.animation, 0)
 		if image != null: return image.get_size()
@@ -173,6 +174,7 @@ func hit(point: Vector2) -> int:
 		if document.entry(id).infinite:
 			local = Vector2(fposmod(local.x, extent.x), fposmod(local.y, extent.y))
 		if not Rect2(Vector2.ZERO, extent).has_point(local): continue
+		if not object is Sprite2D and not object is AnimatedSprite2D: return id
 		var image_texture: Texture2D = object.texture if object is Sprite2D else object.sprite_frames.get_frame_texture(object.animation, object.frame)
 		if not _images.has(image_texture): _images[image_texture] = image_texture.get_image()
 		var image: Image = _images[image_texture]

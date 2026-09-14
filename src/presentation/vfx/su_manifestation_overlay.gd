@@ -51,7 +51,8 @@ func resolve_targets(result: Dictionary) -> void:
 	if bool(entry["resolved"]):
 		return
 	entry["resolved"] = true
-	entry["success"] = bool(result["success"])
+	# 部分数量不足不会把已有真实交点也画成失败；缺失目标没有虚构位置。
+	entry["success"] = int(result["hit_count"]) > 0 if result.has("hit_count") else bool(result["success"])
 	queue_redraw()
 
 

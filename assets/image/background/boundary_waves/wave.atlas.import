@@ -1,0 +1,16 @@
+[remap]
+
+importer="spine.atlas"
+type="SpineAtlasResource"
+uid="uid://dnky7hb8yyiys"
+path="res://.godot/imported/wave.atlas-1f452fc55cb5ac3f73bd4c5e1045b574.spatlas"
+
+[deps]
+
+source_file="res://assets/image/background/boundary_waves/wave.atlas"
+dest_files=["res://.godot/imported/wave.atlas-1f452fc55cb5ac3f73bd4c5e1045b574.spatlas"]
+
+[params]
+
+normal_map_prefix="n"
+specular_map_prefix="s"

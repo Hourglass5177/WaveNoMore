@@ -29,6 +29,20 @@ var _edge_head_glow: MeshInstance2D
 var _edge_body_glow: MeshInstance2D
 var _hold_start_sec: float = 0.0
 var _hold_duration_sec: float = 0.0
+## 双押只照亮头部；glow_amount 仍专门表示整条 Hold 的调频亮度。
+var head_double_glow: float = 0.0
+var _head_double_end_sec: float = INF
+var _head_double_end_value: float = 0.0
+var _last_head_light: float = -1.0
+## 历史中间采样只积分；可见帧才上传身体与柔光。
+var defer_geometry := false
+var _geometry_dirty := true
+var _local_spine := PackedVector2Array()
+var _local_widths := PackedFloat32Array()
+var _mesh_vertices := PackedVector2Array()
+var _mesh_uvs := PackedVector2Array()
+var _mesh_indices := PackedInt32Array()
+var _mesh_topology_size := -1
 
 @export_group("Hold Textures")
 ## 可选头部贴图，局部 +X 朝前；为空时保留程序化头部。
@@ -56,6 +70,26 @@ var _head_heading_target: float = 0.0
 var _head_position_controlled: bool = false
 var _head_heading_controlled: bool = false
 
+const MOTION_FIELDS := [&"position", &"rotation", &"scale", &"modulate", &"visible",
+	&"approach_progress", &"hold_progress", &"judgment_grade", &"missed", &"wave_contacted", &"timing_confirmed", &"note_arrived",
+	&"_target_length", &"_spine_frozen", &"_spine_initialized", &"_body_visual_time_sec",
+	&"_head_control_center", &"_head_position_target", &"_head_heading_target", &"_head_position_controlled", &"_head_heading_controlled",
+	&"_finished_effect", &"_glow_time", &"_glow_target", &"_glow_from", &"_glow_change_time", &"glow_amount",
+	&"head_double_glow", &"_head_double_end_sec", &"_head_double_end_value", &"_preview_clock"]
+
+func capture_motion() -> Dictionary:
+	var state := {"chain": _dynamic_spine.capture_motion()}
+	for field: StringName in MOTION_FIELDS: state[field] = get(field)
+	return state
+
+func restore_motion(state: Dictionary) -> void:
+	for field: StringName in MOTION_FIELDS: set(field, state[field])
+	_dynamic_spine.restore_motion(state.chain)
+	_update_visible_spine()
+	_geometry_dirty = true
+	_last_surface_state = Vector3(INF, INF, INF); _last_head_light = -1.0
+	_sync_effect_surface()
+
 @export_group("Dynamic Body")
 ## 每段目标长度（px），尾端允许不足一个整段。
 @export_range(1.0, 64.0) var segment_length_px: float = 16.0
@@ -79,6 +113,7 @@ func configure_effect_style(style: NoteEffectStyle, side: int) -> void:
 	_edge_head_glow.set_light(style.halo_strength, style.halo_width_px)
 	_edge_body_glow.set_light(style.halo_strength, style.halo_width_px)
 	material = tap_material if head_texture != null else null
+	_last_head_light = -1.0
 	_sync_effect_surface()
 
 func _sync_effect_surface() -> void:
@@ -86,10 +121,48 @@ func _sync_effect_surface() -> void:
 	if _aura != null: _aura.visible = effect_style.enabled and head_texture != null and not missed and not _finished_effect
 	if _edge_glow_visual != null: _edge_glow_visual.visible = false
 	if _edge_head_glow != null: _edge_head_glow.visible = effect_style.enabled and head_texture == null and not missed and not _finished_effect
+	var head_light := _surface_glow_amount()
+	if _edge_head_glow != null and head_light != _last_head_light:
+		_edge_head_glow.configure_style(effect_style.rim(affinity).lerp(effect_style.white_color, head_light * effect_style.white_strength), true, effect_style.halo(affinity))
+		_last_head_light = head_light
 	if _edge_body_glow != null: _edge_body_glow.visible = effect_style.enabled and not missed and not _finished_effect
 	if _runtime_body_material != null:
 		_runtime_body_material.set_shader_parameter(&"condition_light", glow_amount)
 		_runtime_body_material.set_shader_parameter(&"aura_amount", 0.0 if missed else 1.0)
+
+func _surface_glow_amount() -> float:
+	return maxf(head_double_glow, glow_amount) if effect_style.enabled and not _finished_effect else 0.0
+
+func _double_head_at(seconds: float) -> float:
+	if not _double_press or not effect_style.enabled or _finished_effect: return 0.0
+	if seconds >= _head_double_end_sec:
+		return _head_double_end_value * (1.0 - smoothstep(0.0, glow_fall_sec, seconds - _head_double_end_sec))
+	return smoothstep(0.0, tap_glow_rise_sec, tap_glow_lead_sec - (_hold_start_sec - seconds))
+
+func set_note_glow_time(seconds: float, _time_to_hit: float) -> void:
+	# 不调用 Tap 的总亮度入口，防止接近更新覆盖玩法快照给出的调频亮度。
+	_glow_time = seconds
+	var amount := _double_head_at(seconds)
+	if head_double_glow == amount: return
+	head_double_glow = amount
+	_sync_effect_surface()
+	queue_redraw()
+
+func play_timing_confirmed(grade: int) -> void:
+	if is_inf(_head_double_end_sec):
+		# 在接受事件的精确时刻采样，不沿用上一渲染帧的候选亮度。
+		_head_double_end_value = _double_head_at(_glow_time)
+		_head_double_end_sec = _glow_time
+		head_double_glow = _head_double_end_value
+	super(grade)
+	_sync_effect_surface()
+
+func _reset_glow() -> void:
+	head_double_glow = 0.0
+	_head_double_end_sec = INF
+	_head_double_end_value = 0.0
+	_last_head_light = -1.0
+	super()
 
 func effect_snapshot() -> Dictionary:
 	var size := Vector2(96, 96)
@@ -100,6 +173,7 @@ func play_hold_finished(at_sec: float) -> void:
 	if _finished_effect or missed: return
 	_glow_time = maxf(_glow_time, at_sec)
 	_finished_effect = true
+	head_double_glow = 0.0
 	_emit_effect(":finish", at_sec, &"hold", global_transform.x.normalized())
 	_set_glow_amount(0.0)
 	visible = false
@@ -156,6 +230,9 @@ func advance_body(delta_sec: float) -> void:
 	## 仅由时钟调用；脊线在画布坐标中模拟，最后变换到本节点绘制坐标。
 	if _spine_frozen:
 		return
+	if delta_sec <= 0.0 and _spine_initialized:
+		if not defer_geometry: flush_geometry()
+		return
 	_body_visual_time_sec += maxf(delta_sec, 0.0)
 	_advance_head_control(delta_sec)
 	_dynamic_spine.segment_length = segment_length_px
@@ -171,9 +248,21 @@ func advance_body(delta_sec: float) -> void:
 	_dynamic_spine.set_length(_target_length)
 	_dynamic_spine.advance(delta_sec)
 	_update_visible_spine()
+	_geometry_dirty = true
+	if not defer_geometry: flush_geometry()
+	queue_redraw()
+
+func flush_geometry() -> void:
+	if not _geometry_dirty: return
+	var started := GameplayFrameProfile.begin()
+	_geometry_dirty = false
+	_local_spine.clear(); _local_widths.clear()
+	if _path_spine.size() >= 2: _build_spine(_local_spine, _local_widths)
 	_rebuild_body_mesh()
 	_update_body_material()
-	queue_redraw()
+	if _edge_body_glow != null and _edge_body_glow.visible and _local_spine.size() >= 2:
+		_edge_body_glow.body(_local_spine, _local_widths)
+	GameplayFrameProfile.end(&"hold_geometry", started)
 
 
 func reset_for_pool() -> void:
@@ -197,12 +286,9 @@ func _draw() -> void:
 	var head_alpha: float = float(visual_state["head_alpha"])
 	var body_reveal: float = float(visual_state["body_reveal"])
 
-	var spine := PackedVector2Array()
-	var half_widths := PackedFloat32Array()
+	var spine := _local_spine
+	var half_widths := _local_widths
 	if _path_spine.size() >= 2:
-		_build_spine(spine, half_widths)
-		if _edge_body_glow != null and _edge_body_glow.visible:
-			_edge_body_glow.body(spine, half_widths)
 		# 贴图身体由独立 CanvasItem 绘制，其 Shader 不会覆盖头部。
 		if body_texture == null:
 			_draw_body(spine, half_widths, color, body_reveal)
@@ -223,7 +309,8 @@ func _draw() -> void:
 		if _edge_head_glow != null and _edge_head_glow.visible:
 			_edge_head_glow.scale = Vector2.ONE
 			_edge_head_glow.polygon(_head_polygon())
-		_draw_head(color, head_alpha)
+		var head_color := Color("575b66") if missed else _affinity_color()
+		_draw_head(head_color.lerp(effect_style.white_color, _surface_glow_amount() * effect_style.white_strength), head_alpha)
 
 
 func _ensure_edge_glow_visuals() -> void:
@@ -287,6 +374,7 @@ func _ensure_body_renderer() -> void:
 		_body_renderer.show_behind_parent = true
 		_body_renderer.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
 	if _runtime_body_material == null or _body_material_source != body_material:
+		_body_uniforms.clear()
 		_body_material_source = body_material
 		if body_material != null:
 			_runtime_body_material = body_material.duplicate() as ShaderMaterial
@@ -310,39 +398,49 @@ func _rebuild_body_mesh() -> void:
 			_body_renderer.visible = false
 		if _body_mesh != null and _body_mesh.get_surface_count() > 0:
 			_body_mesh.clear_surfaces()
+		_mesh_topology_size = -1
 		return
 	_ensure_body_renderer()
-	var spine := PackedVector2Array()
-	var half_widths := PackedFloat32Array()
-	_build_spine(spine, half_widths)
-	var vertices := PackedVector2Array()
-	var uvs := PackedVector2Array()
-	var indices := PackedInt32Array()
+	var spine := _local_spine
+	var half_widths := _local_widths
+	var rebuild := _mesh_topology_size != spine.size()
+	_mesh_vertices.resize(spine.size() * 2)
+	_mesh_uvs.resize(spine.size() * 2)
 	for index: int in range(spine.size()):
 		var normal: Vector2 = _spine_normal(spine, index)
-		vertices.append(spine[index] + normal * half_widths[index])
-		vertices.append(spine[index] - normal * half_widths[index])
+		_mesh_vertices[index * 2] = spine[index] + normal * half_widths[index]
+		_mesh_vertices[index * 2 + 1] = spine[index] - normal * half_widths[index]
 		var u: float = _body_distances[index] / maxf(body_texture_repeat_px, 1.0)
-		uvs.append(Vector2(u, 0.0))
-		uvs.append(Vector2(u, 1.0))
-	for index: int in range(spine.size() - 1):
-		var base: int = index * 2
-		indices.append_array(PackedInt32Array([base, base + 1, base + 2]))
-		if index < spine.size() - 2:
-			indices.append_array(PackedInt32Array([base + 1, base + 3, base + 2]))
-	var arrays: Array = []
-	arrays.resize(Mesh.ARRAY_MAX)
-	arrays[Mesh.ARRAY_VERTEX] = vertices
-	arrays[Mesh.ARRAY_TEX_UV] = uvs
-	arrays[Mesh.ARRAY_INDEX] = indices
-	if _body_mesh == null:
-		_body_mesh = ArrayMesh.new()
-	else:
+		_mesh_uvs[index * 2] = Vector2(u, 0.0)
+		_mesh_uvs[index * 2 + 1] = Vector2(u, 1.0)
+	if _body_mesh == null: _body_mesh = ArrayMesh.new()
+	if rebuild:
+		_mesh_indices.clear()
+		for index: int in range(spine.size() - 1):
+			var base: int = index * 2
+			_mesh_indices.append_array(PackedInt32Array([base, base + 1, base + 2]))
+			if index < spine.size() - 2:
+				_mesh_indices.append_array(PackedInt32Array([base + 1, base + 3, base + 2]))
+		var arrays: Array = []; arrays.resize(Mesh.ARRAY_MAX)
+		arrays[Mesh.ARRAY_VERTEX] = _mesh_vertices
+		arrays[Mesh.ARRAY_TEX_UV] = _mesh_uvs
+		arrays[Mesh.ARRAY_INDEX] = _mesh_indices
 		_body_mesh.clear_surfaces()
-	_body_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+		_body_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays, [], {}, Mesh.ARRAY_FLAG_USE_DYNAMIC_UPDATE)
+		_mesh_topology_size = spine.size()
+	else:
+		_body_mesh.surface_update_vertex_region(0, 0, _mesh_vertices.to_byte_array())
+		_body_mesh.surface_update_attribute_region(0, 0, _mesh_uvs.to_byte_array())
+	# 动态上传不重算包围盒，覆盖当前完整脊线和最大半宽。
+	var bounds := Rect2(spine[0], Vector2.ZERO)
+	for point: Vector2 in spine: bounds = bounds.expand(point)
+	bounds = bounds.grow(40.0)
+	_body_mesh.custom_aabb = AABB(Vector3(bounds.position.x, bounds.position.y, -1), Vector3(bounds.size.x, bounds.size.y, 2))
 	_body_renderer.mesh = _body_mesh
 	_body_renderer.visible = true
 
+
+var _body_uniforms: Dictionary = {}
 
 func _update_body_material() -> void:
 	## 只同步本实例视觉状态；流动时钟来自 advance_body()，不用 Shader 的全局 TIME。
@@ -351,14 +449,17 @@ func _update_body_material() -> void:
 	var color: Color = _hold_color()
 	color.a = 0.42 if missed else 1.0
 	var visible_length: float = _body_distances[-1] if not _body_distances.is_empty() else 0.0
-	_runtime_body_material.set_shader_parameter(&"body_texture", body_texture)
-	_runtime_body_material.set_shader_parameter(&"hold_progress", hold_progress)
-	_runtime_body_material.set_shader_parameter(&"remaining_ratio", clampf(visible_length / body_length, 0.0, 1.0))
-	_runtime_body_material.set_shader_parameter(&"body_flow_speed", body_flow_speed)
-	_runtime_body_material.set_shader_parameter(&"body_edge_softness", body_edge_softness)
-	_runtime_body_material.set_shader_parameter(&"affinity_color", color)
-	_runtime_body_material.set_shader_parameter(&"visual_time_sec", _body_visual_time_sec)
-	_runtime_body_material.set_shader_parameter(&"body_uv_length", visible_length / maxf(body_texture_repeat_px, 1.0))
+	var parameters := {
+		&"body_texture":body_texture, &"hold_progress":hold_progress,
+		&"remaining_ratio":clampf(visible_length / body_length, 0.0, 1.0),
+		&"body_flow_speed":body_flow_speed, &"body_edge_softness":body_edge_softness,
+		&"affinity_color":color, &"visual_time_sec":_body_visual_time_sec,
+		&"body_uv_length":visible_length / maxf(body_texture_repeat_px, 1.0)}
+	for key: StringName in parameters:
+		if _body_uniforms.has(key) and _body_uniforms[key] == parameters[key]: continue
+		_body_uniforms[key] = parameters[key]
+		_runtime_body_material.set_shader_parameter(key, parameters[key])
+
 
 
 func _sync_body_self_modulate() -> void:
@@ -375,6 +476,10 @@ func _clear_body_render_state() -> void:
 	_body_distances.clear()
 	_body_visual_time_sec = 0.0
 	_body_mesh = null
+	_mesh_topology_size = -1
+	_geometry_dirty = true
+	_local_spine.clear(); _local_widths.clear()
+	_body_uniforms.clear()
 	_runtime_body_material = null
 	_body_material_source = null
 	if _body_renderer != null:

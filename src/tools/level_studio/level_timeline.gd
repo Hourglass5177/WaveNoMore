@@ -8,6 +8,8 @@ signal loop_changed(start_us: int, end_us: int)
 signal binding_requested(object_id: String, binding_id: String)
 signal selection_set_changed(objects: PackedStringArray, track_id: String, items: PackedStringArray)
 signal seek_finished(time_us: int)
+signal asset_dropped(asset: String, time_us: int)
+signal note_requested(note_id: String)
 signal manual_browse
 var document: LevelDocument
 var section := "song"
@@ -45,6 +47,10 @@ var _cursor := Control.new()
 var _stack := PopupMenu.new()
 var _stack_hits: Array = []
 var reference_notes: Array = []
+var only_selected := false
+var current_difficulty_only := false
+var hide_empty := false
+var selected_objects := PackedStringArray()
 var environment: StageEnvironmentSequence
 signal environment_dropped(asset: String, time_us: int)
 
@@ -85,9 +91,7 @@ func _ready() -> void:
 
 func bind(doc: LevelDocument) -> void:
 	document = doc
-	document.changed.connect(func(kind):
-		if kind=="saved": return
-		if kind=="project" or document.last_changes.any(func(change): return change.kind in ["objects","tracks","bindings","scene_cues"]): rebuild_rows())
+	document.changed.connect(_document_changed)
 	rebuild_rows()
 
 func rebuild_rows() -> void:
@@ -98,10 +102,12 @@ func rebuild_rows() -> void:
 		for lane in environment.lanes:
 			rows.append({"environment": true, "layer_id":lane.id, "object":{"id":"@environment","name":lane.name}, "track":{}})
 	for object_data: Dictionary in document.entries("objects"):
+		if only_selected and object_data.id not in selected_objects:continue
+		if hide_empty and not (document.entries("tracks")+generated_tracks).any(func(t):return t.object_id==object_data.id and t.section==section and not (t.keys+t.clips).is_empty()):continue
 		rows.append({"object": object_data, "track": {}})
 		if folded.get(object_data.id, false): continue
 		for track: Dictionary in document.entries("tracks"):
-			if track.object_id == object_data.id and track.section == section:
+			if track.object_id == object_data.id and track.section == section and (not current_difficulty_only or track.difficulties.is_empty() or difficulty in track.difficulties):
 				rows.append({"object": object_data, "track": track})
 		for track: Dictionary in generated_tracks:
 			if track.object_id==object_data.id and section=="song":rows.append({"object":object_data,"track":track})
@@ -327,7 +333,9 @@ func _choose_hit(hit: Dictionary, at: Vector2, additive: bool, double_click: boo
 
 func _gui_input(event: InputEvent) -> void:
 	if event is InputEventPanGesture:
-		_queue_browse(event.delta*32); accept_event(); return
+		if event.ctrl_pressed:_queue_browse(Vector2.ZERO,-event.delta.y,event.position.x)
+		else:_queue_browse(event.delta*32)
+		accept_event(); return
 	if event is InputEventMouseButton:
 		if event.button_index in [MOUSE_BUTTON_WHEEL_UP,MOUSE_BUTTON_WHEEL_DOWN,MOUSE_BUTTON_WHEEL_LEFT,MOUSE_BUTTON_WHEEL_RIGHT]:
 			if event.pressed:
@@ -367,6 +375,9 @@ func _gui_input(event: InputEvent) -> void:
 					selected_object=""; selected_track="@environment"; selected.clear(); _notify_selection();return
 				selected_object=row.object.id; selected_track=str(row.track.get("id","")); selected.clear(); _notify_selection()
 			return
+		if event.position.y>=35 and event.position.y<=51 and section=="song":
+			for note: Dictionary in reference_notes:
+				if absf(x_at(int(note.time_us))-event.position.x)<8:note_requested.emit(str(note.id));return
 		if event.position.y < RULER:
 			manual_browse.emit()
 			_drag={"mode":"loop" if event.shift_pressed else "seek","start":snap(time_at(event.position.x),event.alt_pressed),"loop_before":Vector2i(loop_start_us,loop_end_us)}
@@ -435,8 +446,14 @@ func _gui_input(event: InputEvent) -> void:
 		_sync_scrollbars(); update_cursor(); queue_redraw(); accept_event()
 	elif event is InputEventKey and event.pressed and event.keycode==KEY_ESCAPE: cancel_drag(); accept_event()
 
-func _selected_tracks() -> Array:
-	return document.entries("tracks").filter(func(track): return not track.locked and document.editable_object(track.object_id) and LevelFormat.visible_in(track,difficulty) and (track.keys.any(func(key): return key.id in selected) or track.clips.any(func(clip): return clip.id in selected))).duplicate(true)
+func _selected_tracks(editable := true) -> Array:
+	var tracks: Array=document.entries("tracks").filter(func(track):return (track.keys+track.clips).any(func(item):return item.id in selected)).duplicate(true)
+	document.last_error=""
+	if editable:
+		for track: Dictionary in tracks:
+			if track.locked or not document.editable_object(track.object_id):
+				document.last_error="选区包含锁定／隐藏对象或轨道，本次操作未提交。";document.rejected.emit(document.last_error);return []
+	return tracks
 
 func _finish_drag() -> void:
 	if _drag.get("mode", "") == "scene": document.end_edit()
@@ -463,7 +480,9 @@ func delete_selected() -> void:
 		var before := document.entries("scene_cues").filter(func(cue):return cue.id in selected)
 		if not before.is_empty(): document.replace("删除环境换景", "scene_cues", before, [])
 		selected.clear(); _notify_selection(); return
-	var before := _selected_tracks(); var after := before.duplicate(true)
+	var before := _selected_tracks()
+	if not document.last_error.is_empty():return
+	var after := before.duplicate(true)
 	for track: Dictionary in after:
 		track.keys = track.keys.filter(func(key): return not key.id in selected)
 		track.clips = track.clips.filter(func(clip): return not clip.id in selected)
@@ -471,7 +490,9 @@ func delete_selected() -> void:
 	selected.clear(); _notify_selection()
 
 func split_selected() -> void:
-	var before := _selected_tracks(); var after := before.duplicate(true)
+	var before := _selected_tracks()
+	if not document.last_error.is_empty():return
+	var after := before.duplicate(true)
 	for track: Dictionary in after:
 		var additions := []
 		for clip: Dictionary in track.clips:
@@ -487,45 +508,75 @@ func split_selected() -> void:
 func copy_selected() -> void:
 	if selected_track == "@environment":
 		_clipboard=[{"scene_cues":document.entries("scene_cues").filter(func(cue):return cue.id in selected).duplicate(true)}];return
-	_clipboard = _selected_tracks()
+	_clipboard = _selected_tracks(false)
 	for track: Dictionary in _clipboard:
+		track._object_type=document.find("objects",track.object_id).get("type","")
 		track.keys = track.keys.filter(func(key): return key.id in selected)
 		track.clips = track.clips.filter(func(clip): return clip.id in selected)
 
-func paste_selected() -> void:
+func paste_selected(target_object := "") -> void:
 	if _clipboard.is_empty(): return
+	if target_object=="@invalid":document.rejected.emit("粘贴到对象需要只选中一个目标对象。");return
 	if _clipboard[0].has("scene_cues"):
+		if not target_object.is_empty():document.rejected.emit("环境换景请使用普通粘贴。");return
 		var after: Array = _clipboard[0].scene_cues.duplicate(true)
 		if after.is_empty(): return
 		var first: int = after.map(func(cue):return int(cue.time_us)).min()
 		selected.clear(); selected_track="@environment"
 		for cue in after:
-			cue.id=LevelFormat.id("scene");cue.section=section;cue.time_us+=time_us-first;selected.append(cue.id)
+			cue.id=LevelFormat.id("scene");cue.section=section;cue.time_us+=time_us-first
+			if not cue.difficulties.is_empty():cue.difficulties=[difficulty]
+			selected.append(cue.id)
 		document.replace("粘贴环境换景","scene_cues",[],after);_notify_selection();return
+	var sources:=[]
+	for track: Dictionary in _clipboard:
+		if track.object_id not in sources:sources.append(track.object_id)
+	if not target_object.is_empty() and sources.size()!=1:document.rejected.emit("多对象选区请使用普通粘贴，保留原对象关系。");return
 	var earliest := 9223372036854775807
 	for track: Dictionary in _clipboard:
-		for key: Dictionary in track.keys: earliest = mini(earliest, int(key.time_us))
-		for clip: Dictionary in track.clips: earliest = mini(earliest, int(clip.start_us))
-	var before := []; var after := []; selected.clear()
+		for item: Dictionary in track.keys+track.clips:earliest=mini(earliest,int(item.get("time_us",item.get("start_us",0))))
+	if earliest==9223372036854775807:return
+	var before:=[];var after:=[];var next_selection:=PackedStringArray()
 	for source: Dictionary in _clipboard:
-		var track := document.find("tracks", source.id)
-		if track.is_empty(): continue
-		before.append(track.duplicate(true)); track = track.duplicate(true)
+		var object_id: String=source.object_id if target_object.is_empty() else target_object
+		var object_data:=document.find("objects",object_id)
+		if not document.editable_object(object_id):document.rejected.emit("粘贴目标不存在或已锁定／隐藏："+str(object_data.get("name",object_id)));return
+		if not target_object.is_empty():
+			var source_type: String=source.get("_object_type",document.find("objects",source.object_id).get("type",""))
+			var visuals: Array=["sprite","image","animated_sprite"]
+			if object_data.type!=source_type and not (object_data.type in visuals and source_type in visuals):document.rejected.emit("目标对象类型与复制内容不兼容。");return
+		var scope: Array=[] if source.difficulties.is_empty() else [difficulty]
+		var current:=document.find("tracks",source.id)
+		var reuse: bool=target_object.is_empty() and not current.is_empty() and current.section==section and current.difficulties==scope
+		var track: Dictionary
+		if reuse:
+			if current.locked or current.get("generated",false):document.rejected.emit("目标轨道已锁定或只读，未粘贴。");return
+			before.append(current.duplicate(true));track=current.duplicate(true)
+		else:
+			track=LevelFormat.track(object_id,source.property,section,source.type);track.difficulties=scope
 		for source_key: Dictionary in source.keys:
-			var key := source_key.duplicate(true); key.id = LevelFormat.id("key"); key.time_us += time_us - earliest
-			track.keys.append(key); selected.append(key.id)
+			var key:=source_key.duplicate(true);key.time_us+=time_us-earliest
+			var existing: Array=track.keys.filter(func(k):return k.time_us==key.time_us)
+			key.id=existing[0].id if not existing.is_empty() else LevelFormat.id("key")
+			track.keys=track.keys.filter(func(k):return k.id!=key.id);track.keys.append(key);next_selection.append(key.id)
 		for source_clip: Dictionary in source.clips:
-			var clip := source_clip.duplicate(true); clip.id = LevelFormat.id("clip"); clip.start_us += time_us - earliest
-			track.clips.append(clip); selected.append(clip.id)
+			var clip:=source_clip.duplicate(true);clip.id=LevelFormat.id("clip");clip.start_us+=time_us-earliest
+			track.clips.append(clip);next_selection.append(clip.id)
 		after.append(track)
-	if not after.is_empty(): document.replace("粘贴时间线内容", "tracks", before, after)
-	_notify_selection()
+	if after.is_empty():return
+	document.replace("粘贴时间线内容","tracks",before,after)
+	if not document.last_error.is_empty():return
+	selected=next_selection;selected_track=after[0].id;selected_object=after[0].object_id
+	for track in after:folded.erase(track.object_id)
+	rebuild_rows();_notify_selection();focus_time(time_us)
 
 func _can_drop_data(at: Vector2, data: Variant) -> bool:
-	return data is Dictionary and data.has("level_background") and at.x >= HEADER
+	return data is Dictionary and data.has("level_asset") and at.x >= HEADER
 
 func _drop_data(at: Vector2, data: Variant) -> void:
-	environment_dropped.emit(str(data.level_background), snap(time_at(at.x), Input.is_key_pressed(KEY_ALT)))
+	var at_us:=snap(time_at(at.x),Input.is_key_pressed(KEY_ALT))
+	if data.has("level_background"):environment_dropped.emit(str(data.level_background),at_us)
+	else:asset_dropped.emit(str(data.level_asset),at_us)
 
 func _draw_environment_row(row: Dictionary, y: float) -> void:
 	var font := get_theme_default_font()
@@ -570,3 +621,56 @@ func _draw_environment_row(row: Dictionary, y: float) -> void:
 				var caption:="%d 次换景（右键选择）"%nearby if nearby>1 else str(cue.get("name","换景"))
 				draw_string(font,Vector2(x+7,y+15),caption,HORIZONTAL_ALIGNMENT_LEFT,maxf(1,label_width),11,Color("d8e8db"));labelled.append(x)
 			_hits.append({"rect":Rect2(x-6,y,12,ROW),"kind":"scene","id":cue.id,"object":"","track":"@environment","time":request_us})
+
+func event_times() -> Array:
+	var times:=[]
+	for track: Dictionary in document.entries("tracks"):
+		if track.section!=section or not LevelFormat.visible_in(track,difficulty):continue
+		if only_selected and track.object_id not in selected_objects:continue
+		for item: Dictionary in track.keys+track.clips:times.append(int(item.get("time_us",item.get("start_us",0))))
+	for cue: Dictionary in document.entries("scene_cues"):
+		if cue.section==section and LevelFormat.visible_in(cue,difficulty):times.append(int(cue.time_us))
+	times.sort();return times
+
+func navigate_event(direction: int) -> void:
+	var times:=event_times()
+	if direction<0:times.reverse()
+	for at: int in times:
+		if (at-time_us)*direction>0:seek_requested.emit(at);seek_finished.emit(at);focus_time(at);return
+
+func fit_selection() -> void:
+	var times:=[]
+	for track: Dictionary in document.entries("tracks"):
+		if track.section!=section:continue
+		for item: Dictionary in track.keys+track.clips:
+			if item.id in selected:
+				var start:=int(item.get("time_us",item.get("start_us",0)));times.append(start);times.append(start+int(item.get("duration_us",0)))
+	for cue: Dictionary in document.entries("scene_cues"):
+		if cue.id in selected:times.append(int(cue.time_us))
+	if times.is_empty():return
+	left_seconds=float(times.min())/1000000-0.2;pixels_per_second=clampf((size.x-HEADER-20)/(maxf(0.5,float(times.max()-times.min())/1000000)+0.4),1,1000)
+	manual_browse.emit();_sync_scrollbars();queue_redraw()
+
+## 内容编辑只替换受影响行的数据；增删与筛选条件变化才重建行结构。
+func _document_changed(kind: String) -> void:
+	if kind=="saved":return
+	if kind=="project":rebuild_rows();return
+	var structural:=false;var objects:={};var tracks:={}
+	for change: Dictionary in document.last_changes:
+		if change.kind in ["scene_cues","bindings"]:structural=true;break
+		if change.kind not in ["objects","tracks"]:continue
+		if change.before.size()!=change.after.size():structural=true;break
+		for entry: Dictionary in change.after:
+			var previous:=LevelFormat.find(change.before,entry.id)
+			if previous.is_empty():structural=true;break
+			for property in (["parent_id"] if change.kind=="objects" else ["object_id","section","difficulties"]):
+				if previous.get(property)!=entry.get(property):structural=true;break
+			if change.kind=="objects":objects[entry.id]=document.find("objects",entry.id)
+			else:
+				tracks[entry.id]=document.find("tracks",entry.id)
+				if hide_empty and (previous.keys+previous.clips).is_empty()!=(entry.keys+entry.clips).is_empty():structural=true
+	if structural:rebuild_rows();return
+	for row: Dictionary in rows:
+		if objects.has(row.object.id):row.object=objects[row.object.id]
+		if not row.track.is_empty() and tracks.has(row.track.id):row.track=tracks[row.track.id]
+	queue_redraw()

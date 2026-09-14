@@ -13,8 +13,15 @@ vec4 note_eye(vec4 base, vec2 uv, vec2 moving_uv) {
 	float coverage = eye.a * mask * inside;
 	float alpha = coverage + base.a * (1.0 - coverage);
 	vec3 composed = (eye.rgb * coverage + base.rgb * base.a * (1.0 - coverage)) / max(alpha, 0.00001);
-	float protected_detail = max(mask, texture(lash_texture, uv).r);
+	float lashes = texture(lash_texture, uv).r;
+	float protected_detail = max(mask, lashes);
 	vec3 color = note_surface(composed, protected_detail);
+	// 原色保护不等于避光：眼眶与可动瞳孔一起接受条件白光，睫毛仍保持中性。
+	// 只提亮，避免将原本浅色的眼白压暗；沿用本体强度以保留瞳孔层次。
+	if (effects_enabled) {
+		float eye_light = mask * (1.0 - lashes) * condition_light * white_strength;
+		color = mix(color, max(color, white_color.rgb * body_brightness), eye_light);
+	}
 	// 已命中的本体保持暗淡，眼球单独褪白，不能被 45% 的本体亮度压成灰色。
 	color = mix(color, white_color.rgb, coverage * eye_hit_progress);
 	return vec4(color, alpha);

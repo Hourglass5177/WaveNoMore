@@ -50,7 +50,7 @@ const DEATH_INPUT_LABEL: String = "L1 / 左键 / F"
 @export_range(32.0, 100.0, 1.0) var gate_radius: float = 66.0
 ## 敲钟后中心发射印记的秒数；越大则扩散淡出更慢。
 @export_range(0.05, 0.5, 0.01) var launch_pulse_duration_sec: float = 0.20
-## 波碰到音符后中心接触印记的秒数；越大则骨白反馈保留更久。
+## 正确接受音符头判后中心印记的秒数；越大则骨白反馈保留更久。
 @export_range(0.05, 0.5, 0.01) var contact_pulse_duration_sec: float = 0.18
 ## 判定符号显示的秒数；越大则 Perfect/Good/Pass/Miss 印记淡出更慢。
 @export_range(0.05, 0.6, 0.01) var grade_duration_sec: float = 0.28
@@ -79,6 +79,8 @@ var _visual_time_sec: float = 0.0
 var _launch_events: Array[Dictionary] = []
 # 尚在显示期内的波前接触事件，用于画落点接触反馈。
 var _contact_events: Array[Dictionary] = []
+# 头判反馈每个音符只触发一次；重试和定位重建时清空。
+var _accepted_note_ids: Dictionary[String, bool] = {}
 # 尚在显示期内的判定等级事件，用于画 Perfect、Good、Miss 的门反馈。
 var _grade_events: Array[Dictionary] = []
 # 尚在显示期内的双界桥接事件，用于画穿过共同中心的连接效果。
@@ -154,8 +156,6 @@ func bind(clock: SongClock, session: StageSession) -> void:
 		return
 	if not _session.wave_launched.is_connected(_on_wave_launched):
 		_session.wave_launched.connect(_on_wave_launched)
-	if not _session.wave_contacted.is_connected(_on_wave_contacted):
-		_session.wave_contacted.connect(_on_wave_contacted)
 	if not _session.judgment_presented.is_connected(_on_judgment_presented):
 		_session.judgment_presented.connect(_on_judgment_presented)
 	if not _session.waves_reset.is_connected(clear):
@@ -170,6 +170,7 @@ func clear() -> void:
 	_sync_circle_material()
 	_launch_events.clear()
 	_contact_events.clear()
+	_accepted_note_ids.clear()
 	_grade_events.clear()
 	_bridge_events.clear()
 	_pending_chord_sides.clear()
@@ -254,18 +255,18 @@ func _on_wave_launched(wave: Dictionary) -> void:
 		"start_sec": _timeline_us_to_visual_sec(int(wave.get("launch_us", 0))),
 	})
 	_trim_event_buffer(_launch_events)
-	queue_redraw()
-
-
-func _on_wave_contacted(contact: Dictionary) -> void:
-	var affinity: int = int(contact.get("affinity", GameplayTypes.Affinity.SU))
-	if affinity not in [GameplayTypes.Affinity.ZHU, GameplayTypes.Affinity.XUAN]:
-		return
-	_contact_events.append({
-		"affinity": affinity,
-		"start_sec": _timeline_us_to_visual_sec(int(contact.get("contact_us", 0))),
-	})
-	_trim_event_buffer(_contact_events)
+	# 发波事件携带刚被领域接受的 Tap／Hold 头判，续按和空按没有该身份。
+	var note_id := str(wave.get("accepted_note_id", ""))
+	if not note_id.is_empty() and not _accepted_note_ids.has(note_id):
+		_accepted_note_ids[note_id] = true
+		var start_sec := _timeline_us_to_visual_sec(int(wave["launch_us"]))
+		_contact_events.append({"affinity": affinity, "start_sec": start_sec})
+		_trim_event_buffer(_contact_events)
+		var record := JudgmentRecord.new()
+		record.affinity = affinity
+		record.grade = int(wave["input_grade"])
+		record.group_id = str(wave.get("group_id", ""))
+		_show_grade(record, start_sec)
 	queue_redraw()
 
 
@@ -274,8 +275,13 @@ func _on_judgment_presented(record: JudgmentRecord) -> void:
 		return
 	if record.unit_kind not in [&"tap", &"hold"]:
 		return
-	# 最终表现可以晚于按键：成功等真实波前接触，Miss 等未阻挡音符抵达钟。
-	var start_sec: float = _visual_time_sec
+	# 成功的中心反馈已在头判时播放；最终回调仅保留原来的失败提示。
+	if record.mechanical_grade() != GameplayTypes.JudgmentGrade.MISS:
+		return
+	_show_grade(record, _visual_time_sec)
+
+
+func _show_grade(record: JudgmentRecord, start_sec: float) -> void:
 	_grade_events.append({
 		"affinity": record.affinity,
 		"grade": record.grade,
@@ -536,8 +542,6 @@ func _disconnect_sources() -> void:
 	if is_instance_valid(_session):
 		if _session.wave_launched.is_connected(_on_wave_launched):
 			_session.wave_launched.disconnect(_on_wave_launched)
-		if _session.wave_contacted.is_connected(_on_wave_contacted):
-			_session.wave_contacted.disconnect(_on_wave_contacted)
 		if _session.judgment_presented.is_connected(_on_judgment_presented):
 			_session.judgment_presented.disconnect(_on_judgment_presented)
 		if _session.waves_reset.is_connected(clear):

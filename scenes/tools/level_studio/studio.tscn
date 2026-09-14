@@ -1,7 +1,9 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://src/tools/level_studio/level_workspace.gd" id="1"]
 [ext_resource type="Theme" path="res://assets/chart_studio/studio_theme.tres" id="2"]
+
+[ext_resource type="Script" path="res://src/tools/level_studio/level_toolbar.gd" id="3"]
 
 [node name="LevelStudio" type="Control"]
 layout_mode = 3
@@ -31,6 +33,7 @@ theme_override_constants/separation = 6
 [node name="Toolbar" type="HFlowContainer" parent="Layout"]
 unique_name_in_owner = true
 layout_mode = 2
+script = ExtResource("3")
 
 [node name="Vertical" type="VSplitContainer" parent="Layout"]
 unique_name_in_owner = true
@@ -57,6 +60,7 @@ layout_mode = 2
 [node name="PreviewToolbar" type="HFlowContainer" parent="Layout/Vertical/LeftSplit/RightSplit/Middle"]
 unique_name_in_owner = true
 layout_mode = 2
+script = ExtResource("3")
 
 [node name="PreviewHost" type="Control" parent="Layout/Vertical/LeftSplit/RightSplit/Middle"]
 unique_name_in_owner = true
@@ -104,6 +108,12 @@ layout_mode = 2
 [node name="Transport" type="HFlowContainer" parent="Layout/Vertical/Bottom"]
 unique_name_in_owner = true
 layout_mode = 2
+script = ExtResource("3")
+
+[node name="TimelineEdit" type="HFlowContainer" parent="Layout/Vertical/Bottom"]
+unique_name_in_owner = true
+layout_mode = 2
+script = ExtResource("3")
 
 [node name="ProblemToggle" type="Button" parent="Layout"]
 unique_name_in_owner = true

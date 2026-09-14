@@ -13,6 +13,7 @@ func build(result: Dictionary) -> void:
 			if not animation.bones.has(name): animation.bones[name] = {}
 			if not animation.bones[name].has("rotate"): animation.bones[name].rotate = [{"value": 0.0}]
 	result.animations.idle = _idle(result.animations.attack)
+	result.animations.walk = _walk(result.animations.attack)
 	result.animations.hurt = _hurt()
 	result.animations.death = _death(result.animations.attack)
 
@@ -51,6 +52,43 @@ func _idle(attack: Dictionary) -> Dictionary:
 		# bone4 的局部 X 沿躯干向上；骨架缩放 0.2、角色缩放 0.405。
 		breathing.append({"time": time, "x": 65.0 * _breath(time), "y": 0.0})
 	clip.bones[CHEST].translate = breathing
+	return clip
+
+func _walk(attack: Dictionary) -> Dictionary:
+	var clip := _rest(attack)
+	# 0.2 骨架缩放 × 0.405 角色缩放；24 px 脚程、3.5 px 抬脚。
+	var tracks := {}
+	for frame in 97:
+		var time := float(frame) / 60.0
+		var phase := time / 1.6
+		var pose := {"bone3": {"translate": Vector2(0, 30.0 * (0.5 - 0.5 * cos(TAU * phase * 2.0)))},
+			"bone4": {"rotate": -0.8 + 0.55 * sin(TAU * phase)},
+			CHEST: {"rotate": 0.4 * sin(TAU * (phase - 0.06))},
+			"bozi": {"rotate": -0.35 * sin(TAU * (phase - 0.08))},
+			"tou": {"rotate": 0.25 * sin(TAU * (phase - 0.1))},
+			"1": {"rotate": 1.2 * sin(TAU * phase)},
+			"4": {"rotate": -0.7 * sin(TAU * phase)}, "3": {"rotate": 0.4 * sin(TAU * phase)}}
+		for side in 2:
+			var p := fposmod(phase + side * 0.5, 1.0)
+			# 前半轮匀速承重后移，后半轮用 Hermite 接回，落脚前后速度连续。
+			var x := 148.0 - 592.0 * p
+			var lift := 0.0
+			if p >= 0.5:
+				var u := (p - 0.5) * 2.0
+				x = -148.0 + 296.0 * (-4.0 * u * u * u + 6.0 * u * u - u)
+				lift = 43.0 * pow(sin(PI * u), 2.0)
+			pose["y" if side == 0 else "target"] = {"translate": Vector2(x, lift)}
+		for name: String in ["tou3", "tou8", "piaodai1", "bone6", "bone11"]:
+			pose[name] = {"rotate": 1.5 * sin(TAU * (phase - 0.11))}
+		for name: String in pose:
+			if not tracks.has(name): tracks[name] = {}
+			for kind: String in pose[name]:
+				if not tracks[name].has(kind): tracks[name][kind] = []
+				var value = pose[name][kind]
+				tracks[name][kind].append({"time": time, "x": value.x, "y": value.y} if kind == "translate" else {"time": time, "value": value})
+	for name: String in tracks:
+		if not clip.bones.has(name): clip.bones[name] = {}
+		for kind: String in tracks[name]: clip.bones[name][kind] = tracks[name][kind]
 	return clip
 
 func _hurt() -> Dictionary:

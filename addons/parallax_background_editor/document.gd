@@ -43,6 +43,7 @@ func open(path: String) -> String:
 		for layer in definition.layers:
 			for sublayer in layer.sublayers:
 				var id := _append_sublayer(layer.depth, sublayer)
+				sublayer_record(id)["layer_name"]=layer.display_name
 				for value in sublayer.entries:
 					items.append({"id": _next_id, "sublayer": id, "entry": value.duplicate(false)})
 					_next_id += 1
@@ -63,6 +64,7 @@ func definition() -> StageBackgroundDefinition:
 		if layer == null:
 			layer = StageBackgroundLayer.new()
 			layer.depth = record.depth
+			layer.display_name=str(record.get("layer_name",""))
 			result.layers.append(layer)
 		var sublayer := record.resource.duplicate(false) as StageBackgroundSubLayer
 		sublayer.entries = []
@@ -223,17 +225,17 @@ func snapshot() -> Dictionary:
 	var result: Array[Dictionary] = []
 	for item in items: result.append({"id": item.id, "sublayer": item.sublayer, "entry": item.entry.duplicate(false)})
 	var layers: Array[Dictionary] = []
-	for record in sublayers: layers.append({"id": record.id, "depth": record.depth, "resource": record.resource.duplicate(false)})
+	for record in sublayers: layers.append({"id": record.id, "depth": record.depth, "resource": record.resource.duplicate(false),"layer_name":record.get("layer_name","")})
 	return {"items": result, "sublayers": layers}
 
 
 func signature() -> Array:
 	var result: Array = []
 	for record in sublayers:
-		result.append([record.id, record.depth, record.resource.sublayer_id, record.resource.display_name, record.resource.velocity, record.resource.continuity_id, record.resource.cycle_direction, record.resource.cycle_start, record.resource.cycle_end, record.resource.horizontal_random_repeat, record.resource.repeat_gap_min, record.resource.repeat_gap_max, record.resource.repeat_seed])
+		result.append([record.get("layer_name",""),record.id, record.depth, record.resource.sublayer_id, record.resource.display_name, record.resource.velocity, record.resource.continuity_id, record.resource.cycle_direction, record.resource.cycle_start, record.resource.cycle_end, record.resource.horizontal_random_repeat, record.resource.repeat_gap_min, record.resource.repeat_gap_max, record.resource.repeat_seed])
 	for item in items:
 		var value: StageBackgroundEntry = item.entry
-		result.append([item.sublayer, value.texture, value.sprite_frames, value.animation, value.infinite, value.random_flip, value.position, value.uniform_scale, value.material])
+		result.append([item.sublayer, value.texture, value.sprite_frames, value.scene, value.animation, value.infinite, value.random_flip, value.position, value.uniform_scale, value.material])
 	return result
 
 
@@ -259,7 +261,7 @@ func _apply(state: Dictionary) -> void:
 	items.clear()
 	for item in state.items: items.append({"id": item.id, "sublayer": item.sublayer, "entry": item.entry.duplicate(false)})
 	sublayers.clear()
-	for record in state.sublayers: sublayers.append({"id": record.id, "depth": record.depth, "resource": record.resource.duplicate(false)})
+	for record in state.sublayers: sublayers.append({"id": record.id, "depth": record.depth, "resource": record.resource.duplicate(false),"layer_name":record.get("layer_name","")})
 	if index_of(selected_id) < 0: selected_id = -1
 	if sublayer_record(selected_sublayer_id).is_empty(): selected_sublayer_id = -1
 	changed.emit()
@@ -271,7 +273,7 @@ func restore(state: Dictionary) -> void:
 
 ## 添加只引用项目内美术资源的条目。新条目位于指定设计坐标。
 func add_asset(resource: Resource, position: Vector2) -> bool:
-	if not resource is Texture2D and not resource is SpriteFrames: return false
+	if not resource is Texture2D and not resource is SpriteFrames and not resource is PackedScene: return false
 	var before := snapshot()
 	var value := StageBackgroundEntry.new()
 	assign_asset(value, resource)
@@ -289,6 +291,8 @@ func add_asset(resource: Resource, position: Vector2) -> bool:
 func assign_asset(value: StageBackgroundEntry, resource: Resource) -> void:
 	value.texture = resource as Texture2D
 	value.sprite_frames = resource as SpriteFrames
+	value.scene = resource as PackedScene
+	if value.scene != null: value.infinite = false
 	if value.sprite_frames != null and not value.sprite_frames.has_animation(value.animation):
 		var names := value.sprite_frames.get_animation_names()
 		value.animation = names[0] if not names.is_empty() else &"default"
@@ -355,8 +359,10 @@ func validation_error() -> String:
 		var issue := ""
 		if not is_finite(value.uniform_scale) or value.uniform_scale < 0.01:
 			return "条目 %d：缩放倍率必须至少为 0.01" % (index + 1)
-		if (value.texture == null) == (value.sprite_frames == null):
-			issue = "必须选择一项纹理或动画资源"
+		if value.source_count() != 1:
+			issue = "必须选择一项纹理、动画或场景资源"
+		elif value.scene != null and value.infinite:
+			issue = "背景场景只支持有限素材"
 		elif value.sprite_frames != null:
 			var frames := value.sprite_frames
 			if not frames.has_animation(value.animation) or frames.get_frame_count(value.animation) == 0:
@@ -391,7 +397,7 @@ func acknowledge_external() -> void:
 		_watched[source_path] = FileAccess.get_file_as_string(source_path) if FileAccess.file_exists(source_path) else ""
 	for item in items:
 		var material: ShaderMaterial = item.entry.material
-		for resource: Resource in [item.entry.texture, item.entry.sprite_frames, material, material.shader if material != null else null]:
+		for resource: Resource in [item.entry.texture, item.entry.sprite_frames, item.entry.scene, material, material.shader if material != null else null]:
 			if resource != null and not resource.resource_path.is_empty() and not resource.resource_path.contains("::"):
 				_asset_times[resource.resource_path] = FileAccess.get_modified_time(resource.resource_path)
 
@@ -413,3 +419,9 @@ func save() -> String:
 	acknowledge_external()
 	changed.emit()
 	return ""
+
+func set_layer_name(depth: int, value: String) -> void:
+	var before:=snapshot()
+	for record in sublayers:
+		if record.depth==depth:record.layer_name=value
+	commit("命名背景层",before);changed.emit()

@@ -11,6 +11,14 @@ func _build() -> void:
 		var target:=destination.path_join(relative)
 		DirAccess.make_dir_recursive_absolute(target.get_base_dir())
 		DirAccess.copy_absolute(opened.directory.path_join(relative),target)
+	# 将普通动画依赖一起放入外部工程，实际发行 EXE 必须从目录解析它们。
+	var animation:=LevelProjectIO.open_project("res://examples/level-studio/动画与遮挡/level.json")
+	for relative in LevelProjectIO.dependencies(animation.level,animation.directory):
+		if not relative.begins_with("assets/"):continue
+		var target:=destination.path_join(relative);DirAccess.make_dir_recursive_absolute(target.get_base_dir())
+		DirAccess.copy_absolute(animation.directory.path_join(relative),target)
+	opened.level.show.objects.append_array(animation.level.show.objects)
+	opened.level.show.tracks.append_array(animation.level.show.tracks)
 	var node:=Node2D.new();node.set_script(load("res://tests/editor/level_release_probe.gd"))
 	var scene:=PackedScene.new();scene.pack(node);node.free()
 	ResourceSaver.save(scene,staging.path_join("probe.tscn"))

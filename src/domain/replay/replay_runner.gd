@@ -63,7 +63,7 @@ static func run_with_frame_steps(
 		cursor_us = mini(cursor_us, samples[0].timestamp_us)
 	# Hold 与调频都在原定尾点完成；只有普通音符还需要 Miss 窗。
 	var settle_us: int = rules.miss_window_ms * 1000 + 1
-	var finish_us: int = maxi(compiled.end_time_us + settle_us + simulation.pet_effect.hold_head_bonus_ms * 1000, simulation.wave_engine.last_arrival_us())
+	var finish_us: int = maxi(compiled.end_time_us + settle_us + simulation.pet_effect.hold_head_bonus_ms * 1000, simulation.last_damage_time_us())
 	if not samples.is_empty():
 		finish_us = maxi(finish_us, samples[-1].timestamp_us + settle_us)
 	while cursor_us < finish_us and not simulation.health_engine.failed:

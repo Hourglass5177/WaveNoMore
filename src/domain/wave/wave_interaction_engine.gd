@@ -180,6 +180,10 @@ func launch(
 
 	# 无效灰波只供表现；有效彩波最多绑定一枚仍处于 pending 的同阵营普通音符。
 	if valid and not bound_note.is_empty():
+		# 复用已接受的头判信息供即时反馈读取，物理接触仍沿原时间线发生。
+		launch_record["accepted_note_id"] = bound_note["id"]
+		launch_record["input_grade"] = int(bound_note.get("input_grade", GameplayTypes.JudgmentGrade.PERFECT))
+		launch_record["group_id"] = str(bound_note.get("group_id", ""))
 		var binding: Dictionary = _try_bind_note(wave_id, sample, bound_note)
 		if not binding.is_empty():
 			_bound_notes[binding["note_id"]] = true
@@ -403,6 +407,12 @@ func _try_bind_note(
 	return contact.duplicate(true)
 
 
+func post_cue_travel_us(affinity: int) -> int:
+	## 普通音符从判定点到角色的领域飞行时间，也供失败 Hold 身体结算使用。
+	var profile: Dictionary = _motion_profile(affinity)
+	return roundi(float(profile.cue_distance_px) * USEC_PER_SEC / maxf(float(profile.note_speed_px_sec), 0.001))
+
+
 func _build_arrival(note: Dictionary) -> Dictionary:
 	var affinity: int = int(note.get("affinity", GameplayTypes.Affinity.SU))
 	var cue_us: int = int(note.get("start_us", note.get("start_time_us", note.get("time_us", 0))))
@@ -475,10 +485,9 @@ func _rule_vector(property_name: StringName, fallback: Vector2) -> Vector2:
 func _rule_property(property_name: StringName, fallback: Variant) -> Variant:
 	if _rules == null:
 		return fallback
-	for property_data: Dictionary in _rules.get_property_list():
-		if StringName(property_data.get("name", &"")) == property_name:
-			return _rules.get(property_name)
-	return fallback
+	# 规则属性直接读取，不为每次子步查询构造整份属性元数据。
+	var value: Variant = _rules.get(property_name)
+	return fallback if value == null else value
 
 
 func _origin_for(affinity: int) -> Vector2:

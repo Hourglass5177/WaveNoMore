@@ -29,6 +29,15 @@ func _run() -> void:
 	root.add_child(ui)
 	await process_frame
 	ui.set_process(false)
+	var flame_card = ui._cards[0]
+	flame_card.set_process(false)
+	flame_card._effect_frame = 0
+	flame_card._effect_elapsed = 0.0
+	var frame_duration: float = flame_card._effect_frames.get_frame_duration(flame_card._effect_animation,0)/flame_card._effect_frames.get_animation_speed(flame_card._effect_animation)
+	flame_card._process(frame_duration*3.4)
+	_check(flame_card._effect_frame==3 and is_equal_approx(flame_card._effect_elapsed,frame_duration*0.4),"火框长帧补齐且保留余量")
+	flame_card._process(frame_duration*0.7)
+	_check(flame_card._effect_frame==4 and is_equal_approx(flame_card._effect_elapsed,frame_duration*0.1),"火框后续相位连续")
 	ui.selection_changed.connect(func(index: int, id: String): events.append([index, id]))
 	_check(ui._cards.size() == ui.catalog.cards.size(), "卡片数量来自 catalog")
 	_check(is_equal_approx(ui.horizontal_radius, 480.0), "默认 catalog 半径缩小为 480")
@@ -108,12 +117,17 @@ func _run() -> void:
 	DirAccess.make_dir_recursive_absolute("res://builds/level-carousel")
 	for dimensions in [Vector2i(1280, 720), Vector2i(1920, 1080), Vector2i(1000, 800)]:
 		root.content_scale_size = Vector2i.ZERO
+		root.content_scale_factor = 1.0
+		root.content_scale_mode = Window.CONTENT_SCALE_MODE_DISABLED
 		root.size = dimensions
 		await process_frame
 		await process_frame
 		var card: Control = ui._cards[0]
 		var center := card.get_global_transform() * card.pivot_offset
-		_check(center.distance_to(Vector2(dimensions) * 0.5) < 1.0, "窗口变化后卡片仍在屏幕中心")
+		var expected_center: Vector2 = Vector2(dimensions)*0.5 + ui.get_node("Design/Cards").position*ui.get_node("Design").scale
+		_check(center.distance_to(expected_center) < 1.0, "窗口变化后卡片保留原稿向下 69 px 的构图")
+		var backdrop: Control = ui.get_node("Design/TextureRect")
+		_check(backdrop.get_global_rect().get_center().distance_to(Vector2(dimensions)*0.5)<1.0,"背景与设计画布一起缩放居中")
 		if DisplayServer.get_name() != "headless":
 			await RenderingServer.frame_post_draw
 			var img := root.get_texture().get_image()

@@ -15,6 +15,7 @@ var chart_offset_ticks: int = 0
 var first_beat_offset_us: int = 0
 ## 预计算后的变速段，按起始 tick 排序，供双向时间换算二分/顺序查询。
 var _events: Array[Dictionary] = []
+var _segment_times := PackedInt64Array()
 
 
 static func from_chart(chart: SongChart, p_first_beat_offset_us: int = 0) -> TempoMap:
@@ -41,6 +42,11 @@ func configure(
 	if _events.is_empty():
 		_events.append({"tick": 0, "bpm": 120.0})
 
+	_segment_times.clear()
+	for event in _events:
+		var tick: int = event.tick
+		_segment_times.append(_duration_between_ticks(0, tick) if tick >= 0 else -_duration_between_ticks(tick, 0))
+
 
 func tick_to_us(tick: int) -> int:
 	var effective_tick: int = tick + chart_offset_ticks
@@ -54,29 +60,25 @@ func tick_span_to_us(from_tick: int, to_tick: int) -> int:
 
 
 func us_to_tick(time_us: int) -> float:
-	# 用二分搜索取得相邻整数 tick，再在区间内插值；整个反算不依赖帧 delta。
-	var target_us: int = time_us
-	var low: int = -1
-	var high: int = 1
-	while tick_to_us(low) > target_us:
-		high = low
-		low *= 2
-	while tick_to_us(high) < target_us:
-		low = high
-		high *= 2
-	for _iteration in range(64):
-		if high - low <= 1:
-			break
-		var middle: int = low + (high - low) / 2
-		if tick_to_us(middle) <= target_us:
-			low = middle
-		else:
-			high = middle
-	var low_us: int = tick_to_us(low)
-	var high_us: int = tick_to_us(high)
-	if high_us == low_us:
-		return float(low)
-	return float(low) + float(target_us - low_us) / float(high_us - low_us)
+	# 先按已知 BPM 段直接估计邻近 tick，免去每次从 ±1 扩张搜索全谱。
+	var target := time_us - first_beat_offset_us
+	var left := 0
+	var right := _segment_times.size()
+	while left + 1 < right:
+		var middle := (left + right) / 2
+		if _segment_times[middle] <= target: left = middle
+		else: right = middle
+	var segment: Dictionary = _events[left]
+	var estimate := float(segment.tick) + float(target - _segment_times[left]) * float(segment.bpm) * ppq / USEC_PER_MINUTE
+	var low := floori(estimate) - chart_offset_ticks
+	var low_us := tick_to_us(low)
+	# 正向换算仍使用原来的逐段整数舍入；只校正估计附近，保留所有微秒边界。
+	while low_us > time_us:
+		low -= 1; low_us = tick_to_us(low)
+	var high_us := tick_to_us(low + 1)
+	while high_us <= time_us:
+		low += 1; low_us = high_us; high_us = tick_to_us(low + 1)
+	return float(low) + float(time_us - low_us) / float(high_us - low_us)
 
 
 func us_to_tick_rounded(time_us: int) -> int:

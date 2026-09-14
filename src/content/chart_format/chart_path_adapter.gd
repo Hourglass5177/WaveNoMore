@@ -145,6 +145,13 @@ static func project(chart: SongChart, rules: GameplayRuleSet) -> SongChart:
 		ghost.event_id = batch.event_id; ghost.tick = batch.tick; ghost.count = batch.count
 		# 新编排没有中央生成区限制，使用整个设计画布；旧谱显式区域仍由旧资源保存。
 		ghost.spawn_region_normalized = Rect2(0, 0, 1, 1)
-		# 旧引擎仅预览显现，不能用旧 group_id 冒充条内共同成绩。
+		# Ghost 保留双方关联，衔接拍优先刚结束的单程；预测从整条路径的预告时刻开始。
+		for path_id: String in batch.tuning_ids:
+			var path: TuningPathEvent = ChartEditEvents.find(chart, path_id)
+			ghost.preparation_tick = path.tick if ghost.preparation_tick < 0 else mini(ghost.preparation_tick, path.tick)
+			for i in range(1, path.points.size()):
+				if batch.tick <= path.tick + path.points[i].offset_ticks:
+					ghost.tuning_ids.append(path.event_id + ":" + path.points[i - 1].event_id)
+					break
 		result.su_manifestations.append(ghost)
 	return result

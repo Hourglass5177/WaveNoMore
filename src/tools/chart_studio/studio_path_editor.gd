@@ -54,7 +54,7 @@ func _show_point() -> void:
 
 func _commit() -> void:
 	if not is_inside_tree(): return
-	var result := ChartPathAdapter.frequency_values(path, load("res://content/rules/default_gameplay_rules.tres"))
+	var result := ChartPathAdapter.frequency_values(path, PlanningParameters.default_rules())
 	if result.has("error"):
 		hint.text = result.error; candidate.emit(path); return
 	if pending_node:

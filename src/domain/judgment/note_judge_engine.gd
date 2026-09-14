@@ -295,6 +295,9 @@ func _finalize_state(state: Dictionary, components: Array[JudgmentComponentRecor
 	record.damage_group_id = String(note["damage_group_id"])
 	record.components = components
 	record.recompute_grade()
+	if record.unit_kind == &"hold" and record.grade == GameplayTypes.JudgmentGrade.MISS:
+		# 宽限内续接不丢身体；一旦真正失败，未消耗部分从最后松开的时刻开始。
+		record.metadata["unconsumed_from_us"] = int(note.start_us) if record.missed_head() else maxi(int(note.start_us), int(state.gap_started_us) if int(state.gap_started_us) >= 0 else finalized_at_us)
 	_pending_records.append(record)
 
 

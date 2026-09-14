@@ -1,28 +1,28 @@
 # Tap 双押与 Hold 调频白光
 
-2026-09-09，基于 develop `8aab695`。仅调整音符表现，不改谱面格式、判定、输入、成绩或音频时间映射。
+2026-09-09 初版，2026-09-13 更新双押接口。下方保留早期调参记录，现行色板和全局资源参数以 [音符效果](note-effects.md) 为准。仅调整音符表现，不改谱面格式、判定、输入、成绩或音频时间映射。
 
 ## 当前效果
 
 白光由表面提亮、近处亮边和向外衰减的柔光组成。表面光覆盖整个音符，原有配色、身体纹理和纹样仍然可辨。按本轮美术反馈，整体亮度比初版轮廓光更明显，外晕默认宽度调整为 30 个设计像素。
 
-- 生、死两侧 Tap **同一 tick 或同一非空 group_id**，满足任一条件就带双押白光。两项条件都只在 Tap 之间匹配；Tap 与 Hold 同刻不算这类提示。各 Tap 按自身判定时间亮起。
+- 生、死两侧 Tap／Hold 头部**同一 tick 或同一非空 group_id**，满足任一条件就带双押白光，支持混合双押。各音符按自身头部判定时间亮起，Hold 双押只照亮头部。
 - 双押 Tap 在判定前 0.60 秒开始渐亮，经过 0.15 秒达到全亮（判定前 0.45 秒）。成功按键时立即关闭白光及外圈，本体以 45% 亮度续行，声波接触后原地消散；漏击仍在 0.08 秒内淡出白光。两阶段反馈与美术接口见 [Tap 与 Tuning 表现说明](tap-feedback-tuning-radius.md)。
-- Hold 仅在所属侧滑条实际接管时亮起，头、可见身体、尾一起发光。读取现有 `dragging` 与 Hold 关联；仅在窗口中、仅按住、错过或已经松开都不会使它持续发光。
+- Hold 双押头部在命中或漏击后 0.08 秒淡出。整条 Hold 则仅在所属侧滑条实际接管时亮起，读取现有 `dragging` 与 Hold 关联；头部取双押与调频亮度的较大值，身体和尾部只受调频驱动。
 - Hold 进入接管时 0.10 秒渐亮，离开时 0.08 秒淡出；不要求摇杆持续运动，也不额外检查 Perfect。连续滑条有效换接保持亮度。
 - 光效跟随现有时钟：暂停冻结，预览定位按正式输入重演恢复，回收与换谱清除状态。
 
 ## 接入与参数
 
-`ChartScheduler` 配置时索引完整谱面，生成事件中增加只读表现字段 `double_tap: bool`，不回写编译数据或 JSON。`NoteVisualHost` 负责传入 Tap 的绝对视觉时间和 Hold 实际调频接管状态。
+`ChartScheduler` 配置时索引完整谱面，生成事件中使用只读表现字段 `double_press: bool`，不回写编译数据或 JSON。`NoteVisualHost` 负责传入 Tap／Hold 头部的绝对视觉时间和 Hold 实际调频接管状态。
 
 音符表现接口：
 
 | 接口 | 用途 |
 | --- | --- |
-| `set_note_glow_time(seconds, time_to_hit)` | Tap 按自身判定前的时间求亮度，`seconds` 为当前视觉时间 |
+| `set_note_glow_time(seconds, time_to_hit)` | Tap／Hold 按自身头部时刻求双押亮度，`seconds` 为当前视觉时间 |
 | `set_tuning_glow(active, seconds)` | Hold 接管状态过渡，`seconds` 为现有判定时钟 |
-| `glow_amount` | 当前 0～1 视觉强度，只供表现和调试使用 |
+| `glow_amount` | Tap 白光或整条 Hold 的调频白光；Hold 另以 `head_double_glow` 表示头部双押分量 |
 
 `GrayboxNoteVisual` 的 **White Glow** Inspector 分组由 Hold 继承：
 

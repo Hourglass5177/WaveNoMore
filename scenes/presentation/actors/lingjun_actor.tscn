@@ -10,6 +10,7 @@ metadata/attack_loop = "attack_loop"
 metadata/attack_start_sec = 0.46
 metadata/attack_hit_times = PackedFloat32Array(0.55, 1.5)
 metadata/idle = "idle"
+metadata/walk = "walk"
 metadata/hurt = "hurt"
 metadata/death = "death"
 preview_skin = "Default"

@@ -21,8 +21,8 @@ enum GameplayEvent {
 
 enum StickSide { LEFT, RIGHT }
 
-static func to_tuning_control(event: PhysicalInputEvent) -> Dictionary:
-	## 设计画布方向的无量纲速度控制；0.2 死区外线性重映射，不保存设备状态。
+static func to_tuning_control(event: PhysicalInputEvent, deadzone: float = 0.2) -> Dictionary:
+	## 设计画布方向的无量纲速度控制；使用本局规则的径向死区，不保存设备状态。
 	if event == null or event.kind not in [
 		GameplayTypes.PhysicalInputKind.GAMEPAD_LEFT_STICK_MOVED,
 		GameplayTypes.PhysicalInputKind.GAMEPAD_RIGHT_STICK_MOVED
@@ -32,8 +32,8 @@ static func to_tuning_control(event: PhysicalInputEvent) -> Dictionary:
 	var side: int = StickSide.LEFT if event.kind == GameplayTypes.PhysicalInputKind.GAMEPAD_LEFT_STICK_MOVED else StickSide.RIGHT
 	var control_vector := Vector2.ZERO
 	var radius: float = raw_vector.length()
-	if radius > 0.2:
-		control_vector = raw_vector / radius * clampf((radius - 0.2) / 0.8, 0.0, 1.0)
+	if radius > deadzone:
+		control_vector = raw_vector / radius * clampf((radius - deadzone) / (1.0 - deadzone), 0.0, 1.0)
 	return {
 		"exists": true,
 		"timestamp_us": event.timestamp_us,

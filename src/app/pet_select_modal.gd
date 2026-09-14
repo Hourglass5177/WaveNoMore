@@ -79,9 +79,7 @@ func _show_pet(direction: int = 0) -> void:
 	for item in [%Actor,%GroundGlow,%Heading]:
 		_selection_motion.tween_property(item,"modulate:a",1.0,0.22).set_trans(Tween.TRANS_SINE)
 func play_skill() -> void:
-	var previous_events: int = _actor.events.size()
-	_actor.trigger(_clock)
-	if _actor.events.size() == previous_events: return
+	if not _actor.trigger(_clock): return
 	# 技能被播放器接受时投影只舒展一次；连按不会反复点亮。
 	if _shadow_motion: _shadow_motion.kill()
 	_shadow_motion = create_tween()

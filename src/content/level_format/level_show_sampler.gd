@@ -58,18 +58,18 @@ static func object_state(show: Dictionary, object_data: Dictionary, section: Str
 		state[property] = sample_keys(track_data.get("keys", []), time_us, state.get(property, 0.0), property == "color" or property in object_data.get("color_properties",[]))
 	return state
 
-static func object_transform(show: Dictionary, object_id: String, section: String, time_us: int, difficulty: String, depth := 0) -> Transform2D:
+static func object_transform(show: Dictionary, object_id: String, section: String, time_us: int, difficulty: String, depth := 0, sampled_states: Dictionary = {}) -> Transform2D:
 	var object_data := LevelFormat.find(show.get("objects", []), object_id)
 	if object_data.is_empty() or depth > show.get("objects", []).size(): return Transform2D.IDENTITY
-	var state := object_state(show, object_data, section, time_us, difficulty)
+	var state: Dictionary = sampled_states[object_id] if sampled_states.has(object_id) else object_state(show, object_data, section, time_us, difficulty)
 	var transform := Transform2D(deg_to_rad(float(state.get("rotation", 0.0))), LevelFormat.vec(state.get("scale", [1, 1]), Vector2.ONE), deg_to_rad(float(state.get("skew", 0.0))), LevelFormat.vec(state.get("position", [0, 0])))
 	var parent := str(object_data.get("parent_id", ""))
-	if not parent.is_empty(): transform = object_transform(show, parent, section, time_us, difficulty, depth + 1) * transform
+	if not parent.is_empty(): transform = object_transform(show, parent, section, time_us, difficulty, depth + 1, sampled_states) * transform
 	elif object_data.get("layer", "world") == "death": transform = Transform2D(PI, Vector2(1920, 1080)) * transform
 	return transform
 
-static func local_appearance(show: Dictionary, object_data: Dictionary, section: String, time_us: int, difficulty: String) -> Dictionary:
-	var state := object_state(show, object_data, section, time_us, difficulty)
+static func local_appearance(show: Dictionary, object_data: Dictionary, section: String, time_us: int, difficulty: String, sampled_state: Dictionary = {}) -> Dictionary:
+	var state := sampled_state if not sampled_state.is_empty() else object_state(show, object_data, section, time_us, difficulty)
 	var color := Color(str(state.get("color", "ffffffff")))
 	color.a *= float(state.get("opacity", 1.0))
 	var visible := bool(state.get("visible", true)) and not bool(object_data.get("hidden", false))

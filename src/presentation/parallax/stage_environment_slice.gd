@@ -11,8 +11,10 @@ var viewport: SubViewport
 var views: Array[Node2D] = []
 var animations: Array[AnimatedSprite2D] = []
 var timed_materials: Array[ShaderMaterial] = []
+var boundary_materials: Array[ShaderMaterial] = []
+var background_scenes: Array[Node2D] = []
 
-func configure(layer: StageBackgroundSubLayer) -> void:
+func configure(layer: StageBackgroundSubLayer, motion: BoundaryMotion = null) -> void:
 	source_layer = layer
 	viewport = SubViewport.new(); viewport.size = Vector2i(1920, 1080); viewport.transparent_bg = true
 	viewport.size_2d_override=Vector2i(1920,1080);viewport.size_2d_override_stretch=true
@@ -24,9 +26,16 @@ func configure(layer: StageBackgroundSubLayer) -> void:
 			var sprite := Sprite2D.new(); sprite.texture = entry.texture; sprite.centered = false; object = sprite
 		elif entry.sprite_frames != null:
 			var sprite := AnimatedSprite2D.new(); sprite.sprite_frames = entry.sprite_frames; sprite.animation = entry.animation; sprite.centered = false; sprite.stop(); object = sprite; animations.append(sprite)
+		elif entry.scene != null:
+			object=entry.scene.instantiate()
+			if object.has_method("configure_boundary_scene"): object.configure_boundary_scene(motion if motion != null else BoundaryMotion.new())
+			background_scenes.append(object)
 		else: continue
 		if entry.material != null:
 			object.material = entry.material.duplicate(false)
+			if BoundaryMotion.accepts(object.material):
+				(motion if motion != null else BoundaryMotion.new()).apply(object.material, entry.uniform_scale)
+				boundary_materials.append(object.material)
 			for uniform in entry.material.shader.get_shader_uniform_list():
 				if uniform.name == "environment_time": timed_materials.append(object.material); break
 		viewport.add_child(object)
@@ -39,6 +48,11 @@ func sample(state: Dictionary, axis: Vector2, canvas: Transform2D) -> void:
 	for view in views: view.update_camera(-state.shift)
 	for sprite in animations: ParallaxController.sample_animation(sprite, state.local_sec)
 	for shader in timed_materials: shader.set_shader_parameter("environment_time", state.local_sec)
+
+func sample_boundary(seconds: float, beat: float) -> void:
+	for shader in boundary_materials: BoundaryMotion.sample(shader, seconds, beat)
+	for object in background_scenes:
+		if object.has_method("sample_background"): object.sample_background(seconds)
 
 ## 只有接缝穿过画面时才离屏合成；纯单层直接绘制，避免全程增加渲染通道。
 func set_direct(parent:Node2D, enabled:bool, resolution_scale:=1.0) -> void:

@@ -9,7 +9,7 @@ func check(ok: bool, message: String) -> void:
 	if not ok: failures += 1
 	print("PASS " if ok else "FAIL ", message)
 func note(side: int, pair := true) -> Dictionary:
-	return {"event_id": "tap", "id": "tap", "unit_kind": &"tap", "affinity": side, "tick": 960, "start_us": 1000000, "end_us": 1000000, "double_tap": pair}
+	return {"event_id": "tap", "id": "tap", "unit_kind": &"tap", "affinity": side, "tick": 960, "start_us": 1000000, "end_us": 1000000, "double_press": pair}
 func run() -> void:
 	for side: int in [0, 1]:
 		for pair: bool in [false, true]:
@@ -30,7 +30,7 @@ func test_host(side: int, pair: bool, hit: float) -> void:
 	scheduler.advance(hit, hit)
 	host.set_visual_time(hit)
 	var tap: GrayboxNoteVisual = host._active.tap.node
-	tap._double_tap = pair
+	tap._double_press = pair
 	tap.set_note_glow_time(hit, 1.0 - hit)
 	var ring: Node2D = host._active.tap.timing_ring
 	var accepted := tap.global_transform

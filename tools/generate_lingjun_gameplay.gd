@@ -361,7 +361,10 @@ func _animate_skirt_clip(result: Dictionary, animation: String) -> void:
 	var tracks: Array = [[], [], [], []]
 	var deforms := []
 	# 只在资源生成时采样脚部 IK；正式播放仅插值这四条裙骨轨道。
-	var duration := 4.0 if animation == "idle" else (1.2 if animation == "death" else SECTION_END * 2.0)
+	var duration := 0.0
+	for timelines: Dictionary in result.animations[animation].bones.values():
+		for keys: Array in timelines.values():
+			for key: Dictionary in keys: duration = maxf(duration, float(key.get("time", 0.0)))
 	for frame in range(roundi(duration * 30.0) + 1):
 		var seconds := float(frame) / 30.0
 		_sample(seconds, animation)
@@ -375,6 +378,9 @@ func _animate_skirt_clip(result: Dictionary, animation: String) -> void:
 		offsets[3].x = hip.x * 0.08 + maxf(front.x * 0.82, knee.x * 0.94)
 		# 前缘预留少量布料松量，避免短混合时非线性的膝部 IK 顶出线性混合的裙面。
 		offsets[3].x += 32.0 * smoothstep(0.0, 80.0, front.x)
+		if animation == "walk":
+			# 小步时衣料横向跟随收敛 15%，裙腰与腿部动作保持原位。
+			for index in offsets.size(): offsets[index].x *= 0.85
 		if animation == "death":
 			# 屈膝时裙身随腰下沉、下摆留在地面，前缘沿真实膝盖展开。
 			var sink := smoothstep(0.16, 0.95, seconds)

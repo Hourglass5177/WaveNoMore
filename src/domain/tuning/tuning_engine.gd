@@ -20,6 +20,7 @@ const NO_ENDPOINT_OBSERVATION_US: int = 9_000_000_000_000_000
 var _compiled: CompiledChart
 var _rules: GameplayRuleSet
 var _slider_states: Array[Dictionary] = []
+var _slider_by_id: Dictionary[String, int] = {}
 var _group_members: Dictionary[String, Array] = {}
 var _group_grades: Dictionary[String, int] = {}
 var _pending_records: Array[JudgmentRecord] = []
@@ -50,12 +51,19 @@ var _life_drag_state_index: int = -1
 var _death_drag_state_index: int = -1
 var _life_drag_traversal_index: int = -1
 var _death_drag_traversal_index: int = -1
+## 表现预告窗口按起点排序，仅扫描正在可见的滑条；领域端点时间线保持原样。
+var _preview_order: Array[int] = []
+var _preview_cursor := 0
+var _preview_active: Array[int] = []
+var _preview_time := NEVER_TIME_US
 
 
 func configure(compiled: CompiledChart, rules: GameplayRuleSet) -> void:
 	_compiled = compiled
 	_rules = rules
 	_slider_states.clear()
+	_slider_by_id.clear()
+	_preview_order.clear(); _preview_active.clear(); _preview_cursor = 0; _preview_time = NEVER_TIME_US
 	_group_members.clear()
 	_group_grades.clear()
 	_pending_records.clear()
@@ -78,6 +86,8 @@ func configure(compiled: CompiledChart, rules: GameplayRuleSet) -> void:
 		return
 	_build_field_timeline()
 	_build_slider_states()
+	for index in _slider_states.size(): _preview_order.append(index)
+	_preview_order.sort_custom(func(a: int, b: int): return int(_slider_states[a].slider.start_us) < int(_slider_states[b].slider.start_us))
 	_timeline_events.sort_custom(_sort_timeline_events)
 
 
@@ -375,7 +385,8 @@ func active_field_id() -> String:
 	if not ids.is_empty():
 		return str(ids[0])
 	var pending: Array[Dictionary] = []
-	for state: Dictionary in _slider_states:
+	for state_index in _visible_slider_indices(_current_time_us):
+		var state: Dictionary = _slider_states[state_index]
 		if bool(state["finished"]):
 			continue
 		var slider: Dictionary = state["slider"]
@@ -440,12 +451,35 @@ func death_frequency_hz() -> float:
 	return _value_to_frequency(_death_value)
 
 
+func _visible_slider_indices(time_us: int) -> Array[int]:
+	# 输入子步和表现查询共用时间窗口，保留原编译索引的同侧优先级。
+	if time_us == _preview_time: return _preview_active
+	var preview_lead_us := roundi(maxf(_rule_float(&"approach_duration_sec", 2.25), 0.0) * 1000000.0)
+	if time_us < _preview_time:
+		_preview_cursor = 0; _preview_active.clear()
+	_preview_time = time_us
+	var added := false
+	while _preview_cursor < _preview_order.size():
+		var index := _preview_order[_preview_cursor]
+		if int(_slider_states[index].slider.start_us) - preview_lead_us > time_us: break
+		_preview_active.append(index); _preview_cursor += 1
+		added = true
+	for cursor in range(_preview_active.size() - 1, -1, -1):
+		var state: Dictionary = _slider_states[_preview_active[cursor]]
+		if bool(state.finished) or int(state.judgment_end_us) < time_us: _preview_active.remove_at(cursor)
+	# 删除保留既有顺序；只有加入新窗口后才恢复编译优先级。
+	if added: _preview_active.sort()
+	return _preview_active
+
+
 func active_slider_snapshots() -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
 	var preview_lead_us: int = roundi(
 		maxf(_rule_float(&"approach_duration_sec", 2.25), 0.0) * 1_000_000.0
 	)
-	for state: Dictionary in _slider_states:
+	_visible_slider_indices(_current_time_us)
+	for index in _preview_active:
+		var state: Dictionary = _slider_states[index]
 		if bool(state["finished"]):
 			continue
 		var slider: Dictionary = state["slider"]
@@ -468,7 +502,8 @@ func active_slider_snapshots() -> Array[Dictionary]:
 			else float(slider["start_value"])
 		)
 		var player_progress: float = _value_to_slider_progress(slider, player_value) if input_open else 0.0
-		var snapshot: Dictionary = slider.duplicate(true)
+		# 编译后的曲线和节点只读；本帧只覆盖动态字段，无需复制其嵌套数组。
+		var snapshot: Dictionary = slider.duplicate(false)
 		snapshot["phase"] = &"active" if input_open else &"preview"
 		snapshot["interaction_open"] = input_open
 		snapshot["dragging"] = input_open and _is_slider_dragging(slider)
@@ -609,6 +644,7 @@ func _build_slider_states() -> void:
 			"judgment_end_us": judgment_end_us,
 		}
 		_slider_states.append(state)
+		_slider_by_id[event_id] = index
 		if not _group_members.has(group_key):
 			_group_members[group_key] = []
 		_group_members[group_key].append(index)
@@ -769,14 +805,14 @@ func _finalize_endpoint(state_index: int, endpoint_index: int) -> void:
 		float(endpoint["target_progress"])
 	)
 	var is_held: bool = _last_life_held if affinity == GameplayTypes.Affinity.ZHU else _last_death_held
-	var qualified: bool = is_inside and is_held
+	# 按当前单程的方向衡量完成度，折返也从该程起点算起；不锁存提前到达。
+	var completion := clampf(1.0 - absf(player_progress - float(endpoint["target_progress"])), 0.0, 1.0)
+	var grade := completion_grade(completion) if is_held else GameplayTypes.JudgmentGrade.MISS
+	var qualified: bool = grade != GameplayTypes.JudgmentGrade.MISS
 	endpoint["inside"] = is_inside
 	endpoint["captured"] = qualified
-	endpoint["grade"] = (
-		GameplayTypes.JudgmentGrade.PERFECT
-		if qualified
-		else GameplayTypes.JudgmentGrade.MISS
-	)
+	endpoint["completion"] = completion
+	endpoint["grade"] = grade
 	if qualified:
 		endpoint["best_observed_us"] = int(endpoint["target_us"])
 		endpoint["best_error_us"] = 0
@@ -786,6 +822,14 @@ func _finalize_endpoint(state_index: int, endpoint_index: int) -> void:
 	endpoint["finalized"] = true
 
 
+func completion_grade(completion: float) -> int:
+	# 只吸收比例运算的浮点误差，不额外扩大策划配置的判定范围。
+	if completion + 0.0000001 >= _rules.tuning_perfect_completion: return GameplayTypes.JudgmentGrade.PERFECT
+	if completion + 0.0000001 >= _rules.tuning_good_completion: return GameplayTypes.JudgmentGrade.GOOD
+	if completion + 0.0000001 >= _rules.tuning_pass_completion: return GameplayTypes.JudgmentGrade.PASS
+	return GameplayTypes.JudgmentGrade.MISS
+
+
 func _record_endpoint_entries(
 		affinity: int,
 		previous_value: float,
@@ -793,7 +837,8 @@ func _record_endpoint_entries(
 		time_us: int
 ) -> void:
 	## 行程中只维护玩家是否位于端点区以及进入次数；成功与否只在 target_us 结算。
-	for state: Dictionary in _slider_states:
+	for state_index in _visible_slider_indices(time_us):
+		var state: Dictionary = _slider_states[state_index]
 		if bool(state["finished"]):
 			continue
 		var slider: Dictionary = state["slider"]
@@ -922,25 +967,23 @@ func _try_finalize_group(group_key: String, finalized_at_us: int) -> void:
 		var endpoint_metadata: Array[Dictionary] = []
 		for endpoint_value: Variant in state["endpoint_states"]:
 			var endpoint: Dictionary = endpoint_value
-			var observed_us: int = int(endpoint["best_observed_us"])
-			if observed_us == NO_ENDPOINT_OBSERVATION_US:
-				observed_us = int(endpoint["deadline_us"]) + 1
 			var endpoint_kind: StringName = (
 				&"life_endpoint"
 				if affinity == GameplayTypes.Affinity.ZHU
 				else &"death_endpoint"
 			)
-			var endpoint_component := JudgmentComponentRecord.timing(
+			var endpoint_component := JudgmentComponentRecord.value_error(
 				endpoint_kind,
 				int(endpoint["target_tick"]),
 				int(endpoint["target_us"]),
-				observed_us,
+				1.0 - float(endpoint.get("completion", 0.0)),
 				int(endpoint["grade"])
 			)
 			endpoint_component.metadata = {
 				"event_id": str(state["event_id"]),
 				"leg_index": int(endpoint["leg_index"]),
 				"captured": bool(endpoint["captured"]),
+				"completion": float(endpoint.get("completion", 0.0)),
 				"entry_count": int(endpoint["entry_count"]),
 			}
 			record.components.append(endpoint_component)
@@ -953,6 +996,33 @@ func _try_finalize_group(group_key: String, finalized_at_us: int) -> void:
 	record.recompute_grade()
 	_group_grades[group_key] = record.grade
 	_pending_records.append(record)
+
+
+func ghost_grade(slider_ids: PackedStringArray, time_us: int) -> int:
+	## Ghost 检查所属单程截至此刻应完成的行程；位置预测不构成第二道碰撞门槛。
+	if slider_ids.is_empty(): return GameplayTypes.JudgmentGrade.MISS
+	for id: String in slider_ids:
+		if not _slider_by_id.has(id): return GameplayTypes.JudgmentGrade.MISS
+		var state: Dictionary = _slider_states[_slider_by_id[id]]
+		var slider: Dictionary = state.slider
+		if bool(state.finished):
+			if int(state.grade) == GameplayTypes.JudgmentGrade.MISS: return GameplayTypes.JudgmentGrade.MISS
+			continue
+		# 恰好折返点使用已完成端点评价，避免下一程初始化覆盖同刻结果。
+		var endpoint_at_time := false
+		for endpoint: Dictionary in state.endpoint_states:
+			if int(endpoint.target_us) == time_us and bool(endpoint.finalized):
+				if int(endpoint.grade) == GameplayTypes.JudgmentGrade.MISS: return GameplayTypes.JudgmentGrade.MISS
+				endpoint_at_time = true; break
+		if endpoint_at_time: continue
+		var held := _last_life_held if int(slider.affinity) == 0 else _last_death_held
+		if not _dual_holding_notes or not held or not bool(state.started): return GameplayTypes.JudgmentGrade.MISS
+		var current := _value_to_slider_progress(slider,_value_for_affinity(int(slider.affinity)))
+		var expected := _guide_progress(slider,time_us)
+		var tolerance := _rules.tuning_endpoint_capture_ratio + TRACKING_EPSILON
+		var behind := expected-current if int(state.traversal_index)%2 == 0 else current-expected
+		if behind > tolerance: return GameplayTypes.JudgmentGrade.MISS
+	return GameplayTypes.JudgmentGrade.PERFECT
 
 
 func _guide_progress(slider: Dictionary, time_us: int) -> float:
@@ -1067,7 +1137,7 @@ func _apply_side_displacement(
 
 func _active_slider_state_index(affinity: int, time_us: int) -> int:
 	# 同侧谱面不应真实重叠；如果预览数据仍有重叠，稳定地取编译排序后的第一条。
-	for index: int in range(_slider_states.size()):
+	for index: int in _visible_slider_indices(time_us):
 		var state: Dictionary = _slider_states[index]
 		if bool(state["finished"]):
 			continue
@@ -1080,7 +1150,8 @@ func _active_slider_state_index(affinity: int, time_us: int) -> int:
 
 
 func _has_pending_slider_window(time_us: int) -> bool:
-	for state: Dictionary in _slider_states:
+	for state_index in _visible_slider_indices(time_us):
+		var state: Dictionary = _slider_states[state_index]
 		if bool(state["finished"]):
 			continue
 		var slider: Dictionary = state["slider"]
@@ -1093,7 +1164,8 @@ func _has_preview_slider_for_side(affinity: int, time_us: int) -> bool:
 	var preview_lead_us: int = roundi(
 		maxf(_rule_float(&"approach_duration_sec", 2.25), 0.0) * 1_000_000.0
 	)
-	for state: Dictionary in _slider_states:
+	for state_index in _visible_slider_indices(time_us):
+		var state: Dictionary = _slider_states[state_index]
 		if bool(state["finished"]):
 			continue
 		var slider: Dictionary = state["slider"]
@@ -1187,10 +1259,9 @@ func _rule_float(property_name: StringName, fallback: float) -> float:
 func _rule_property(property_name: StringName, fallback: Variant) -> Variant:
 	if _rules == null:
 		return fallback
-	for property_data: Dictionary in _rules.get_property_list():
-		if StringName(property_data.get("name", &"")) == property_name:
-			return _rules.get(property_name)
-	return fallback
+	# 规则属性直接读取，不为每次子步查询构造整份属性元数据。
+	var value: Variant = _rules.get(property_name)
+	return fallback if value == null else value
 
 
 ## 同步双 Hold 运行时前置条件；失效只中断调频，不修改 Hold 判定。

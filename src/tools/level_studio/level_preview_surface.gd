@@ -34,7 +34,7 @@ func update_resolution() -> void:
 	if not is_instance_valid(viewport):return
 	# 渲染跟随物理像素，玩法与鼠标拾取继续使用 1920×1080 设计坐标。
 	var physical_width:=minf(size.x,size.y*16.0/9.0)*get_window().content_scale_factor
-	var width:=maxi(1920,ceili(physical_width/16.0)*16)
+	var width:=clampi(ceili(physical_width/16.0)*16,320,2560)
 	viewport.size_2d_override=Vector2i(1920,1080);viewport.size_2d_override_stretch=true
 	viewport.size=Vector2i(width,width*9/16)
 	queue_redraw()
@@ -116,14 +116,20 @@ func object_bounds(object_data: Dictionary) -> Rect2:
 		if texture != null: return Rect2(-texture.get_size() * 0.5, texture.get_size())
 		var frames := player.assets.resolve(str(object_data.asset)) as SpriteFrames
 		if frames != null and not frames.get_animation_names().is_empty():
-			var frame:=frames.get_frame_texture(frames.get_animation_names()[0],0)
+			var content: Node=player.objects[object_data.id].get_node_or_null("Content")
+			var frame:=frames.get_frame_texture(content.animation,content.frame) if content is AnimatedSprite2D else frames.get_frame_texture(frames.get_animation_names()[0],0)
 			if frame != null:return Rect2(-frame.get_size()*0.5,frame.get_size())
 	return Rect2(-64,-64,128,128)
 
 func _gui_input(event: InputEvent) -> void:
 	if document == null or not is_instance_valid(player): return
 	if event is InputEventPanGesture:
-		if _gesture.is_empty(): pan -= event.delta*32; queue_redraw()
+		if _gesture.is_empty():
+			if event.ctrl_pressed:
+				var anchor:=to_world(event.position);zoom=clampf(zoom*pow(1.15,-event.delta.y),0.25,5)
+				_update_display_rect();pan+=event.position-to_view(anchor)
+			else:pan-=event.delta*32
+			_update_display_rect();queue_redraw()
 		accept_event(); return
 	if event is InputEventMouseButton:
 		if event.pressed: grab_focus()
@@ -141,25 +147,17 @@ func _gui_input(event: InputEvent) -> void:
 			if event.pressed and _gesture.is_empty(): _gesture={"mode":"pan","origin":event.position,"pan":pan}
 			elif not event.pressed and _gesture.get("mode","")=="pan": _gesture.clear()
 			accept_event(); return
+		if event.button_index==MOUSE_BUTTON_RIGHT and event.pressed:
+			cancel_drag();_overlap_menu(event.position);accept_event();return
 		if event.button_index != MOUSE_BUTTON_LEFT: return
 		if not event.pressed:
 			if not _candidate.is_empty():
 				var before: Array = _gesture.before; var after := _candidate.duplicate(true)
 				_candidate.clear(); _gesture.clear(); candidate_changed.emit([]); transform_committed.emit(before, after)
 			_gesture.clear(); queue_redraw(); return
-		var hit := ""
 		var point := to_world(event.position)
-		var objects := document.entries("objects").duplicate()
-		objects.sort_custom(func(a,b):
-			var za: int=player.object_render_order(a) if player.objects.has(a.id) else 0
-			var zb: int=player.object_render_order(b) if player.objects.has(b.id) else 0
-			return za<zb if za!=zb else document.entries("objects").find(a)<document.entries("objects").find(b))
-		for index in range(objects.size() - 1, -1, -1):
-			var object_data: Dictionary = objects[index]
-			if not document.editable_object(object_data.id) or not player.objects.has(object_data.id): continue
-			var node: Node2D = player.objects[object_data.id]
-			if not node.visible or is_zero_approx(node.transform.determinant()): continue
-			if object_bounds(object_data).has_point(node.transform.affine_inverse() * point): hit = object_data.id; break
+		var hits:=objects_at(point)
+		var hit: String=hits[0] if not hits.is_empty() else ""
 		if hit.is_empty():
 			if not (event.shift_pressed or event.ctrl_pressed): selected.clear(); selection_changed.emit(selected)
 			_gesture = {"mode": "box", "origin": event.position, "current": event.position, "previous": selected.duplicate(),"pan":pan,"zoom":zoom}
@@ -170,6 +168,8 @@ func _gui_input(event: InputEvent) -> void:
 				selection_changed.emit(selected); queue_redraw(); return
 			elif not hit in selected: selected = PackedStringArray([hit])
 			selection_changed.emit(selected)
+			if Array(selected).any(func(id):return not document.editable_object(id)):
+				document.rejected.emit("选区包含锁定／隐藏对象，整次拖动未开始。");accept_event();return
 			var before := []
 			for id in selected:
 				var object_data := document.find("objects", id)
@@ -202,7 +202,7 @@ func _gui_input(event: InputEvent) -> void:
 				if not parent.is_empty(): transform = LevelShowSampler.object_transform(player.show, parent, player.current_section, player.current_us, player.difficulty)
 				elif object_data.layer == "death": transform = Transform2D(PI, Vector2(1920,1080))
 				local_delta = transform.basis_xform_inv(delta)
-				if object_data.layer!="hud":local_delta/=maxf(player.camera_zoom,0.01)
+				if player._root_layer(object_data)!="hud":local_delta/=maxf(player.camera_zoom,0.01)
 				match str(_gesture.mode):
 					"move":
 						var position := LevelFormat.vec(object_data.fields.position) + local_delta
@@ -248,3 +248,27 @@ func frame_selection() -> void:
 	if first: return
 	zoom=clampf(minf(size.x/maxf(1,bounds.size.x+100),size.y/maxf(1,bounds.size.y+100))/minf(size.x/1920,size.y/1080),0.25,5)
 	pan=Vector2.ZERO; _update_display_rect(); pan=size*0.5-to_view(bounds.get_center()); _update_display_rect(); queue_redraw()
+
+## 与播放器的 Canvas 顺序一致；右键也复用同一命中列表。
+func objects_at(point: Vector2) -> PackedStringArray:
+	var entries:=document.entries("objects").duplicate()
+	entries.sort_custom(func(a,b):return player.object_render_order(a)>player.object_render_order(b))
+	var result:=PackedStringArray()
+	for entry: Dictionary in entries:
+		if not document.editable_object(entry.id) or not player.objects.has(entry.id):continue
+		var node: Node2D=player.objects[entry.id]
+		if node.visible and not is_zero_approx(node.transform.determinant()) and object_bounds(entry).has_point(node.transform.affine_inverse()*point):result.append(entry.id)
+	return result
+
+func _overlap_menu(at: Vector2) -> void:
+	var hits:=objects_at(to_world(at))
+	if hits.is_empty():return
+	var menu:=PopupMenu.new();add_child(menu)
+	for id in hits:
+		var entry:=document.find("objects",id)
+		var relation:=LevelShowPlayer.effective_occlusion(player.show,entry)
+		var caption:=str(entry.layer) if relation.is_empty() else "深度 %s · %s"%[relation[0],"背景前" if relation[1]=="front" else "背景后"]
+		menu.add_item(str(entry.name)+" · "+caption)
+	menu.index_pressed.connect(func(index):selected=PackedStringArray([hits[index]]);selection_changed.emit(selected);queue_redraw())
+	menu.popup_hide.connect(func():grab_focus();menu.queue_free())
+	menu.position=Vector2i(get_screen_position()+at);menu.popup()

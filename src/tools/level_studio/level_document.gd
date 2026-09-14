@@ -2,6 +2,12 @@ class_name LevelDocument
 extends RefCounted
 ## 历史只保存本次操作涉及的条目；选区、游标与尚未提交的拖动属于视图。
 signal changed(kind: String)
+signal rejected(reason: String)
+signal history_view_requested(state: Dictionary)
+var view_snapshot := Callable()
+var history_gate := Callable()
+signal edit_started
+var last_error := ""
 var data: Dictionary = LevelFormat.new_level()
 var directory := ""
 var dirty := false
@@ -36,6 +42,9 @@ func fields(label: String, values: Dictionary) -> void:
 	commit(label, [{"kind": "metadata", "before": before, "after": values.duplicate(true)}])
 
 func commit(label: String, changes: Array) -> void:
+	last_error = edit_error(changes)
+	if not last_error.is_empty(): rejected.emit(last_error); return
+	edit_started.emit()
 	changes=changes.filter(func(change): return change.before!=change.after)
 	if changes.is_empty(): return
 	if editing:
@@ -62,14 +71,17 @@ func commit(label: String, changes: Array) -> void:
 			positions[entry.id] = collection.find(find(change.kind, entry.id))
 		change["before_positions"] = positions
 	if cursor < history.size() and saved_cursor > cursor: saved_cursor = -1
-	history.resize(cursor); history.append({"label": label, "changes": changes}); cursor += 1
+	history.resize(cursor); history.append({"label": label, "changes": changes, "before_view": view_snapshot.call() if view_snapshot.is_valid() else {}}); cursor += 1
 	_apply(changes, false)
 
 func undo(redo := false) -> void:
 	if (redo and cursor == history.size()) or (not redo and cursor == 0): return
 	var command: Dictionary = history[cursor if redo else cursor - 1]
+	if history_gate.is_valid() and not history_gate.call(command,redo):return
+	if not redo and view_snapshot.is_valid(): command["after_view"]=view_snapshot.call()
 	cursor += 1 if redo else -1
 	_apply(command.changes, not redo)
+	history_view_requested.emit(command.get("after_view" if redo else "before_view",{}))
 
 func _apply(changes: Array, reverse: bool) -> void:
 	for change: Dictionary in changes:
@@ -93,6 +105,8 @@ func _apply(changes: Array, reverse: bool) -> void:
 			next.insert(clampi(index, 0, next.size()), entry.duplicate(true))
 		if change.kind=="tracks":
 			for track:Dictionary in next:track.keys.sort_custom(func(a,b):return int(a.time_us)<int(b.time_us))
+		var order: Array=change.get("before_order" if reverse else "after_order",[])
+		if not order.is_empty():next.sort_custom(func(a,b):return order.find(a.id)<order.find(b.id))
 		data.show[change.kind] = next
 	last_changes=changes.duplicate(true)
 	revision += 1; dirty = cursor != saved_cursor; changed.emit("preview" if editing else "edit")
@@ -172,6 +186,7 @@ func paste_objects(mirror := false) -> PackedStringArray:
 func editable_object(id: String) -> bool:
 	# 隐藏、锁定的父组同样约束其成员。
 	var entry := find("objects",id)
+	if entry.is_empty(): return false
 	while not entry.is_empty():
 		if entry.locked or entry.hidden: return false
 		entry=find("objects",str(entry.parent_id))
@@ -179,6 +194,7 @@ func editable_object(id: String) -> bool:
 
 func begin_edit() -> void:
 	if editing: return
+	edit_started.emit()
 	editing=true; _edit_changes.clear()
 
 func end_edit(cancel := false) -> void:
@@ -189,3 +205,32 @@ func end_edit(cancel := false) -> void:
 	editing=false; _edit_changes.clear()
 	if not cancel and not changes.is_empty(): commit(_edit_label,changes)
 	elif cancel: changed.emit("edit")
+
+## 修改入口统一校验；撤销直接应用历史，解锁和显隐允许解除编辑限制。
+func edit_error(changes: Array) -> String:
+	for change: Dictionary in changes:
+		if change.kind not in ["objects","tracks","bindings"]: continue
+		for old: Dictionary in change.before:
+			var current:=find(change.kind,str(old.get("id","")))
+			if current.is_empty(): return "编辑目标已不存在，请重新选择。"
+			var next:=LevelFormat.find(change.after,current.id)
+			var exempt:=false
+			if not next.is_empty():
+				var a:=current.duplicate(true); var b:=next.duplicate(true)
+				for key in (["locked","hidden"] if change.kind=="objects" else ["locked","muted"]):a.erase(key);b.erase(key)
+				exempt=a==b
+			if exempt: continue
+			var object_id: String=current.id if change.kind=="objects" else str(current.object_id)
+			if not editable_object(object_id) or current.get("locked",false) or current.get("generated",false):
+				return "对象或轨道已锁定／隐藏："+str(find("objects",object_id).get("name",object_id))+"；本次操作未提交。"
+		if change.kind=="objects":
+			for next: Dictionary in change.after:
+				var parent: String=next.get("parent_id","")
+				if find("objects",next.id).is_empty() and not parent.is_empty() and not find("objects",parent).is_empty() and not editable_object(parent):return "目标父组已锁定／隐藏；本次操作未提交。"
+		if change.kind in ["tracks","bindings"]:
+			for next: Dictionary in change.after:
+				if not editable_object(str(next.object_id)) and not change.before.any(func(old):return old.id==next.id):
+					# 同一命令允许先创建对象，再附加其轨道。
+					if not changes.any(func(c):return c.kind=="objects" and c.after.any(func(o):return o.id==next.object_id)):
+						return "目标对象不存在或不可编辑；本次操作未提交。"
+	return ""

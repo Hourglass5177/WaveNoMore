@@ -28,7 +28,8 @@ func configure(node: Node) -> void:
 				if target == null: continue
 				var property := NodePath(path.get_concatenated_subnames())
 				base_values.append({"target": target, "property": property, "value": target.get_indexed(property)})
-	for sprite in sprites: sprite.pause()
+	for sprite in sprites:
+		sprite.set_meta("level_default_animation",sprite.animation); sprite.pause()
 	for spine in spines: spine.call("set_update_mode", SpineConstant.UpdateMode_Manual)
 
 func _collect(node: Node) -> void:
@@ -61,14 +62,17 @@ func sample(clips: Array, time_us: int) -> void:
 					entry.target.set_indexed(entry.property, lerp(before[index], value, float(clip.weight)))
 	var active: Dictionary = clips.back() if not clips.is_empty() else {}
 	for sprite in sprites:
-		var action := str(active.get("action", "default"))
-		if not sprite.sprite_frames.has_animation(action): continue
+		if sprite.sprite_frames==null:continue
+		var action := str(active.get("action", sprite.get_meta("level_default_animation",sprite.animation)))
+		var missing_action:=not sprite.sprite_frames.has_animation(action)
+		if missing_action:action=str(sprite.get_meta("level_default_animation",sprite.animation))
+		if not sprite.sprite_frames.has_animation(action):continue
 		var frames := sprite.sprite_frames
 		var speed := frames.get_animation_speed(action)
 		if speed <= 0.0: continue
 		var total := 0.0
 		for index in frames.get_frame_count(action): total += frames.get_frame_duration(action, index) / speed
-		var seconds := float(active.get("local_us", 0)) / 1000000.0
+		var seconds := 0.0 if missing_action else float(active.get("local_us", 0)) / 1000000.0
 		seconds = fposmod(seconds, total) if active.get("loop", false) and total > 0 else minf(seconds, total)
 		sprite.animation = action; sprite.pause()
 		for index in frames.get_frame_count(action):

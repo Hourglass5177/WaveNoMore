@@ -39,8 +39,9 @@ func cycle(depth: int, camera_velocity := Vector2.ZERO) -> Dictionary:
 		var texture := entry.texture
 		if texture == null and entry.sprite_frames != null and entry.sprite_frames.has_animation(entry.animation) and entry.sprite_frames.get_frame_count(entry.animation) > 0:
 			texture = entry.sprite_frames.get_frame_texture(entry.animation, 0)
-		if texture == null: continue
-		var box := Rect2(entry.position, texture.get_size() * entry.uniform_scale)
+		if texture == null and entry.scene == null: continue
+		var extent := texture.get_size() if texture != null else entry.scene_size()
+		var box := Rect2(entry.position, extent * entry.uniform_scale)
 		for point in [box.position, box.end, Vector2(box.position.x, box.end.y), Vector2(box.end.x, box.position.y)]:
 			lower = minf(lower, direction.dot(point)); upper = maxf(upper, direction.dot(point))
 	if not is_finite(lower): lower = 0.0; upper = 1920.0

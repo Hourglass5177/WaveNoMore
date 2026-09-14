@@ -149,6 +149,46 @@
         "zoom": 1.0,
         "shake": 0.0
       }
+    },
+    {
+      "id": "workflow_animation",
+      "name": "循环相纹 · 制作流程示例",
+      "type": "animated_sprite",
+      "asset": "assets/animations/animation_afa2aa489d105cac/asset.animation.json",
+      "animation": "default",
+      "parent_id": "",
+      "layer": "world",
+      "depth": 0.0,
+      "occlusion_depth": 0,
+      "occlusion_order": "none",
+      "locked": false,
+      "hidden": false,
+      "fields": {
+        "position": [
+          1450,
+          420
+        ],
+        "rotation": 0.0,
+        "scale": [
+          1.5,
+          1.5
+        ],
+        "opacity": 1.0,
+        "color": "ffffffff",
+        "visible": true,
+        "size": [
+          560.0,
+          100.0
+        ],
+        "text": "在此输入文字",
+        "font_size": 36,
+        "alignment": 1,
+        "font": "",
+        "visible_ratio": 1.0,
+        "volume_db": 0.0,
+        "zoom": 1.0,
+        "shake": 0.0
+      }
     }
   ],
   "tracks": [
@@ -535,6 +575,34 @@
           "hold_last": false
         }
       ]
+    },
+    {
+      "id": "workflow_animation_track",
+      "object_id": "workflow_animation",
+      "property": "action",
+      "type": "action",
+      "section": "song",
+      "difficulties": [],
+      "muted": false,
+      "locked": false,
+      "keys": [],
+      "clips": [
+        {
+          "id": "workflow_animation_clip_0",
+          "name": "连续帧 · 可裁剪／拆分",
+          "start_us": 3000000,
+          "duration_us": 12000000,
+          "asset": "",
+          "action": "default",
+          "offset_us": 0,
+          "rate": 0.5,
+          "loop": true,
+          "fade_in_us": 0,
+          "fade_out_us": 0,
+          "gain_db": 0.0,
+          "hold_last": true
+        }
+      ]
     }
   ],
   "bindings": [
@@ -597,5 +665,82 @@
       "hit_effect": "example:burst"
     }
   ],
-  "sequences": []
+  "sequences": [
+    {
+      "id": "workflow_template",
+      "name": "相纹动画模板 · 插入后独立编辑",
+      "objects": [
+        {
+          "id": "template_only_animation",
+          "name": "模板独立副本",
+          "type": "animated_sprite",
+          "asset": "assets/animations/animation_afa2aa489d105cac/asset.animation.json",
+          "animation": "default",
+          "parent_id": "",
+          "layer": "world",
+          "depth": 0.0,
+          "occlusion_depth": 0,
+          "occlusion_order": "none",
+          "locked": false,
+          "hidden": false,
+          "fields": {
+            "position": [
+              1450,
+              420
+            ],
+            "rotation": 0.0,
+            "scale": [
+              1.5,
+              1.5
+            ],
+            "opacity": 1.0,
+            "color": "ffffffff",
+            "visible": true,
+            "size": [
+              560.0,
+              100.0
+            ],
+            "text": "在此输入文字",
+            "font_size": 36,
+            "alignment": 1,
+            "font": "",
+            "visible_ratio": 1.0,
+            "volume_db": 0.0,
+            "zoom": 1.0,
+            "shake": 0.0
+          }
+        }
+      ],
+      "tracks": [
+        {
+          "id": "template_only_track",
+          "object_id": "template_only_animation",
+          "property": "action",
+          "type": "action",
+          "section": "song",
+          "difficulties": [],
+          "muted": false,
+          "locked": false,
+          "keys": [],
+          "clips": [
+            {
+              "id": "workflow_animation_clip_0",
+              "name": "连续帧 · 可裁剪／拆分",
+              "start_us": 0,
+              "duration_us": 12000000,
+              "asset": "",
+              "action": "default",
+              "offset_us": 0,
+              "rate": 0.5,
+              "loop": true,
+              "fade_in_us": 0,
+              "fade_out_us": 0,
+              "gain_db": 0.0,
+              "hold_last": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }

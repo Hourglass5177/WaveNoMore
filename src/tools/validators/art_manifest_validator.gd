@@ -58,7 +58,7 @@ static func _validate_background(background:StageBackgroundDefinition,location:S
 			if identities.has(key):issues.append(_issue("error",location,"背景对应层标识重复："+key))
 			identities[key]=true
 			for item in sublayer.entries:
-				if item.texture==null and item.sprite_frames==null:issues.append(_issue("error",location,"背景层缺少图像或序列帧："+sublayer.display_name))
+				if item.source_count()!=1:issues.append(_issue("error",location,"背景层必须选择一项图像、序列帧或场景："+sublayer.display_name))
 	return issues
 
 

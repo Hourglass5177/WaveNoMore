@@ -30,6 +30,7 @@ func run() -> void:
 		check(overlay.get_global_rect().is_equal_approx(overlay.get_parent().get_global_rect()), "蒙版只覆盖预览区 %d" % window_size.x)
 	if DisplayServer.get_name() != "headless":
 		await RenderingServer.frame_post_draw
+		DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://builds/tuning-review"))
 		root.get_texture().get_image().save_png("res://builds/tuning-review/preview-loading.png")
 	workspace.preview.clear_preview()
 	check(not overlay.visible and not overlay.loading, "清空预览立即撤下提示")

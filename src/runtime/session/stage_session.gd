@@ -197,7 +197,7 @@ func configure(stage: StageDefinition) -> bool:
 	return true
 
 
-func prepare() -> bool:
+func prepare(prepared_chart: CompiledChart = null) -> bool:
 	# 第一阶段只检查“资源齐全”和“场景接线完整”，失败时不启动任何时钟或输入。
 	if stage_definition == null:
 		validation_failed.emit({"errors": ["StageDefinition is null."]})
@@ -212,7 +212,7 @@ func prepare() -> bool:
 	var compiler := ChartCompiler.new()
 	# 第二阶段把易编辑的 Resource 谱面编译成微秒时间轴；编译失败便保留在加载状态。
 	# SongClock 已把音频文件时间映射到谱面 tick 0；编译时再次传首拍偏移会重复补偿。
-	var compile_result: Dictionary = compiler.compile(stage_definition.chart, rule_set, 0)
+	var compile_result: Dictionary = compiler.compile(stage_definition.chart, rule_set, 0) if prepared_chart == null else {"ok": true, "compiled": prepared_chart}
 	if not bool(compile_result.get("ok", false)):
 		validation_failed.emit(compile_result.get("report", compile_result))
 		return false
@@ -276,15 +276,18 @@ func step(clock_sample: ClockSample) -> void:
 	# 两条时间轴不能互换，否则视觉校准会改变真实判定。
 	var judge_time_us: int = roundi(clock_sample.judge_time_sec * 1_000_000.0)
 	input_router.begin_frame(judge_time_us)
+	# 领域事件仍立即发出；输入与推进完成后才汇总一次画面状态。
+	gameplay_coordinator.defer_preview_snapshot = true
 	gameplay_coordinator.process_input_frame()
 	gameplay_coordinator.advance_to(judge_time_us, true)
+	gameplay_coordinator.finish_preview_batch()
 	input_router.end_frame()
 	chart_scheduler.advance(clock_sample.visual_time_sec, clock_sample.judge_time_sec)
 
 	if state == GameplayTypes.StageState.PREROLL and clock_sample.song_time_sec >= 0.0:
 		_transition_to(GameplayTypes.StageState.PLAYING, &"preroll_complete")
 
-	var gameplay_snapshot: Dictionary = gameplay_coordinator.snapshot()
+	var gameplay_snapshot: Dictionary = gameplay_coordinator.frame_snapshot()
 	_emit_snapshot_changes(gameplay_snapshot)
 	visual_frame_ready.emit(clock_sample)
 
@@ -307,7 +310,8 @@ func step(clock_sample: ClockSample) -> void:
 		if clock_sample.song_time_sec - _fail_started_song_time_sec >= physical_failure_settle:
 			_complete_result(false)
 
-	debug_snapshot_ready.emit(_build_debug_snapshot(clock_sample, gameplay_snapshot))
+	if SettingsService.debug_hud_enabled:
+		debug_snapshot_ready.emit(_build_debug_snapshot(clock_sample, gameplay_snapshot))
 
 
 func set_replay_mode(enabled: bool) -> void:
@@ -451,7 +455,7 @@ func seek_song_time(target_song_time_sec: float) -> bool:
 	_last_health = -1
 	_last_score = -1
 	_last_combo = -1
-	_emit_snapshot_changes(gameplay_coordinator.snapshot())
+	_emit_snapshot_changes(gameplay_coordinator.frame_snapshot())
 	if was_running:
 		_transition_to(
 			GameplayTypes.StageState.PREROLL if target_song_time_sec < 0.0 else GameplayTypes.StageState.PLAYING,
@@ -556,13 +560,13 @@ func _emit_snapshot_changes(snapshot: Dictionary) -> void:
 		_last_combo = current_combo
 		score_changed.emit(current_score, current_combo)
 
-	gameplay_snapshot_changed.emit(snapshot.duplicate(true))
+	gameplay_snapshot_changed.emit(snapshot)
 
 
 func _on_judgment_recorded(record: JudgmentRecord) -> void:
 	# 计分已经完成，抵达伤害由领域物理时间处理；视觉使用机械结果，HUD 使用得分等级。
 	if record.unit_kind in [&"tap", &"hold"]:
-		chart_scheduler.mark_timing_confirmed(record.unit_id, record.mechanical_grade())
+		chart_scheduler.mark_timing_confirmed(record.unit_id, record.mechanical_grade(), float(record.finalized_at_us) / 1000000.0)
 		_deferred_note_grades[record.unit_id] = record.mechanical_grade()
 		_deferred_note_records[record.unit_id] = record
 		var should_present_now: bool = false
@@ -633,7 +637,7 @@ func _on_wave_contacted(contact: Dictionary) -> void:
 				and record.unit_kind == &"hold"
 			)
 			if grade != GameplayTypes.JudgmentGrade.MISS or is_contacted_hold_miss:
-				_present_note_judgment(note_id)
+				_present_note_judgment(note_id, float(contact.contact_us) / 1000000.0)
 	wave_contacted.emit(contact.duplicate(true))
 
 
@@ -645,7 +649,7 @@ func _on_note_arrived(arrival: Dictionary) -> void:
 		if _deferred_note_grades.has(note_id):
 			var grade: int = int(_deferred_note_grades[note_id])
 			if grade == GameplayTypes.JudgmentGrade.MISS:
-				_present_note_judgment(note_id)
+				_present_note_judgment(note_id, float(arrival.arrival_us) / 1000000.0)
 	note_arrived.emit(arrival.duplicate(true))
 
 
@@ -722,8 +726,9 @@ func _calculate_end_song_time_sec() -> float:
 		for note: Dictionary in compiled_chart.notes:
 			physical_note_end_sec = maxf(
 				physical_note_end_sec,
-				float(note.get("start_us", 0)) / 1_000_000.0
+				float(note.get("end_us", 0) if note.get("unit_kind") == &"hold" else note.get("start_us", 0)) / 1_000_000.0
 					+ _post_cue_travel_sec(int(note.get("affinity", GameplayTypes.Affinity.ZHU)))
+					+ (float(rule_set.hold_sustain_grace_ms + gameplay_coordinator.simulation.pet_effect.hold_sustain_bonus_ms) / 1000.0 + 0.000001 if note.get("unit_kind") == &"hold" else 0.0)
 			)
 		for slider: Dictionary in compiled_chart.tuning_sliders:
 			tuning_judgment_end_sec = maxf(
@@ -883,14 +888,14 @@ func _clear_physical_note_state() -> void:
 	_arrived_note_ids.clear()
 
 
-func _present_note_judgment(note_id: String) -> void:
+func _present_note_judgment(note_id: String, at_sec: float = INF) -> void:
 	if note_id.is_empty() or bool(_presented_note_ids.get(note_id, false)):
 		return
 	if not _deferred_note_records.has(note_id):
 		return
 	var record: JudgmentRecord = _deferred_note_records[note_id]
 	_presented_note_ids[note_id] = true
-	chart_scheduler.mark_judged(note_id, record.mechanical_grade())
+	chart_scheduler.mark_judged(note_id, record.mechanical_grade(), at_sec if is_finite(at_sec) else float(record.finalized_at_us) / 1000000.0, record.metadata)
 	judgment_presented.emit(record)
 
 
@@ -904,22 +909,23 @@ func reset_preview() -> void:
 	gameplay_coordinator.reset()
 	chart_scheduler.reset()
 	state = GameplayTypes.StageState.PLAYING
-	_emit_snapshot_changes(gameplay_coordinator.snapshot())
+	_emit_snapshot_changes(gameplay_coordinator.frame_snapshot())
 
-func advance_preview(time_us: int, inclusive: bool = true) -> void:
+func advance_preview(time_us: int, inclusive: bool = true, restore_visuals: bool = true) -> void:
 	var seconds := float(time_us) / 1000000.0
 	# 写谱器外部时钟没有玩家设备补偿，两条调度时间使用同一个谱面时刻。
-	chart_scheduler.advance(seconds, seconds)
+	if restore_visuals: chart_scheduler.advance(seconds, seconds)
+	else: chart_scheduler.visual_time_sec = seconds
 	var preview_sample := song_clock.publish_external_time(seconds, not gameplay_coordinator.defer_preview_snapshot)
 	gameplay_coordinator.advance_to(time_us, inclusive)
 	# 大步 Seek 会在本次推进中补发早先的波接触，立即按目标时刻回收已结束的表现。
-	chart_scheduler.advance(seconds, seconds)
+	if restore_visuals: chart_scheduler.advance(seconds, seconds)
 	if not gameplay_coordinator.defer_preview_snapshot:
-		_emit_snapshot_changes(gameplay_coordinator.snapshot())
+		_emit_snapshot_changes(gameplay_coordinator.frame_snapshot())
 		visual_frame_ready.emit(preview_sample)
 
 func publish_preview_state(time_us: int) -> void:
 	var preview_sample := song_clock.publish_external_time(float(time_us) / 1000000.0)
-	_emit_snapshot_changes(gameplay_coordinator.snapshot())
+	_emit_snapshot_changes(gameplay_coordinator.frame_snapshot())
 	# 合批恢复也需在当前玩法快照之后初始化/推进新版 Hold 动态身体。
 	visual_frame_ready.emit(preview_sample)

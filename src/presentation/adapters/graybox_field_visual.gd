@@ -57,10 +57,10 @@ const CENTER_GUTTER_PX: float = 32.0
 @export var backing_color: Color = Color("080a10", 0.94)
 
 ## 未填充轨道的透明度；底色不再覆盖一整块骨白描边托底。
-@export_range(0.0, 1.0, 0.01) var rail_opacity: float = 0.24
+@export_range(0.0, 1.0, 0.01) var rail_opacity: float = 0.34
 ## 玩家填充的透明度；贴合时只轻微提亮，仍能看到后方场景。
-@export_range(0.0, 1.0, 0.01) var fill_opacity: float = 0.52
-@export_range(0.0, 1.0, 0.01) var aligned_fill_opacity: float = 0.62
+@export_range(0.0, 1.0, 0.01) var fill_opacity: float = 0.68
+@export_range(0.0, 1.0, 0.01) var aligned_fill_opacity: float = 0.76
 
 ## 起点预填默认近似圆帽，只有 2 px 中心线延伸；只识别阵营，不进入玩家进度。
 @export_range(0.0, 64.0, 1.0) var start_fill_length_px: float = 2.0
@@ -170,9 +170,24 @@ var _curve_max_relative: Vector2 = Vector2.ZERO
 var _tuning_glow: MeshInstance2D
 var _tuning_glow_material: ShaderMaterial
 var _tuning_glow_quad: QuadMesh
+var cue_style: TimingCueStyle = preload("res://content/presentation/timing_cue_style.tres")
+var _cue_glow: TimingCueGlow
+var _rail_renderer: MeshInstance2D
+var _rail_material: ShaderMaterial
+var _shader_values := {}
+var _tuning_bounds := Rect2()
+var _cue_segments_key: Array = []
+var _cue_segments: Array = []
+
+func configure_timing_style(style: TimingCueStyle) -> void:
+	cue_style = style
+	queue_redraw()
 
 func _ready() -> void:
 	if field_kind != 0: return
+	_cue_glow = TimingCueGlow.new()
+	_cue_glow.name = "TimingCueGlow"
+	add_child(_cue_glow)
 	_tuning_glow = MeshInstance2D.new()
 	_tuning_glow.name = "TuningGlow"
 	_tuning_glow.show_behind_parent = true
@@ -183,6 +198,14 @@ func _ready() -> void:
 	_tuning_glow.mesh = _tuning_glow_quad
 	_tuning_glow.material = _tuning_glow_material
 	add_child(_tuning_glow)
+	_rail_renderer = MeshInstance2D.new()
+	_rail_renderer.name = "TuningRail"
+	_rail_renderer.show_behind_parent = true
+	_rail_renderer.mesh = _tuning_glow_quad
+	_rail_material = ShaderMaterial.new()
+	_rail_material.shader = preload("res://shaders/fields/tuning_rail.gdshader")
+	_rail_renderer.material = _rail_material
+	add_child(_rail_renderer)
 
 
 
@@ -343,11 +366,7 @@ func set_slider_state(state: Dictionary) -> void:
 		"turnaround_pending",
 		_authoritative_traversal_index < _traversal_count - 1
 	))
-	if state.has("player_progress"):
-		# 玩家可能尚在滑条范围外；保留超出 0～1 的真实位置，才能看见应往哪边预定位。
-		_player_progress = float(state["player_progress"])
-	elif state.has("player_value"):
-		_player_progress = _progress_from_frequency_value(float(state["player_value"]))
+	restore_motion_control(state)
 	if state.has("guide_progress"):
 		_guide_progress = clampf(float(state["guide_progress"]), 0.0, 1.0)
 	if not _interaction_open:
@@ -409,6 +428,7 @@ func play_miss() -> void:
 
 
 func reset_for_pool() -> void:
+	if _cue_glow != null: _cue_glow.clear()
 	if _tuning_glow != null: _tuning_glow.visible = false
 	visible = false
 	position = Vector2.ZERO
@@ -503,6 +523,7 @@ func _draw() -> void:
 
 
 func _draw_tuning_slider() -> void:
+	var profile_started := GameplayFrameProfile.begin()
 	var side_color: Color = life_color if affinity == GameplayTypes.Affinity.ZHU else death_color
 	if missed:
 		side_color = Color("666a72")
@@ -514,26 +535,17 @@ func _draw_tuning_slider() -> void:
 	# 只在真实外边界画描边，半透明主体下面不铺骨白实心带。
 	var outline_color := Color(bone_color, (0.78 if not missed else 0.32) * presentation_alpha)
 	var rail_color := Color(side_color.darkened(0.25), rail_opacity * (1.0 if _field_active else 0.75) * presentation_alpha)
-	for polygon: PackedVector2Array in _rail_polygons:
-		draw_colored_polygon(polygon, rail_color)
+	_rail_material.set_shader_parameter(&"rail_color", rail_color)
+	_rail_material.set_shader_parameter(&"outline_color", outline_color)
+	_rail_material.set_shader_parameter(&"outline_width", tuning_outline_width)
 
 	# 填充按本程计量：换程时领域把频率值重置到新程起点，本程填充前沿
 	# 自然归零；奇数程从曲线终点反向回填，不再沿整条事件曲线续画。
 	var leg_fill_progress: float = _display_fill_progress()
 	_sync_tuning_glow(side_color, presentation_alpha, leg_fill_progress)
-	if leg_fill_progress > 0.0001:
-		var fill_color := side_color.lightened(0.06 + 0.06 * _alignment_strength)
-		fill_color.a = lerpf(fill_opacity, aligned_fill_opacity, _alignment_strength) * presentation_alpha
-		var fill_curve := _partial_leg_fill_curve(leg_fill_progress)
-		if fill_curve != _fill_curve_cache:
-			_fill_curve_cache = fill_curve
-			_fill_polygons = _round_rail_polygons(fill_curve, tuning_rail_width)
-		for polygon: PackedVector2Array in _fill_polygons:
-			draw_colored_polygon(polygon, fill_color)
-
-	for polygon: PackedVector2Array in _rail_polygons:
-		var contour := polygon.duplicate(); contour.append(contour[0])
-		draw_polyline(contour, outline_color, tuning_outline_width, true)
+	var fill_color := side_color.lightened(0.06 + 0.06 * _alignment_strength)
+	fill_color.a = lerpf(fill_opacity, aligned_fill_opacity, _alignment_strength) * presentation_alpha
+	_rail_material.set_shader_parameter(&"fill_color", fill_color)
 
 	if _interaction_open:
 		_draw_guide_dots()
@@ -541,6 +553,7 @@ func _draw_tuning_slider() -> void:
 	_draw_turnaround_hint()
 	_draw_start_progress_ring(_slider_start_point())
 	_draw_order_number(_slider_start_point())
+	GameplayFrameProfile.end(&"tuning_draw", profile_started)
 
 
 func _draw_order_number(start_point: Vector2) -> void:
@@ -721,13 +734,39 @@ func _draw_turnaround_hint() -> void:
 func _draw_start_progress_ring(start_point: Vector2) -> void:
 	# 一条往返滑槽只有事件开始前出现一次缩圈；折返点只使用回转箭头。
 	if not _start_cue_visible():
+		_cue_glow.clear()
 		return
 	var cue_radius: float = _start_cue_radius_px()
 	var cue_alpha: float = _start_cue_alpha()
-	# 缩圈仅保留轨道外露出的弧段，朝向轨道内部的一段不再穿过填充。
-	_draw_exterior_cue_arc(start_point, cue_radius, 0.0, TAU, Color(backing_color, 0.70 * cue_alpha), 7.0)
-	_draw_exterior_cue_arc(start_point, cue_radius, 0.0, TAU, Color(bone_color, 0.46 * cue_alpha), 3.0)
-	_draw_exterior_cue_arc(start_point, cue_radius, -PI * 0.5, -PI * 0.5 + TAU * _approach_progress, Color(bone_color, 0.94 * cue_alpha), 4.0)
+	var key := [start_point, cue_radius, _approach_progress]
+	if _cue_segments_key != key:
+		_cue_segments_key = key
+		_cue_segments = [[TimingCueGlow.arc(start_point, cue_radius, 0.0, TAU)], [TimingCueGlow.arc(start_point, cue_radius, -PI * 0.5, -PI * 0.5 + TAU * _approach_progress)]]
+	# 起手缩圈是时机提示，完整绘制在条身之上；端帽自身仍不绘制内侧圆轮廓。
+	_draw_cue_segments(0, Color(backing_color, 0.70 * cue_alpha), 7.0)
+	var line := cue_style.line_color(affinity)
+	var alpha := cue_style.approach_alpha(_approach_progress) * cue_alpha
+	_draw_cue_segments(0, Color(line, alpha), cue_style.approach_width)
+	_draw_cue_segments(1, Color(line, 0.94 * cue_alpha), 4.0)
+	if not cue_style.glow_enabled or missed:
+		_cue_glow.clear()
+		return
+	# 主线、托底与柔光共用完整弧段。
+	if _cue_glow.begin([start_point, cue_radius, _approach_progress, cue_alpha, alpha, cue_style.halo_color(affinity), _event_curve_points, cue_style.approach_width, cue_style.approach_glow_width, cue_style.progress_glow_width, cue_style.approach_glow_strength, cue_style.progress_glow_strength]):
+		var halo := cue_style.halo_color(affinity)
+		for part: int in 2:
+			var from := 0.0 if part == 0 else -PI * 0.5
+			var to := TAU if part == 0 else from + TAU * _approach_progress
+			if is_equal_approx(from, to): continue
+			var width := cue_style.approach_glow_width + cue_style.approach_width * 0.5 if part == 0 else cue_style.progress_glow_width + 2.0
+			var strength := cue_style.approach_glow_strength * alpha if part == 0 else cue_style.progress_glow_strength * cue_alpha
+			for segment: PackedVector2Array in _cue_segments[part]:
+				_cue_glow.add_strip(segment, width, Color(halo, strength), segment.size() > 2 and segment[0].is_equal_approx(segment[-1]))
+		_cue_glow.finish()
+
+func _draw_cue_segments(part: int, color: Color, width: float) -> void:
+	for segment: PackedVector2Array in _cue_segments[part]:
+		if segment.size() > 1: draw_polyline(segment, color, width, true)
 
 
 
@@ -756,16 +795,16 @@ func _find_slider_state(value: Variant) -> Dictionary:
 	if value is Dictionary:
 		var states: Dictionary = value
 		if states.has(event_id) and states[event_id] is Dictionary:
-			return (states[event_id] as Dictionary).duplicate(true)
+			return (states[event_id] as Dictionary)
 		if str(states.get("event_id", states.get("id", ""))) == event_id:
-			return states.duplicate(true)
+			return states
 	elif value is Array:
 		for entry: Variant in value:
 			if entry is not Dictionary:
 				continue
 			var state: Dictionary = entry
 			if str(state.get("event_id", state.get("id", ""))) == event_id:
-				return state.duplicate(true)
+				return state
 	return {}
 
 
@@ -855,6 +894,13 @@ func update_hold_control(visual: GrayboxHoldVisual, control_center: Vector2, rad
 	var direction: Vector2 = (cursor - control_center).normalized()
 	visual.set_head_heading(direction.angle())
 	visual.set_head_position(control_center - direction * radius_px)
+
+func restore_motion_control(state: Dictionary) -> void:
+	## 历史身体只用实际游标方向，不更新引导文字、端点标记或提交圆弧重绘。
+	_interaction_open = bool(state.get("interaction_open", true))
+	if state.has("player_progress"): _player_progress = float(state.player_progress)
+	elif state.has("player_value"): _player_progress = _progress_from_frequency_value(float(state.player_value))
+	if not _interaction_open: _player_progress = 0.0
 
 
 func _slider_center() -> Vector2:
@@ -1049,22 +1095,22 @@ func _partial_event_curve(progress: float) -> PackedVector2Array:
 
 func _sync_tuning_glow(side_color: Color, alpha: float, fill_progress: float) -> void:
 	_tuning_glow.visible = tuning_glow_enabled and not missed
-	if not _tuning_glow.visible: return
 	var center := canvas_size * 0.5
 	var from := _event_curve_points[0] - center
 	var turn := signf(from.cross(_event_curve_points[1] - center))
 	var backwards := _current_traversal_index() % 2 == 1
 	var filling := fill_progress
-	var bounds := Rect2(_event_curve_points[0], Vector2.ZERO)
-	for point: Vector2 in _event_curve_points: bounds = bounds.expand(point)
-	bounds = bounds.grow(tuning_rail_width * 0.5 + maxf(outline_glow_radius, fill_glow_radius) + 2.0)
-	_tuning_glow_quad.size = bounds.size
-	_tuning_glow_quad.center_offset = Vector3(bounds.get_center().x, bounds.get_center().y, 0.0)
+	var bounds := _tuning_bounds.grow(maxf(outline_glow_radius, fill_glow_radius) + 2.0)
+	if _tuning_glow_quad.size != bounds.size: _tuning_glow_quad.size = bounds.size
+	var center_offset := Vector3(bounds.get_center().x, bounds.get_center().y, 0.0)
+	if _tuning_glow_quad.center_offset != center_offset: _tuning_glow_quad.center_offset = center_offset
 	# 与现有圆弧及本程填充共用参数；换向只改变光的覆盖区间，不另建进度。
 	var parameters := {
 		"arc_center": center, "arc_radius": _slider_radius_px,
 		"start_angle": from.angle(), "arc_sweep": _slider_sweep_rad, "direction": turn,
 		"half_width": tuning_rail_width * 0.5,
+		"straight_path": _event_curve_points.size() == 2,
+		"line_start": _event_curve_points[0], "line_end": _event_curve_points[-1],
 		"fill_from": 1.0 - filling if backwards else 0.0,
 		"fill_to": 1.0 if backwards else filling,
 		"outline_color": bone_color, "fill_color": side_color.lightened(0.08),
@@ -1072,7 +1118,11 @@ func _sync_tuning_glow(side_color: Color, alpha: float, fill_progress: float) ->
 		"fill_strength": fill_glow_strength * alpha * lerpf(0.8, 1.0, _alignment_strength),
 		"outline_radius": outline_glow_radius, "fill_radius": fill_glow_radius,
 	}
-	for key: String in parameters: _tuning_glow_material.set_shader_parameter(key, parameters[key])
+	for key: String in parameters:
+		if _shader_values.get(key) == parameters[key]: continue
+		_shader_values[key] = parameters[key]
+		_tuning_glow_material.set_shader_parameter(key, parameters[key])
+		if key not in ["outline_color", "fill_color"]: _rail_material.set_shader_parameter(key, parameters[key])
 
 
 func _round_rail_polygons(points: PackedVector2Array, width: float) -> Array[PackedVector2Array]:
@@ -1089,6 +1139,10 @@ func _ensure_rail_geometry() -> void:
 	if _cached_rail_width == tuning_rail_width and _cached_outline_width == tuning_outline_width: return
 	_cached_rail_width = tuning_rail_width
 	_cached_outline_width = tuning_outline_width
+	_tuning_bounds = Rect2(_event_curve_points[0], Vector2.ZERO)
+	for point: Vector2 in _event_curve_points: _tuning_bounds = _tuning_bounds.expand(point)
+	_tuning_bounds = _tuning_bounds.grow(tuning_rail_width * 0.5 + tuning_outline_width)
+	_cue_segments_key.clear()
 	_rail_polygons = _round_rail_polygons(_event_curve_points, tuning_rail_width)
 	# 裁切只覆盖条身，端点使用平口；缩圈靠外的半圈仍保留，起手时机不会消失。
 	_rail_body_masks = Geometry2D.offset_polyline(_event_curve_points, tuning_rail_width * 0.5 + tuning_outline_width + 3.5, Geometry2D.JOIN_ROUND, Geometry2D.END_BUTT)

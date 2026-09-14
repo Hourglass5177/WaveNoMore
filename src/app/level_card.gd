@@ -17,7 +17,7 @@ var _eye_unselected: Texture2D
 		if is_node_ready(): _update_background_scale()
 
 func _ready() -> void:
-	set_process(true)
+	set_process(false)
 	resized.connect(_layout_effect)
 	# 卡片共享 shader，但每个实例独立保存 uniform。
 	if $MonsterIcon.material is ShaderMaterial:
@@ -52,16 +52,27 @@ func configure(data: Dictionary, index: int) -> void:
 	var offset_value: Variant = data.get("background_effect_offset", Vector2.ZERO)
 	_effect_offset = offset_value if offset_value is Vector2 else Vector2.ZERO
 	_effect_frame = 0; _effect_elapsed = 0.0; _update_effect_frame()
+	set_process(_effect_frames != null and _effect_frames.has_animation(_effect_animation) and _effect_frames.get_frame_count(_effect_animation) > 0 and _effect_frames.get_animation_speed(_effect_animation) > 0.0)
 	_layout_effect()
 
 func _process(delta: float) -> void:
 	if _effect_frames == null or not _effect_frames.has_animation(_effect_animation): return
 	_effect_elapsed += delta
-	var duration := _effect_frames.get_frame_duration(_effect_animation, _effect_frame) / maxf(0.01, _effect_frames.get_animation_speed(_effect_animation))
-	if _effect_elapsed >= duration:
-		_effect_elapsed = 0.0
-		_effect_frame = (_effect_frame + 1) % _effect_frames.get_frame_count(_effect_animation)
-		_update_effect_frame()
+	var speed := _effect_frames.get_animation_speed(_effect_animation)
+	var frame_count := _effect_frames.get_frame_count(_effect_animation)
+	if speed <= 0.0 or frame_count == 0: return
+	var duration := _effect_frames.get_frame_duration(_effect_animation, _effect_frame) / speed
+	var changed := false
+	# 保留不足一帧的余量；长帧跨过多张素材时补齐，火框播放速度不随 FPS 改变。
+	while _effect_elapsed >= duration:
+		_effect_elapsed -= duration
+		if _effect_frame == frame_count-1 and not _effect_frames.get_animation_loop(_effect_animation):
+			set_process(false)
+			break
+		_effect_frame = (_effect_frame+1)%frame_count
+		changed = true
+		duration = _effect_frames.get_frame_duration(_effect_animation, _effect_frame) / speed
+	if changed: _update_effect_frame()
 
 func _update_effect_frame() -> void:
 	if _effect_frames == null or not _effect_frames.has_animation(_effect_animation) or _effect_frames.get_frame_count(_effect_animation) == 0:

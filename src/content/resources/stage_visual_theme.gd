@@ -24,6 +24,13 @@ extends Resource
 @export var death_actor_scene: PackedScene
 ## 将生死角色放入背景深度 0 的 actors 子层，便于由背景子层顺序安排遮挡。
 @export var actors_in_parallax: bool = false
+## 指定主地景的连续性标识，避免粒子和飘雾触发角色移动。
+@export var life_movement_layer_key: String = "50/default"
+@export var death_movement_layer_key: String = "50/sublayer_55"
+## 移动一轮包含两步；只控制表现，不参与发波与判定。
+@export var walk_period_sec: float = 1.6
+@export var walk_mix_sec: float = 0.18
+@export var walk_stop_speed_px_sec: float = 0.5
 ## 生角色使用的编钟场景。
 @export var life_bell_scene: PackedScene
 ## 死角色使用的编钟场景。

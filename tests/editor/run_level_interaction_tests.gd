@@ -76,6 +76,7 @@ func _run() -> void:
 	workspace.select_objects(PackedStringArray([id]));await settle()
 	var spin: SpinBox
 	for row in workspace.inspector.get_children():
+		if row.get_child_count()==0 or not row.get_child(0) is Label or row.get_child(0).text!="对象排序／视差":continue
 		for control in row.get_children():
 			if control is SpinBox: spin=control;break
 		if spin!=null: break

@@ -637,17 +637,9 @@ func _rebuild_preview() -> void:
 	# 候选版本仅用于预览，正式资源和撤销栈仍保持手势前的内容。
 	if not timeline.candidates.is_empty():
 		ChartEditEvents.replace(draft, timeline.candidates, timeline.candidates)
-	var rules: GameplayRuleSet = load("res://content/rules/default_gameplay_rules.tres")
-	var authoring_issues := ChartPathAdapter.validate(draft, rules)
-	var report := ValidationReport.new()
-	if authoring_issues.is_empty(): report = ChartValidator.validate(ChartPathAdapter.project(draft, rules), rules)
-	else:
-		for issue in authoring_issues: report.add_error(issue.code, issue.message, issue.event_id, StringName(issue.track), issue.tick)
-	for unknown: Dictionary in draft.get_meta("unknown_notes", []):
-		report.add_error(&"editor.unsupported_note", "暂不支持的音符：%s；原数据仍保留" % unknown.get("id", ""), str(unknown.get("id", "")), &"notes", int(unknown.get("tick", 0)))
+	var prepared := ChartProjectLoader.prepare_preview(document.song, draft)
+	var report: ValidationReport = prepared.report
 	_preview_selection = ChartSceneLibrary.selection(draft.get_meta("json_source", {}).get("presentation", {}))
-	for issue: Dictionary in ChartProjectLoader.presentation_issues(draft):
-		report.add_error(&"editor.scene", issue.message)
 	var previous_messages := _problem_messages
 	_problem_messages = PackedStringArray()
 	problems.clear()
@@ -670,8 +662,7 @@ func _rebuild_preview() -> void:
 		_preview_status("无法预览")
 		_message("谱面暂时无法预览。可以继续编辑和保存，请检查问题列表。")
 		return
-	var stage := ChartProjectLoader.make_stage(document.song, draft)
-	if preview.load_preview(stage, viewport):
+	if preview.load_preview(prepared.stage, viewport, prepared.compiled):
 		audio.cues.set_sample(&"life", preview.stage_root.audio_feedback.life_strike)
 		audio.cues.set_sample(&"death", preview.stage_root.audio_feedback.death_strike)
 		await preview.seek_preview(roundi(audio.position * 1000000.0))
@@ -903,7 +894,7 @@ func _tuning_radius_controls(path: TuningPathEvent) -> void:
 	automatic.button_pressed = path.visual_radius_px == 0.0
 	fields.add_child(automatic)
 	automatic.toggled.connect(func(enabled: bool):
-		var rules: GameplayRuleSet = load("res://content/rules/default_gameplay_rules.tres")
+		var rules: GameplayRuleSet = PlanningParameters.default_rules()
 		var current := document.find_note(path.event_id) as TuningPathEvent
 		_set_tuning_radius(path.event_id, 0.0 if enabled else ChartPathAdapter.automatic_visual_radius(current, rules)))
 	if automatic.button_pressed: return
@@ -971,7 +962,7 @@ func _commit_events(label: String, before: Array, after: Array) -> void:
 		for i in before.size(): unchanged = unchanged and ChartEditEvents.same(before[i], after[i])
 		if unchanged: return
 	# 父对象缩短或移除只在这里提示，三种入口（鼠标、属性、菜单）共用一次命令。
-	var rules: GameplayRuleSet = load("res://content/rules/default_gameplay_rules.tres")
+	var rules: GameplayRuleSet = PlanningParameters.default_rules()
 	for event in after:
 		if event is TuningPathEvent:
 			var shape := ChartPathAdapter.frequency_values(event, rules)

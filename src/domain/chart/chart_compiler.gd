@@ -164,6 +164,8 @@ static func _compile_su_manifestations(chart: SongChart, tempo_map: TempoMap) ->
 			"id": manifestation.event_id,
 			"event_id": manifestation.event_id,
 			"group_id": manifestation.group_id,
+			"tuning_ids": manifestation.tuning_ids,
+			"preparation_base_us": tempo_map.tick_to_us(manifestation.preparation_tick if manifestation.preparation_tick >= 0 else manifestation.tick),
 			"tick": manifestation.tick,
 			"time_us": time_us,
 			"start_us": time_us,
@@ -248,6 +250,8 @@ static func _chart_hash(compiled: CompiledChart) -> String:
 		lines.append("tuning_slider|%s|%s|%s|%d|%d|%d|%d|%.9f|%.9f|%.3f" % [slider["id"], slider["field_id"], slider["group_id"], slider["affinity"], slider["tick"], slider["traversal_ticks"], slider["traversal_count"], slider["start_value"], slider["end_value"], slider.get("arc_rotation_deg", 0.0)])
 	for manifestation in compiled.su_manifestations:
 		var spawn_region: Rect2 = manifestation["spawn_region_normalized"]
+		var tuning_ids := PackedStringArray(manifestation.get("tuning_ids", [])); tuning_ids.sort()
+		if not tuning_ids.is_empty(): lines.append("ghost_tuning|%s|%s" % [manifestation.id, ",".join(tuning_ids)])
 		lines.append("su_manifestation|%s|%s|%d|%d|%.9f|%.9f|%.9f|%.9f" % [manifestation["id"], manifestation["group_id"], manifestation["tick"], manifestation["count"], spawn_region.position.x, spawn_region.position.y, spawn_region.size.x, spawn_region.size.y])
 	for region in compiled.rapid_regions:
 		lines.append("rapid|%s|%d|%d|%d|%d|%d|%s" % [region["id"], region["tick"], region["end_tick"], region["required_strikes"], region["debounce_us"], int(region["must_alternate"]), region["damage_group_id"]])
