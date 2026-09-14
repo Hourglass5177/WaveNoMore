@@ -25,6 +25,10 @@ func _settle(ui: Control) -> void:
 		_check(is_equal_approx(float(material.get_shader_parameter("image_transparency")), 1.0 if card == ui._cards[ui.current_index()] else 0.0), "到位时仅正前方卡片显示原图")
 
 func _run() -> void:
+	DirAccess.make_dir_recursive_absolute("res://builds/level-carousel")
+	var save = root.get_node("SaveService")
+	var previous_results: Dictionary = save.data.get("stage_results",{}).duplicate(true)
+	save.data["stage_results"] = {}
 	var ui = load("res://scenes/ui/modals/level_choosing.tscn").instantiate()
 	root.add_child(ui)
 	await process_frame
@@ -38,6 +42,17 @@ func _run() -> void:
 	_check(flame_card._effect_frame==3 and is_equal_approx(flame_card._effect_elapsed,frame_duration*0.4),"火框长帧补齐且保留余量")
 	flame_card._process(frame_duration*0.7)
 	_check(flame_card._effect_frame==4 and is_equal_approx(flame_card._effect_elapsed,frame_duration*0.1),"火框后续相位连续")
+	_check(ui._cards[0].get_node("Score").text=="000000","无记录分数默认六位零")
+	_check(ui._cards[0].get_node("Rating").text.is_empty(),"不以示例关卡名称冒充评级")
+	_check(is_equal_approx(ui._cards[0].get_node("MonsterIcon").scale.x,1.40) and is_equal_approx(ui._cards[1].get_node("MonsterIcon").scale.x,1.0),"只放大蝙蝠")
+	_check(not ui._cards[0].clip_contents,"翅膀可超出卡片边界")
+	_check(ui._cards[0].get_node("Score").material != ui._cards[1].get_node("Score").material,"分数渐变范围逐卡片独立")
+	await _capture_catalog("score-default")
+	save.data.stage_results["tutorial2"]={"best_score":165467}
+	ui.set_catalog(ui.catalog)
+	_check(ui._cards[0].get_node("Score").text=="165467","显示关联关卡最高分")
+	await _capture_catalog("score-record")
+	save.data.stage_results=previous_results
 	ui.selection_changed.connect(func(index: int, id: String): events.append([index, id]))
 	_check(ui._cards.size() == ui.catalog.cards.size(), "卡片数量来自 catalog")
 	_check(is_equal_approx(ui.horizontal_radius, 480.0), "默认 catalog 半径缩小为 480")
@@ -143,3 +158,9 @@ func _run() -> void:
 	await process_frame
 	print("Level carousel: %d checks, %d failures" % [checks, failures])
 	quit(0 if failures == 0 else 1)
+
+func _capture_catalog(name: String) -> void:
+	if DisplayServer.get_name()=="headless": return
+	await process_frame
+	await RenderingServer.frame_post_draw
+	root.get_texture().get_image().save_png("res://builds/level-carousel/"+name+".png")

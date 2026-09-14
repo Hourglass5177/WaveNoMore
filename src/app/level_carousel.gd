@@ -62,8 +62,9 @@ func set_catalog(value: Resource) -> void:
 		horizontal_radius = catalog.horizontal_radius
 		for index in catalog.cards.size():
 			var entry: Resource = catalog.cards[index]
-			levels.append({"id": "card_%02d" % (index + 1), "title": entry.title, "image": entry.image, "background": entry.background, "background_scale": entry.background_scale, "background_effect_frames": entry.background_effect_frames, "background_effect_animation": entry.background_effect_animation, "background_effect_scale": entry.background_effect_scale, "background_effect_offset": entry.background_effect_offset, "eye_icon_selected": entry.eye_icon_selected, "eye_icon_unselected": entry.eye_icon_unselected, "heading_texture": entry.heading_texture, "description": entry.description})
+			levels.append({"id": "card_%02d" % (index + 1), "title": entry.title, "image": entry.image, "monster_scale": entry.monster_scale, "background": entry.background, "background_scale": entry.background_scale, "background_effect_frames": entry.background_effect_frames, "background_effect_animation": entry.background_effect_animation, "background_effect_scale": entry.background_effect_scale, "background_effect_offset": entry.background_effect_offset, "eye_icon_selected": entry.eye_icon_selected, "eye_icon_unselected": entry.eye_icon_unselected, "heading_texture": entry.heading_texture, "description": entry.description})
 			levels.back()["stage_id"] = entry.stage_id
+			levels.back()["score"] = SaveService.stage_result(entry.stage_id).get("best_score",0)
 	set_levels(levels)
 
 

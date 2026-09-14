@@ -1,13 +1,81 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3]
 
-[ext_resource type="Script" path="res://src/app/stage_select_screen.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/ui/modals/level_choosing.tscn" id="1"]
+[ext_resource type="Script" path="res://src/app/stage_select_screen.gd" id="2"]
+[ext_resource type="Theme" path="res://content/ui/game_theme.tres" id="3"]
+[ext_resource type="Script" path="res://src/app/ui/art_button.gd" id="4"]
 
-[node name="StageSelectScreen" type="Control"]
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-script = ExtResource("1_script")
+[node name="StageSelectScreen" instance=ExtResource("1")]
+script = ExtResource("2")
+theme = ExtResource("3")
+focus_mode = 2
+focus_neighbor_bottom = NodePath("Design/Actions/Back")
+focus_next = NodePath("Design/Actions/Back")
+focus_previous = NodePath("Design/Actions/Settings")
 
+[node name="Actions" type="Control" parent="Design" index="7"]
+offset_left = 50.0
+offset_top = 979.0
+offset_right = 1870.0
+offset_bottom = 1047.0
+mouse_filter = 2
+
+[node name="Back" type="Button" parent="Design/Actions"]
+layout_mode = 0
+offset_left = 0.0
+offset_right = 190.0
+offset_bottom = 64.0
+flat = true
+focus_neighbor_top = NodePath("../../..")
+focus_neighbor_bottom = NodePath("../../..")
+focus_neighbor_left = NodePath("../../..")
+focus_neighbor_right = NodePath("../Local")
+focus_next = NodePath("../Local")
+focus_previous = NodePath("../../..")
+text = "返回"
+script = ExtResource("4")
+
+[node name="Local" type="Button" parent="Design/Actions"]
+layout_mode = 0
+offset_left = 210.0
+offset_right = 440.0
+offset_bottom = 64.0
+flat = true
+focus_neighbor_top = NodePath("../../..")
+focus_neighbor_bottom = NodePath("../../..")
+focus_neighbor_left = NodePath("../Back")
+focus_neighbor_right = NodePath("../Pets")
+focus_next = NodePath("../Pets")
+focus_previous = NodePath("../Back")
+text = "本地谱面"
+script = ExtResource("4")
+
+[node name="Pets" type="Button" parent="Design/Actions"]
+layout_mode = 0
+offset_left = 1400.0
+offset_right = 1590.0
+offset_bottom = 64.0
+flat = true
+focus_neighbor_top = NodePath("../../..")
+focus_neighbor_bottom = NodePath("../../..")
+focus_neighbor_left = NodePath("../Local")
+focus_neighbor_right = NodePath("../Settings")
+focus_next = NodePath("../Settings")
+focus_previous = NodePath("../Local")
+text = "随从"
+script = ExtResource("4")
+
+[node name="Settings" type="Button" parent="Design/Actions"]
+layout_mode = 0
+offset_left = 1610.0
+offset_right = 1800.0
+offset_bottom = 64.0
+flat = true
+focus_neighbor_top = NodePath("../../..")
+focus_neighbor_bottom = NodePath("../../..")
+focus_neighbor_left = NodePath("../Pets")
+focus_neighbor_right = NodePath("../../..")
+focus_next = NodePath("../../..")
+focus_previous = NodePath("../Pets")
+text = "设置"
+script = ExtResource("4")

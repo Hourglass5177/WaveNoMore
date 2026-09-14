@@ -1,12 +1,16 @@
 extends Button
 ## 漆面按钮轻压、细光舒展；箭头只挪动美术子节点，布局位置保持固定。
+@export var underline_enabled := true
 @export var focus_art_shift := Vector2.ZERO
 var _motion: Tween
 var _down := false
 var _art: Control
 var _art_origin := Vector2.ZERO
 func _ready() -> void:
-	MenuInteraction.attach(self)
+	if underline_enabled:
+		MenuInteraction.attach(self)
+	else:
+		add_theme_stylebox_override("focus",StyleBoxEmpty.new())
 	_art = get_node_or_null("Art") as Control
 	if _art: _art_origin = _art.position
 	mouse_entered.connect(_refresh)

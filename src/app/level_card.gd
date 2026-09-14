@@ -28,17 +28,29 @@ func _ready() -> void:
 		$BackgroundEffect.material = $BackgroundEffect.material.duplicate(false)
 	$Background.resized.connect(_update_background_scale)
 	_update_background_scale()
+	$Score.resized.connect(_update_score_gradient)
+	_update_score_gradient()
+
+## 渐变覆盖整组居中数字，位数增多也不会截断或让每个字单独染色。
+func _update_score_gradient() -> void:
+	var label: Label = $Score
+	var settings: LabelSettings = label.label_settings
+	var width := settings.font.get_string_size(label.text,HORIZONTAL_ALIGNMENT_LEFT,-1,settings.font_size).x
+	label.material.set_shader_parameter("text_extent",Vector2((label.size.x-width)*0.5,width))
 
 ## 在卡片布局尺寸改变后同步缩放中心，避免背景偏移。
 func _update_background_scale() -> void:
 	$Background.pivot_offset = $Background.size * 0.5
 	$Background.scale = Vector2.ONE * background_scale
 
-func configure(data: Dictionary, index: int) -> void:
-	$Score.text = "%02d  %s" % [index + 1, str(data.get("score", ""))]
-	$Rating.text = str(data.get("rating", data.get("title", "未命名关卡")))
+func configure(data: Dictionary, _index: int) -> void:
+	$Score.text = "%06d" % maxi(0,int(data.get("score",0)))
+	_update_score_gradient()
+	$Rating.text = str(data.get("rating", ""))
 	$Description.text = str(data.get("description", ""))
 	$MonsterIcon.texture = data.get("monster_icon", data.get("image")) as Texture2D
+	$MonsterIcon.pivot_offset = $MonsterIcon.size*0.5
+	$MonsterIcon.scale = Vector2.ONE*float(data.get("monster_scale",1.0))
 	_eye_selected = data.get("eye_icon_selected") as Texture2D
 	_eye_unselected = data.get("eye_icon_unselected") as Texture2D
 	$EyeIcon.texture = _eye_unselected if _eye_unselected != null else _eye_selected
@@ -96,6 +108,8 @@ func set_background_effect_scale(value: float) -> void:
 
 ## 接收轮播平滑计算的中心权重，同步当前卡片的怪物透明度与背景 k。
 func set_selection_weight(weight: float) -> void:
+	$Score.modulate.a = clampf(weight,0.0,1.0)
+	$Rating.modulate.a = clampf(weight,0.0,1.0)
 	var icon_material := $MonsterIcon.material as ShaderMaterial
 	if icon_material != null:
 		icon_material.set_shader_parameter("image_transparency", clampf(weight, 0.0, 1.0))
