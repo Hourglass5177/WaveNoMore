@@ -33,14 +33,16 @@ func reset() -> void:
 func apply_judgment(record: JudgmentRecord) -> int:
 	if record.mechanical_grade() != GameplayTypes.JudgmentGrade.MISS:
 		return 0
+	# Hold 由身体时间线提交 DamageRecord；Tuning 永远不从评分直接扣血。
+	if record.unit_kind != &"tap": return 0
 	var damage_group: String = record.damage_group_id if not record.damage_group_id.is_empty() else record.unit_id
-	return _apply_damage_group(damage_group, _rules.miss_damage)
+	return _apply_damage_group(damage_group, _rules.tap_miss_damage)
 
 
 func apply_stray(record: StrayInputRecord) -> int:
 	if not record.damages:
 		return 0
-	return _apply_damage_group("stray:%d" % record.sequence, _rules.miss_damage)
+	return _apply_damage_group("stray:%d" % record.sequence, _rules.stray_input_damage)
 
 
 func heal(amount: int) -> int:

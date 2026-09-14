@@ -32,6 +32,9 @@ var pet_effect := PetEffectProfile.new()
 ## 按实际发生时间记录伤害；last_pet_trigger_us 供视图按歌曲时间恢复短反馈。
 var damages: Array[DamageRecord] = []
 var _pending_damages: Array[DamageRecord] = []
+## 只在 Hold 失败时生成剩余身体结算点，按微秒排序；不逐帧扫描全谱身体。
+var _hold_body_damages: Array[DamageRecord] = []
+var _hold_damage_cursor := 0
 var last_pet_trigger_us: int = -9000000000000000
 var _notes_by_id: Dictionary = {}
 ## Tap/Hold 的头、持续、尾与乱按绑定判定器。
@@ -79,12 +82,12 @@ var _pending_note_arrivals: Array[Dictionary] = []
 var _su_manifestations: Array[Dictionary] = []
 ## 下一条尚未处理的编译后素音事件索引。
 var _su_cursor: int = 0
+var _su_prepare_order: Array[Dictionary] = []
+var _su_prepare_cursor := 0
+var _ghost_forecast := GhostWaveForecast.new()
 ## 素音预读等待表与已冻结的 UV 目标，均按事件 ID 独立保存。
 var _su_events_by_id: Dictionary[String, Dictionary] = {}
-var _su_pending: Dictionary[String, Dictionary] = {}
 var _su_prepared: Dictionary[String, Dictionary] = {}
-## 固定目标时刻的交点只随新载波改变；不足量时复用上次结果，不按渲染帧重算。
-var _su_candidate_cache: Dictionary[String, Dictionary] = {}
 var _su_resolved_ids: Dictionary[String, bool] = {}
 ## 分配给下一条 JudgmentRecord 的全局递增序号；同微秒也不会重复。
 var _judgment_sequence: int = 0
@@ -112,6 +115,8 @@ func configure(p_compiled: CompiledChart, p_rules: GameplayRuleSet, debug_nonlet
 	pet_effect = pet.duplicate(true) as PetEffectProfile if pet != null else PetEffectProfile.new()
 	damages.clear()
 	_pending_damages.clear()
+	_hold_body_damages.clear()
+	_hold_damage_cursor = 0
 	_notes_by_id.clear()
 	last_pet_trigger_us = -9000000000000000
 	for note: Dictionary in compiled.notes: _notes_by_id[str(note.id)] = note
@@ -144,13 +149,24 @@ func configure(p_compiled: CompiledChart, p_rules: GameplayRuleSet, debug_nonlet
 	_pending_note_arrivals.clear()
 	_su_manifestations.clear()
 	_su_cursor = 0
+	_su_prepare_order.clear(); _su_prepare_cursor = 0
+	_ghost_forecast.configure(compiled, rules)
 	_su_events_by_id.clear()
-	_su_pending.clear()
 	_su_prepared.clear()
-	_su_candidate_cache.clear()
 	_su_resolved_ids.clear()
 	for event: Dictionary in compiled.su_manifestations:
-		_su_events_by_id[str(event["event_id"])] = event
+		var prepared_event := event.duplicate()
+		prepared_event["prepare_at_us"] = int(event.get("preparation_base_us",event.time_us)) - roundi(rules.approach_duration_sec * 1000000.0)
+		# 旧资源没有路径关联时，用显式组或覆盖目标时刻的旧滑条作为关联。
+		var ids := PackedStringArray(event.get("tuning_ids", []))
+		if ids.is_empty():
+			for slider: Dictionary in compiled.tuning_sliders:
+				if (not str(event.get("group_id", "")).is_empty() and str(slider.group_id) == str(event.group_id)) or (str(event.get("group_id", "")).is_empty() and int(slider.start_us) <= int(event.time_us) and int(event.time_us) <= int(slider.end_us)):
+					ids.append(str(slider.event_id))
+		prepared_event["tuning_ids"] = ids
+		_su_events_by_id[str(event.event_id)] = prepared_event
+		_su_prepare_order.append(prepared_event)
+	_su_prepare_order.sort_custom(func(a: Dictionary,b: Dictionary): return int(a.prepare_at_us)<int(b.prepare_at_us) if a.prepare_at_us != b.prepare_at_us else str(a.event_id)<str(b.event_id))
 	_judgment_sequence = 0
 	_last_input_owner = GameplayTypes.InputOwner.NONE
 	_paused_for_rearm = false
@@ -164,10 +180,10 @@ func advance_to(time_us: int, inclusive: bool = true) -> void:
 	if compiled == null or rules == null or time_us < current_time_us:
 		return
 	if not _paused_for_rearm and not health_engine.failed:
-		var boundary_us: int = mini(note_engine.next_transition_us(), wave_engine.next_arrival_us())
+		var boundary_us: int = _next_boundary_us()
 		while boundary_us < time_us and not health_engine.failed:
 			_advance_systems_to(boundary_us, true)
-			boundary_us = mini(note_engine.next_transition_us(), wave_engine.next_arrival_us())
+			boundary_us = _next_boundary_us()
 	_advance_systems_to(time_us, inclusive)
 
 
@@ -192,6 +208,63 @@ func _advance_systems_to(time_us: int, inclusive: bool) -> void:
 	_process_su_manifestations(time_us, inclusive)
 	_collect_engine_records()
 	_collect_wave_events()
+	while _hold_damage_cursor < _hold_body_damages.size():
+		var damage := _hold_body_damages[_hold_damage_cursor]
+		if damage.timestamp_us > time_us or (damage.timestamp_us == time_us and not inclusive): break
+		_apply_damage(damage)
+		_hold_damage_cursor += 1
+
+
+func _next_boundary_us() -> int:
+	var boundary := mini(note_engine.next_transition_us(), wave_engine.next_arrival_us())
+	if _hold_damage_cursor < _hold_body_damages.size(): boundary = mini(boundary, _hold_body_damages[_hold_damage_cursor].timestamp_us)
+	if _su_cursor < compiled.su_manifestations.size(): boundary = mini(boundary, int(compiled.su_manifestations[_su_cursor].time_us))
+	if _su_prepare_cursor < _su_prepare_order.size(): boundary = mini(boundary, int(_su_prepare_order[_su_prepare_cursor].prepare_at_us))
+	return boundary
+
+
+func last_damage_time_us() -> int:
+	## 提前预留失败 Hold 的尾部飞行，歌曲/Replay 不可在身体扣血前结束。
+	var result := wave_engine.last_arrival_us()
+	for note: Dictionary in compiled.notes:
+		if note.unit_kind == &"hold":
+			result = maxi(result, int(note.end_us) + wave_engine.post_cue_travel_us(int(note.affinity)) + (rules.hold_sustain_grace_ms + pet_effect.hold_sustain_bonus_ms) * 1000 + 1)
+	return result
+
+
+func _schedule_hold_damage(record: JudgmentRecord) -> void:
+	var note: Dictionary = _notes_by_id[record.unit_id]
+	var tempo := compiled.tempo_map
+	var from_us: int = int(record.metadata.unconsumed_from_us)
+	var from_tick := clampf(tempo.us_to_tick(from_us), float(note.tick), float(note.end_tick))
+	var segment_ticks := maxf(1.0, rules.hold_damage_segment_beats * tempo.ppq)
+	# 未起手沿原路线抵达；断持后从失败时刻离圈，统一使用领域飞行时长。
+	var arrival_us := (int(note.start_us) if record.missed_head() else record.finalized_at_us) + wave_engine.post_cue_travel_us(record.affinity)
+	record.metadata["body_from_tick"] = from_tick
+	record.metadata["body_arrival_us"] = arrival_us
+	record.metadata["body_end_arrival_us"] = arrival_us + int(note.end_us) - from_us
+	# 第一段和最后一段不足单位拍长时按实际拍长累计取整，避免每个碎段都向上扣血。
+	var cursor_tick := from_tick
+	var charged := 0
+	var segment := floori((from_tick - float(note.tick)) / segment_ticks)
+	while cursor_tick < float(note.end_tick):
+		var end_tick := minf(float(note.end_tick), float(note.tick) + (segment + 1) * segment_ticks)
+		var total := roundi((end_tick - from_tick) / segment_ticks * rules.hold_segment_damage)
+		var amount := total - charged
+		var tick_floor := floori(end_tick)
+		var segment_end_us := tempo.tick_to_us(tick_floor) + roundi((end_tick - tick_floor) * (tempo.tick_to_us(tick_floor + 1) - tempo.tick_to_us(tick_floor)))
+		if amount > 0:
+			var id := "%s:body:%d" % [record.unit_id, segment]
+			var group := "hold:%s:body:%d" % [record.damage_group_id, segment]
+			_hold_body_damages.append(DamageRecord.create(id, group, maxi(record.finalized_at_us, arrival_us + segment_end_us - from_us), amount, record.affinity))
+		charged = total
+		cursor_tick = end_tick
+		segment += 1
+	# 已消费前缀不再排序，也不影响新失败音符的同刻稳定顺序。
+	_hold_body_damages = _hold_body_damages.slice(_hold_damage_cursor)
+	_hold_damage_cursor = 0
+	_hold_body_damages.sort_custom(func(a: DamageRecord, b: DamageRecord) -> bool:
+		return a.timestamp_us < b.timestamp_us if a.timestamp_us != b.timestamp_us else a.source_id < b.source_id)
 
 ## 在逻辑帧内直接读取物理输入缓冲，并通过纯转换层得到玩法语义。
 func process_input_frame(input_buffer: Node) -> void:
@@ -244,7 +317,7 @@ func _set_operation_from_semantic(semantic_kind: int, source: PhysicalInputEvent
 			_set_operation(GameplayOperationKind.TUNING_DISPLACED, source.timestamp_us, source.relative)
 			return
 		InputSemanticConverter.GameplayEvent.LIFE_TUNING_DISPLACED, InputSemanticConverter.GameplayEvent.DEATH_TUNING_DISPLACED:
-			var control_data: Dictionary = InputSemanticConverter.to_tuning_control(source)
+			var control_data: Dictionary = InputSemanticConverter.to_tuning_control(source, rules.tuning_stick_deadzone)
 			if not bool(control_data.get("exists", false)):
 				return
 			operation_kind = (
@@ -401,7 +474,7 @@ func accept_input(sample: SemanticInputSample) -> int:
 		if stray.damages:
 			# 帧输入适配器可能复用 sequence；本局乱按记录序号区分每次独立受击。
 			var damage_id := "stray:%d" % (strays.size() - 1)
-			_apply_damage(DamageRecord.create(damage_id, damage_id, sample.timestamp_us, rules.miss_damage, sample.affinity()))
+			_apply_damage(DamageRecord.create(damage_id, damage_id, sample.timestamp_us, rules.stray_input_damage, sample.affinity()))
 	# 所有按下都会产生真实传播的波。机制认可时发红/黑彩波，乱按发灰波；
 	# 普通音符还会把唯一目标绑定给波，等待两者实际相遇。
 	if sample.is_press():
@@ -431,7 +504,7 @@ func force_finish() -> void:
 		return
 	# Hold 与调频都在谱面尾点完成；只有普通音符还需等待 Miss 窗。
 	var settle_us: int = (rules.miss_window_ms + pet_effect.hold_head_bonus_ms) * 1000 + 1
-	advance_to(maxi(compiled.end_time_us + settle_us, wave_engine.last_arrival_us()), true)
+	advance_to(maxi(compiled.end_time_us + settle_us, last_damage_time_us()), true)
 	_collect_wave_events()
 
 
@@ -497,7 +570,7 @@ func drain_note_arrivals() -> Array[Dictionary]:
 func result_summary() -> ResultSummary:
 	# 最后一条 Hold 可以先取得 Pass，再抵达角色；伤害未结清时不能宣布通关。
 	return ResultEvaluator.evaluate(judgments, strays, score_engine, health_engine,
-		compiled.theoretical_unit_count, wave_engine.next_arrival_us() == 9223372036854775807)
+		compiled.theoretical_unit_count, wave_engine.next_arrival_us() == 9223372036854775807 and _hold_damage_cursor == _hold_body_damages.size() and _su_cursor == compiled.su_manifestations.size())
 
 
 func input_owner() -> int:
@@ -554,7 +627,7 @@ func snapshot() -> Dictionary:
 		_su_results_snapshot = _su_manifestations.duplicate(true)
 	if _su_targets_snapshot.size() != _su_prepared.size():
 		_su_targets_snapshot = _su_prepared.values().duplicate(true)
-	var cleared := not health_engine.failed and judgments.size() == compiled.theoretical_unit_count and wave_engine.next_arrival_us() == 9223372036854775807
+	var cleared := not health_engine.failed and judgments.size() == compiled.theoretical_unit_count and wave_engine.next_arrival_us() == 9223372036854775807 and _hold_damage_cursor == _hold_body_damages.size() and _su_cursor == compiled.su_manifestations.size()
 	var full_combo := cleared and _summary_misses == 0 and _summary_stray_breaks == 0
 	var result := motion_snapshot().duplicate(false)
 	result.merge({
@@ -633,18 +706,15 @@ func _apply_tuning_frequency_changes(target_us: int, inclusive: bool) -> void:
 	carrier_engine.advance_to(target_us, inclusive)
 
 
-func request_su_preparation(event_id: String) -> void:
-	## 预读请求只登记事件；下一次逻辑推进使用真实波历史尝试生成。
-	if _su_events_by_id.has(event_id) and not _su_resolved_ids.has(event_id):
-		_su_pending[event_id] = _su_events_by_id[event_id]
+func request_su_preparation(_event_id: String) -> void:
+	## 保留表现调度器旧接口；生成时刻已由领域固定时间线掌管。
+	pass
 
 
 func reset_su_timeline(time_us: int) -> void:
 	_su_results_snapshot = []; _su_targets_snapshot = []
 	## Seek/清场丢弃旧目标；早于新时间的事件不再生成结果或打印历史 Miss。
-	_su_pending.clear()
 	_su_prepared.clear()
-	_su_candidate_cache.clear()
 	_su_manifestations.clear()
 	_su_resolved_ids.clear()
 	_su_cursor = 0
@@ -654,38 +724,28 @@ func reset_su_timeline(time_us: int) -> void:
 			break
 		_su_resolved_ids[str(event["event_id"])] = true
 		_su_cursor += 1
+	# 无输入的自由定位从新暂态预测尚未结算的事件；完整 Replay 仍从头重演固定边界。
+	_su_prepare_order = _su_prepare_order.filter(func(event: Dictionary): return int(event.time_us) >= time_us)
+	_su_prepare_cursor = 0
+	for event: Dictionary in _su_prepare_order: event.prepare_at_us = maxi(time_us,int(event.prepare_at_us))
 
 
 func clear_su_targets() -> void:
 	_su_results_snapshot = []; _su_targets_snapshot = []
 	## 会话结束释放预读请求、目标、结果和去重状态，不改变其他玩法数据。
-	_su_pending.clear()
 	_su_prepared.clear()
-	_su_candidate_cache.clear()
 	_su_manifestations.clear()
 	_su_resolved_ids.clear()
+	_su_prepare_cursor = _su_prepare_order.size()
 
 
 func _try_prepare_su(event: Dictionary, prepared_at_us: int) -> void:
-	## 对已发射载波求目标时刻的交点，不推进 Carrier、不预测未来输入。
+	## 固定暂态只预测一次，包含理想调频的未来发波；正式载波与输入不被改写。
 	var event_id: String = str(event["event_id"])
 	if _su_prepared.has(event_id):
 		return
-	var wave_count: int = carrier_engine.emission_count()
-	# 查询时刻与事件区域固定，只有新发射的波会改变候选；空结果也复用。
-	var cached: Dictionary = _su_candidate_cache.get(event_id, {})
-	if cached.is_empty() or int(cached["wave_count"]) != wave_count:
-		cached = {"wave_count": wave_count, "points": carrier_engine.find_constructive_intersections(
-			int(event["time_us"]), event["spawn_region_normalized"], int(event["count"]),
-			120.0, hash("%s:%d" % [event_id, int(event["time_us"])]), true
-		)}
-		_su_candidate_cache[event_id] = cached
-	var points: Array[Vector2] = cached["points"]
-	if points.is_empty():
-		return
-	# 只有足量时才冻结整批目标；旧逻辑会把第一次找到的一个交点永久当成整批。
-	# 到时仍不足则保留真实可用点并报告，不能重复坐标或越过区域凑数。
-	if points.size() < int(event["count"]) and prepared_at_us < int(event["time_us"]): return
+	var forecast := _ghost_forecast.predict(carrier_engine, prepared_at_us, int(event.time_us))
+	var points := forecast.find_constructive_intersections(int(event.time_us), event.spawn_region_normalized, int(event.count), 120.0, hash("%s:%d" % [event_id,int(event.time_us)]), true)
 	var points_uv: Array[Vector2] = []
 	for point: Vector2 in points:
 		points_uv.append(carrier_engine.canvas_position_to_uv(point))
@@ -693,47 +753,48 @@ func _try_prepare_su(event: Dictionary, prepared_at_us: int) -> void:
 	target["points"] = points_uv
 	target["requested_count"] = int(event["count"])
 	target["prepared_at_us"] = prepared_at_us
+	target["visible_from_us"] = int(event.time_us) - roundi(rules.approach_duration_sec * 1000000.0) if rules != null else prepared_at_us
+	target["generation_issue"] = &"insufficient_predicted_intersections" if points.size() < int(event.count) else &""
 	_su_prepared[event_id] = target
-	_su_candidate_cache.erase(event_id)
 
 
 func _process_su_manifestations(time_us: int, inclusive: bool) -> void:
-	## 待生成目标随新载波重试；已有目标冻结坐标，目标时刻只结算一次。
+	## 预测由领域固定边界驱动；表现请求和渲染帧不能决定暂态采样时刻。
 	if compiled == null:
 		return
-	for event: Dictionary in _su_pending.values():
-		_try_prepare_su(event, time_us)
+	while _su_prepare_cursor < _su_prepare_order.size():
+		var event: Dictionary = _su_prepare_order[_su_prepare_cursor]
+		var prepare_us := int(event.prepare_at_us)
+		if prepare_us > time_us or (prepare_us == time_us and not inclusive): break
+		if not _su_resolved_ids.has(str(event.event_id)): _try_prepare_su(event,prepare_us)
+		_su_prepare_cursor += 1
 	while _su_cursor < compiled.su_manifestations.size():
-		var event: Dictionary = compiled.su_manifestations[_su_cursor]
+		var original: Dictionary = compiled.su_manifestations[_su_cursor]
+		var event: Dictionary = _su_events_by_id.get(str(original.event_id),original)
 		var event_us: int = int(event["time_us"])
 		if event_us > time_us or (event_us == time_us and not inclusive):
 			break
 		var event_id: String = str(event["event_id"])
-		# 预读请求尚未到达也不能漏掉目标时刻的最后一次尝试。
-		_try_prepare_su(event, time_us)
-		var group_id: String = str(event.get("group_id", ""))
-		var group_ready: bool = group_id.is_empty() or tuning_engine.has_finalized_group(group_id)
-		var group_success: bool = group_id.is_empty() or (
-			group_ready and tuning_engine.group_grade(group_id) != GameplayTypes.JudgmentGrade.MISS
-		)
 		var result: Dictionary = event.duplicate(true)
 		var target: Dictionary = _su_prepared.get(event_id, {})
 		result["points"] = target.get("points", []).duplicate()
 		result["requested_count"] = int(event["count"])
-		result["generation_issue"] = &"insufficient_constructive_intersections" if result["points"].size() < int(event["count"]) else &""
+		result["generation_issue"] = target.get("generation_issue", &"prediction_not_prepared")
 		# 数量与失败原因已在快照中；控制台可能阻塞主线程，诊断仅在 --verbose 时输出。
 		if not String(result["generation_issue"]).is_empty():
 			print_verbose("[SuManifestation] target_shortage event=%s requested=%d actual=%d reason=%s" % [event_id, int(event["count"]), result["points"].size(), result["generation_issue"]])
-		result["success"] = group_success and not result["points"].is_empty()
-		result["failure_reason"] = &"" if result["success"] else (
-			&"group_not_finalized" if not group_ready
-			else &"group_failed" if not group_success
-			else &"no_constructive_intersection"
-		)
+		# 固定编排数量按关联调频操作共同评价；缺少预测坐标只报告生成问题，不能变成扣血依据。
+		var grade := tuning_engine.ghost_grade(PackedStringArray(event.get("tuning_ids",[])),event_us)
+		result["grade"] = grade
+		result["hit_count"] = int(event.count) if grade != GameplayTypes.JudgmentGrade.MISS else 0
+		result["miss_count"] = int(event.count) - int(result.hit_count)
+		result["success"] = int(result["miss_count"]) == 0
+		result["failure_reason"] = &"" if result["success"] else &"tuning_incomplete"
+		for index: int in range(int(result["hit_count"]), int(event["count"])):
+			var damage_id := "%s:ghost:%d" % [event_id, index]
+			_apply_damage(DamageRecord.create(damage_id, damage_id, event_us, rules.ghost_miss_damage))
 		_su_manifestations.append(result)
 		_su_resolved_ids[event_id] = true
-		_su_pending.erase(event_id)
-		_su_candidate_cache.erase(event_id)
 		if not bool(result["success"]):
 			print_verbose("[SuManifestation] note_miss event=%s requested=%d actual=%d reason=%s uv=none" % [
 				event_id, int(event["count"]), result["points"].size(), result["failure_reason"]
@@ -769,8 +830,9 @@ func _collect_engine_records() -> void:
 		var old_bonus := score_engine.bonus_score
 		score_engine.apply_judgment(record)
 		if score_engine.bonus_score > old_bonus: last_pet_trigger_us = record.finalized_at_us
-		if record.base_grade == GameplayTypes.JudgmentGrade.MISS and not record.missed_head():
-			_apply_damage(DamageRecord.create(record.unit_id, record.damage_group_id, record.finalized_at_us, rules.miss_damage, record.affinity))
+		if record.base_grade == GameplayTypes.JudgmentGrade.MISS and record.unit_kind == &"hold":
+			_schedule_hold_damage(record)
+		# Tuning 只计分，不造成伤害；Tap 等待抵达，Hold 等待剩余身体逐段抵达。
 
 
 func _collect_wave_events() -> void:
@@ -779,7 +841,8 @@ func _collect_wave_events() -> void:
 	for arrival: Dictionary in wave_engine.drain_arrivals():
 		_pending_note_arrivals.append(arrival)
 		var note: Dictionary = _notes_by_id[str(arrival.note_id)]
-		_apply_damage(DamageRecord.create(str(arrival.note_id), str(note.damage_group_id), int(arrival.arrival_us), rules.miss_damage, int(note.affinity)))
+		if note.unit_kind == &"tap":
+			_apply_damage(DamageRecord.create(str(arrival.note_id), "tap:" + str(note.damage_group_id), int(arrival.arrival_us), rules.tap_miss_damage, int(note.affinity)))
 
 
 static func _unit_rank(kind: StringName) -> int:

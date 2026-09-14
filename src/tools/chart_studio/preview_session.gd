@@ -83,7 +83,7 @@ func load_preview(stage: StageDefinition, viewport: SubViewport) -> bool:
 	physical_input.set_process_input(false)
 	offset_sec = stage.song.first_beat_offset_sec
 	# 只从真实 Tap/Hold 生成敲钟输入，Tuning 追加频率姿态采样。
-	_inputs = StudioPreviewInputs.build(stage_root.stage_session.compiled_chart, stage.rule_set)
+	_inputs = StudioPreviewInputs.build(stage_root.stage_session.compiled_chart, stage_root.stage_session.rule_set)
 	_build_motion_ranges(stage_root.stage_session.compiled_chart)
 	_cursor = 0
 	_time_us = -1000000000

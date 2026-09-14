@@ -173,6 +173,29 @@ func _ready() -> void:
 
 
 func load_stage(stage: StageDefinition, start_after_prepare: bool = true) -> bool:
+	# 装载时固定策划表与规则副本，避免修改 ResourceLoader 缓存及正在运行的另一份预览。
+	var planning := PlanningParameters.read()
+	if not planning.errors.is_empty():
+		stage_load_failed.emit("；".join(planning.errors))
+		return false
+	if stage != null and stage.rule_set != null:
+		stage = stage.duplicate(false) as StageDefinition
+		stage.rule_set = PlanningParameters.rules_copy(stage.rule_set, planning)
+		var errors := PlanningParameters.validate_rules(stage.rule_set)
+		if not errors.is_empty():
+			stage_load_failed.emit("；".join(errors))
+			return false
+		var source_chart: SongChart = stage.get_meta("planning_source_chart") if stage.has_meta("planning_source_chart") else null
+		if source_chart != null:
+			var issues := ChartPathAdapter.validate(source_chart, stage.rule_set)
+			if not issues.is_empty():
+				stage_load_failed.emit(ChartProjectLoader.describe_issues(issues))
+				return false
+			stage.chart = ChartPathAdapter.project(source_chart, stage.rule_set)
+	if active_pet != null:
+		stage_session.pet_effect = active_pet.effect(pet_advanced)
+		PlanningParameters.apply_values(stage_session.pet_effect,
+			"pet:%s:%s" % [active_pet.pet_id, "advanced" if pet_advanced else "base"], planning)
 	if not stage_session.configure(stage):
 		stage_load_failed.emit("StageDefinition configuration failed.")
 		return false

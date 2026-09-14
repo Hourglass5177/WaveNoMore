@@ -637,7 +637,7 @@ func _rebuild_preview() -> void:
 	# 候选版本仅用于预览，正式资源和撤销栈仍保持手势前的内容。
 	if not timeline.candidates.is_empty():
 		ChartEditEvents.replace(draft, timeline.candidates, timeline.candidates)
-	var rules: GameplayRuleSet = load("res://content/rules/default_gameplay_rules.tres")
+	var rules: GameplayRuleSet = PlanningParameters.default_rules()
 	var authoring_issues := ChartPathAdapter.validate(draft, rules)
 	var report := ValidationReport.new()
 	if authoring_issues.is_empty(): report = ChartValidator.validate(ChartPathAdapter.project(draft, rules), rules)
@@ -903,7 +903,7 @@ func _tuning_radius_controls(path: TuningPathEvent) -> void:
 	automatic.button_pressed = path.visual_radius_px == 0.0
 	fields.add_child(automatic)
 	automatic.toggled.connect(func(enabled: bool):
-		var rules: GameplayRuleSet = load("res://content/rules/default_gameplay_rules.tres")
+		var rules: GameplayRuleSet = PlanningParameters.default_rules()
 		var current := document.find_note(path.event_id) as TuningPathEvent
 		_set_tuning_radius(path.event_id, 0.0 if enabled else ChartPathAdapter.automatic_visual_radius(current, rules)))
 	if automatic.button_pressed: return
@@ -971,7 +971,7 @@ func _commit_events(label: String, before: Array, after: Array) -> void:
 		for i in before.size(): unchanged = unchanged and ChartEditEvents.same(before[i], after[i])
 		if unchanged: return
 	# 父对象缩短或移除只在这里提示，三种入口（鼠标、属性、菜单）共用一次命令。
-	var rules: GameplayRuleSet = load("res://content/rules/default_gameplay_rules.tres")
+	var rules: GameplayRuleSet = PlanningParameters.default_rules()
 	for event in after:
 		if event is TuningPathEvent:
 			var shape := ChartPathAdapter.frequency_values(event, rules)

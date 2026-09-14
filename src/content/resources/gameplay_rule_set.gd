@@ -24,6 +24,8 @@ extends Resource
 @export_range(1, 500, 1) var chord_tolerance_ms: int = 75
 
 @export_group("Tuning")
+## 摇杆幅度不超过此比例时忽略；死区外线性映射到 0～1，越大越不易被漂移带动。
+@export_range(0.0, 0.9, 0.01) var tuning_stick_deadzone: float = 0.2
 ## 调频每程为达到完整弧长预留的统一容错时间，单位毫秒；不属于谱面字段。
 @export_range(0, 2000, 1) var tuning_speed_tolerance_ms: int = 500
 ## 摇杆满幅沿游标切线拨动时的最大设计画布速度，单位 px/s；零值停止速度推进。
@@ -42,6 +44,12 @@ extends Resource
 @export_range(0.0, 1.0, 0.001) var tuning_pass_coverage: float = 0.60
 ## 调频滑条端点的空间捕获半径，占单程长度的比例；进入这一区域即视为一次到达尝试。
 @export_range(0.001, 0.25, 0.001) var tuning_endpoint_capture_ratio: float = 0.03
+## 每程终点时刻的最低完成比例；提前完成有效，不增加晚到窗口。
+@export_range(0.0, 1.0, 0.001) var tuning_perfect_completion: float = 0.97
+## Good 最低完成比例；应不高于 Perfect。
+@export_range(0.0, 1.0, 0.001) var tuning_good_completion: float = 0.90
+## Pass 最低完成比例；低于此值或未按住对应钟均为 Miss。
+@export_range(0.0, 1.0, 0.001) var tuning_pass_completion: float = 0.80
 ## 已弃用：调频现为“原定时刻前完成即成功”，仅为兼容旧规则资源保留。
 @export_range(1, 1000, 1) var tuning_endpoint_perfect_ms: int = 150
 ## 已弃用：调频现为“原定时刻前完成即成功”，仅为兼容旧规则资源保留。
@@ -84,11 +92,21 @@ extends Resource
 @export_group("Health / Stray Input")
 ## 满魂火上限与开局值；越大，可承受的固定伤害次数越多。
 @export_range(1, 1000, 1) var max_soul_fire: int = 100
-## 每个新伤害组发生 MISS 时扣除的魂火；越大，失败惩罚越重。
+## 旧资源兼容字段；正式 Tap、Hold、Ghost 已使用各自伤害。
 @export_range(0, 1000, 1) var miss_damage: int = 20
+## Tap 漏击抵达角色时的伤害；同一 Tap 伤害组只结算一次。
+@export_range(0, 1000, 1) var tap_miss_damage: int = 20
+## Hold 未消耗身体每单位拍长的伤害，不另收头部或整条失败伤害。
+@export_range(0, 1000, 1) var hold_segment_damage: int = 2
+## 一段身体对应的四分音符拍数；按 TempoMap 换算，不依赖显示长度。
+@export_range(0.0625, 4.0, 0.0625) var hold_damage_segment_beats: float = 0.25
+## 每枚未命中 Ghost 的伤害；Tuning 轨道自身不扣血。
+@export_range(0, 1000, 1) var ghost_miss_damage: int = 10
+## 仅在开启空按扣血时使用。
+@export_range(0, 1000, 1) var stray_input_damage: int = 20
 ## 开启时，没有被任何机制消费的乱按会中断 Combo。
 @export var stray_input_breaks_combo: bool = false
-## 开启时，乱按除断 Combo 外还会按一次 MISS 伤害扣魂火。
+## 开启时，乱按按 stray_input_damage 扣魂火；与断 Combo 开关独立。
 @export var stray_input_damages: bool = false
 
 @export_group("Presentation Timing")

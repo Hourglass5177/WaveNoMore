@@ -676,7 +676,7 @@ func _test_focus_cancel() -> void:
 func _test_debug_nonlethal_health() -> void:
 	var rules := DomainFixtureFactory.rules()
 	rules.max_soul_fire = 20
-	rules.miss_damage = 15
+	rules.tap_miss_damage = 15
 	var engine := HealthEngine.new()
 	engine.configure(rules, true)
 	for index: int in range(3):

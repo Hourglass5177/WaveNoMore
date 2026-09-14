@@ -13,7 +13,7 @@ var rebuild_count: int = 0
 var _ring_extent := -1.0
 var _ring_style_key: Array = []
 
-func set_rings(radius: float, outer_radius: float, progress: float, alpha: float, extent: float, style: TimingCueStyle, side: int) -> void:
+func set_rings(radius: float, outer_radius: float, progress: float, alpha: float, extent: float, style: TimingCueStyle, side: int, direction: float = 1.0) -> void:
 	var surface := material as ShaderMaterial
 	if _ring_extent != extent:
 		# 圆形提示使用固定四边形，所有圆弧由同一个局部 shader 合成。
@@ -30,10 +30,11 @@ func set_rings(radius: float, outer_radius: float, progress: float, alpha: float
 		_ring_style_key = [halo, glow]
 		surface.set_shader_parameter(&"halo_color", halo)
 		surface.set_shader_parameter(&"glow_data", glow)
-	var key := [radius, outer_radius, progress, alpha]
+	var key := [radius, outer_radius, progress, alpha, direction]
 	if _key != key:
 		_key = key
 		surface.set_shader_parameter(&"ring_data", Vector4(radius, outer_radius, progress, alpha))
+		surface.set_shader_parameter(&"sweep_direction", direction)
 	visible = true
 
 func _init() -> void:

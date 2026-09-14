@@ -2,6 +2,7 @@ shader_type canvas_item;
 render_mode unshaded, blend_add;
 
 uniform bool ring_mode = false;
+uniform float sweep_direction = 1.0;
 uniform vec4 ring_data; // 固定半径、缩圈半径、进度、缩圈 alpha。
 uniform vec4 glow_data; // 两条光带半宽、两条光带强度。
 uniform vec4 halo_color : source_color;
@@ -21,7 +22,7 @@ void fragment() {
 	if (ring_mode) {
 		// 普通圆环只更新进度 uniform，不逐帧重建圆弧顶点与 GPU 缓冲。
 		float radius = length(local_position);
-		float angle = mod(atan(local_position.y, local_position.x) + 7.853981634, 6.283185307);
+		float angle = mod((atan(local_position.y, local_position.x) + 1.570796327) * sweep_direction + 6.283185307, 6.283185307);
 		float sweep = 6.283185307 * ring_data.z;
 		float along = min(angle, sweep - angle) * ring_data.x;
 		float cap = ring_data.z >= 0.99999 ? 1.0 : smoothstep(0.0, glow_data.x, along);

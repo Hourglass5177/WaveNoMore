@@ -611,24 +611,26 @@ func update_preview_palette(visual_theme: StageVisualTheme) -> void:
 	_apply_palette(visual_theme)
 
 func _apply_palette(visual_theme: StageVisualTheme) -> void:
+	# 波与音符共享全局阵营色；世界背景继续使用场景自身的对照配色。
+	var note_style: NoteEffectStyle = GrayboxNoteVisual.EFFECT_STYLE
 	_backdrop.life_color = visual_theme.life_color
 	_backdrop.death_color = visual_theme.death_color
 	_backdrop.ink_color = visual_theme.ink_color
 	_backdrop.bone_color = visual_theme.su_color
 	_wave_field_visual.configure_palette(
-		visual_theme.life_color,
-		visual_theme.death_color,
+		note_style.life_halo,
+		note_style.death_halo,
 		visual_theme.su_color,
 		visual_theme.paper_color
 	)
 	_tuning_interference_visual.configure_palette(
-		visual_theme.life_color,
-		visual_theme.death_color,
+		note_style.life_halo,
+		note_style.death_halo,
 		visual_theme.su_color
 	)
 	_rapid_interference_visual.configure_palette(
-		visual_theme.life_color,
-		visual_theme.death_color,
+		note_style.life_halo,
+		note_style.death_halo,
 		visual_theme.su_color
 	)
 	_twin_gate_cue_visual.configure_palette(

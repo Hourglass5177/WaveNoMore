@@ -9,7 +9,7 @@ var selected := 0
 var dragging := false
 var _before := 0.0
 var _last_mouse_angle := 0.0
-var rules: GameplayRuleSet = preload("res://content/rules/default_gameplay_rules.tres")
+var rules: GameplayRuleSet = PlanningParameters.default_rules()
 
 func _ready() -> void:
 	custom_minimum_size = Vector2(160, 180)

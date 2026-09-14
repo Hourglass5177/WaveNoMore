@@ -330,6 +330,7 @@ func _on_visual_judged(event_id: String, grade: int) -> void:
 			# 重复结果不得重置离场时间、起点或已冻结的路线。
 			if not bool(active_entry.get("hold_failed", false)):
 				active_entry["hold_failed"] = true
+				active_entry["hold_failure_timeline"] = _scheduler.judgment_metadata(event_id)
 				active_entry["hold_resume_time"] = _scheduler.visual_time_sec
 				if active_entry.has("hold_anchor_distance"):
 					var data: Dictionary = active_entry["data"]
@@ -718,6 +719,11 @@ func _update_hold_visual(
 			var exit_profile: Dictionary = entry["hold_exit_profile"]
 			var exit_length: float = NoteApproachPath.length(exit_profile)
 			var travelled: float = maxf(visual_time_sec - float(entry["hold_resume_time"]), 0.0) * float(entry["hold_exit_speed"])
+			var failure_timeline: Dictionary = entry.get("hold_failure_timeline", {})
+			if failure_timeline.has("body_arrival_us"):
+				# 离圈曲线只改变姿态，抵达时刻由领域给出；窗口/帧率不再改变伤害与画面的先后。
+				var exit_duration := float(failure_timeline.body_arrival_us) / 1000000.0 - float(entry.hold_resume_time)
+				travelled = maxf(visual_time_sec - float(entry.hold_resume_time), 0.0) * exit_length / maxf(exit_duration, 0.000001)
 			if exit_profile.is_empty():
 				visual.position = entry["hold_exit_target"]
 				visual.rotation = float(entry["hold_exit_heading"])
@@ -751,6 +757,13 @@ func _update_hold_visual(
 		if not pinned:
 			exit_overshoot = maxf(distance - route_length - target.distance_to(origin), 0.0)
 		remaining_length = maxf(remaining_length - exit_overshoot, 0.0)
+		var timeline: Dictionary = entry.get("hold_failure_timeline", {})
+		if timeline.has("body_arrival_us"):
+			var from_tick := float(timeline.body_from_tick)
+			var body_time := int(timeline.unconsumed_from_us) + maxi(0, roundi(visual_time_sec * 1000000.0) - int(timeline.body_arrival_us))
+			var consumed_tick := maxf(from_tick, _scheduler.tempo_map.us_to_tick(body_time))
+			var remaining_ratio := clampf((float(data.end_tick) - consumed_tick) / maxf(1.0, float(data.end_tick) - float(data.tick)), 0.0, 1.0)
+			remaining_length = float(visual.get("body_length")) * remaining_ratio
 		if remaining_length <= 0.0:
 			_scheduler.finish_hold_visual(event_id)
 			return

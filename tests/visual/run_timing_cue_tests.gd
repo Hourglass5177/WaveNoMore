@@ -91,6 +91,9 @@ func capture_formal() -> void:
 	check(loaded, "正式预览加载新的全局提示")
 	if not loaded:
 		preview.free(); viewport.free(); return
+	var presentation = preview.stage_root.presentation
+	check(presentation._wave_field_visual.life_wave_color == GrayboxNoteVisual.EFFECT_STYLE.life_halo and presentation._wave_field_visual.death_wave_color == GrayboxNoteVisual.EFFECT_STYLE.death_halo, "正式敲击声波读取最新生青蓝／死赭红")
+	check(presentation._tuning_interference_visual.life_color == GrayboxNoteVisual.EFFECT_STYLE.life_halo and presentation._tuning_interference_visual.death_color == GrayboxNoteVisual.EFFECT_STYLE.death_halo, "持续载波与敲击声波采用同一色板")
 	for at: int in [800000, 1200000, 1400000, 3800000]:
 		await preview.seek_preview(at); (await snap(viewport)).save_png(OUTPUT + "/after-%d.png" % at)
 	preview.free(); viewport.free()

@@ -37,15 +37,13 @@ func run() -> void:
 		field._authoritative_traversal_index = 1; field.queue_redraw()
 		frame = await snap(viewport)
 		check(frame.get_pixel(450, 200).a > 0.4 and frame.get_pixel(250, 200).a < 0.4, "往返第二程从另一端填充")
-		var circle := PackedVector2Array()
-		for i: int in 97: circle.append(Vector2(150, 200) + Vector2.from_angle(TAU * i / 96.0) * 38.0)
-		var segments := field._exterior_cue_segments(circle)
-		var outside := true; var remains := 0
-		for segment: PackedVector2Array in segments:
-			for point: Vector2 in segment:
-				outside = outside and point.x <= 150.01
-				remains += 1
-		check(outside and remains > 20, "缩圈移除条身内的半圈，保留外露时机提示")
+		field._interaction_open = false; field._approach_progress = 1.0
+		field.queue_redraw(); frame = await snap(viewport)
+		check(field._cue_segments[0].size() == 1 and field._cue_segments[0][0][0].is_equal_approx(field._cue_segments[0][0][-1]), "起手缩圈完整闭合，不再裁掉条身内半圈")
+		var overlap := frame.get_pixel(188, 200)
+		check(overlap.a > 0.8 and maxf(overlap.r, overlap.b) > 0.55, "缩圈内侧真实像素位于条身上方")
+		frame.save_png(OUTPUT + "/start-ring-%d.png" % side)
+		field._approach_progress = 0.0
 		field._interaction_open = false; field._player_progress = 0.0; field._authoritative_traversal_index = 0
 		field.queue_redraw(); frame = await snap(viewport)
 		check(field._leg_fill_progress() == 0.0 and field._display_fill_progress() > 0.0, "预填只改变显示，真实调频进度仍为零")

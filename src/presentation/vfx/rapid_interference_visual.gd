@@ -114,8 +114,8 @@ func configure_from_rules(rules: GameplayRuleSet) -> void:
 
 
 func configure_palette(p_life_color: Color, p_death_color: Color, p_overlap_color: Color) -> void:
-	life_color = p_life_color.lightened(0.18)
-	death_color = p_death_color.lerp(Color("b8c0d2"), 0.72)
+	life_color = p_life_color
+	death_color = p_death_color
 	overlap_color = p_overlap_color
 	_push_configuration()
 

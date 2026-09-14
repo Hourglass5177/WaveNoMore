@@ -166,7 +166,7 @@ func _draw() -> void:
 	draw_arc(Vector2.ZERO, radius, 0.0, TAU, 72, Color(color, 0.24), track_width, true)
 	if _progress > 0.0001:
 		var start_angle: float = -PI * 0.5
-		var end_angle: float = start_angle + TAU * _progress
+		var end_angle: float = start_angle + TAU * _progress * _sweep_direction()
 		var point_count: int = maxi(4, ceili(72.0 * _progress))
 		draw_arc(Vector2.ZERO, radius, start_angle, end_angle, point_count, color, track_width, true)
 		var leading_point := Vector2(cos(end_angle), sin(end_angle)) * radius
@@ -195,7 +195,12 @@ func _sync_glow(radius: float, outer_radius: float, approach_alpha: float) -> vo
 		_glow.clear()
 		return
 	var extent := radius + outer_approach_offset + maxf(cue_style.progress_glow_width + cue_style.progress_width * 0.5, cue_style.approach_glow_width + cue_style.approach_width * 0.5)
-	_glow.set_rings(radius, outer_radius, _progress, approach_alpha, extent, cue_style, affinity)
+	_glow.set_rings(radius, outer_radius, _progress, approach_alpha, extent, cue_style, affinity, _sweep_direction())
+
+
+func _sweep_direction() -> float:
+	# 右侧生 Hold 持续环逆时针，左侧死 Hold 顺时针；接近阶段保持原有读法。
+	return -1.0 if _sustain_mode and affinity == GameplayTypes.Affinity.ZHU else 1.0
 
 
 func _ring_color() -> Color:

@@ -93,6 +93,8 @@ func _process(delta: float) -> void:
 
 func _launch() -> void:
 	var args := PackedStringArray(["--log-file", ProjectSettings.globalize_path(_folder.path_join("game.log")), "--", "--play-chart", ProjectSettings.globalize_path(_folder.path_join("chart.zip")), "--difficulty", _snapshot_charts[0].difficulty_id, "--trial-status", ProjectSettings.globalize_path(_folder.path_join("status.json")), "--trial-request", _request, "--trial-log", ProjectSettings.globalize_path(_folder.path_join("game.log"))])
+	# 独立试玩与写谱器预览共用同一份策划表，避免配套游戏目录里的副本过期。
+	args.append("--planning-sheet=" + ProjectSettings.globalize_path(PlanningParameters.workbook_path()))
 	pid = OS.create_process(executable, args, false)
 	if pid <= 0:
 		notice.emit("无法启动游戏：" + executable)

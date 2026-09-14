@@ -6,7 +6,10 @@ static func make_stage(song: SongDefinition, chart: SongChart) -> StageDefinitio
 	stage.stage_id = chart.chart_id
 	stage.display_name = song.title
 	stage.song = song.duplicate(true)
-	stage.chart = ChartPathAdapter.project(chart, load("res://content/rules/default_gameplay_rules.tres"))
+	stage.rule_set = PlanningParameters.default_rules()
+	if not ChartPathAdapter.validate(chart, stage.rule_set).is_empty(): return null
+	stage.chart = ChartPathAdapter.project(chart, stage.rule_set)
+	stage.set_meta("planning_source_chart", chart)
 	var raw: Dictionary = chart.get_meta("json_source", {})
 	stage.song.first_beat_offset_sec = float(raw.get("timing", {}).get("first_beat_offset_ms", 0)) / 1000.0
 	var presentation: Dictionary = raw.get("presentation", {})
@@ -17,7 +20,6 @@ static func make_stage(song: SongDefinition, chart: SongChart) -> StageDefinitio
 	stage.background = resolved.background.duplicate(true) if resolved.background != null else null
 	stage.stage_show = resolved.show.duplicate(true) if resolved.show != null else StageShow.new()
 	stage.reward = RewardDefinition.new()
-	stage.rule_set = load("res://content/rules/default_gameplay_rules.tres")
 	return stage
 
 ## 同步入口完成表现检查；后台任务使用 read_project，交回主线程后再检查表现依赖。
@@ -109,7 +111,7 @@ static func check_chart(chart: SongChart, scene_ids: PackedStringArray = PackedS
 			var theme_id := str(presentation.get("theme_id", "default"))
 			if not ChartSceneLibrary.LEGACY_THEMES.has(theme_id): issues.append({"message": "未知主题：" + theme_id})
 	if not chart.get_meta("unknown_notes", []).is_empty(): issues.append({"message": "包含当前游戏无法解释的音符或行为"})
-	var rules: GameplayRuleSet = load("res://content/rules/default_gameplay_rules.tres")
+	var rules: GameplayRuleSet = PlanningParameters.default_rules()
 	issues.append_array(ChartPathAdapter.validate(chart, rules))
 	if issues.is_empty():
 		for issue in ChartValidator.validate(ChartPathAdapter.project(chart, rules), rules).issues:

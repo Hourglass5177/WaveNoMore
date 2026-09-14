@@ -96,10 +96,11 @@ func run() -> void:
 	var event := {"event_id": "cached", "time_us": 2000000, "count": 16, "spawn_region_normalized": Rect2(0, 0, 1, 1)}
 	carrier.advance_to(250000)
 	for i: int in 100: simulation._try_prepare_su(event, 250000 + i)
-	check(carrier.queries == 1, "没有新波的 100 次预读仅查询一次")
+	check(carrier.queries == 0, "预测副本求交，100 次请求不查询或修改正式载波")
+	var fixed_target: Dictionary = simulation._su_prepared.cached.duplicate(true)
 	carrier.advance_to(500000)
 	simulation._try_prepare_su(event, 500000)
-	check(carrier.queries == 2, "新载波使候选缓存失效")
+	check(simulation._su_prepared.cached == fixed_target, "新载波不改变已固定的预测")
 	carrier.advance_to(2000000)
 	simulation._try_prepare_su(event, 1999999)
 	var queries_before := carrier.queries
@@ -107,7 +108,7 @@ func run() -> void:
 	check(carrier.queries == queries_before, "不足量到期复用同批交点，不再次求交")
 	check(simulation._su_prepared.has("cached"), "到期仍保留实际可用点")
 	simulation.clear_su_targets()
-	check(simulation._su_candidate_cache.is_empty(), "清场释放候选缓存")
+	check(simulation._su_prepared.is_empty(), "清场释放预测目标")
 	var report := {"cases": total, "additional_cases": 252, "legacy_ms": old_us / 1000.0, "optimized_ms": new_us / 1000.0,
 		"dense_legacy_ms": dense_old_us / 1000.0, "dense_optimized_ms": dense_new_us / 1000.0, "failures": failures}
 	DirAccess.make_dir_recursive_absolute("res://builds/visual-review/note-glow")

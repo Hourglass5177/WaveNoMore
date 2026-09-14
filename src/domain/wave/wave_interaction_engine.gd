@@ -180,6 +180,10 @@ func launch(
 
 	# 无效灰波只供表现；有效彩波最多绑定一枚仍处于 pending 的同阵营普通音符。
 	if valid and not bound_note.is_empty():
+		# 复用已接受的头判信息供即时反馈读取，物理接触仍沿原时间线发生。
+		launch_record["accepted_note_id"] = bound_note["id"]
+		launch_record["input_grade"] = int(bound_note.get("input_grade", GameplayTypes.JudgmentGrade.PERFECT))
+		launch_record["group_id"] = str(bound_note.get("group_id", ""))
 		var binding: Dictionary = _try_bind_note(wave_id, sample, bound_note)
 		if not binding.is_empty():
 			_bound_notes[binding["note_id"]] = true
@@ -401,6 +405,12 @@ func _try_bind_note(
 	state["bound_wave_id"] = wave_id
 	state["contact"] = contact
 	return contact.duplicate(true)
+
+
+func post_cue_travel_us(affinity: int) -> int:
+	## 普通音符从判定点到角色的领域飞行时间，也供失败 Hold 身体结算使用。
+	var profile: Dictionary = _motion_profile(affinity)
+	return roundi(float(profile.cue_distance_px) * USEC_PER_SEC / maxf(float(profile.note_speed_px_sec), 0.001))
 
 
 func _build_arrival(note: Dictionary) -> Dictionary:

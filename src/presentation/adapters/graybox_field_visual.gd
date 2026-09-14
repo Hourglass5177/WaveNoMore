@@ -745,8 +745,8 @@ func _draw_start_progress_ring(start_point: Vector2) -> void:
 	var key := [start_point, cue_radius, _approach_progress]
 	if _cue_segments_key != key:
 		_cue_segments_key = key
-		_cue_segments = [_exterior_cue_segments(TimingCueGlow.arc(start_point, cue_radius, 0.0, TAU)), _exterior_cue_segments(TimingCueGlow.arc(start_point, cue_radius, -PI * 0.5, -PI * 0.5 + TAU * _approach_progress))]
-	# 缩圈仅保留轨道外露出的弧段，朝向轨道内部的一段不再穿过填充。
+		_cue_segments = [[TimingCueGlow.arc(start_point, cue_radius, 0.0, TAU)], [TimingCueGlow.arc(start_point, cue_radius, -PI * 0.5, -PI * 0.5 + TAU * _approach_progress)]]
+	# 起手缩圈是时机提示，完整绘制在条身之上；端帽自身仍不绘制内侧圆轮廓。
 	_draw_cue_segments(0, Color(backing_color, 0.70 * cue_alpha), 7.0)
 	var line := cue_style.line_color(affinity)
 	var alpha := cue_style.approach_alpha(_approach_progress) * cue_alpha
@@ -755,7 +755,7 @@ func _draw_start_progress_ring(start_point: Vector2) -> void:
 	if not cue_style.glow_enabled or missed:
 		_cue_glow.clear()
 		return
-	# 主线和柔光共用裁切结果；只让外露弧段发光，端部逐渐收束。
+	# 主线、托底与柔光共用完整弧段。
 	if _cue_glow.begin([start_point, cue_radius, _approach_progress, cue_alpha, alpha, cue_style.halo_color(affinity), _event_curve_points, cue_style.approach_width, cue_style.approach_glow_width, cue_style.progress_glow_width, cue_style.approach_glow_strength, cue_style.progress_glow_strength]):
 		var halo := cue_style.halo_color(affinity)
 		for part: int in 2:

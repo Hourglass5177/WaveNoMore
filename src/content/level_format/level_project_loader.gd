@@ -37,6 +37,13 @@ static func make_stage(level: Dictionary, directory: String, difficulty := "", d
 	var rules_path := str(level.get("rule_path", "res://content/rules/default_gameplay_rules.tres"))
 	stage.rule_set = load(rules_path) as GameplayRuleSet
 	if stage.rule_set == null: return {"stage": null, "errors": [{"message": "规则预设不存在：" + rules_path}]}
+	var planning := PlanningParameters.read()
+	if not planning.errors.is_empty(): return {"stage": null, "errors": planning.errors}
+	stage.rule_set = PlanningParameters.rules_copy(stage.rule_set, planning)
+	var rule_issues := PlanningParameters.validate_rules(stage.rule_set)
+	if not rule_issues.is_empty(): return {"stage": null, "errors": rule_issues}
+	var path_issues := ChartPathAdapter.validate(chart, stage.rule_set)
+	if not path_issues.is_empty(): return {"stage": null, "errors": path_issues}
 	stage.chart = ChartPathAdapter.project(chart, stage.rule_set)
 	stage.reward.reward_id = str(level.level_id)
 	stage.reward.next_stage_id = str(level.get("next_stage_id", ""))

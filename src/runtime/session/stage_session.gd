@@ -726,8 +726,9 @@ func _calculate_end_song_time_sec() -> float:
 		for note: Dictionary in compiled_chart.notes:
 			physical_note_end_sec = maxf(
 				physical_note_end_sec,
-				float(note.get("start_us", 0)) / 1_000_000.0
+				float(note.get("end_us", 0) if note.get("unit_kind") == &"hold" else note.get("start_us", 0)) / 1_000_000.0
 					+ _post_cue_travel_sec(int(note.get("affinity", GameplayTypes.Affinity.ZHU)))
+					+ (float(rule_set.hold_sustain_grace_ms + gameplay_coordinator.simulation.pet_effect.hold_sustain_bonus_ms) / 1000.0 + 0.000001 if note.get("unit_kind") == &"hold" else 0.0)
 			)
 		for slider: Dictionary in compiled_chart.tuning_sliders:
 			tuning_judgment_end_sec = maxf(
@@ -894,7 +895,7 @@ func _present_note_judgment(note_id: String, at_sec: float = INF) -> void:
 		return
 	var record: JudgmentRecord = _deferred_note_records[note_id]
 	_presented_note_ids[note_id] = true
-	chart_scheduler.mark_judged(note_id, record.mechanical_grade(), at_sec if is_finite(at_sec) else float(record.finalized_at_us) / 1000000.0)
+	chart_scheduler.mark_judged(note_id, record.mechanical_grade(), at_sec if is_finite(at_sec) else float(record.finalized_at_us) / 1000000.0, record.metadata)
 	judgment_presented.emit(record)
 
 
