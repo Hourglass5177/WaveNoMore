@@ -1,121 +1,113 @@
-extends Control
-## 单槽装备页面；资源描述效果，存档管理获得状态，页面不计算技能。
+@tool
+extends "res://src/app/ui/art_screen.gd"
+## 单只随从静息预览；动画只消费 UI 时间，不发送领域技能事件。
 signal close_requested
-var _list: HBoxContainer
-var _status: Label
-var _debug_panel: HBoxContainer
-var _back_button: Button
-
+@export var entries: Array[PetPreviewEntry] = [preload("res://content/ui/nu_tu_fu_preview.tres"), preload("res://content/ui/gui_jin_yang_preview.tres"), preload("res://content/ui/yi_huo_she_preview.tres")]
+var _index := 0
+var _clock := 0.0
+var _actor: PetVisual
+var _selection_motion: Tween
+var _shadow_motion: Tween
 func _ready() -> void:
-	var veil := ColorRect.new()
-	veil.color = Color(0, 0, 0, 0.86)
-	veil.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	add_child(veil)
-	var center := CenterContainer.new()
-	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	add_child(center)
-	var panel := PanelContainer.new()
-	panel.custom_minimum_size = Vector2(1100, 680)
-	panel.add_theme_stylebox_override("panel", MingheUiStyle.panel_style())
-	center.add_child(panel)
-	var column := VBoxContainer.new()
-	column.add_theme_constant_override("separation", 20)
-	panel.add_child(column)
-	var title := _label("随从", 40)
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	column.add_child(title)
-	_list = HBoxContainer.new()
-	_list.add_theme_constant_override("separation", 20)
-	_list.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	column.add_child(_list)
-	_status = _label("", 20)
-	_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	column.add_child(_status)
-	var actions := HBoxContainer.new()
-	actions.alignment = BoxContainer.ALIGNMENT_CENTER
-	column.add_child(actions)
-	_button(actions, "卸下", func() -> void:
-		SaveService.equip_pet("")
-		_build_list())
-	_back_button = _button(actions, "返回", func() -> void: close_requested.emit())
-	if OS.is_debug_build():
-		_button(actions, "开发", func() -> void: _debug_panel.visible = not _debug_panel.visible)
-		_debug_panel = HBoxContainer.new()
-		_debug_panel.visible = false
-		column.add_child(_debug_panel)
-		for pet: PetDefinition in ContentCatalog.data.pets:
-			var group := VBoxContainer.new()
-			group.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-			_debug_panel.add_child(group)
-			group.add_child(_label(pet.display_name, 18))
-			for advanced in [false, true]:
-				_button(group, "测试进阶" if advanced else "测试基础", func() -> void:
-					SaveService.debug_grant_pet(pet.pet_id, advanced)
-					_build_list())
-		_button(_debug_panel, "结束测试", func() -> void:
-			SaveService.debug_pet_tiers.clear()
-			_build_list())
-	_build_list()
-
-func _label(text: String, font_size: int) -> Label:
-	var label := Label.new()
-	label.text = text
-	MingheUiStyle.style_body(label, font_size)
-	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	return label
-
-func _button(parent: Node, text: String, action: Callable) -> Button:
-	var button := Button.new()
-	button.text = text
-	MingheUiStyle.style_button(button)
-	parent.add_child(button)
-	button.pressed.connect(action)
-	return button
-
-func _build_list() -> void:
-	for child in _list.get_children():
-		_list.remove_child(child)
-		child.queue_free()
-	var equipped := SaveService.equipped_pet_id()
-	var focus: Button
-	for pet: PetDefinition in ContentCatalog.data.pets:
-		var state := SaveService.pet_state(pet.pet_id)
-		var owned := bool(state.get("owned", false))
-		var advanced := bool(state.get("advanced", false))
-		var card := VBoxContainer.new()
-		card.name = pet.pet_id
-		card.tooltip_text = pet.description
-		card.custom_minimum_size.x = 320
-		card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		card.add_theme_constant_override("separation", 14)
-		_list.add_child(card)
-		var icon := TextureRect.new()
-		icon.texture = pet.icon(advanced)
-		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		icon.custom_minimum_size = Vector2(128, 160)
-		card.add_child(icon)
-		var title := _label(pet.display_name, 28)
-		title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		card.add_child(title)
-		card.add_child(_label("基础 · " + pet.base_description, 20))
-		card.add_child(_label("进阶 · " + pet.advanced_description, 20))
-		var space := Control.new()
-		space.size_flags_vertical = Control.SIZE_EXPAND_FILL
-		card.add_child(space)
-		card.add_child(_label("进阶已获得" if advanced else ("基础已获得 · AP 进阶" if owned else "未获得 · FC 解锁"), 18))
-		var button := _button(card, "已装备" if equipped == pet.pet_id else "装备", func() -> void:
-			SaveService.equip_pet(pet.pet_id)
-			_build_list())
-		button.tooltip_text = pet.description
-		button.disabled = not owned
-		MingheUiStyle.style_button(button, equipped == pet.pet_id)
-		if owned and (focus == null or equipped == pet.pet_id): focus = button
-	var selected := ContentCatalog.get_pet(equipped)
-	_status.text = "未装备" if selected == null else selected.display_name + (" · 进阶" if SaveService.equipped_pet_advanced() else " · 基础")
-	(focus if focus != null else _back_button).grab_focus.call_deferred()
-
+	super._ready()
+	if Engine.is_editor_hint(): return
+	for name in ["Left","Right","Preview"]:
+		var button: Button = get_node("%"+name)
+		for state in ["normal","hover","pressed","disabled"]: button.add_theme_stylebox_override(state,StyleBoxEmpty.new())
+	%Left.pressed.connect(step.bind(-1))
+	%Right.pressed.connect(step.bind(1))
+	%Preview.pressed.connect(play_skill)
+	%Equip.pressed.connect(_equip)
+	%Back.pressed.connect(func(): close_requested.emit())
+	%Developer.visible = OS.is_debug_build()
+	%Developer.pressed.connect(func(): %DevPanel.visible = not %DevPanel.visible)
+	%GrantBase.pressed.connect(_grant.bind(false))
+	%GrantAdvanced.pressed.connect(_grant.bind(true))
+	%EndTest.pressed.connect(func():
+		SaveService.debug_pet_tiers.clear()
+		_show_pet())
+	for i in entries.size():
+		if entries[i].pet_id == SaveService.equipped_pet_id(): _index = i
+	_show_pet()
+	%Preview.grab_focus.call_deferred()
+func step(direction: int) -> void:
+	_index = posmod(_index+direction,entries.size())
+	_show_pet(direction)
+func _show_pet(direction: int = 0) -> void:
+	if is_instance_valid(_actor):
+		%Actor.remove_child(_actor)
+		_actor.queue_free()
+	_clock = 0.0
+	var entry := entries[_index]
+	var pet := ContentCatalog.get_pet(entry.pet_id)
+	var state := SaveService.pet_state(entry.pet_id)
+	%Heading.texture = entry.heading
+	%Base.text = pet.base_description if state.get("owned",false) else "？？？"
+	%Base.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT if state.get("owned",false) else HORIZONTAL_ALIGNMENT_CENTER
+	%Advanced.text = pet.advanced_description if state.get("advanced",false) else "？？？"
+	%Advanced.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT if state.get("advanced",false) else HORIZONTAL_ALIGNMENT_CENTER
+	%Description.scroll_vertical = 0
+	%Status.text = "已获得" if state.get("owned",false) else "未获得"
+	%Equip.disabled = not state.get("owned",false)
+	%Equip.text = "卸下" if SaveService.equipped_pet_id() == entry.pet_id else "装备"
+	# 在局部副本选择快照场景，不改共享随从资源和它的局内位置。
+	var display_pet := pet.duplicate() as PetDefinition
+	display_pet.base_scene = entry.scene
+	display_pet.advanced_scene = entry.scene
+	_actor = display_pet.visual_scene(state.get("advanced",false)).instantiate() as PetVisual
+	%Actor.add_child(_actor)
+	_actor.scale = Vector2.ONE*entry.preview_scale
+	_actor.position = entry.preview_offset
+	_actor.bind(display_pet,state.get("advanced",false))
+	_actor.set_world(GameplayTypes.Affinity.ZHU)
+	_actor.set_state(0.0)
+	# 投影颜色取原画的主色，仅配置菜单展示资源，不改局内角色或技能。
+	if _shadow_motion: _shadow_motion.kill()
+	%GroundGlow.size = entry.shadow_size
+	%GroundGlow.position = entry.shadow_position-entry.shadow_size*0.5
+	%GroundGlow.pivot_offset = entry.shadow_size*0.5
+	%GroundGlow.scale = Vector2.ONE
+	%GroundGlow.material.set_shader_parameter("glow_color",entry.shadow_color)
+	%GroundGlow.material.set_shader_parameter("strength",entry.shadow_strength)
+	if _selection_motion: _selection_motion.kill()
+	%Actor.position.x = 960.0+direction*18.0
+	%Actor.modulate.a = 0.0
+	%GroundGlow.modulate.a = 0.0
+	%Heading.modulate.a = 0.45
+	_selection_motion = create_tween().set_parallel(true)
+	_selection_motion.tween_property(%Actor,"position:x",960.0,0.22).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	for item in [%Actor,%GroundGlow,%Heading]:
+		_selection_motion.tween_property(item,"modulate:a",1.0,0.22).set_trans(Tween.TRANS_SINE)
+func play_skill() -> void:
+	var previous_events: int = _actor.events.size()
+	_actor.trigger(_clock)
+	if _actor.events.size() == previous_events: return
+	# 技能被播放器接受时投影只舒展一次；连按不会反复点亮。
+	if _shadow_motion: _shadow_motion.kill()
+	_shadow_motion = create_tween()
+	_shadow_motion.tween_property(%GroundGlow,"scale",Vector2(1.08,1.04),0.12).set_trans(Tween.TRANS_SINE)
+	_shadow_motion.tween_property(%GroundGlow,"scale",Vector2.ONE,0.32).set_trans(Tween.TRANS_SINE)
+func _process(delta: float) -> void:
+	if Engine.is_editor_hint() or not is_visible_in_tree() or not is_instance_valid(_actor): return
+	_clock += delta
+	_actor.set_state(_clock)
+func _equip() -> void:
+	var id := entries[_index].pet_id
+	SaveService.equip_pet("" if SaveService.equipped_pet_id() == id else id)
+	%Equip.text = "卸下" if SaveService.equipped_pet_id() == id else "装备"
+func _grant(advanced: bool) -> void:
+	SaveService.debug_grant_pet(entries[_index].pet_id,advanced)
+	_show_pet()
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
 		get_viewport().set_input_as_handled()
 		close_requested.emit()
+
+func _input(event: InputEvent) -> void:
+	super._input(event)
+	if closing: return
+	# 预览页方向键切换随从，避免被 Button 的默认寻焦先吃掉。
+	if not is_visible_in_tree(): return
+	if event.is_action_pressed("ui_left") or event.is_action_pressed("ui_right"):
+		get_viewport().set_input_as_handled()
+		step(-1 if event.is_action_pressed("ui_left") else 1)

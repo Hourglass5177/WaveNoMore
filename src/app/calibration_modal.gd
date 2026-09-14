@@ -27,88 +27,39 @@ var diagnostics_enabled := false
 var diagnostic_inputs: Array[Dictionary] = []
 
 func _ready() -> void:
-	var veil := ColorRect.new()
-	veil.color = Color(0, 0, 0, 0.86)
-	veil.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	add_child(veil)
-	var center := CenterContainer.new()
-	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	add_child(center)
-	var panel := PanelContainer.new()
-	panel.custom_minimum_size = Vector2(920, 830)
-	panel.add_theme_stylebox_override("panel", MingheUiStyle.panel_style())
-	center.add_child(panel)
-	var column := VBoxContainer.new()
-	column.add_theme_constant_override("separation", 16)
-	panel.add_child(column)
-	var title := Label.new()
-	title.text = "校准"
-	MingheUiStyle.style_title(title, 40)
-	column.add_child(title)
-	_device = _label(column, "", 18)
-	_update_device()
-	_label(column, "先听 4 拍，再跟着编钟声按 F 或 J，共 24 拍。手柄可用左右肩键。\n跟拍时不播放按键声；请听参考音，不要等进度文字变化再按。", 20)
-	_progress = _label(column, "准备好后开始。更换外放、耳机或蓝牙设备后，请重新测量。", 20)
-	var actions := HBoxContainer.new()
-	actions.add_theme_constant_override("separation", 14)
-	column.add_child(actions)
-	_start_button = _button(actions, "开始跟拍", _start_test)
-	_stop_button = _button(actions, "停止测量", _cancel_test)
+	_audio_offset = %AudioOffset
+	_input_offset = %InputOffset
+	_visual_offset = %VisualOffset
+	_device = %Device
+	_progress = %Progress
+	_summary = %Summary
+	_start_button = %Start
+	_stop_button = %Stop
+	_apply_button = %Apply
+	_audio_offset.value = SettingsService.audio_output_offset_ms
+	_input_offset.value = SettingsService.input_offset_ms
+	_visual_offset.value = SettingsService.visual_offset_ms
+	_start_button.pressed.connect(_start_test)
+	_stop_button.pressed.connect(_cancel_test)
+	_apply_button.pressed.connect(_apply_suggestion)
+	%Reset.pressed.connect(_reset_values)
 	_stop_button.disabled = true
-	_apply_button = _button(actions, "应用输入补偿建议", _apply_suggestion)
 	_apply_button.disabled = true
-	_summary = _label(column, "测量结果会显示早晚偏差与波动。建议只修改输入补偿，不修改歌曲。", 20)
-	_audio_offset = _add_spin(column, "音频输出偏移（ms）", SettingsService.audio_output_offset_ms)
-	_input_offset = _add_spin(column, "输入补偿（ms）", SettingsService.input_offset_ms)
-	_visual_offset = _add_spin(column, "画面提前量（ms）", SettingsService.visual_offset_ms)
-	_label(column, "输出正值：让歌曲时钟更晚。输入正值：把迟到的按键映射到更早时刻。\n画面正值：提前显示音符。校准不能消除按键之后的蓝牙传输时间。", 18)
-	var footer := HBoxContainer.new()
-	footer.add_theme_constant_override("separation", 14)
-	column.add_child(footer)
-	_button(footer, "恢复默认值", _reset_values)
-	_button(footer, "保存校准", _save)
-	_button(footer, "取消", _close)
 	_reference.bus = &"UI"
 	_reference.stream = CalibrationTapSession.create_reference()
 	add_child(_reference)
-	_reference.finished.connect(func() -> void:
+	_reference.finished.connect(func():
 		if _running: _finish_test())
-	_start_button.grab_focus.call_deferred()
+	_update_device()
 
-func _label(parent: Node, value: String, font_size: int) -> Label:
-	var label := Label.new()
-	label.text = value
-	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	label.custom_minimum_size.x = 820
-	MingheUiStyle.style_body(label, font_size)
-	parent.add_child(label)
-	return label
+## 嵌入设置页后只提供草稿；唯一写盘入口在外层设置。
+func draft_values() -> Dictionary:
+	_commit_fields()
+	return {"audio_output_offset_ms": int(_audio_offset.value), "input_offset_ms": int(_input_offset.value), "visual_offset_ms": int(_visual_offset.value)}
 
-func _button(parent: Node, caption: String, action: Callable) -> Button:
-	var button := Button.new()
-	button.text = caption
-	MingheUiStyle.style_button(button)
-	button.custom_minimum_size = Vector2(0, 54)
-	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	button.pressed.connect(action)
-	parent.add_child(button)
-	return button
-
-func _add_spin(parent: VBoxContainer, caption: String, current: int) -> SpinBox:
-	var row := HBoxContainer.new()
-	parent.add_child(row)
-	var label := Label.new()
-	label.text = caption
-	label.custom_minimum_size.x = 430
-	MingheUiStyle.style_body(label, 22)
-	row.add_child(label)
-	var spin := SpinBox.new()
-	spin.min_value = -300; spin.max_value = 300; spin.step = 1
-	spin.value = current
-	spin.custom_minimum_size.x = 220
-	spin.add_theme_font_size_override("font_size", 22)
-	row.add_child(spin)
-	return spin
+func deactivate() -> void:
+	if _running: _cancel_test()
+	set_process(false)
 
 func _start_test() -> void:
 	_commit_fields()
@@ -172,7 +123,7 @@ func _finish_test() -> void:
 	_summary.text = "%s %.1f ms · 波动（中位绝对偏差）%.1f ms\n有效 %d / 24 次，排除 %d 次离群输入；建议输入补偿 %d ms。" % [direction, absf(error_ms), _result.mad_ms, _result.used, _result.excluded, _result.suggested_input_ms]
 	_apply_button.disabled = not _result.can_apply
 	if _result.used < CalibrationTapSession.MIN_SAMPLES:
-		_progress.text = "有效跟拍不足 12 次，请重测；未修改任何设置。"
+		_progress.text = "有效跟拍不足 12 次，请重测。"
 	elif not _result.can_apply:
 		_progress.text = "建议值超出可调范围，请检查输出设置后重测。"
 	elif _result.mad_ms > 40.0:
@@ -186,7 +137,7 @@ func _cancel_test() -> void:
 	_result.clear()
 	_set_controls_running(false)
 	_progress.text = "测量已停止，可以重新开始。"
-	_summary.text = "本次没有应用补偿。"
+	_summary.text = ""
 
 func _set_controls_running(value: bool) -> void:
 	_start_button.disabled = value
@@ -199,7 +150,7 @@ func _apply_suggestion() -> void:
 	if not _result.get("can_apply", false): return
 	_input_offset.value = int(_result.suggested_input_ms)
 	_apply_button.disabled = true
-	_progress.text = "建议已填入输入补偿，尚未保存。可以重测，也可以保存校准。"
+	_progress.text = "建议已填入输入补偿。"
 
 func _reset_values() -> void:
 	_cancel_test()
@@ -208,22 +159,12 @@ func _reset_values() -> void:
 
 func _commit_fields() -> void:
 	# 保存和开始测量都提交尚未按回车的数字，避免沿用 SpinBox 的旧值。
-	for spin in [_audio_offset, _input_offset, _visual_offset]: spin.apply()
+	for spin in [_audio_offset, _input_offset, _visual_offset]:
+		# 隐藏分类的文字可能尚未刷新；只有正在编辑的输入框需要提交文本。
+		if spin.get_line_edit().has_focus(): spin.apply()
 
 func _update_device() -> void:
-	_device.text = "当前输出：%s · 驱动：%s\n系统默认设备切换后也需要重测；本次结果只适用于当前设备与连接方式。" % [AudioServer.output_device, AudioServer.get_driver_name()]
-
-func _save() -> void:
-	_cancel_test(); _commit_fields()
-	SettingsService.audio_output_offset_ms = int(_audio_offset.value)
-	SettingsService.input_offset_ms = int(_input_offset.value)
-	SettingsService.visual_offset_ms = int(_visual_offset.value)
-	SettingsService.save_settings()
-	close_requested.emit()
-
-func _close() -> void:
-	_cancel_test()
-	close_requested.emit()
+	_device.text = "当前输出：%s · %s" % [AudioServer.output_device, AudioServer.get_driver_name()]
 
 func _exit_tree() -> void:
 	if _running: Input.use_accumulated_input = _previous_accumulated_input
@@ -231,8 +172,3 @@ func _exit_tree() -> void:
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT and _running: _cancel_test()
-
-func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("ui_cancel"):
-		get_viewport().set_input_as_handled()
-		_close()

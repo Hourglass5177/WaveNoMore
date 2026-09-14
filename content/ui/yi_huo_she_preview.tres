@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="PetPreviewEntry" format=3]
+[ext_resource type="Script" path="res://src/app/ui/pet_preview_entry.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/art/随从界面/翼火蛇.png" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/presentation/pets/snake.tscn" id="3"]
+[resource]
+script = ExtResource("1")
+pet_id = "yi_huo_she"
+heading = ExtResource("2")
+scene = ExtResource("3")
+preview_scale = 4.2
+shadow_color = Color(0.784,0.094,0.0,1)
+shadow_size = Vector2(420,98)

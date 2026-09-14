@@ -73,13 +73,16 @@ func _run() -> void:
 	# 重建卡片和显示开发按钮后仍然只在弹窗中寻焦。
 	for pet: PetDefinition in catalog.data.pets:
 		saves.data.pets[pet.pet_id] = {"owned": true, "advanced": false}
-	modal._build_list()
-	if modal._debug_panel != null: modal._debug_panel.show()
+	modal._show_pet()
+	modal.get_node("%DevPanel").show()
 	await frames()
 	for i in 12:
 		await joy(JOY_BUTTON_DPAD_DOWN)
 		check(modal.is_ancestor_of(root.gui_get_focus_owner()), "动态内容不破坏弹窗焦点范围")
 	await joy(JOY_BUTTON_B)
+	check(is_instance_valid(modal) and modal.closing,"返回先淡出弹窗")
+	check(app.screen_host.focus_behavior_recursive==Control.FOCUS_BEHAVIOR_DISABLED,"淡出期间底层焦点仍隔离")
+	await create_timer(0.2).timeout
 	await frames()
 	check(app._current_screen == page, "取消弹窗不会同时触发底层返回")
 	check(root.gui_get_focus_owner() == opener, "关闭后回到打开弹窗的按钮")
@@ -97,7 +100,6 @@ func _run() -> void:
 	await frames()
 	catalog.data = old_catalog
 	catalog._rebuild_indices()
-	catalog._discover_stage_packages()
 	saves.data = old_save
 	print("MENU NAVIGATION TESTS: %d checks, %d failures" % [checks, failures])
 	quit(1 if failures else 0)

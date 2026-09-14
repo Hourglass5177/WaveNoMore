@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="PetPreviewEntry" format=3]
+[ext_resource type="Script" path="res://src/app/ui/pet_preview_entry.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/art/随从界面/鬼金羊.png" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/presentation/pets/sheep.tscn" id="3"]
+[resource]
+script = ExtResource("1")
+pet_id = "gui_jin_yang"
+heading = ExtResource("2")
+scene = ExtResource("3")
+preview_scale = 4.6
+shadow_color = Color(0.816,0.565,0.502,1)
+shadow_size = Vector2(420,96)

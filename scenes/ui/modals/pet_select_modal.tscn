@@ -1,8 +1,39 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3]
 
-[ext_resource type="Script" path="res://src/app/pet_select_modal.gd" id="1_script"]
+[ext_resource type="Script" path="res://src/app/pet_select_modal.gd" id="1"]
+[ext_resource type="Theme" path="res://content/ui/game_theme.tres" id="2"]
+[ext_resource type="Texture2D" path="res://assets/image/ui/选关/background.png" id="3"]
+[ext_resource type="Texture2D" path="res://assets/image/ui/选关/小部件/顶部文字飘带2.png" id="4"]
+[ext_resource type="Texture2D" path="res://assets/image/ui/选关/小部件/顶部文字飘带.png" id="5"]
+[ext_resource type="Script" path="res://src/app/ui/art_button.gd" id="6"]
+[ext_resource type="Texture2D" path="res://assets/image/ui/选关/小部件/两侧箭头.png" id="7"]
+[ext_resource type="Script" path="res://src/app/ui/art_button.gd" id="8"]
+[ext_resource type="Texture2D" path="res://assets/image/ui/选关/小部件/箭头右.png" id="9"]
+[ext_resource type="Script" path="res://src/app/ui/art_button.gd" id="10"]
+[ext_resource type="Script" path="res://src/app/ui/art_button.gd" id="11"]
+[ext_resource type="Script" path="res://src/app/ui/art_button.gd" id="12"]
+[ext_resource type="Script" path="res://src/app/ui/art_button.gd" id="13"]
+[ext_resource type="Script" path="res://src/app/ui/art_button.gd" id="14"]
+[ext_resource type="Script" path="res://src/app/ui/art_button.gd" id="15"]
+[ext_resource type="Script" path="res://src/app/ui/art_button.gd" id="16"]
 
-[node name="PetSelectModal" type="Control"]
+[ext_resource type="Shader" path="res://shaders/ui/pet_ground_glow.gdshader" id="shadow"]
+[sub_resource type="ShaderMaterial" id="shadow"]
+resource_local_to_scene = true
+shader = ExtResource("shadow")
+
+[node name="Screen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+theme = ExtResource("2")
+
+
+[node name="Dim" type="ColorRect" parent="."]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -10,4 +41,277 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 0
-script = ExtResource("1_script")
+color = Color(0.015,0.012,0.020,0.72)
+
+
+[node name="Design" type="Control" parent="."]
+layout_mode = 0
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 1920.0
+offset_bottom = 1080.0
+mouse_filter = 2
+
+
+[node name="Backdrop" type="TextureRect" parent="Design"]
+layout_mode = 0
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 1920.0
+offset_bottom = 1080.0
+texture = ExtResource("3")
+expand_mode = 1
+mouse_filter = 2
+
+
+[node name="RibbonLeft" type="TextureRect" parent="Design"]
+layout_mode = 0
+offset_left = 490.0
+offset_top = 65.0
+offset_right = 800.0
+offset_bottom = 225.0
+texture = ExtResource("4")
+expand_mode = 1
+stretch_mode = 5
+mouse_filter = 2
+
+
+[node name="RibbonRight" type="TextureRect" parent="Design"]
+layout_mode = 0
+offset_left = 1120.0
+offset_top = 65.0
+offset_right = 1430.0
+offset_bottom = 225.0
+texture = ExtResource("5")
+expand_mode = 1
+stretch_mode = 5
+mouse_filter = 2
+
+
+[node name="Heading" type="TextureRect" parent="Design"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 800.0
+offset_top = 94.0
+offset_right = 1120.0
+offset_bottom = 194.0
+expand_mode = 1
+stretch_mode = 5
+mouse_filter = 2
+
+
+[node name="Left" type="Button" parent="Design"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 100.0
+offset_top = 409.0
+offset_right = 230.0
+offset_bottom = 574.0
+text = ""
+script = ExtResource("6")
+focus_art_shift = Vector2(-4,0)
+
+
+[node name="Art" type="TextureRect" parent="Design/Left"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("7")
+expand_mode = 1
+stretch_mode = 5
+mouse_filter = 2
+
+
+[node name="Right" type="Button" parent="Design"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 1690.0
+offset_top = 409.0
+offset_right = 1820.0
+offset_bottom = 574.0
+text = ""
+script = ExtResource("8")
+focus_art_shift = Vector2(4,0)
+
+
+[node name="Art" type="TextureRect" parent="Design/Right"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("9")
+expand_mode = 1
+stretch_mode = 5
+mouse_filter = 2
+
+
+[node name="Preview" type="Button" parent="Design"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 650.0
+offset_top = 225.0
+offset_right = 1270.0
+offset_bottom = 663.0
+text = ""
+script = ExtResource("10")
+tooltip_text = "播放技能动画"
+
+
+[node name="GroundGlow" type="ColorRect" parent="Design"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 720.0
+offset_top = 587.0
+offset_right = 1200.0
+offset_bottom = 695.0
+mouse_filter = 2
+material = SubResource("shadow")
+
+[node name="Actor" type="Node2D" parent="Design"]
+unique_name_in_owner = true
+position = Vector2(960,465)
+
+
+[node name="Description" type="ScrollContainer" parent="Design"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 505.0
+offset_top = 735.0
+offset_right = 1415.0
+offset_bottom = 893.0
+follow_focus = true
+horizontal_scroll_mode = 0
+
+
+[node name="Text" type="VBoxContainer" parent="Design/Description"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 14
+
+
+[node name="BaseRow" type="HBoxContainer" parent="Design/Description/Text"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="BaseCaption" type="Label" parent="Design/Description/Text/BaseRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(128,0)
+size_flags_vertical = 0
+text = "基础："
+theme_override_font_sizes/font_size = 29
+
+[node name="Base" type="Label" parent="Design/Description/Text/BaseRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "？？？"
+theme_override_font_sizes/font_size = 29
+autowrap_mode = 2
+focus_mode = 2
+horizontal_alignment = 1
+
+[node name="AdvancedRow" type="HBoxContainer" parent="Design/Description/Text"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="AdvancedCaption" type="Label" parent="Design/Description/Text/AdvancedRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(128,0)
+size_flags_vertical = 0
+text = "进阶："
+theme_override_font_sizes/font_size = 29
+
+[node name="Advanced" type="Label" parent="Design/Description/Text/AdvancedRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "？？？"
+theme_override_font_sizes/font_size = 29
+autowrap_mode = 2
+focus_mode = 2
+horizontal_alignment = 1
+
+
+[node name="Status" type="Label" parent="Design"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 560.0
+offset_top = 678.0
+offset_right = 1360.0
+offset_bottom = 721.0
+text = ""
+theme_override_font_sizes/font_size = 25
+horizontal_alignment = 1
+
+
+[node name="Equip" type="Button" parent="Design"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 775.0
+offset_top = 916.0
+offset_right = 1145.0
+offset_bottom = 978.0
+text = "装备"
+script = ExtResource("11")
+
+
+[node name="Back" type="Button" parent="Design"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 1500.0
+offset_top = 943.0
+offset_right = 1745.0
+offset_bottom = 1003.0
+text = "返回"
+script = ExtResource("12")
+
+
+[node name="Developer" type="Button" parent="Design"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 130.0
+offset_top = 943.0
+offset_right = 350.0
+offset_bottom = 1003.0
+text = "开发"
+script = ExtResource("13")
+
+
+[node name="DevPanel" type="HBoxContainer" parent="Design"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 330.0
+offset_top = 1008.0
+offset_right = 1590.0
+offset_bottom = 1062.0
+visible = false
+theme_override_constants/separation = 16
+
+
+[node name="GrantBase" type="Button" parent="Design/DevPanel"]
+unique_name_in_owner = true
+text = "测试基础"
+script = ExtResource("14")
+layout_mode = 2
+size_flags_horizontal = 3
+
+
+[node name="GrantAdvanced" type="Button" parent="Design/DevPanel"]
+unique_name_in_owner = true
+text = "测试进阶"
+script = ExtResource("15")
+layout_mode = 2
+size_flags_horizontal = 3
+
+
+[node name="EndTest" type="Button" parent="Design/DevPanel"]
+unique_name_in_owner = true
+text = "结束测试"
+script = ExtResource("16")
+layout_mode = 2
+size_flags_horizontal = 3

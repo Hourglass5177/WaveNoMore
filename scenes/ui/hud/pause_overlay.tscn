@@ -1,22 +1,28 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene format=3]
 
-[ext_resource type="Script" path="res://src/presentation/adapters/pause_overlay.gd" id="1_pause"]
-
-[sub_resource type="StyleBoxFlat" id="PausePanel"]
-bg_color = Color(0.035, 0.04, 0.055, 0.96)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.63, 0.48, 0.34, 0.75)
-corner_radius_top_left = 2
-corner_radius_top_right = 2
-corner_radius_bottom_right = 2
-corner_radius_bottom_left = 2
+[ext_resource type="Script" path="res://src/presentation/adapters/pause_overlay.gd" id="1"]
+[ext_resource type="Script" path="res://src/app/ui/art_screen.gd" id="2"]
+[ext_resource type="Theme" path="res://content/ui/game_theme.tres" id="3"]
+[ext_resource type="Texture2D" path="res://assets/ui/art/弹窗/弹窗底图.png" id="4"]
+[ext_resource type="Script" path="res://src/app/ui/fire_frame.gd" id="5"]
+[ext_resource type="Texture2D" path="res://assets/ui/art/弹窗/闭上的眼睛.png" id="6"]
+[ext_resource type="Texture2D" path="res://assets/ui/art/弹窗/睁开的眼睛-眼眶.png" id="7"]
+[ext_resource type="Script" path="res://src/app/ui/art_button.gd" id="8"]
+[ext_resource type="Texture2D" path="res://assets/ui/art/弹窗/继续.png" id="9"]
+[ext_resource type="Script" path="res://src/app/ui/art_button.gd" id="10"]
+[ext_resource type="Texture2D" path="res://assets/ui/art/弹窗/重玩.png" id="11"]
+[ext_resource type="Script" path="res://src/app/ui/art_button.gd" id="12"]
+[ext_resource type="Texture2D" path="res://assets/ui/art/弹窗/退出.png" id="13"]
+[ext_resource type="Script" path="res://src/app/ui/art_button.gd" id="14"]
 
 [node name="PauseOverlay" type="CanvasLayer"]
 process_mode = 3
-script = ExtResource("1_pause")
+script = ExtResource("1")
+title_path = NodePath("Root/Design/Countdown")
+continue_button_path = NodePath("Root/Design/Continue")
+retry_button_path = NodePath("Root/Design/Retry")
+exit_button_path = NodePath("Root/Design/Exit")
+
 
 [node name="Root" type="Control" parent="."]
 layout_mode = 3
@@ -25,58 +31,171 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("2")
+theme = ExtResource("3")
+
 
 [node name="Dim" type="ColorRect" parent="Root"]
-layout_mode = 1
+layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.005, 0.008, 0.014, 0.76)
+color = Color(0.01,0.008,0.016,0.76)
 
-[node name="Panel" type="PanelContainer" parent="Root"]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -225.0
-offset_top = -190.0
-offset_right = 225.0
-offset_bottom = 190.0
+
+[node name="Design" type="Control" parent="Root"]
+layout_mode = 0
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 1920.0
+offset_bottom = 1080.0
+mouse_filter = 2
+
+
+[node name="Panel" type="TextureRect" parent="Root/Design"]
+layout_mode = 0
+offset_left = 380.0
+offset_top = 305.0
+offset_right = 1540.0
+offset_bottom = 835.0
+texture = ExtResource("4")
+expand_mode = 1
+mouse_filter = 2
+
+
+[node name="Fire" type="TextureRect" parent="Root/Design"]
+layout_mode = 0
+offset_left = 174.0
+offset_top = 160.0
+offset_right = 1754.0
+offset_bottom = 1040.0
+script = ExtResource("5")
+expand_mode = 1
+mouse_filter = 2
+
+
+[node name="ClosedEye" type="TextureRect" parent="Root/Design"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 855.0
+offset_top = 419.0
+offset_right = 1065.0
+offset_bottom = 527.0
+texture = ExtResource("6")
+expand_mode = 1
+stretch_mode = 5
+mouse_filter = 2
+
+
+[node name="OpenEye" type="TextureRect" parent="Root/Design"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 800.0
+offset_top = 383.0
+offset_right = 1120.0
+offset_bottom = 551.0
+texture = ExtResource("7")
+expand_mode = 1
+stretch_mode = 5
+mouse_filter = 2
+
+
+[node name="Countdown" type="Label" parent="Root/Design"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 898.0
+offset_top = 397.0
+offset_right = 1022.0
+offset_bottom = 512.0
+text = ""
+theme_override_font_sizes/font_size = 76
+horizontal_alignment = 1
+vertical_alignment = 1
+mouse_filter = 2
+
+
+[node name="Continue" type="Button" parent="Root/Design"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 814.0
+offset_top = 645.0
+offset_right = 1106.0
+offset_bottom = 738.0
+text = ""
+script = ExtResource("8")
+
+
+[node name="ContinueArt" type="TextureRect" parent="Root/Design/Continue"]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_styles/panel = SubResource("PausePanel")
+texture = ExtResource("9")
+expand_mode = 1
+mouse_filter = 2
 
-[node name="Layout" type="VBoxContainer" parent="Root/Panel"]
-layout_mode = 2
-theme_override_constants/separation = 18
-alignment = 1
 
-[node name="Title" type="Label" parent="Root/Panel/Layout"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.9, 0.84, 0.7, 1)
-theme_override_font_sizes/font_size = 34
-text = "冥河暂寂"
-horizontal_alignment = 1
+[node name="Retry" type="Button" parent="Root/Design"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 474.0
+offset_top = 645.0
+offset_right = 766.0
+offset_bottom = 738.0
+text = ""
+script = ExtResource("10")
 
-[node name="ContinueButton" type="Button" parent="Root/Panel/Layout"]
-custom_minimum_size = Vector2(310, 58)
-layout_mode = 2
-focus_mode = 2
-text = "继续"
 
-[node name="RetryButton" type="Button" parent="Root/Panel/Layout"]
-custom_minimum_size = Vector2(310, 58)
-layout_mode = 2
-focus_mode = 2
-text = "重试"
+[node name="RetryArt" type="TextureRect" parent="Root/Design/Retry"]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("11")
+expand_mode = 1
+mouse_filter = 2
 
-[node name="ExitButton" type="Button" parent="Root/Panel/Layout"]
-custom_minimum_size = Vector2(310, 58)
-layout_mode = 2
-focus_mode = 2
-text = "离开"
+
+[node name="Exit" type="Button" parent="Root/Design"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 1154.0
+offset_top = 645.0
+offset_right = 1446.0
+offset_bottom = 738.0
+text = ""
+script = ExtResource("12")
+
+
+[node name="ExitArt" type="TextureRect" parent="Root/Design/Exit"]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("13")
+expand_mode = 1
+mouse_filter = 2
+
+
+[node name="AddLocal" type="Button" parent="Root/Design"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 765.0
+offset_top = 766.0
+offset_right = 1155.0
+offset_bottom = 822.0
+text = "加入本地谱面"
+script = ExtResource("14")
+visible = false
 

@@ -100,3 +100,7 @@ static func style_body(label: Label, size: int = 20) -> void:
 	label.add_theme_font_size_override("font_size", size)
 	label.add_theme_color_override("font_color", ASH)
 	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+
+## 程序绘制的 HUD 文本也使用正式字体；工具启动保持原有字形。
+static func ui_font() -> Font:
+	return ThemeDB.fallback_font if StudioLaunch.is_active() else preload("res://assets/fonts/huiwen.otf")

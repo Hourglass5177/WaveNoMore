@@ -64,14 +64,16 @@ func _test_reference() -> void:
 func _test_modal() -> void:
 	var settings := root.get_node("SettingsService")
 	var before: Array = [settings.audio_output_offset_ms, settings.input_offset_ms, settings.visual_offset_ms]
-	var modal = load("res://scenes/ui/modals/calibration_modal.tscn").instantiate()
-	root.add_child(modal)
+	var screen = load("res://scenes/ui/modals/calibration_modal.tscn").instantiate()
+	root.add_child(screen)
+	var modal = screen.get_node("%CalibrationPage")
 	for frame in 3: await process_frame
 	for button in [modal._start_button, modal._stop_button, modal._apply_button]:
 		expect(root.get_visible_rect().encloses(button.get_global_rect()), "校准按钮保持在可见窗口内")
 	if OS.get_cmdline_user_args().has("--calibration-capture") and DisplayServer.get_name() != "headless":
 		await RenderingServer.frame_post_draw
 		root.get_texture().get_image().save_png("res://builds/stability/calibration.png")
+	modal._input_offset.get_line_edit().grab_focus()
 	modal._input_offset.get_line_edit().text = "20"
 	var accumulated_before := Input.use_accumulated_input
 	modal._start_test()
@@ -94,7 +96,7 @@ func _test_modal() -> void:
 	expect(Input.use_accumulated_input == accumulated_before, "停止跟拍也恢复输入递送设置")
 	expect(modal._input_offset.value == 0 and modal._audio_offset.value == 0 and modal._visual_offset.value == 0, "重置三个草稿值")
 	expect(not modal._running and not modal._reference.playing, "取消或重置收掉参考音")
-	modal.queue_free()
+	screen.queue_free()
 	await process_frame
 
 func _test_input_delivery() -> void:
@@ -165,8 +167,10 @@ func _test_app_settings() -> void:
 	var app = load("res://scenes/app/app_main.tscn").instantiate()
 	# Autoload 完成后才装入应用脚本；只跳过页面导航，仍调用正式 _show_stage。
 	var harness := GDScript.new()
-	harness.source_code = "extends \"res://src/app/app_main.gd\"\nfunc _ready() -> void: pass\n"
+	harness.source_code = "extends \"res://src/app/app_main.gd\"\nfunc _ready() -> void: add_child(_jobs)\n"
 	harness.reload()
+	# 替换脚本会重新执行成员初始化，先回收原实例尚未挂入树的任务节点。
+	app._jobs.free()
 	app.set_script(harness)
 	root.add_child(app)
 	var song := SongDefinition.new()

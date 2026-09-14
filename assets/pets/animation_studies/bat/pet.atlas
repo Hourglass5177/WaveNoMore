@@ -1,0 +1,16 @@
+atlas.png
+size:2048,256
+filter:Linear,Linear
+pma:false
+wing_l
+bounds:4,4,94,180
+wing_r
+bounds:102,4,109,170
+ear_l
+bounds:215,4,51,116
+ear_r
+bounds:270,4,84,114
+tail
+bounds:358,4,55,72
+body
+bounds:417,4,308,223

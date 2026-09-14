@@ -51,6 +51,7 @@ func _ready() -> void:
 	if StudioLaunch.is_active():
 		get_tree().change_scene_to_file.call_deferred("res://scenes/tools/chart_studio/studio.tscn")
 		return
+	theme = preload("res://content/ui/game_theme.tres")
 	# AppRouter 记录页面和返回历史；具体实例化哪个场景仍由这个宿主统一完成。
 	AppRouter.route_requested.connect(_on_route_requested)
 	AppRouter.clear_history()
@@ -72,7 +73,7 @@ func _on_route_requested(route: StringName, context: Dictionary) -> void:
 			_show_modal(SETTINGS_MODAL)
 			return
 		&"calibration":
-			_show_modal(CALIBRATION_MODAL)
+			_show_modal(SETTINGS_MODAL, &"calibration")
 			return
 		&"pets":
 			_show_modal(PET_SELECT_MODAL)
@@ -104,7 +105,7 @@ func _show_title() -> void:
 	_mount_screen(screen)
 	screen.start_requested.connect(func() -> void: AppRouter.navigate(AppRouter.ROUTE_STAGE_SELECT))
 	screen.settings_requested.connect(func() -> void: _show_modal(SETTINGS_MODAL))
-	screen.calibration_requested.connect(func() -> void: _show_modal(CALIBRATION_MODAL))
+	screen.calibration_requested.connect(func() -> void: _show_modal(SETTINGS_MODAL, &"calibration"))
 
 
 func _show_stage_select() -> void:
@@ -241,19 +242,22 @@ func _object_has_property(source: Object, property_name: StringName) -> bool:
 	return false
 
 
-func _show_modal(scene: PackedScene) -> void:
+func _show_modal(scene: PackedScene, initial_tab: StringName = &"sound") -> void:
 	var previous_focus: Control = get_viewport().gui_get_focus_owner()
 	for child: Node in modal_host.get_children():
 		child.queue_free()
 	# 鼠标遮罩不会阻止方向键寻焦；弹窗期间整棵底层页面退出焦点导航。
 	screen_host.focus_behavior_recursive = Control.FOCUS_BEHAVIOR_DISABLED
 	var modal := scene.instantiate()
+	if scene == SETTINGS_MODAL: modal.initial_tab = initial_tab
 	modal_host.add_child(modal)
 	# 平时 ModalHost 必须放过鼠标，关卡的左右鼠标点击才能进入输入单例；
 	# 真正打开弹窗时才拦截鼠标，关闭后立刻恢复。键盘和手柄不受 mouse_filter 控制。
 	modal_host.mouse_filter = Control.MOUSE_FILTER_STOP
 	if modal.has_signal("close_requested"):
 		modal.connect("close_requested", func() -> void:
+			if modal.closing: return
+			await modal.fade_out()
 			modal.queue_free()
 			modal_host.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			screen_host.focus_behavior_recursive = Control.FOCUS_BEHAVIOR_INHERITED

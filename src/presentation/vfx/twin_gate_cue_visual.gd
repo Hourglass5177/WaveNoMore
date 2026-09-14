@@ -325,7 +325,7 @@ func _draw_route_scaffold() -> void:
 func _draw_shared_gate(center: Vector2) -> void:
 	# 中央圈由独立 Sprite2D 绘制，参数形变不影响按键文字与瞬时反馈。
 	draw_string(
-		ThemeDB.fallback_font,
+		MingheUiStyle.ui_font(),
 		center + Vector2(82.0, -68.0),
 		LIFE_INPUT_LABEL,
 		HORIZONTAL_ALIGNMENT_CENTER,
@@ -334,7 +334,7 @@ func _draw_shared_gate(center: Vector2) -> void:
 		Color(life_color.lightened(0.32), 0.92)
 	)
 	draw_string(
-		ThemeDB.fallback_font,
+		MingheUiStyle.ui_font(),
 		center + Vector2(-166.0, 82.0),
 		DEATH_INPUT_LABEL,
 		HORIZONTAL_ALIGNMENT_CENTER,

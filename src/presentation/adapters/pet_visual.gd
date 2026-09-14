@@ -7,15 +7,37 @@ extends Node2D
 @export var idle_bob: float = 4.0
 var _song_time := 0.0
 var _trigger_age := 1000.0
+var affinity := GameplayTypes.Affinity.ZHU
+var _trigger_at := -1000.0
+var _death_at := -1.0
 
 func bind(pet: PetDefinition, advanced: bool) -> void:
 	if texture == null: texture = pet.icon(advanced)
 	queue_redraw()
 
-func set_state(song_time: float, trigger_us: int) -> void:
+func set_state(song_time: float, trigger_us: Variant = null) -> void:
+	# UI 动画快照新增事件接口；保留当前关卡宿主的微秒触发参数。
+	if trigger_us != null: _trigger_at = float(trigger_us)/1000000.0
 	_song_time = song_time
-	_trigger_age = song_time - float(trigger_us) / 1000000.0
+	_trigger_age = song_time - _trigger_at
+	visible = _death_at<0 or song_time-_death_at<2.05
 	queue_redraw()
+
+func set_world(side: int) -> void:
+	affinity = side
+
+func trigger(time: float) -> bool:
+	if _death_at>=0 or time<_trigger_at+_trigger_duration(): return false
+	_trigger_at=time
+	return true
+
+func die(time: float) -> void:
+	_death_at=time
+
+func clear_events() -> void:
+	_trigger_at=-1000.0
+	_death_at=-1.0
+	set_state(0.0)
 
 func _draw() -> void:
 	var duration := _trigger_duration()

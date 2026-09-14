@@ -1,0 +1,158 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/app/calibration_modal.gd" id="1"]
+[ext_resource type="Script" path="res://src/app/ui/art_button.gd" id="2"]
+[ext_resource type="Script" path="res://src/app/ui/art_button.gd" id="3"]
+[ext_resource type="Script" path="res://src/app/ui/art_button.gd" id="4"]
+[ext_resource type="Script" path="res://src/app/ui/art_button.gd" id="5"]
+
+[node name="CalibrationContent" type="VBoxContainer"]
+script = ExtResource("1")
+size_flags_horizontal = 3
+theme_override_constants/separation = 16
+
+
+[node name="Device" type="Label" parent="."]
+unique_name_in_owner = true
+text = ""
+theme_override_font_sizes/font_size = 25
+layout_mode = 2
+autowrap_mode = 2
+
+
+[node name="Help" type="Label" parent="."]
+unique_name_in_owner = true
+text = "先听 4 拍，再按 F / J 或手柄肩键跟拍，共 24 拍。"
+theme_override_font_sizes/font_size = 25
+layout_mode = 2
+autowrap_mode = 2
+
+
+[node name="Progress" type="Label" parent="."]
+unique_name_in_owner = true
+text = "准备好后开始。"
+theme_override_font_sizes/font_size = 25
+layout_mode = 2
+autowrap_mode = 2
+
+
+[node name="Actions" type="HBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+
+[node name="Start" type="Button" parent="Actions"]
+unique_name_in_owner = true
+text = "开始跟拍"
+script = ExtResource("2")
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(0,54)
+
+
+[node name="Stop" type="Button" parent="Actions"]
+unique_name_in_owner = true
+text = "停止"
+script = ExtResource("3")
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(0,54)
+
+
+[node name="Apply" type="Button" parent="Actions"]
+unique_name_in_owner = true
+text = "应用建议"
+script = ExtResource("4")
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(0,54)
+
+
+[node name="Summary" type="Label" parent="."]
+unique_name_in_owner = true
+text = ""
+theme_override_font_sizes/font_size = 24
+layout_mode = 2
+autowrap_mode = 2
+
+
+[node name="AudioOffsetRow" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+
+[node name="AudioOffsetLabel" type="Label" parent="AudioOffsetRow"]
+unique_name_in_owner = true
+text = "音频输出偏移"
+theme_override_font_sizes/font_size = 28
+layout_mode = 2
+size_flags_horizontal = 3
+
+
+[node name="AudioOffset" type="SpinBox" parent="AudioOffsetRow"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = -300.0
+max_value = 300.0
+step = 1.0
+suffix = "ms"
+custom_minimum_size = Vector2(220,45)
+
+
+[node name="InputOffsetRow" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+
+[node name="InputOffsetLabel" type="Label" parent="InputOffsetRow"]
+unique_name_in_owner = true
+text = "输入补偿"
+theme_override_font_sizes/font_size = 28
+layout_mode = 2
+size_flags_horizontal = 3
+
+
+[node name="InputOffset" type="SpinBox" parent="InputOffsetRow"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = -300.0
+max_value = 300.0
+step = 1.0
+suffix = "ms"
+custom_minimum_size = Vector2(220,45)
+
+
+[node name="VisualOffsetRow" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+
+[node name="VisualOffsetLabel" type="Label" parent="VisualOffsetRow"]
+unique_name_in_owner = true
+text = "画面提前量"
+theme_override_font_sizes/font_size = 28
+layout_mode = 2
+size_flags_horizontal = 3
+
+
+[node name="VisualOffset" type="SpinBox" parent="VisualOffsetRow"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = -300.0
+max_value = 300.0
+step = 1.0
+suffix = "ms"
+custom_minimum_size = Vector2(220,45)
+
+
+[node name="OffsetHelp" type="Label" parent="."]
+unique_name_in_owner = true
+text = "正值：音频时钟延后、输入补偿迟按、画面提前显示。"
+theme_override_font_sizes/font_size = 23
+layout_mode = 2
+autowrap_mode = 2
+
+
+[node name="Reset" type="Button" parent="."]
+unique_name_in_owner = true
+text = "恢复校准默认值"
+script = ExtResource("5")
+layout_mode = 2
+

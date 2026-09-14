@@ -547,7 +547,7 @@ func _draw_order_number(start_point: Vector2) -> void:
 	if _preview_order_number <= 0:
 		return
 	var label: String = str(_preview_order_number)
-	var font: Font = ThemeDB.fallback_font
+	var font: Font = MingheUiStyle.ui_font()
 	var font_size: int = 24
 	var text_size: Vector2 = font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
 	var baseline := start_point + Vector2(-text_size.x * 0.5, text_size.y * 0.34)
@@ -1240,8 +1240,8 @@ func _draw_rapid_field() -> void:
 	var count_label: String = "%d / %d" % [valid_strikes, _required_strikes]
 	if judgment_grade >= 0:
 		count_label = "未成" if missed else "成纹"
-	draw_string(ThemeDB.fallback_font, Vector2(-68.0, 7.0), count_label, HORIZONTAL_ALIGNMENT_CENTER, 136.0, 24, Color(bone, 0.96))
+	draw_string(MingheUiStyle.ui_font(), Vector2(-68.0, 7.0), count_label, HORIZONTAL_ALIGNMENT_CENTER, 136.0, 24, Color(bone, 0.96))
 	var instruction: String = "准备疾振" if not active else ("左右交替" if _must_alternate else "双钟连击")
 	if judgment_grade >= 0:
 		instruction = ""
-	draw_string(ThemeDB.fallback_font, Vector2(-110.0, rapid_time_radius + 42.0), instruction, HORIZONTAL_ALIGNMENT_CENTER, 220.0, 18, Color(bone, 0.78))
+	draw_string(MingheUiStyle.ui_font(), Vector2(-110.0, rapid_time_radius + 42.0), instruction, HORIZONTAL_ALIGNMENT_CENTER, 220.0, 18, Color(bone, 0.78))

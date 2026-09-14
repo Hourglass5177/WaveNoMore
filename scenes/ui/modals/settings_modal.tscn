@@ -1,8 +1,28 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3]
 
-[ext_resource type="Script" path="res://src/app/settings_modal.gd" id="1_script"]
+[ext_resource type="Script" path="res://src/app/settings_modal.gd" id="1"]
+[ext_resource type="Theme" path="res://content/ui/game_theme.tres" id="2"]
+[ext_resource type="Texture2D" path="res://assets/ui/art/设置页面/底图.png" id="3"]
+[ext_resource type="Script" path="res://src/app/ui/fire_frame.gd" id="4"]
+[ext_resource type="Script" path="res://src/app/ui/art_button.gd" id="5"]
+[ext_resource type="Script" path="res://src/app/ui/art_button.gd" id="6"]
+[ext_resource type="Script" path="res://src/app/ui/art_button.gd" id="7"]
+[ext_resource type="PackedScene" path="res://scenes/ui/components/calibration_content.tscn" id="8"]
+[ext_resource type="Script" path="res://src/app/ui/art_button.gd" id="9"]
+[ext_resource type="Script" path="res://src/app/ui/art_button.gd" id="10"]
 
-[node name="SettingsModal" type="Control"]
+[node name="Screen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+theme = ExtResource("2")
+
+
+[node name="Dim" type="ColorRect" parent="."]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -10,5 +30,345 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 0
-script = ExtResource("1_script")
+color = Color(0.015,0.012,0.020,0.72)
 
+
+[node name="Design" type="Control" parent="."]
+layout_mode = 0
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 1920.0
+offset_bottom = 1080.0
+mouse_filter = 2
+
+
+[node name="Panel" type="TextureRect" parent="Design"]
+layout_mode = 0
+offset_left = 278.0
+offset_top = 218.0
+offset_right = 1632.0
+offset_bottom = 894.0
+texture = ExtResource("3")
+expand_mode = 1
+mouse_filter = 2
+
+
+[node name="Fire" type="TextureRect" parent="Design"]
+layout_mode = 0
+offset_left = 62.0
+offset_top = 85.0
+offset_right = 1842.0
+offset_bottom = 1085.0
+script = ExtResource("4")
+expand_mode = 1
+mouse_filter = 2
+
+
+[node name="Title" type="Label" parent="Design"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 380.0
+offset_top = 236.0
+offset_right = 780.0
+offset_bottom = 296.0
+visible = false
+text = "设置"
+theme_override_font_sizes/font_size = 42
+
+
+[node name="Tabs" type="VBoxContainer" parent="Design"]
+layout_mode = 0
+offset_left = 410.0
+offset_top = 385.0
+offset_right = 630.0
+offset_bottom = 620.0
+theme_override_constants/separation = 24
+
+
+[node name="Sound" type="Button" parent="Design/Tabs"]
+unique_name_in_owner = true
+text = "声音"
+script = ExtResource("5")
+custom_minimum_size = Vector2(220,60)
+theme_override_font_sizes/font_size = 32
+toggle_mode = true
+
+
+[node name="Display" type="Button" parent="Design/Tabs"]
+unique_name_in_owner = true
+text = "画面"
+script = ExtResource("6")
+custom_minimum_size = Vector2(220,60)
+theme_override_font_sizes/font_size = 32
+toggle_mode = true
+
+
+[node name="Calibration" type="Button" parent="Design/Tabs"]
+unique_name_in_owner = true
+text = "校准"
+script = ExtResource("7")
+custom_minimum_size = Vector2(220,60)
+theme_override_font_sizes/font_size = 32
+toggle_mode = true
+
+
+[node name="Scroll" type="ScrollContainer" parent="Design"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 665.0
+offset_top = 375.0
+offset_right = 1435.0
+offset_bottom = 745.0
+follow_focus = true
+horizontal_scroll_mode = 0
+
+
+[node name="Pages" type="VBoxContainer" parent="Design/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+
+[node name="SoundPage" type="VBoxContainer" parent="Design/Scroll/Pages"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 18
+
+
+[node name="DisplayPage" type="VBoxContainer" parent="Design/Scroll/Pages"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 18
+
+
+[node name="MusicRow" type="VBoxContainer" parent="Design/Scroll/Pages/SoundPage"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+
+[node name="Caption" type="HBoxContainer" parent="Design/Scroll/Pages/SoundPage/MusicRow"]
+layout_mode = 2
+
+
+[node name="MusicLabel" type="Label" parent="Design/Scroll/Pages/SoundPage/MusicRow/Caption"]
+unique_name_in_owner = true
+text = "音乐"
+theme_override_font_sizes/font_size = 28
+layout_mode = 2
+size_flags_horizontal = 3
+
+
+[node name="MusicValue" type="Label" parent="Design/Scroll/Pages/SoundPage/MusicRow/Caption"]
+unique_name_in_owner = true
+text = ""
+theme_override_font_sizes/font_size = 28
+layout_mode = 2
+
+
+[node name="Music" type="HSlider" parent="Design/Scroll/Pages/SoundPage/MusicRow"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0,34)
+min_value = -40
+max_value = 6
+step = 0.5
+
+
+[node name="SfxRow" type="VBoxContainer" parent="Design/Scroll/Pages/SoundPage"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+
+[node name="Caption" type="HBoxContainer" parent="Design/Scroll/Pages/SoundPage/SfxRow"]
+layout_mode = 2
+
+
+[node name="SfxLabel" type="Label" parent="Design/Scroll/Pages/SoundPage/SfxRow/Caption"]
+unique_name_in_owner = true
+text = "敲钟与判定音效"
+theme_override_font_sizes/font_size = 28
+layout_mode = 2
+size_flags_horizontal = 3
+
+
+[node name="SfxValue" type="Label" parent="Design/Scroll/Pages/SoundPage/SfxRow/Caption"]
+unique_name_in_owner = true
+text = ""
+theme_override_font_sizes/font_size = 28
+layout_mode = 2
+
+
+[node name="Sfx" type="HSlider" parent="Design/Scroll/Pages/SoundPage/SfxRow"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0,34)
+min_value = -40
+max_value = 6
+step = 0.5
+
+
+[node name="UiRow" type="VBoxContainer" parent="Design/Scroll/Pages/SoundPage"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+
+[node name="Caption" type="HBoxContainer" parent="Design/Scroll/Pages/SoundPage/UiRow"]
+layout_mode = 2
+
+
+[node name="UiLabel" type="Label" parent="Design/Scroll/Pages/SoundPage/UiRow/Caption"]
+unique_name_in_owner = true
+text = "界面音效"
+theme_override_font_sizes/font_size = 28
+layout_mode = 2
+size_flags_horizontal = 3
+
+
+[node name="UiValue" type="Label" parent="Design/Scroll/Pages/SoundPage/UiRow/Caption"]
+unique_name_in_owner = true
+text = ""
+theme_override_font_sizes/font_size = 28
+layout_mode = 2
+
+
+[node name="Ui" type="HSlider" parent="Design/Scroll/Pages/SoundPage/UiRow"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0,34)
+min_value = -40
+max_value = 6
+step = 0.5
+
+
+[node name="ResolutionRow" type="HBoxContainer" parent="Design/Scroll/Pages/DisplayPage"]
+layout_mode = 2
+
+
+[node name="ResolutionLabel" type="Label" parent="Design/Scroll/Pages/DisplayPage/ResolutionRow"]
+unique_name_in_owner = true
+text = "分辨率"
+theme_override_font_sizes/font_size = 28
+layout_mode = 2
+size_flags_horizontal = 3
+
+
+[node name="Resolution" type="OptionButton" parent="Design/Scroll/Pages/DisplayPage/ResolutionRow"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(330,50)
+
+
+[node name="Fullscreen" type="CheckButton" parent="Design/Scroll/Pages/DisplayPage"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "全屏"
+
+
+[node name="ShakeRow" type="HBoxContainer" parent="Design/Scroll/Pages/DisplayPage"]
+layout_mode = 2
+theme_override_constants/separation = 20
+[node name="ShakeLabel" type="Label" parent="Design/Scroll/Pages/DisplayPage/ShakeRow"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(225,46)
+text = "画面震动"
+[node name="Shake" type="HSlider" parent="Design/Scroll/Pages/DisplayPage/ShakeRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(250,40)
+min_value = 0
+max_value = 1.0
+step = 0.05
+[node name="ShakeValue" type="Label" parent="Design/Scroll/Pages/DisplayPage/ShakeRow"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(85,0)
+horizontal_alignment = 2
+
+[node name="FlashRow" type="HBoxContainer" parent="Design/Scroll/Pages/DisplayPage"]
+layout_mode = 2
+theme_override_constants/separation = 20
+[node name="FlashLabel" type="Label" parent="Design/Scroll/Pages/DisplayPage/FlashRow"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(225,46)
+text = "闪光强度"
+[node name="Flash" type="HSlider" parent="Design/Scroll/Pages/DisplayPage/FlashRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(250,40)
+min_value = 0
+max_value = 1.0
+step = 0.05
+[node name="FlashValue" type="Label" parent="Design/Scroll/Pages/DisplayPage/FlashRow"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(85,0)
+horizontal_alignment = 2
+
+[node name="WaveRow" type="HBoxContainer" parent="Design/Scroll/Pages/DisplayPage"]
+layout_mode = 2
+theme_override_constants/separation = 20
+[node name="WaveLabel" type="Label" parent="Design/Scroll/Pages/DisplayPage/WaveRow"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(225,46)
+text = "相纹强度"
+[node name="Wave" type="HSlider" parent="Design/Scroll/Pages/DisplayPage/WaveRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(250,40)
+min_value = 0.35
+max_value = 1.0
+step = 0.05
+[node name="WaveValue" type="Label" parent="Design/Scroll/Pages/DisplayPage/WaveRow"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(85,0)
+horizontal_alignment = 2
+
+[node name="Debug" type="CheckButton" parent="Design/Scroll/Pages/DisplayPage"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "显示调试 HUD"
+
+
+[node name="CalibrationPage" parent="Design/Scroll/Pages" instance=ExtResource("8")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Error" type="Label" parent="Design"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 665.0
+offset_top = 737.0
+offset_right = 1435.0
+offset_bottom = 773.0
+text = ""
+theme_override_font_sizes/font_size = 24
+
+
+[node name="Save" type="Button" parent="Design"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 945.0
+offset_top = 775.0
+offset_right = 1220.0
+offset_bottom = 832.0
+text = "保存并返回"
+script = ExtResource("9")
+
+
+[node name="Cancel" type="Button" parent="Design"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 1250.0
+offset_top = 775.0
+offset_right = 1480.0
+offset_bottom = 832.0
+text = "取消"
+script = ExtResource("10")
