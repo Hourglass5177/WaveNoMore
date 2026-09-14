@@ -9,4 +9,5 @@ extends Resource
 @export var background: Texture2D
 ## 相对于背景素材原始尺寸的等比缩放；不影响卡片主图或文字。
 @export_range(0.01, 10.0, 0.01, "or_greater") var background_scale: float = 1.0
+@export var heading_texture: Texture2D
 @export_multiline var description: String = ""

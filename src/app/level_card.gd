@@ -12,6 +12,8 @@ func _ready() -> void:
 	# 卡片共享 shader，但每个实例独立保存 uniform。
 	if $MonsterIcon.material is ShaderMaterial:
 		$MonsterIcon.material = $MonsterIcon.material.duplicate(false)
+	if $Background.material is ShaderMaterial:
+		$Background.material = $Background.material.duplicate(false)
 	$Background.resized.connect(_update_background_scale)
 	_update_background_scale()
 
@@ -28,6 +30,15 @@ func configure(data: Dictionary, index: int) -> void:
 	$EyeIcon.texture = data.get("eye_icon") as Texture2D
 	$Background.texture = (data.get("background") as Texture2D) if data.get("background") != null else data.get("image") as Texture2D
 	background_scale = float(data.get("background_scale", background_scale))
+
+## 接收轮播平滑计算的中心权重，同步当前卡片的怪物透明度与背景 k。
+func set_selection_weight(weight: float) -> void:
+	var icon_material := $MonsterIcon.material as ShaderMaterial
+	if icon_material != null:
+		icon_material.set_shader_parameter("image_transparency", clampf(weight, 0.0, 1.0))
+	var background_material := $Background.material as ShaderMaterial
+	if background_material != null:
+		background_material.set_shader_parameter("k", clampf(weight, 0.0, 1.0))
 
 ## 重构后的卡片不含锁定遮罩；使用提示，并转交材质支持的锁定效果。
 func set_locked(value: bool) -> void:

@@ -32,6 +32,7 @@ var _repeat_time := 0.0
 func _ready() -> void:
 	$Design/Left.pressed.connect(step.bind(-1))
 	$Design/Right.pressed.connect(step.bind(1))
+	selection_changed.connect(_update_heading)
 	resized.connect(_fit_design)
 	_fit_design()
 	if catalog != null:
@@ -45,6 +46,9 @@ func _ready() -> void:
 		_rebuild_cards()
 	set_process(false)
 
+func _update_heading(index: int, _level_id: String) -> void:
+	if not _levels.is_empty(): $Design/Heading/HeadingText.texture = _levels[index].get("heading_texture") as Texture2D
+
 ## 从可编辑的 .tres 配置资源生成卡片数据。
 func set_catalog(value: Resource) -> void:
 	catalog = value
@@ -52,7 +56,7 @@ func set_catalog(value: Resource) -> void:
 	if catalog != null:
 		for index in catalog.cards.size():
 			var entry: Resource = catalog.cards[index]
-			levels.append({"id": "card_%02d" % (index + 1), "title": entry.title, "image": entry.image, "background": entry.background, "background_scale": entry.background_scale, "description": entry.description})
+			levels.append({"id": "card_%02d" % (index + 1), "title": entry.title, "image": entry.image, "background": entry.background, "background_scale": entry.background_scale, "heading_texture": entry.heading_texture, "description": entry.description})
 			levels.back()["stage_id"] = entry.stage_id
 	set_levels(levels)
 
@@ -207,6 +211,9 @@ func _layout_cards() -> void:
 		card.position = DESIGN_SIZE * 0.5 + Vector2(sin(angle) * horizontal_radius, 0) - card_size * 0.5
 		card.scale = Vector2.ONE * lerpf(minimum_scale, 1.0, depth)
 		card.rotation = 0.0
+		# 使用环上的卡位距离，排除同样投影到屏幕中线的正后方卡片。
+		var distance := absf(wrapf(float(index) - _progress, -float(_cards.size()) * 0.5, float(_cards.size()) * 0.5))
+		card.set_selection_weight(1.0 - smoothstep(0.0, 1.0, distance))
 	# 只重排 Cards 的子节点，箭头始终位于所有卡片之上。
 	var sorted := _cards.duplicate()
 	sorted.sort_custom(func(a: Control, b: Control):

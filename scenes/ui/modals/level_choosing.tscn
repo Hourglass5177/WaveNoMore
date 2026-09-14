@@ -3,6 +3,11 @@
 [ext_resource type="Script" uid="uid://cbj335q44rm0b" path="res://src/app/level_carousel.gd" id="1"]
 [ext_resource type="Resource" uid="uid://4r67cc8s3tb5" path="res://content/level_cards/default_level_card_catalog.tres" id="2"]
 [ext_resource type="Texture2D" uid="uid://c86bdnb7cbti5" path="res://assets/image/ui/选关/background.png" id="3_dfnmq"]
+[ext_resource type="Texture2D" uid="uid://imlsdwh81w5a" path="res://assets/image/ui/选关/小部件/顶部文字飘带2.png" id="4_841id"]
+[ext_resource type="Texture2D" uid="uid://170tvm1w5pbv" path="res://assets/image/ui/选关/小部件/两侧箭头.png" id="4_i4ps7"]
+[ext_resource type="Texture2D" uid="uid://cilhj5hlvcyre" path="res://assets/image/ui/选关/顶部文字/壹.png" id="4_q0bo7"]
+[ext_resource type="Texture2D" uid="uid://3nglc1tx54ck" path="res://assets/image/ui/选关/小部件/箭头右.png" id="5_0o54i"]
+[ext_resource type="Texture2D" uid="uid://c51ie8um1ur8o" path="res://assets/image/ui/选关/小部件/顶部文字飘带.png" id="5_q0bo7"]
 
 [node name="LevelChoosing" type="Control" unique_id=1176535317]
 layout_mode = 3
@@ -45,14 +50,37 @@ offset_right = 1920.0
 offset_bottom = 1149.0
 mouse_filter = 2
 
-[node name="Heading" type="Label" parent="Design" unique_id=2004176563]
+[node name="Heading" type="Control" parent="Design" unique_id=2082889715]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="HeadingText" type="TextureRect" parent="Design/Heading" unique_id=1687802761]
 layout_mode = 0
-offset_top = 90.0
-offset_right = 1920.0
-offset_bottom = 150.0
-theme_override_font_sizes/font_size = 40
-text = "选择关卡"
-horizontal_alignment = 1
+offset_left = 877.0
+offset_top = 36.0
+offset_right = 1039.0
+offset_bottom = 189.0
+texture = ExtResource("4_q0bo7")
+stretch_mode = 2
+
+[node name="HeadingDecorationLeft" type="TextureRect" parent="Design/Heading" unique_id=1421876112]
+layout_mode = 0
+offset_left = 554.0
+offset_top = 26.0
+offset_right = 860.0
+offset_bottom = 187.0
+texture = ExtResource("4_841id")
+stretch_mode = 2
+
+[node name="HeadingDecorationRight" type="TextureRect" parent="Design/Heading" unique_id=831733082]
+layout_mode = 0
+offset_left = 1060.0
+offset_top = 26.0
+offset_right = 1366.0
+offset_bottom = 187.0
+texture = ExtResource("5_q0bo7")
+stretch_mode = 2
 
 [node name="Empty" type="Label" parent="Design" unique_id=886604512]
 layout_mode = 0
@@ -70,13 +98,13 @@ offset_top = 492.0
 offset_right = 144.0
 offset_bottom = 588.0
 theme_override_font_sizes/font_size = 48
-text = "‹"
+icon = ExtResource("4_i4ps7")
 
 [node name="Right" type="Button" parent="Design" unique_id=680787375]
 layout_mode = 0
-offset_left = 1776.0
+offset_left = 1734.0
 offset_top = 492.0
-offset_right = 1872.0
-offset_bottom = 588.0
+offset_right = 1880.0
+offset_bottom = 718.0
 theme_override_font_sizes/font_size = 48
-text = "›"
+icon = ExtResource("5_0o54i")

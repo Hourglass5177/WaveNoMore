@@ -6,10 +6,12 @@
 [ext_resource type="Texture2D" uid="uid://ci6su6vgfj5bt" path="res://assets/image/ui/选关/怪物/蝙蝠.png" id="2_7ogen"]
 [ext_resource type="Texture2D" uid="uid://ctd7kmx186akd" path="res://assets/image/ui/选关/怪物/蛇.png" id="4_7xqlx"]
 [ext_resource type="Texture2D" uid="uid://d0gqtw2mljow2" path="res://assets/image/ui/选关/怪物/羊头.png" id="5_lehv5"]
+[ext_resource type="Texture2D" path="res://assets/image/ui/选关/框/框选中.png" id="6_heading"]
 
 [sub_resource type="Resource" id="Entry1"]
 script = ExtResource("2")
 title = "示例关卡 01"
+heading_texture = ExtResource("6_heading")
 stage_id = "s08"
 image = ExtResource("2_7ogen")
 background = ExtResource("1_xri3x")
@@ -19,6 +21,7 @@ description = "蝙蝠"
 [sub_resource type="Resource" id="Entry2"]
 script = ExtResource("2")
 title = "示例关卡 02"
+heading_texture = ExtResource("6_heading")
 image = ExtResource("4_7xqlx")
 background = ExtResource("1_xri3x")
 background_scale = 0.7
@@ -27,6 +30,7 @@ description = "蛇"
 [sub_resource type="Resource" id="Resource_s6mt0"]
 script = ExtResource("2")
 title = "test3"
+heading_texture = ExtResource("6_heading")
 image = ExtResource("5_lehv5")
 background = ExtResource("1_xri3x")
 background_scale = 0.7

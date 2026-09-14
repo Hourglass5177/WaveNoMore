@@ -2,11 +2,20 @@
 
 [ext_resource type="Script" uid="uid://w7s0lbvhk5lh" path="res://src/app/level_card.gd" id="1"]
 [ext_resource type="Shader" uid="uid://651uk81lrd0e" path="res://shaders/materials/monster_icon.gdshader" id="2_euxft"]
+[ext_resource type="Shader" uid="uid://b8u7fxj7h4hso" path="res://shaders/materials/level_card.gdshader" id="2_whbbo"]
+[ext_resource type="Texture2D" uid="uid://fqk1j3qtj2q6" path="res://assets/image/ui/选关/框/选关-未选中框.png" id="3_sjihi"]
+[ext_resource type="Texture2D" uid="uid://baxvg3rsk8igc" path="res://assets/image/ui/选关/shadow_texture_blur_2px.png" id="5_sjihi"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_whbbo"]
+shader = ExtResource("2_whbbo")
+shader_parameter/k = 1.0
+shader_parameter/unchosen_texture = ExtResource("3_sjihi")
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_fkwas"]
 shader = ExtResource("2_euxft")
 shader_parameter/shadow_offset = Vector2(-50, 100)
 shader_parameter/image_transparency = 1.0
+shader_parameter/shadow_texture = ExtResource("5_sjihi")
 
 [node name="LevelCard" type="Panel" unique_id=1675962168]
 offset_right = 360.0
@@ -14,6 +23,7 @@ offset_bottom = 480.0
 script = ExtResource("1")
 
 [node name="Background" type="TextureRect" parent="." unique_id=856579070]
+material = SubResource("ShaderMaterial_whbbo")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -36,10 +46,10 @@ stretch_mode = 5
 
 [node name="EyeIcon" type="TextureRect" parent="." unique_id=148945664]
 layout_mode = 0
-offset_left = 256.0
-offset_top = 24.0
-offset_right = 336.0
-offset_bottom = 104.0
+offset_left = 38.0
+offset_top = 314.0
+offset_right = 324.0
+offset_bottom = 444.0
 expand_mode = 1
 stretch_mode = 5
 

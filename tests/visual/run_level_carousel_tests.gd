@@ -19,6 +19,10 @@ func _settle(ui: Control) -> void:
 	_check(not ui._moving, "轮播须在限定时间内到位")
 	for card: Control in ui._cards:
 		_check(is_zero_approx(card.rotation) and is_equal_approx((card.position + card.pivot_offset).y, 540.0), "卡片不能旋转或上下移动")
+		var material: ShaderMaterial = card.get_node("MonsterIcon").material
+		var background_material: ShaderMaterial = card.get_node("Background").material
+		_check(is_equal_approx(float(background_material.get_shader_parameter("k")), 1.0 if card == ui._cards[ui.current_index()] else 0.0), "到位时仅正前方卡片背景 k 为 1")
+		_check(is_equal_approx(float(material.get_shader_parameter("image_transparency")), 1.0 if card == ui._cards[ui.current_index()] else 0.0), "到位时仅正前方卡片显示原图")
 
 func _run() -> void:
 	var ui = load("res://scenes/ui/modals/level_choosing.tscn").instantiate()
@@ -28,6 +32,19 @@ func _run() -> void:
 	ui.selection_changed.connect(func(index: int, id: String): events.append([index, id]))
 	_check(ui._cards.size() == ui.catalog.cards.size(), "卡片数量来自 catalog")
 	_check(ui._cards[0].position + ui._cards[0].pivot_offset == Vector2(960, 540), "默认卡片位于中心")
+	if ui._cards.size() > 1:
+		var first: ShaderMaterial = ui._cards[0].get_node("MonsterIcon").material
+		var second: ShaderMaterial = ui._cards[1].get_node("MonsterIcon").material
+		_check(first != second and first.shader == second.shader, "独立材质共享 shader")
+		var first_background: ShaderMaterial = ui._cards[0].get_node("Background").material
+		var second_background: ShaderMaterial = ui._cards[1].get_node("Background").material
+		_check(first_background != second_background and first_background.shader == second_background.shader, "背景独立材质共享 shader")
+		ui._progress = 0.5
+		ui._layout_cards()
+		_check(is_equal_approx(float(first_background.get_shader_parameter("k")), 0.5) and is_equal_approx(float(second_background.get_shader_parameter("k")), 0.5), "半卡位背景 k 平滑混合")
+		_check(is_equal_approx(float(first.get_shader_parameter("image_transparency")), 0.5) and is_equal_approx(float(second.get_shader_parameter("image_transparency")), 0.5), "半卡位切换平滑混合")
+		ui._progress = 0.0
+		ui._layout_cards()
 	for index in 16:
 		ui.get_node("Design/Right").pressed.emit()
 		_settle(ui)
