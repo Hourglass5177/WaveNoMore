@@ -44,6 +44,15 @@ static func duration(frames: SpriteFrames, action: String) -> float:
 	for index in frames.get_frame_count(action):total+=frames.get_frame_duration(action,index)
 	return total/maxf(0.001,frames.get_animation_speed(action))
 
+static func default_action(frames: SpriteFrames, preferred := "") -> String:
+	# Godot 新建资源自带空 default；自动放置应选有帧的动作，避免创建不可见对象。
+	var names:=frames.get_animation_names()
+	for candidate in [preferred,"default"]:
+		if candidate in names and frames.get_frame_count(candidate)>0:return candidate
+	for name in names:
+		if frames.get_frame_count(name)>0:return name
+	return ""
+
 ## 在来源工程的坐标中解析依赖；临时资源缓存只在同步读取期间使用，随后还原。
 ## 这样二进制 .res 和文本 .tres 都不会误借当前 Game 中同名的图片。
 static func source_dependencies(path: String, replacements: Dictionary={}) -> Array:
