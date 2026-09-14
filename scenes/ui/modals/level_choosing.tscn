@@ -1,0 +1,72 @@
+[gd_scene format=3 uid="uid://b4lf176ifiacp"]
+
+[ext_resource type="Script" uid="uid://cbj335q44rm0b" path="res://src/app/level_carousel.gd" id="1"]
+[ext_resource type="Resource" uid="uid://4r67cc8s3tb5" path="res://content/level_cards/default_level_card_catalog.tres" id="2"]
+
+[node name="LevelChoosing" type="Control" unique_id=1176535317]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+catalog = ExtResource("2")
+
+[node name="Backdrop" type="ColorRect" parent="." unique_id=118048253]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.12, 0.12, 0.12, 1)
+
+[node name="Design" type="Control" parent="." unique_id=878926658]
+anchors_preset = 0
+offset_right = 1920.0
+offset_bottom = 1080.0
+mouse_filter = 2
+
+[node name="Cards" type="Control" parent="Design" unique_id=1039220394]
+anchors_preset = 0
+offset_right = 1920.0
+offset_bottom = 1080.0
+mouse_filter = 2
+
+[node name="Heading" type="Label" parent="Design" unique_id=2004176563]
+layout_mode = 0
+offset_top = 90.0
+offset_right = 1920.0
+offset_bottom = 150.0
+theme_override_font_sizes/font_size = 40
+text = "选择关卡"
+horizontal_alignment = 1
+
+[node name="Empty" type="Label" parent="Design" unique_id=886604512]
+layout_mode = 0
+offset_top = 510.0
+offset_right = 1920.0
+offset_bottom = 570.0
+theme_override_font_sizes/font_size = 30
+text = "暂无关卡"
+horizontal_alignment = 1
+
+[node name="Left" type="Button" parent="Design" unique_id=635945578]
+layout_mode = 0
+offset_left = 48.0
+offset_top = 492.0
+offset_right = 144.0
+offset_bottom = 588.0
+theme_override_font_sizes/font_size = 48
+text = "‹"
+
+[node name="Right" type="Button" parent="Design" unique_id=680787375]
+layout_mode = 0
+offset_left = 1776.0
+offset_top = 492.0
+offset_right = 1872.0
+offset_bottom = 588.0
+theme_override_font_sizes/font_size = 48
+text = "›"

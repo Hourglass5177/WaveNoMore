@@ -228,7 +228,7 @@ func snapshot() -> Dictionary:
 func signature() -> Array:
 	var result: Array = []
 	for record in sublayers:
-		result.append([record.id, record.depth, record.resource.sublayer_id, record.resource.display_name, record.resource.velocity, record.resource.continuity_id, record.resource.cycle_direction, record.resource.cycle_start, record.resource.cycle_end])
+		result.append([record.id, record.depth, record.resource.sublayer_id, record.resource.display_name, record.resource.velocity, record.resource.continuity_id, record.resource.cycle_direction, record.resource.cycle_start, record.resource.cycle_end, record.resource.horizontal_random_repeat, record.resource.repeat_gap_min, record.resource.repeat_gap_max, record.resource.repeat_seed])
 	for item in items:
 		var value: StageBackgroundEntry = item.entry
 		result.append([item.sublayer, value.texture, value.sprite_frames, value.animation, value.infinite, value.random_flip, value.position, value.uniform_scale, value.material])

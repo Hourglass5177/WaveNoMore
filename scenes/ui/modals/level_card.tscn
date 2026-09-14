@@ -1,0 +1,89 @@
+[gd_scene load_steps=3 format=3 uid="uid://cha2k54yrv7ei"]
+[ext_resource type="Script" path="res://src/app/level_card.gd" id="2"]
+
+[sub_resource type="StyleBoxFlat" id="CardStyle"]
+bg_color = Color(0.94, 0.94, 0.94, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.55, 0.55, 0.55, 1)
+
+[node name="LevelCard" type="Panel"]
+offset_right = 360.0
+offset_bottom = 480.0
+theme_override_styles/panel = SubResource("CardStyle")
+mouse_filter = 0
+script = ExtResource("2")
+
+[node name="Number" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_bottom = -60.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.22, 0.22, 0.22, 1)
+theme_override_font_sizes/font_size = 86
+text = "01"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Title" type="Label" parent="."]
+layout_mode = 1
+anchor_top = 0.72
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_right = -16.0
+offset_bottom = -24.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.22, 0.22, 0.22, 1)
+theme_override_font_sizes/font_size = 30
+text = "示例关卡"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="Image" type="TextureRect" parent="."]
+layout_mode = 1
+anchor_right = 1.0
+anchor_bottom = 0.68
+expand_mode = 1
+stretch_mode = 6
+mouse_filter = 2
+
+[node name="Description" type="Label" parent="."]
+layout_mode = 1
+anchor_top = 0.58
+anchor_right = 1.0
+anchor_bottom = 0.72
+offset_left = 20.0
+offset_right = -20.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.35, 0.35, 0.35, 1)
+theme_override_font_sizes/font_size = 18
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="LockedOverlay" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.1, 0.1, 0.1, 0.45)
+visible = false
+
+[node name="Locked" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 26
+text = "未解锁"
+horizontal_alignment = 1
+vertical_alignment = 1
+visible = false

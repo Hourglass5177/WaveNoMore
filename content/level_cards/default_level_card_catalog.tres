@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="LevelCardCatalog" format=3 uid="uid://4r67cc8s3tb5"]
+
+[ext_resource type="Script" uid="uid://cbk81e0jmhnau" path="res://src/content/resources/level_card_catalog.gd" id="1"]
+[ext_resource type="Script" uid="uid://hdbtdjofj14n" path="res://src/content/resources/level_card_entry.gd" id="2"]
+
+[sub_resource type="Resource" id="Entry1"]
+script = ExtResource("2")
+title = "示例关卡 01"
+stage_id = "s08"
+description = "白盒关卡卡片"
+
+[sub_resource type="Resource" id="Entry2"]
+script = ExtResource("2")
+title = "示例关卡 02"
+description = "白盒关卡卡片"
+
+[sub_resource type="Resource" id="Resource_s6mt0"]
+script = ExtResource("2")
+title = "test3"
+description = "就是试试"
+metadata/_custom_type_script = "uid://hdbtdjofj14n"
+
+[resource]
+script = ExtResource("1")
+cards = Array[Resource]([SubResource("Entry1"), SubResource("Entry2"), SubResource("Resource_s6mt0")])

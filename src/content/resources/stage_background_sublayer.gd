@@ -11,6 +11,11 @@ extends Resource
 @export var velocity: Vector2 = Vector2.ZERO
 ## 此子层的背景素材。
 @export var entries: Array[StageBackgroundEntry] = []
+## 开启后将本子层素材按 X 轴随机串接并无限延伸。
+@export var horizontal_random_repeat: bool = false
+@export var repeat_gap_min: float = 0.0
+@export var repeat_gap_max: float = 0.0
+@export var repeat_seed: int = 0
 
 @export_group("循环与衔接")
 ## 跨背景沿用的子层身份；留空时兼容旧的“深度＋子层 ID”。
@@ -40,4 +45,4 @@ func cycle(depth: int, camera_velocity := Vector2.ZERO) -> Dictionary:
 			lower = minf(lower, direction.dot(point)); upper = maxf(upper, direction.dot(point))
 	if not is_finite(lower): lower = 0.0; upper = 1920.0
 	if cycle_end > cycle_start: lower = cycle_start; upper = cycle_end
-	return {"direction": direction, "start": lower, "end": upper, "length": maxf(1.0, upper - lower)}
+	return {"direction": direction, "start": lower, "end": upper, "length": maxf(1.0, upper - lower), "horizontal_random_repeat": horizontal_random_repeat, "repeat_gap_min": repeat_gap_min, "repeat_gap_max": repeat_gap_max, "repeat_seed": repeat_seed}

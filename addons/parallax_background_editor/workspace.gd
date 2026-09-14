@@ -17,6 +17,10 @@ var _sublayer_fields: Dictionary = {}
 var _sublayer_name: LineEdit
 var _sublayer_picker: OptionButton
 var _new_sublayer_depth: SpinBox
+var _horizontal_repeat: CheckButton
+var _gap_min: SpinBox
+var _gap_max: SpinBox
+var _repeat_seed: SpinBox
 var _selected_depth: int = 2147483647
 var _infinite: OptionButton
 var _animations: OptionButton
@@ -207,6 +211,13 @@ func _build() -> void:
 		var field := _spin(_sublayer_properties, key, 1.0 if key == "所属深度" else 0.1)
 		_sublayer_fields[key] = field
 		field.value_changed.connect(_sublayer_property_changed.bind(key))
+	_horizontal_repeat = CheckButton.new(); _horizontal_repeat.text = "X 轴随机无限拼接"; _sublayer_properties.add_child(_horizontal_repeat)
+	_horizontal_repeat.toggled.connect(func(value): _change_sublayer("horizontal_random_repeat", value))
+	for pair in [["最小间隙", "repeat_gap_min"], ["最大间隙", "repeat_gap_max"], ["随机种子", "repeat_seed"]]:
+		var field := _spin(_sublayer_properties, pair[0], 1.0); field.value_changed.connect(func(value): _change_sublayer(pair[1], roundi(value) if pair[1] == "repeat_seed" else value))
+		if pair[1] == "repeat_gap_min": _gap_min = field
+		elif pair[1] == "repeat_gap_max": _gap_max = field
+		else: _repeat_seed = field
 	_label(_sublayer_properties, "速度单位：设计像素/秒。\n实际位移按所属深度折算；深度 0 静止。\n正深度：X 正向右，Y 正向下。\n视差预览中播放时间查看移动。").autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_label(properties, "素材属性")
 	_asset = _label(properties, "未选择")
@@ -485,6 +496,10 @@ func _update_properties() -> void:
 		_sublayer_fields["所属深度"].set_value_no_signal(record.depth)
 		_sublayer_fields["速度 X"].set_value_no_signal(record.resource.velocity.x)
 		_sublayer_fields["速度 Y"].set_value_no_signal(record.resource.velocity.y)
+		_horizontal_repeat.button_pressed = record.resource.horizontal_random_repeat
+		_gap_min.set_value_no_signal(record.resource.repeat_gap_min)
+		_gap_max.set_value_no_signal(record.resource.repeat_gap_max)
+		_repeat_seed.set_value_no_signal(record.resource.repeat_seed)
 		_new_sublayer_depth.set_value_no_signal(record.depth)
 	var first := document.selected_entry()
 	var editable := document.editable_entry() != null and not surface.preview
@@ -560,6 +575,10 @@ func _sublayer_property_changed(value: float, key: String) -> void:
 		if key == "速度 X": velocity.x = value
 		else: velocity.y = value
 		document.change_sublayer(record.id, "velocity", velocity)
+
+func _change_sublayer(key: String, value: Variant) -> void:
+	var record := document.sublayer_record(document.selected_sublayer_id)
+	if not record.is_empty(): document.change_sublayer(record.id, key, value)
 
 
 func _change_entry(key: String, value: Variant) -> void:

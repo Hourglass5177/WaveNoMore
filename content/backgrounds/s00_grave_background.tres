@@ -417,6 +417,7 @@ shader = ExtResource("8_screen_split")
 script = ExtResource("2_entry")
 texture = ExtResource("20_lal1e")
 material = SubResource("ShaderMaterial_evgli")
+infinite = true
 uniform_scale = 0.7543603302514265
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_8vuif"]
@@ -426,6 +427,7 @@ shader = ExtResource("8_screen_split")
 script = ExtResource("2_entry")
 texture = ExtResource("21_u8pwb")
 material = SubResource("ShaderMaterial_8vuif")
+infinite = true
 uniform_scale = 0.7543603302514265
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_hq2yb"]
@@ -435,6 +437,7 @@ shader = ExtResource("8_screen_split")
 script = ExtResource("2_entry")
 texture = ExtResource("22_2d0rt")
 material = SubResource("ShaderMaterial_hq2yb")
+infinite = true
 uniform_scale = 0.7543603302514265
 
 [sub_resource type="Resource" id="Resource_lvjbd"]
@@ -442,6 +445,9 @@ script = ExtResource("sublayer_schema")
 display_name = "live"
 velocity = Vector2(-500, 0)
 entries = Array[ExtResource("2_entry")]([SubResource("Resource_ie55h"), SubResource("Resource_6no3k"), SubResource("Resource_rgayd")])
+horizontal_random_repeat = true
+repeat_gap_min = -300.0
+repeat_gap_max = 700.0
 
 [sub_resource type="Resource" id="Resource_2vvl2"]
 script = ExtResource("layer_schema")
