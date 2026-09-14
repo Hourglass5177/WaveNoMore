@@ -34,6 +34,10 @@ mouse_filter = 2
 expand_mode = 1
 stretch_mode = 3
 
+[node name="BackgroundEffect" type="TextureRect" parent="." unique_id=1411203270]
+layout_mode = 0
+mouse_filter = 2
+
 [node name="MonsterIcon" type="TextureRect" parent="." unique_id=1970233100]
 material = SubResource("ShaderMaterial_fkwas")
 layout_mode = 0

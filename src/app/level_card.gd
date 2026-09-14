@@ -1,6 +1,11 @@
 extends Panel
 
 signal clicked
+var _effect_frames: SpriteFrames
+var _effect_animation := &"default"
+var _effect_frame := 0
+var _effect_elapsed := 0.0
+var _effect_scale := 1.0
 
 ## 背景围绕卡片中心等比缩放，1.0 对应素材原始尺寸。
 @export_range(0.01, 10.0, 0.01, "or_greater") var background_scale: float = 1.0:
@@ -9,6 +14,8 @@ signal clicked
 		if is_node_ready(): _update_background_scale()
 
 func _ready() -> void:
+	set_process(true)
+	resized.connect(_layout_effect)
 	# 卡片共享 shader，但每个实例独立保存 uniform。
 	if $MonsterIcon.material is ShaderMaterial:
 		$MonsterIcon.material = $MonsterIcon.material.duplicate(false)
@@ -30,6 +37,42 @@ func configure(data: Dictionary, index: int) -> void:
 	$EyeIcon.texture = data.get("eye_icon") as Texture2D
 	$Background.texture = (data.get("background") as Texture2D) if data.get("background") != null else data.get("image") as Texture2D
 	background_scale = float(data.get("background_scale", background_scale))
+	_effect_frames = data.get("background_effect_frames") as SpriteFrames
+	var animation_value: Variant = data.get("background_effect_animation", "default")
+	_effect_animation = StringName(str(animation_value)) if animation_value != null and not str(animation_value).is_empty() else &"default"
+	var scale_value: Variant = data.get("background_effect_scale", 1.0)
+	_effect_scale = float(scale_value) if scale_value != null and is_finite(float(scale_value)) and float(scale_value) > 0.0 else 1.0
+	_effect_frame = 0; _effect_elapsed = 0.0; _update_effect_frame()
+	_layout_effect()
+
+func _process(delta: float) -> void:
+	if _effect_frames == null or not _effect_frames.has_animation(_effect_animation): return
+	_effect_elapsed += delta
+	var duration := _effect_frames.get_frame_duration(_effect_animation, _effect_frame) / maxf(0.01, _effect_frames.get_animation_speed(_effect_animation))
+	if _effect_elapsed >= duration:
+		_effect_elapsed = 0.0
+		_effect_frame = (_effect_frame + 1) % _effect_frames.get_frame_count(_effect_animation)
+		_update_effect_frame()
+
+func _update_effect_frame() -> void:
+	if _effect_frames == null or not _effect_frames.has_animation(_effect_animation) or _effect_frames.get_frame_count(_effect_animation) == 0:
+		$BackgroundEffect.texture = null; return
+	$BackgroundEffect.texture = _effect_frames.get_frame_texture(_effect_animation, _effect_frame)
+	_layout_effect()
+
+func _layout_effect() -> void:
+	if $BackgroundEffect.texture == null: return
+	var texture_size: Vector2 = $BackgroundEffect.texture.get_size()
+	# 尺寸保持纹理原始大小，倍率只作用于渲染变换，避免 TextureRect 布局刷新覆盖缩放。
+	$BackgroundEffect.size = texture_size
+	$BackgroundEffect.pivot_offset = texture_size * 0.5
+	$BackgroundEffect.scale = Vector2.ONE * _effect_scale
+	$BackgroundEffect.position = size * 0.5 - texture_size * 0.5
+
+## 供轮播或编辑器在运行中修改特效倍率，并立即应用到当前帧。
+func set_background_effect_scale(value: float) -> void:
+	_effect_scale = value if is_finite(value) and value > 0.0 else 1.0
+	_layout_effect()
 
 ## 接收轮播平滑计算的中心权重，同步当前卡片的怪物透明度与背景 k。
 func set_selection_weight(weight: float) -> void:
