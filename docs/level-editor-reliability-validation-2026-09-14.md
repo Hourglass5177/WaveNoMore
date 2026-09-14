@@ -55,6 +55,14 @@ Space 检查单独记录了 `window=true background=false` 的真实前台状态
 
 工作期间其他任务新增了玩法全局类；补做 Godot 类索引扫描时遇到并行编辑器占用临时 GDExtension DLL 的提示。没有删除或替换这些 DLL。后续干净测试日志见 `final-*` 和 `delivery-*`，扫描日志单独保留，不作为关卡功能通过证据。
 
+## SpriteFrames 文件拖入补充回归
+
+队友反馈的「拖入素材栏后放到预览不显示」暴露了上轮未覆盖的入口：窗口文件拖放仍按普通文件复制 `.tres`／`.res`，没有转换并收集来源工程图片；另有空 `default` 动作被自动选中的问题。现已让该入口打开同一动画导入窗口，跳过空动作，并在素材无法读取时阻止创建不可见对象。
+
+`run_level_spriteframes_drop_tests.gd` 从窗口 `files_dropped` 信号开始，使用外部 Godot 工程、两帧 AtlasTexture、空 `default` 和非等长帧，经过确认导入、素材栏、画布 `_drop_data`、自动片段、撤销与重做。暂时移走来源图片后，独立装配仍通过。GPU 模式另检查预览纹理中心像素确实为第二帧蓝色，见 `spriteframes-drop-gpu.log` 与 `spriteframes-drop/spriteframes-preview.png`；原动画窗口回归见 `spriteframes-animation-regression.log`。
+
+尚未拿到队友实际资源或运行版本，因此不能断言其文件没有其他问题；本次没有重新构建 EXE。
+
 ## 重跑命令
 
 在 Game 目录运行，例如：

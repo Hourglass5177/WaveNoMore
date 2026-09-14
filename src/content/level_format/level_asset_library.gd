@@ -55,12 +55,12 @@ func animation_names(asset: String) -> PackedStringArray:
 	return PackedStringArray()
 
 func default_animation(asset: String) -> String:
-	var names := animation_names(asset)
+	var frames:=resolve(asset) as SpriteFrames
+	if frames==null:return ""
+	var preferred:=""
 	if asset.ends_with(LevelAnimationAsset.SUFFIX):
-		var preferred:=str(LevelProjectIO.read_json(directory.path_join(asset)).get("default_animation",""))
-		if preferred in names:return preferred
-	if names.has("default"): return "default"
-	return names[0] if not names.is_empty() else ""
+		preferred=str(LevelProjectIO.read_json(directory.path_join(asset)).get("default_animation",""))
+	return LevelAnimationAsset.default_action(frames,preferred)
 
 ## 内置环境只借用 StageDefinition 的背景，不切换主题、歌曲或玩法。
 func background(asset: String) -> StageBackgroundDefinition:
