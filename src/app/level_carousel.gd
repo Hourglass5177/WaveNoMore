@@ -9,7 +9,7 @@ const DESIGN_SIZE := Vector2(1920, 1080)
 @export var catalog: Resource
 
 @export var card_size := Vector2(360, 480)
-@export_range(100.0, 750.0, 1.0) var horizontal_radius := 630.0
+var horizontal_radius := 480.0
 @export_range(0.1, 1.0, 0.01) var minimum_scale := 0.55
 @export_range(0.1, 2.0, 0.01) var response_time := 0.35
 @export_range(0.05, 0.95, 0.01) var joystick_engage_threshold := 0.55
@@ -27,12 +27,16 @@ var _moving := false
 var _held_direction := 0
 var _held_time := 0.0
 var _repeat_time := 0.0
+var _heading_transparency := 1.0
+var _heading_pending := false
 
 
 func _ready() -> void:
 	$Design/Left.pressed.connect(step.bind(-1))
 	$Design/Right.pressed.connect(step.bind(1))
-	selection_changed.connect(_update_heading)
+	var heading_material := $Design/Heading/HeadingText.material as ShaderMaterial
+	if heading_material != null:
+		$Design/Heading/HeadingText.material = heading_material.duplicate()
 	resized.connect(_fit_design)
 	_fit_design()
 	if catalog != null:
@@ -47,16 +51,18 @@ func _ready() -> void:
 	set_process(false)
 
 func _update_heading(index: int, _level_id: String) -> void:
-	if not _levels.is_empty(): $Design/Heading/HeadingText.texture = _levels[index].get("heading_texture") as Texture2D
+	if not _levels.is_empty():
+		$Design/Heading/HeadingText.texture = _levels[index].get("heading_texture") as Texture2D
 
 ## 从可编辑的 .tres 配置资源生成卡片数据。
 func set_catalog(value: Resource) -> void:
 	catalog = value
 	var levels: Array[Dictionary] = []
 	if catalog != null:
+		horizontal_radius = catalog.horizontal_radius
 		for index in catalog.cards.size():
 			var entry: Resource = catalog.cards[index]
-			levels.append({"id": "card_%02d" % (index + 1), "title": entry.title, "image": entry.image, "background": entry.background, "background_scale": entry.background_scale, "heading_texture": entry.heading_texture, "description": entry.description})
+			levels.append({"id": "card_%02d" % (index + 1), "title": entry.title, "image": entry.image, "background": entry.background, "background_scale": entry.background_scale, "background_effect_frames": entry.background_effect_frames, "background_effect_animation": entry.background_effect_animation, "background_effect_scale": entry.background_effect_scale, "background_effect_offset": entry.background_effect_offset, "eye_icon_selected": entry.eye_icon_selected, "eye_icon_unselected": entry.eye_icon_unselected, "heading_texture": entry.heading_texture, "description": entry.description})
 			levels.back()["stage_id"] = entry.stage_id
 	set_levels(levels)
 
@@ -70,9 +76,12 @@ func set_levels(levels: Array[Dictionary], initial_index: int = 0) -> void:
 	_progress = float(_target)
 	_velocity = 0.0
 	_moving = false
+	_heading_pending = false
 	set_process(false)
 	if is_node_ready():
 		_rebuild_cards()
+		$Design/Heading/HeadingText.texture = current_level().get("heading_texture") as Texture2D
+		_set_heading_transparency(1.0)
 
 
 ## 左右各推进一个卡片；连续输入累加目标，不重置当前进度与速度。
@@ -80,6 +89,7 @@ func step(direction: int) -> void:
 	if _levels.size() < 2 or direction == 0:
 		return
 	_target += 1 if direction > 0 else -1
+	_begin_heading_change()
 	_moving = true
 	set_process(true)
 
@@ -89,8 +99,10 @@ func focus_index(index: int) -> void:
 	var delta := posmod(index - current, _levels.size())
 	if delta > _levels.size() / 2: delta -= _levels.size()
 	_target += delta
-	_moving = delta != 0
-	set_process(_moving)
+	if delta != 0:
+		_begin_heading_change()
+		_moving = true
+		set_process(true)
 
 func current_index() -> int:
 	return posmod(_target, _levels.size()) if not _levels.is_empty() else -1
@@ -143,7 +155,9 @@ func _axis_direction(value: float) -> int:
 
 func _process(delta: float) -> void:
 	_advance_held_input(delta)
+	_advance_heading(delta)
 	if not _moving:
+		set_process(_held_direction != 0 or _heading_pending or _heading_transparency < 1.0)
 		return
 	# 临界阻尼解析解：帧率无关，重新定向时保留速度，没有 Tween 重启跳变。
 	var omega := 12.0 / response_time
@@ -161,6 +175,31 @@ func _process(delta: float) -> void:
 	if not _moving:
 		var index := posmod(_target, _levels.size())
 		selection_changed.emit(index, str(_levels[index].id))
+		set_process(true)
+
+## 从材质当前值继续淡出，连续换页不会重置透明度或提前换图。
+func _begin_heading_change() -> void:
+	var material := $Design/Heading/HeadingText.material as ShaderMaterial
+	if material != null:
+		_heading_transparency = float(material.get_shader_parameter("transparency"))
+	_heading_pending = true
+
+## 先完全淡出，再等待卡片停稳后换图；指数缓动可平滑响应反向输入。
+func _advance_heading(delta: float) -> void:
+	if _heading_pending:
+		var value := _heading_transparency * exp(-delta * 18.0)
+		_set_heading_transparency(0.0 if value < 0.001 else value)
+		if not _moving and _heading_transparency == 0.0:
+			_update_heading(current_index(), "")
+			_heading_pending = false
+	else:
+		var value := lerpf(_heading_transparency, 1.0, 1.0 - exp(-delta * 14.0))
+		_set_heading_transparency(1.0 if value > 0.999 else value)
+
+func _set_heading_transparency(value: float) -> void:
+	_heading_transparency = clampf(value, 0.0, 1.0)
+	var material := $Design/Heading/HeadingText.material as ShaderMaterial
+	if material != null: material.set_shader_parameter("transparency", _heading_transparency)
 
 func _set_held_direction(direction: int) -> void:
 	if direction == _held_direction:
@@ -170,7 +209,7 @@ func _set_held_direction(direction: int) -> void:
 	_repeat_time = 0.0
 	if direction != 0:
 		step(direction)
-	set_process(_moving or direction != 0)
+	set_process(_moving or direction != 0 or _heading_pending or _heading_transparency < 1.0)
 
 func _advance_held_input(delta: float) -> void:
 	if _held_direction == 0:

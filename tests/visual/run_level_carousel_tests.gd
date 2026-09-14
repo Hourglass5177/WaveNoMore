@@ -31,6 +31,23 @@ func _run() -> void:
 	ui.set_process(false)
 	ui.selection_changed.connect(func(index: int, id: String): events.append([index, id]))
 	_check(ui._cards.size() == ui.catalog.cards.size(), "卡片数量来自 catalog")
+	_check(is_equal_approx(ui.horizontal_radius, 480.0), "默认 catalog 半径缩小为 480")
+	var configured_catalog: Resource = ui.catalog.duplicate()
+	configured_catalog.horizontal_radius = 420.0
+	ui.set_catalog(configured_catalog)
+	_check(is_equal_approx(ui.horizontal_radius, 420.0), "轮转半径从 catalog 读取")
+	if ui._cards.size() > 1:
+		var heading: TextureRect = ui.get_node("Design/Heading/HeadingText")
+		var original_texture := heading.texture
+		ui.step(1)
+		_check(is_equal_approx(ui._heading_transparency, 1.0), "换页触发不能立即清零标题透明度")
+		ui._process(0.02)
+		_check(ui._heading_transparency > 0.0 and ui._heading_transparency < 1.0 and heading.texture == original_texture, "移动初期旧标题平滑淡出")
+		ui.step(-1)
+		_settle(ui)
+		_check(heading.texture == original_texture and is_equal_approx(ui._heading_transparency, 1.0), "反向停稳后标题恢复且完成淡入")
+	ui.set_catalog(load("res://content/level_cards/default_level_card_catalog.tres"))
+	events.clear()
 	_check(ui._cards[0].position + ui._cards[0].pivot_offset == Vector2(960, 540), "默认卡片位于中心")
 	if ui._cards.size() > 1:
 		var first: ShaderMaterial = ui._cards[0].get_node("MonsterIcon").material

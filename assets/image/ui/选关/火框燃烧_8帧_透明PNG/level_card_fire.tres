@@ -1,0 +1,42 @@
+[gd_resource type="SpriteFrames" format=3 uid="uid://c1lbb3ibs2mb1"]
+
+[ext_resource type="Texture2D" uid="uid://bj0q7y1rol5wk" path="res://assets/image/ui/选关/火框燃烧_8帧_透明PNG/火框燃烧_01.png" id="1_0wllo"]
+[ext_resource type="Texture2D" uid="uid://wmunr0dr0xwp" path="res://assets/image/ui/选关/火框燃烧_8帧_透明PNG/火框燃烧_02.png" id="2_twm2d"]
+[ext_resource type="Texture2D" uid="uid://cnbilnwoefgs2" path="res://assets/image/ui/选关/火框燃烧_8帧_透明PNG/火框燃烧_03.png" id="3_ms0w1"]
+[ext_resource type="Texture2D" uid="uid://cxqdk7tsrfevk" path="res://assets/image/ui/选关/火框燃烧_8帧_透明PNG/火框燃烧_04.png" id="4_7sqrq"]
+[ext_resource type="Texture2D" uid="uid://dvi1y8ikcoa6b" path="res://assets/image/ui/选关/火框燃烧_8帧_透明PNG/火框燃烧_05.png" id="5_tklrl"]
+[ext_resource type="Texture2D" uid="uid://b0xsc8bjdxhd4" path="res://assets/image/ui/选关/火框燃烧_8帧_透明PNG/火框燃烧_06.png" id="6_yfopx"]
+[ext_resource type="Texture2D" uid="uid://b200j11g4wqff" path="res://assets/image/ui/选关/火框燃烧_8帧_透明PNG/火框燃烧_07.png" id="7_vqp0n"]
+[ext_resource type="Texture2D" uid="uid://tjuw8r55semq" path="res://assets/image/ui/选关/火框燃烧_8帧_透明PNG/火框燃烧_08.png" id="8_voygk"]
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_0wllo")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_twm2d")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_ms0w1")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_7sqrq")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_tklrl")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_yfopx")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_vqp0n")
+}, {
+"duration": 1.0,
+"texture": ExtResource("8_voygk")
+}],
+"loop": 1,
+"name": &"default",
+"speed": 8.0
+}]
