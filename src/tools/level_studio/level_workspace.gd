@@ -772,6 +772,10 @@ func add_asset_object(asset:String,at:=Vector2(960,540)) -> void:
 	if asset in _asset_list.get_meta("background_ids", PackedStringArray()):
 		add_environment_cue(asset,time_us);return
 	var resource:=_assets.resolve(asset)
+	if resource==null:
+		message("无法读取素材，请重新导入或修复缺失引用：\n"+asset);return
+	if resource is SpriteFrames and _assets.default_animation(asset).is_empty():
+		message("此动画没有可显示的帧，请在动画导入窗口添加图片后重新导入。");return
 	if resource is Font:
 		if selection.is_empty() or not Array(selection).all(func(id):return document.find("objects",id).type=="text"):_status.text="先选择文字对象，再拖入字体。";return
 		set_property("font",asset);return
@@ -1052,7 +1056,7 @@ func _section_duration_us() -> int:
 	if section!="song":return int(document.data.get(section+"_us",0))
 	return roundi(timeline.waveform_duration*1000000)
 
-func import_animation(replace_asset := "") -> void:
+func import_animation(replace_asset := "", source_path := "") -> void:
 	_ensure_directory(func():
 		var dialog=load("res://scenes/tools/level_studio/animation_import.tscn").instantiate();dialog.directory=document.directory
 		add_child(dialog)
@@ -1064,12 +1068,16 @@ func import_animation(replace_asset := "") -> void:
 					before.append(object_data.duplicate(true));var next:=object_data.duplicate(true);next.asset=path;after.append(next)
 				document.replace("重新导入动画并更新引用","objects",before,after)
 			_asset_signature="";_show_signature="";_update_show();_status.text="已导入动画；拖入画布将创建动作片段。")
-		_popup(dialog,Vector2i(1000,680)))
+		_popup(dialog,Vector2i(1000,680))
+		if not source_path.is_empty():dialog.load_resource(source_path))
 
 func import_asset() -> void:
 	_ensure_directory(func():_file_dialog("导入图片、声音或字体",FileDialog.FILE_MODE_OPEN_FILE,["*.png,*.jpg,*.jpeg,*.webp,*.svg ; 图片","*.wav,*.ogg,*.mp3 ; 音频","*.ttf,*.otf ; 字体"],_import_asset_path))
 
 func _import_asset_path(path:String) -> void:
+	# SpriteFrames 不能只复制 .tres/.res：从来源工程读取图片，再写入独立动画依赖。
+	if path.get_extension().to_lower() in ["tres","res"]:
+		import_animation("",path);return
 	var imported:=LevelProjectIO.import_file(path,document.directory)
 	if not imported.error.is_empty():message(imported.error);return
 	_assets.cache.erase(imported.path);_show_signature="";_asset_signature="";_update_show();_status.text="已导入 "+str(imported.path)+" · 双击或拖入预览"

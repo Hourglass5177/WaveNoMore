@@ -125,7 +125,10 @@ func load_resource(path: String) -> void:
 		return
 	var resource: SpriteFrames=loaded.frames
 	if resource.get_animation_names().is_empty():%Status.text="资源中没有动作，请先制作至少一个动作。";return
-	frames=resource.duplicate(true);label=path.get_file().get_basename();_name_field.text=label;_names.clear();source_sheet=null;%SheetSettings.hide();_refresh_actions();_refresh()
+	frames=resource.duplicate(true);action=LevelAnimationAsset.default_action(frames)
+	if action.is_empty():
+		action=str(frames.get_animation_names()[0]);_refresh_actions();_refresh();%Status.text="资源中的所有动作都没有帧，请先添加图片。";return
+	label=path.get_file().get_basename();_name_field.text=label;_names.clear();source_sheet=null;%SheetSettings.hide();_refresh_actions();_refresh()
 
 func slice_sheet() -> void:
 	if source_sheet==null or _busy:return
@@ -161,6 +164,7 @@ func _refresh() -> void:
 	_fps.set_value_no_signal(frames.get_animation_speed(action));_loop.set_pressed_no_signal(frames.get_animation_loop(action))
 	get_ok_button().disabled=count==0;_refresh_time()
 	if count>0:%Frames.select(0);_show_frame(0)
+	else:%Preview.texture=null;%Preview.queue_redraw();_readout.text="当前动作没有帧"
 	%Status.text="%s · %d 帧 · %.3f 秒；可拖动列表调整帧序。"%[action,count,LevelAnimationAsset.duration(frames,action)]
 
 func _refresh_time() -> void:%Time.max_value=maxf(0.001,LevelAnimationAsset.duration(frames,action));%Time.set_value_no_signal(0);_seconds=0
