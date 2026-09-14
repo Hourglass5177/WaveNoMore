@@ -147,6 +147,8 @@ func change_sublayer(id: int, key: String, value: Variant) -> bool:
 	var record := sublayer_record(id)
 	if record.is_empty(): return false
 	if key == "depth" and _has_sublayer_name(int(value), record.resource.sublayer_id, id): return false
+	if key == "repeat_gap_min" and float(value) > record.resource.repeat_gap_max: return false
+	if key == "repeat_gap_max" and float(value) < record.resource.repeat_gap_min: return false
 	var before := snapshot()
 	if key == "depth": record.depth = int(value)
 	else: record.resource.set(key, value)

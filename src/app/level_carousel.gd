@@ -52,7 +52,7 @@ func set_catalog(value: Resource) -> void:
 	if catalog != null:
 		for index in catalog.cards.size():
 			var entry: Resource = catalog.cards[index]
-			levels.append({"id": "card_%02d" % (index + 1), "title": entry.title, "image": entry.image, "description": entry.description})
+			levels.append({"id": "card_%02d" % (index + 1), "title": entry.title, "image": entry.image, "background": entry.background, "background_scale": entry.background_scale, "description": entry.description})
 			levels.back()["stage_id"] = entry.stage_id
 	set_levels(levels)
 

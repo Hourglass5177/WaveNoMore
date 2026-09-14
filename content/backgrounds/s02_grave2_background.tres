@@ -15,17 +15,18 @@
 [ext_resource type="Texture2D" uid="uid://cbg8lwrrsyicq" path="res://assets/image/background/background-fire-front-1-death.png" id="12_sqo0j"]
 [ext_resource type="Texture2D" uid="uid://b43qfhmbjvp0h" path="res://assets/image/background/第二关生世界/树后景.png" id="13_sqo0j"]
 [ext_resource type="Texture2D" uid="uid://rio11uqg3wd3" path="res://assets/image/background/background-fire-mid-1-death.png" id="14_mhrmg"]
-[ext_resource type="Texture2D" uid="uid://cylfd6br7l37" path="res://assets/image/background/background-fire-far.png" id="17_1lv6e"]
 [ext_resource type="Texture2D" uid="uid://umwcbdmruags" path="res://assets/image/particles/particles_far.png" id="17_poo7a"]
+[ext_resource type="Texture2D" uid="uid://ble7r7mlcmg47" path="res://assets/image/background/第二关生世界/桥.png" id="17_w4lj3"]
 [ext_resource type="Texture2D" uid="uid://dsf0mhlsvhrjs" path="res://assets/image/background/background-fire-far-death.png" id="18_a20th"]
 [ext_resource type="Texture2D" uid="uid://vnif2qfsfi4i" path="res://assets/image/background/background-fire-cloud-mid-death.png" id="20_a20th"]
 [ext_resource type="Texture2D" uid="uid://cus2oqnxsgj8r" path="res://assets/image/background/第二关生世界/烟前景.png" id="21_sqo0j"]
-[ext_resource type="Texture2D" uid="uid://bn6ch1vnncbli" path="res://assets/image/background/background-fire-mid-2.png" id="21_wn3bn"]
 [ext_resource type="Texture2D" uid="uid://cikrj6p2lcgf8" path="res://assets/image/background/background-fire-cloud-far-death.png" id="22_sqo0j"]
 [ext_resource type="Texture2D" uid="uid://cii6xe0v3ltbl" path="res://assets/image/background/第二关生世界/船.png" id="22_xvm7m"]
 [ext_resource type="Texture2D" uid="uid://ca3r1eq4wi6u6" path="res://assets/image/background/background-fire-mid-2-death.png" id="23_lugxk"]
+[ext_resource type="Texture2D" uid="uid://2g8a3lp45wb" path="res://assets/image/background/第二关生世界/房后.png" id="24_l5ri8"]
 [ext_resource type="Texture2D" uid="uid://ctw1blguaey8b" path="res://assets/image/background/background-fire-front-2-death.png" id="24_xvm7m"]
 [ext_resource type="Texture2D" uid="uid://dy3624c0svu8p" path="res://assets/image/background/第二关生世界/草后景.png" id="27_xvm7m"]
+[ext_resource type="Texture2D" uid="uid://ctxwn708enyvs" path="res://assets/image/background/第二关生世界/房屋.png" id="28_w4lj3"]
 [ext_resource type="Script" uid="uid://c4h0bmjpxthu7" path="res://src/content/resources/stage_background_layer.gd" id="layer_schema"]
 [ext_resource type="Script" uid="uid://kmwupvuwcgil" path="res://src/content/resources/stage_background_sublayer.gd" id="sublayer_schema"]
 
@@ -120,7 +121,7 @@ uniform_scale = 1.231761109580623
 script = ExtResource("sublayer_schema")
 sublayer_id = "sublayer_21"
 display_name = "death particles1"
-velocity = Vector2(-500, 0)
+velocity = Vector2(500, 0)
 entries = Array[ExtResource("2_entry")]([SubResource("Resource_xkc18")])
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_x7vhg"]
@@ -151,7 +152,7 @@ uniform_scale = 1.231761109580623
 script = ExtResource("sublayer_schema")
 sublayer_id = "sublayer_26"
 display_name = "live particles1"
-velocity = Vector2(500, 0)
+velocity = Vector2(-500, 0)
 entries = Array[ExtResource("2_entry")]([SubResource("Resource_hcks8")])
 
 [sub_resource type="Resource" id="Resource_ffoyl"]
@@ -277,7 +278,7 @@ uniform_scale = 0.7631043957984558
 [sub_resource type="Resource" id="Resource_vior8"]
 script = ExtResource("sublayer_schema")
 display_name = "death particle2"
-velocity = Vector2(-500, 0)
+velocity = Vector2(500, 0)
 entries = Array[ExtResource("2_entry")]([SubResource("Resource_ecrt7")])
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_tb80m"]
@@ -307,7 +308,7 @@ uniform_scale = 0.7631043957984558
 script = ExtResource("sublayer_schema")
 sublayer_id = "sublayer_262"
 display_name = "live particles2"
-velocity = Vector2(500, 0)
+velocity = Vector2(-500, 0)
 entries = Array[ExtResource("2_entry")]([SubResource("Resource_ikgg7")])
 
 [sub_resource type="Resource" id="Resource_tdraf"]
@@ -341,7 +342,7 @@ uniform_scale = 1.026194169869533
 [sub_resource type="Resource" id="Resource_lete0"]
 script = ExtResource("sublayer_schema")
 display_name = "death particles3"
-velocity = Vector2(-500, 0)
+velocity = Vector2(500, 0)
 entries = Array[ExtResource("2_entry")]([SubResource("Resource_5yxkh")])
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_27xw2"]
@@ -371,7 +372,7 @@ uniform_scale = 1.026194169869533
 script = ExtResource("sublayer_schema")
 sublayer_id = "sublayer_292"
 display_name = "live particles3"
-velocity = Vector2(500, 0)
+velocity = Vector2(-500, 0)
 entries = Array[ExtResource("2_entry")]([SubResource("Resource_f10cg")])
 
 [sub_resource type="Resource" id="Resource_fab1c"]
@@ -384,7 +385,7 @@ shader = ExtResource("8_screen_split")
 
 [sub_resource type="Resource" id="Resource_jybfm"]
 script = ExtResource("2_entry")
-texture = ExtResource("17_1lv6e")
+texture = ExtResource("17_w4lj3")
 material = SubResource("ShaderMaterial_noq0h")
 infinite = true
 uniform_scale = 0.4603131924238952
@@ -524,7 +525,7 @@ shader = ExtResource("8_screen_split")
 
 [sub_resource type="Resource" id="Resource_q64oc"]
 script = ExtResource("2_entry")
-texture = ExtResource("21_wn3bn")
+texture = ExtResource("24_l5ri8")
 material = SubResource("ShaderMaterial_wbk3d")
 infinite = true
 uniform_scale = 0.4568686192420678
@@ -582,7 +583,7 @@ sublayers = Array[ExtResource("sublayer_schema")]([SubResource("Resource_lcnug")
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_8yr51"]
 shader = ExtResource("8_screen_split")
 
-[sub_resource type="Resource" id="Resource_dtmxk"]
+[sub_resource type="Resource" id="Resource_8yr51"]
 script = ExtResource("2_entry")
 texture = ExtResource("27_xvm7m")
 material = SubResource("ShaderMaterial_8yr51")
@@ -590,17 +591,38 @@ infinite = true
 position = Vector2(33.94519, 0)
 uniform_scale = 0.44854789395939704
 
-[sub_resource type="Resource" id="Resource_uhf8f"]
+[sub_resource type="Resource" id="Resource_dtmxk"]
 script = ExtResource("sublayer_schema")
 display_name = "live"
 velocity = Vector2(-500, 0)
-entries = Array[ExtResource("2_entry")]([SubResource("Resource_dtmxk")])
+entries = Array[ExtResource("2_entry")]([SubResource("Resource_8yr51")])
 
-[sub_resource type="Resource" id="Resource_8c5gm"]
+[sub_resource type="Resource" id="Resource_uhf8f"]
 script = ExtResource("layer_schema")
 depth = 15
-sublayers = Array[ExtResource("sublayer_schema")]([SubResource("Resource_uhf8f")])
+sublayers = Array[ExtResource("sublayer_schema")]([SubResource("Resource_dtmxk")])
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_b6s35"]
+shader = ExtResource("8_screen_split")
+
+[sub_resource type="Resource" id="Resource_8c5gm"]
+script = ExtResource("2_entry")
+texture = ExtResource("28_w4lj3")
+material = SubResource("ShaderMaterial_b6s35")
+infinite = true
+uniform_scale = 0.4568686192420678
+
+[sub_resource type="Resource" id="Resource_b6s35"]
+script = ExtResource("sublayer_schema")
+display_name = "live"
+entries = Array[ExtResource("2_entry")]([SubResource("Resource_8c5gm")])
+repeat_gap_min = -500.0
+
+[sub_resource type="Resource" id="Resource_5hn76"]
+script = ExtResource("layer_schema")
+depth = 23
+sublayers = Array[ExtResource("sublayer_schema")]([SubResource("Resource_b6s35")])
 
 [resource]
 script = ExtResource("1_background")
-layers = Array[ExtResource("layer_schema")]([SubResource("Resource_lmjbm"), SubResource("Resource_cj672"), SubResource("Resource_ffoyl"), SubResource("Resource_0qv43"), SubResource("Resource_6vaua"), SubResource("Resource_2c0fg"), SubResource("Resource_tdraf"), SubResource("Resource_fab1c"), SubResource("Resource_1gloc"), SubResource("Resource_i0jl2"), SubResource("Resource_ev2m8"), SubResource("Resource_fe0uo"), SubResource("Resource_y12hn"), SubResource("Resource_s5ogi"), SubResource("Resource_8c5gm")])
+layers = Array[ExtResource("layer_schema")]([SubResource("Resource_lmjbm"), SubResource("Resource_cj672"), SubResource("Resource_ffoyl"), SubResource("Resource_0qv43"), SubResource("Resource_6vaua"), SubResource("Resource_2c0fg"), SubResource("Resource_tdraf"), SubResource("Resource_fab1c"), SubResource("Resource_1gloc"), SubResource("Resource_i0jl2"), SubResource("Resource_ev2m8"), SubResource("Resource_fe0uo"), SubResource("Resource_y12hn"), SubResource("Resource_s5ogi"), SubResource("Resource_uhf8f"), SubResource("Resource_5hn76")])

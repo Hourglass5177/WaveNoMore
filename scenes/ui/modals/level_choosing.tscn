@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://cbj335q44rm0b" path="res://src/app/level_carousel.gd" id="1"]
 [ext_resource type="Resource" uid="uid://4r67cc8s3tb5" path="res://content/level_cards/default_level_card_catalog.tres" id="2"]
+[ext_resource type="Texture2D" uid="uid://c86bdnb7cbti5" path="res://assets/image/ui/选关/background.png" id="3_dfnmq"]
 
 [node name="LevelChoosing" type="Control" unique_id=1176535317]
 layout_mode = 3
@@ -13,7 +14,15 @@ grow_vertical = 2
 script = ExtResource("1")
 catalog = ExtResource("2")
 
+[node name="TextureRect" type="TextureRect" parent="." unique_id=259867976]
+layout_mode = 0
+offset_right = 1920.0
+offset_bottom = 1080.0
+texture = ExtResource("3_dfnmq")
+expand_mode = 1
+
 [node name="Backdrop" type="ColorRect" parent="." unique_id=118048253]
+visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -31,8 +40,9 @@ mouse_filter = 2
 
 [node name="Cards" type="Control" parent="Design" unique_id=1039220394]
 anchors_preset = 0
+offset_top = 69.0
 offset_right = 1920.0
-offset_bottom = 1080.0
+offset_bottom = 1149.0
 mouse_filter = 2
 
 [node name="Heading" type="Label" parent="Design" unique_id=2004176563]

@@ -1,0 +1,34 @@
+[gd_resource type="SpriteFrames" format=3 uid="uid://twy6fe6q4pyb"]
+
+[ext_resource type="Texture2D" uid="uid://crhy0mrhex1yf" path="res://assets/image/background/火场景二/房屋火/未命名作品-1.png" id="1_q4iqt"]
+[ext_resource type="Texture2D" uid="uid://c1w1erfw3me33" path="res://assets/image/background/火场景二/房屋火/未命名作品-2.png" id="2_ijt56"]
+[ext_resource type="Texture2D" uid="uid://b0dowtloyt08d" path="res://assets/image/background/火场景二/房屋火/未命名作品-3.png" id="3_2wty2"]
+[ext_resource type="Texture2D" uid="uid://dir86rxmi2d6m" path="res://assets/image/background/火场景二/房屋火/未命名作品-4.png" id="4_0v6eq"]
+[ext_resource type="Texture2D" uid="uid://bhxe2jm1hccsw" path="res://assets/image/background/火场景二/房屋火/未命名作品-5.png" id="5_5xbgm"]
+[ext_resource type="Texture2D" uid="uid://dcvehkvyac8sf" path="res://assets/image/background/火场景二/房屋火/未命名作品-6.png" id="6_v6ts3"]
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_q4iqt")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_ijt56")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_2wty2")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_0v6eq")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_5xbgm")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_v6ts3")
+}],
+"loop": 1,
+"name": &"default",
+"speed": 12.0
+}]
