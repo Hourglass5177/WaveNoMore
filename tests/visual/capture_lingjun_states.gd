@@ -36,6 +36,10 @@ func _save(canvas: SubViewport, path: String) -> void:
 
 func _run() -> void:
 	DirAccess.make_dir_recursive_absolute(OUT)
+	if "--walk-movie" in OS.get_cmdline_user_args():
+		await _walk_movie()
+		quit()
+		return
 	var canvas := _canvas(Vector2i(1600, 900))
 	for i in 8:
 		var t: float = [0.0, 0.12, 0.25, 0.4, 0.6, 0.8, 0.95, 1.2][i]
@@ -135,6 +139,45 @@ func _twins(width: int) -> void:
 		presentation._update_actor_snapshot({"time_us": roundi((0.5 + age) * 1000000.0), "life_held": false, "death_held": false})
 		await _save(canvas, "twins-%d-%04d.png" % [width, roundi(age * 1000)])
 	presentation.free()
+	canvas.queue_free()
+
+func _walk_movie() -> void:
+	OS.low_processor_usage_mode = false
+	DirAccess.make_dir_recursive_absolute(OUT + "walk-frames")
+	var canvas := _canvas(Vector2i(1920, 1080))
+	canvas.get_child(0).queue_free()
+	var scene = load("res://scenes/stage/stage_root.tscn").instantiate()
+	scene.auto_start_initial_stage = false
+	scene.initial_stage = null
+	canvas.add_child(scene)
+	var stage := (load("res://content/stages/s08/stage_definition.tres") as StageDefinition).duplicate(true)
+	stage.resolve_dependencies_sync()
+	scene.stage_session.external_preview = true
+	scene.stage_session.set_process(false)
+	scene.stage_session.pause_on_focus_loss = false
+	scene.load_stage(stage, false)
+	scene.set_debug_visible(false)
+	scene.presentation.set_preview_time_driven()
+	scene.stage_session.reset_preview()
+	var sequence := StageEnvironmentSequence.new()
+	sequence.build(stage.background, [], Callable(), "", Vector3i(0, 8000000, 0))
+	# 采样专用地景安排：一秒启步，六秒停步，保留真实图层的方向与相对速度。
+	for lane: Dictionary in sequence.lanes:
+		var motion: Dictionary = lane.motions[0]
+		var velocity: Vector2 = motion.velocity
+		motion.velocity = Vector2.ZERO
+		lane.motions.append({"at": 1000000, "velocity": velocity, "position": Vector2.ZERO, "depth": motion.depth, "camera_offset": Vector2.ZERO})
+		lane.motions.append({"at": 6000000, "velocity": Vector2.ZERO, "position": velocity * 5.0, "depth": motion.depth, "camera_offset": Vector2.ZERO})
+	scene.get_parallax_controller().set_environment(sequence)
+	for frame in 240:
+		var time := float(frame) / 30.0
+		if frame == 120:
+			var damage := DamageRecord.create("walk_hurt", "walk_hurt", 4000000, 20, GameplayTypes.Affinity.SU)
+			damage.actual_damage = 20
+			scene.presentation._queue_actor_damage(damage)
+		scene.presentation._update_actor_snapshot({"time_us": roundi(time * 1000000.0), "life_held": time >= 2.0 and time < 2.5, "death_held": time >= 2.8 and time < 3.3})
+		scene.get_parallax_controller().sample_environment(roundi(time * 1000000.0))
+		await _save(canvas, "walk-frames/%04d.png" % frame)
 	canvas.queue_free()
 
 func _stage_samples() -> void:

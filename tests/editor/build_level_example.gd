@@ -100,10 +100,23 @@ func _build() -> void:
 	var reply:=AudioStreamWAV.new();reply.format=wav.format;reply.mix_rate=wav.mix_rate;reply.data=wav.data.slice(0,22050*2*2);reply.save_to_wav(ROOT.path_join("assets/reply.wav"))
 	var voice:=LevelFormat.object("audio","assets/reply.wav");voice.id="reply";voice.name="收尾余响";voice.fields.volume_db=-12;level.show.objects.append(voice)
 	var audio_track:=LevelFormat.track(voice.id,"audio","outro","audio");var audio_clip:=LevelFormat.clip(0,"assets/reply.wav",2000000);audio_clip.name="余响";audio_clip.fade_in_us=150000;audio_clip.fade_out_us=650000;audio_track.clips=[audio_clip];level.show.tracks.append(audio_track)
+	_append_workflow_example(level)
 	error=LevelProjectIO.save(level,ROOT)
 	if error.is_empty():error=LevelProjectIO.export_zip(level,ROOT,ProjectSettings.globalize_path("res://").path_join("../Levels/渡口演出.level.zip").simplify_path())
 	if not error.is_empty():printerr(error);quit(1);return
 	print("LEVEL EXAMPLE READY: "+ROOT);quit()
+
+func _append_workflow_example(level: Dictionary) -> void:
+	# 随示例提交的连续帧资源同时用于主时间线和独立模板，重生成时保留新流程。
+	var object_data:=LevelFormat.object("animated_sprite","assets/animations/animation_afa2aa489d105cac/asset.animation.json")
+	object_data.id="workflow_animation";object_data.name="循环相纹 · 制作流程示例";object_data.animation="default"
+	object_data.fields.position=[1450,420];object_data.fields.scale=[1.5,1.5]
+	var track:=LevelFormat.track(object_data.id,"action","song","action");track.id="workflow_animation_track"
+	var clip:=LevelFormat.clip(3000000,"",12000000);clip.id="workflow_animation_clip_0";clip.name="连续帧 · 可裁剪／拆分";clip.action="default";clip.rate=0.5;clip.loop=true;clip.hold_last=true;track.clips=[clip]
+	level.show.objects.append(object_data);level.show.tracks.append(track)
+	var copy:=object_data.duplicate(true);copy.id="template_only_animation";copy.name="模板独立副本"
+	var copied_track:=track.duplicate(true);copied_track.id="template_only_track";copied_track.object_id=copy.id;copied_track.clips[0].start_us=0
+	level.show.sequences.append({"id":"workflow_template","name":"相纹动画模板 · 插入后独立编辑","objects":[copy],"tracks":[copied_track]})
 
 func _add_track(animation:Animation,path:String,times:Array,values:Array) -> void:
 	var index:=animation.add_track(Animation.TYPE_VALUE);animation.track_set_path(index,NodePath(path))

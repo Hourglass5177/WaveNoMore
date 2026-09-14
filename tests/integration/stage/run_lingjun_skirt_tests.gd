@@ -20,8 +20,8 @@ func _run() -> void:
 	actor.skeleton_data_res = load("res://assets/character/lingjun/lingjun_gameplay.tres")
 	root.add_child(actor)
 	actor.set_update_mode(SpineConstant.UpdateMode_Manual)
-	for animation: String in ["attack", "attack_loop", "idle", "death"]:
-		var duration := 4.0 if animation == "idle" else (1.2 if animation == "death" else 2.2)
+	for animation: String in ["attack", "attack_loop", "idle", "death", "walk"]:
+		var duration: float = actor.get_skeleton().get_data().find_animation(animation).get_duration()
 		for frame in range(roundi(duration * 120.0) + 1):
 			actor.get_animation_state().clear_tracks()
 			actor.get_skeleton().set_to_setup_pose()
@@ -29,6 +29,19 @@ func _run() -> void:
 			track.set_track_time(float(frame) / 120.0)
 			actor.update_skeleton(0.0)
 			_validate()
+	# 行走在任一换腿阶段进入攻击、静息或死亡，网格仍须连续覆盖腿部。
+	for phase: float in [0.0, 0.4, 0.8, 1.2]:
+		for target: String in ["idle", "attack_loop", "death"]:
+			actor.get_animation_state().clear_tracks()
+			actor.get_skeleton().set_to_setup_pose()
+			actor.get_animation_state().set_animation("walk", true, 0).set_track_time(phase)
+			actor.update_skeleton(0.0)
+			var next := actor.get_animation_state().set_animation(target, target != "death", 0)
+			next.set_mix_duration(0.18 if target == "idle" else 0.12)
+			if target == "attack_loop": next.set_track_time(0.46)
+			for i in 24:
+				actor.update_skeleton(1.0 / 120.0)
+				_validate()
 	# 覆盖整个循环上的松开与重新下击，特别检查连续衔接区的膝部覆盖。
 	for phase: float in [0.46, 0.6, 0.8, 1.05, 1.3, 1.6, 1.9, 2.15]:
 		for releasing: bool in [false, true]:

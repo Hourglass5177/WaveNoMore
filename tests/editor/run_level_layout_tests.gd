@@ -48,6 +48,9 @@ func _run() -> void:
 	workspace.surface.grab_focus();workspace._set_transform_mode("rotate")
 	check(workspace._mode_buttons.rotate.button_pressed and not workspace._mode_buttons.move.button_pressed,"当前操纵模式清晰高亮")
 	workspace._mode_buttons.rotate.grab_focus()
+	if DisplayServer.get_name()!="headless":
+		root.grab_focus();await settle(6)
+		print("SPACE FOREGROUND: window=",root.has_focus()," background=",workspace._background," focus=",root.gui_get_focus_owner())
 	var space:=InputEventKey.new();space.keycode=KEY_SPACE;space.pressed=true
 	Input.parse_input_event(space);await settle(2)
 	check(workspace.audio.playing,"点击工具按钮后 Space 仍能播放")

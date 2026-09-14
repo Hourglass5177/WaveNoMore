@@ -19,15 +19,28 @@ func run() -> void:
 	var base := load(PlanningParameters.DEFAULT_RULES) as GameplayRuleSet
 	var configured := PlanningParameters.rules_copy(base, snapshot)
 	check(ChartCompiler.rules_hash(base) == ChartCompiler.rules_hash(configured), "交付默认表不得改变原型规则")
+	var flow_changed:=snapshot.duplicate(true)
+	flow_changed.values["boundary/flow_speed_px_sec"]=72.0
+	flow_changed.values["boundary/flow_strength"]=.8
+	check(ChartCompiler.rules_hash(configured)==ChartCompiler.rules_hash(PlanningParameters.rules_copy(base,flow_changed)),"水流表现参数不进入 Replay 规则摘要")
+	var flow_style:=BoundaryMotionStyle.new();PlanningParameters.apply_values(flow_style,"boundary",flow_changed)
+	check(flow_style.flow_speed_px_sec==72.0 and is_equal_approx(flow_style.flow_strength,.8),"工作簿水流参数装入表现副本")
 	for entry: Dictionary in JSON.parse_string(FileAccess.get_file_as_string(PlanningParameters.SCHEMA_PATH)):
 		var actual: Variant
 		if entry.target == "rules": actual = base.get(entry.key)
 		elif entry.target == "boundary": actual = load("res://content/presentation/boundary_motion_style.tres").get(entry.key)
+		elif entry.target == "actors": actual = StageVisualTheme.new().get(entry.key)
 		else:
 			var parts: PackedStringArray = entry.target.split(":")
 			var pet := load("res://content/pets/pet_%s.tres" % parts[1]) as PetDefinition
 			actual = pet.effect(parts[2] == "advanced").get(entry.key)
-		check(is_equal_approx(float(actual), float(entry.default)), "基线与实际资源一致：" + entry.key)
+		check(actual == entry.default if entry.type == "string" else is_equal_approx(float(actual), float(entry.default)), "基线与实际资源一致：" + entry.key)
+	var actor_theme := StageVisualTheme.new()
+	PlanningParameters.apply_values(actor_theme, "actors", snapshot)
+	check(actor_theme.death_movement_layer_key == snapshot.values["actors/death_movement_layer_key"], "参考层文本从实际 XLSX 读入")
+	var actor_changed := snapshot.duplicate(true)
+	actor_changed.values["actors/walk_period_sec"] = 2.4
+	check(ChartCompiler.rules_hash(PlanningParameters.rules_copy(base, actor_changed)) == ChartCompiler.rules_hash(configured), "步频不进入 Replay 规则摘要")
 	var changed := snapshot.duplicate(true)
 	changed.values["rules/tap_miss_damage"] = 10
 	changed.values["rules/perfect_window_ms"] = 60

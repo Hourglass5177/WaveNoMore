@@ -1,5 +1,6 @@
 shader_type canvas_item;
 render_mode unshaded, blend_mix;
+#include "res://shaders/characters/pet_world_color.gdshaderinc"
 uniform vec2 source_size = vec2(512.0);
 uniform float age = 0.0;
 uniform float duration = 0.65;
@@ -35,4 +36,5 @@ void fragment() {
 		float fade = 1.0 - smoothstep(0.06 + inward * 0.16, 0.44 + inward * 0.21, age);
 		COLOR = vec4(mix(texel.rgb, texel.rgb * 0.74, smoothstep(0.0, duration, age)), texel.a * fade);
 	}
+	COLOR.rgb = pet_world_color(COLOR.rgb);
 }

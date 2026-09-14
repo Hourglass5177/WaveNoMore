@@ -92,6 +92,7 @@ var last_replay: ReplayData
 var active_pet: PetDefinition
 var pet_advanced: bool = false
 var _pet_views: Array[PetVisual] = []
+var _pet_cues: Array[Dictionary] = []
 ## 演出工具共用播放器；片头片尾不占用谱面或判定时钟。
 var level_show_player: LevelShowPlayer
 var level_show_external := false
@@ -108,11 +109,30 @@ func set_pet(pet: PetDefinition, advanced: bool = false) -> void:
 func _setup_pet_views() -> void:
 	_pet_views = presentation.configure_pet(active_pet, pet_advanced)
 
+## 一帧可能收到跨越多个时刻的事件；先排序，再让各侧播放器增量消费。
+func _queue_pet_trigger(time_us: int, side: int) -> void:
+	if active_pet != null:
+		_pet_cues.append({"time_us": time_us, "affinity": side, "death": false})
+
+func _queue_pet_death(record: DamageRecord) -> void:
+	if active_pet != null and record.fatal:
+		_pet_cues.append({"time_us": record.timestamp_us, "affinity": GameplayTypes.Affinity.SU, "death": true})
+
+func _reset_pet_views() -> void:
+	_pet_cues.clear()
+	for view in _pet_views: view.clear_events()
+
 func _update_pet_views(sample: ClockSample) -> void:
 	if active_pet == null: return
-	var simulation := gameplay_coordinator.simulation
-	for view in _pet_views:
-		view.set_state(sample.song_time_sec, simulation.last_pet_trigger_us)
+	_pet_cues.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return bool(a.death) and not bool(b.death) if a.time_us == b.time_us else a.time_us < b.time_us)
+	for cue in _pet_cues:
+		for view in _pet_views:
+			if cue.affinity != GameplayTypes.Affinity.SU and cue.affinity != view.affinity: continue
+			if cue.death: view.die(float(cue.time_us) / 1000000.0)
+			else: view.trigger(float(cue.time_us) / 1000000.0)
+	_pet_cues.clear()
+	for view in _pet_views: view.set_state(sample.song_time_sec)
 
 
 
@@ -159,6 +179,9 @@ func _ready() -> void:
 	stage_session.run_started.connect(_reset_parallax)
 	note_haptics_feedback.bind(stage_session, controller_haptics)
 	stage_session.result_ready.connect(_on_stage_result_ready)
+	gameplay_coordinator.pet_triggered.connect(_queue_pet_trigger)
+	gameplay_coordinator.damage_recorded.connect(_queue_pet_death)
+	stage_session.waves_reset.connect(_reset_pet_views)
 	stage_session.visual_frame_ready.connect(_update_pet_views)
 	stage_session.visual_frame_ready.connect(_update_level_show)
 	stage_session.state_changed.connect(_level_state_changed)
@@ -172,13 +195,14 @@ func _ready() -> void:
 		load_stage(initial_stage, auto_start_initial_stage)
 
 
-func load_stage(stage: StageDefinition, start_after_prepare: bool = true) -> bool:
+func load_stage(stage: StageDefinition, start_after_prepare: bool = true, prepared_chart: CompiledChart = null) -> bool:
 	# 装载时固定策划表与规则副本，避免修改 ResourceLoader 缓存及正在运行的另一份预览。
-	var planning := PlanningParameters.read()
+	var planning: Dictionary = stage.get_meta("preview_planning") if prepared_chart != null else PlanningParameters.read()
 	if not planning.errors.is_empty():
 		stage_load_failed.emit("；".join(planning.errors))
 		return false
-	if stage != null and stage.rule_set != null:
+	# 工具准备结果已绑定同一份规则；正式游戏仍走原装载和策划表接线。
+	if stage != null and stage.rule_set != null and prepared_chart == null:
 		stage = stage.duplicate(false) as StageDefinition
 		stage.rule_set = PlanningParameters.rules_copy(stage.rule_set, planning)
 		var errors := PlanningParameters.validate_rules(stage.rule_set)
@@ -192,6 +216,10 @@ func load_stage(stage: StageDefinition, start_after_prepare: bool = true) -> boo
 				stage_load_failed.emit(ChartProjectLoader.describe_issues(issues))
 				return false
 			stage.chart = ChartPathAdapter.project(source_chart, stage.rule_set)
+	if stage.visual_theme != null:
+		stage = stage.duplicate(false) as StageDefinition
+		stage.visual_theme = stage.visual_theme.duplicate(false) as StageVisualTheme
+		PlanningParameters.apply_values(stage.visual_theme, "actors", planning)
 	if active_pet != null:
 		stage_session.pet_effect = active_pet.effect(pet_advanced)
 		PlanningParameters.apply_values(stage_session.pet_effect,
@@ -210,10 +238,11 @@ func load_stage(stage: StageDefinition, start_after_prepare: bool = true) -> boo
 	audio_feedback.configure_from_rules(stage.rule_set)
 	presentation.clear()
 	hud.configure(stage)
-	if not stage_session.prepare():
+	if not stage_session.prepare(prepared_chart):
 		stage_load_failed.emit("Stage validation or compilation failed.")
 		return false
 	_setup_pet_views()
+	get_parallax_controller().configure_boundary(stage.chart, stage.song.first_beat_offset_sec, planning)
 	stage_show_director.call("configure", stage.stage_show, stage_session.compiled_chart.tempo_map)
 	_configure_level_show(stage)
 	presentation.set_song_duration(stage_session.get_end_song_time_sec())
@@ -380,7 +409,7 @@ func _configure_level_show(stage: StageDefinition) -> void:
 func _update_level_show(sample: ClockSample) -> void:
 	if level_show_external or not is_instance_valid(level_show_player) or _level_section != "song": return
 	var audio_us := roundi((sample.visual_time_sec + stage_session.stage_definition.song.first_beat_offset_sec) * 1000000.0)
-	level_show_player.advance("song", audio_us, not stage_session.external_preview)
+	level_show_player.advance("song", audio_us, not stage_session.external_preview, sample.song_time_sec)
 	# 摄像头只影响环境视差，判定基准和波源坐标不随演出移动。
 	if get_parallax_controller().environment == null:
 		get_parallax_controller().set_camera_position(get_parallax_controller().get_camera_position() + level_show_player.camera_position)

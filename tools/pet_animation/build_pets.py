@@ -9,7 +9,7 @@ import json
 import math
 import shutil
 import numpy as np
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFilter
 
 GAME = Path(__file__).resolve().parents[2]
 SOURCE = GAME.parent / 'Assets' / '随从宠物原画'
@@ -143,18 +143,48 @@ class Rig:
         (self.folder/'pet.spine-json').write_text(json.dumps(doc,separators=(',',':')),encoding='utf-8')
         (self.folder/'pet.tres').write_text('[gd_resource type="SpineSkeletonDataResource" format=3]\n\n[ext_resource type="SpineAtlasResource" path="res://assets/pets/animation_studies/'+self.key+'/pet.atlas" id="1"]\n[ext_resource type="SpineSkeletonFileResource" path="res://assets/pets/animation_studies/'+self.key+'/pet.spine-json" id="2"]\n\n[resource]\natlas_res = ExtResource("1")\nskeleton_file_res = ExtResource("2")\n',encoding='utf-8')
         meta={'id':self.key,'name':self.name,'unit_scale':self.unit,'source_anchor':self.anchor.tolist(),'idle':self.idle,'trigger':self.trigger,'death':2.05,'bone_death':1.4,'bone_count':len(self.bones),'parts':[p[0] for p in self.parts]}
-        if chest: meta['highlight_region']=[chest[0]/2048,chest[1]/used_h,38/2048,42/used_h]
+        if chest:
+            meta['highlight_region']=[chest[0]/2048,chest[1]/used_h,38/2048,42/used_h]
+            meta['chest']={'bone':'root','point':(np.array([235,290])-self.anchor).tolist(),
+                           'starts':[.22,.50], 'duration':.5, 'radius_from':8/1.5,'radius_to':48/1.5}
+        # 所有光效尺寸存为 80 px 基准，正式显示统一乘 1.5；不把原图像素混入显示参数。
+        meta['glow_envelope']={'bat':[.14,.29,.72,1.10], 'snake':[.22,.38,1.0,1.22],
+                               'sheep':[.20,.30,.92,1.10]}[self.key]
+        if self.key=='sheep':
+            # 从三处黑眼连通区域提取形状，填回原高光小孔，保留一圈原画边缘。
+            dark=(self.pixels[:,:,:3].max(axis=2)<65)&(self.pixels[:,:,3]>0)
+            mask=Image.new('L',self.image.size)
+            for seed in [(209,220),(254,143),(330,187)]:
+                pending=[seed]; region=set()
+                while pending:
+                    px,py=pending.pop()
+                    if (px,py) in region or not (0<=px<self.w and 0<=py<self.h) or not dark[py,px]: continue
+                    region.add((px,py)); pending.extend([(px-1,py),(px+1,py),(px,py-1),(px,py+1)])
+                assert len(region)>100, ('眼睛遮罩未找到',seed)
+                # 原画中的白色眼高光在黑色轮廓内部；逐行填充封闭的眼部形状。
+                draw=ImageDraw.Draw(mask)
+                for py in {p[1] for p in region}:
+                    xs=[p[0] for p in region if p[1]==py]
+                    draw.line((min(xs),py,max(xs),py),fill=255)
+            mask=mask.filter(ImageFilter.MinFilter(3))
+            box=mask.getbbox(); pad=math.ceil(9/1.5/self.unit)
+            box=(box[0]-pad,box[1]-pad,box[2]+pad,box[3]+pad)
+            core=mask.crop(box)
+            glow=core.filter(ImageFilter.GaussianBlur(3.3/1.5/self.unit))
+            Image.merge('RGBA',(core,glow,core,Image.new('L',core.size,255))).save(self.folder/'eyes_mask.png')
+            meta['eyes']={'bone':'head','point':(np.array([(box[0]+box[2])/2,(box[1]+box[3])/2])-self.origins['head']).tolist(),
+                          'size':list(core.size),'texture':'eyes_mask.png'}
         if self.key=='snake':
             meta['breath']=[]
             # 火焰与嘴部使用同一组网格权重，避免抬头时从颈骨原点冒火。
             for part,point,direction,start,length in [
-                ('neck_middle',(338,217),(.20,.98),.18,8),
-                ('neck_right',(522,217),(1.,-.04),.26,10),
-                ('neck_left',(119,394),(-.72,.69),.32,9)]:
+                ('neck_middle',(338,217),(.12,.99),.22,20/1.5),
+                ('neck_right',(522,217),(1.,-.04),.30,32/1.5),
+                ('neck_left',(119,394),(-.72,.69),.38,28/1.5)]:
                 weights=next(p[3] for p in self.parts if p[0]==part)(*point)
                 binds=[{'bone':n,'weight':w,'point':(np.array(point)-self.origins[n]).tolist()}
                        for n,w in weights.items() if w>1e-6]
-                meta['breath'].append({'bindings':binds,'direction':direction,'start':start,'duration':.44,'length_px':length})
+                meta['breath'].append({'bindings':binds,'direction':direction,'start':start,'duration':.75,'length_px':length,'width_px':(8 if part=='neck_middle' else 11)/1.5})
         (self.folder/'animation.json').write_text(json.dumps(meta,ensure_ascii=False,indent=2),encoding='utf-8')
         print(self.key,len(self.bones),'bones',len(self.parts),'parts')
 
@@ -167,7 +197,7 @@ def blend(root, name, factor, tip=None, tip_factor=0):
 
 
 def bat():
-    r=Rig('bat','蝠漆漆',1.2,.6)
+    r=Rig('bat','蝠漆漆',1.2,1.2)
     for n,p,parent in [('wing_l',(149,278),'root'),('tip_l',(99,335),'wing_l'),('wing_r',(322,254),'root'),('tip_r',(383,320),'wing_r'),('ear_l',(143,174),'root'),('ear_r',(255,157),'root'),('tail',(254,354),'root')]: r.bone(n,p,parent)
     yy,xx=np.mgrid[:r.h,:r.w]
     left=(xx<151)&(yy>267);right=(xx>319)&(yy>232)
@@ -185,7 +215,7 @@ def bat():
 
 
 def snake():
-    r=Rig('snake','苹果蛇',3.2,.8)
+    r=Rig('snake','苹果蛇',3.2,1.4)
     for n,p in [('neck_middle',(251,307)),('head_middle',(275,225)),('neck_right',(396,424)),('head_right',(448,247)),('neck_left',(260,325)),('head_left',(158,337)),('coil',(419,513)),('tail',(253,582)),('tail_tip',(150,663))]:
         parent={'head_middle':'neck_middle','head_right':'neck_right','head_left':'neck_left','tail_tip':'tail'}.get(n,'root');r.bone(n,p,parent)
     yy,xx=np.mgrid[:r.h,:r.w]
@@ -208,7 +238,7 @@ def snake_body_weights(x,y):
 
 
 def sheep():
-    r=Rig('sheep','羊头仔',3.6,.6)
+    r=Rig('sheep','羊头仔',3.6,1.2)
     for n,p in [('head',(270,290)),('wool',(265,325)),('hand_l',(218,387)),('hand_r',(382,340)),('tuft',(219,430))]:r.bone(n,p)
     yy,xx=np.mgrid[:r.h,:r.w];rgb=r.pixels[:,:,:3].astype(float)
     # 按原画颜色区分角与面部、绒毛，保留细碎笔触。头部黑眼睛通过包围区域一同归入。
@@ -260,29 +290,39 @@ def pose_at(r, clip, t):
             put('hand_l',rot=5*wave(t,3.6,.18));put('hand_r',rot=-4*wave(t,3.6,.22))
             put('tuft',x=.35*wave(t,3.6,.3),y=.5*wave(t,3.6,.3))
     elif clip=='trigger':
-        e=pulse(t,r.trigger)
-        prep=math.sin(math.pi*min(t/.1,1)) if t<.1 else 0
+        # 先立住释放姿态，再分部位收招；延长展示段不稀释起势的速度。
+        def hold(a,b,c,d,delay=0):
+            return smooth(a,b,t-delay)*(1-smooth(c,d,t-delay))
+        prep=hold(0,.10,.14,.24)
         if r.key=='bat':
-            e=smooth(.10,.23,t)*(1-smooth(.26,.6,t))
-            put('root',y=.7*prep-3*e)
+            e=hold(.14,.32,.73,1.12)
+            rebound=hold(.43,.50,.57,.73)
+            put('root',y=1.0*prep-3.33*e-.6*rebound,sx=1-.035*prep+.025*e,sy=1+.03*prep-.02*e)
             for side,s in [('l',1),('r',-1)]:
-                put('wing_'+side,rot=s*(6*prep-38*e))
-                put('tip_'+side,rot=-s*8*pulse(t,.6,.04))
-                put('ear_'+side,rot=s*3*pulse(t,.6,.06))
-            put('tail',rot=5*pulse(t,.6,.09))
+                put('wing_'+side,rot=s*(9*prep-38*e+12*rebound))
+                put('tip_'+side,rot=-s*9*hold(.14,.32,.73,1.12,.055))
+                put('ear_'+side,rot=s*4*hold(.14,.32,.73,1.10,.08))
+            put('tail',rot=7*hold(.14,.32,.73,1.08,.10))
         elif r.key=='snake':
-            for n,delay,s in [('middle',0,1),('right',.08,1),('left',.14,-1)]:
-                env=pulse(t,.8,delay)
-                put('neck_'+n,rot=s*10*env,y=-3.3*env)
-                put('head_'+n,rot=-s*3.5*env)
-            put('coil',rot=-3*e);put('tail',rot=-8*pulse(t,.8,.06));put('tail_tip',rot=13*pulse(t,.8,.12))
+            for n,delay,s in [('middle',0,1),('right',.08,1),('left',.16,-1)]:
+                env=hold(.14,.30,.97,1.22,delay)
+                recoil=hold(.22,.27,.34,.43,delay)
+                put('neck_'+n,rot=s*(10*env-3*prep),y=-4*env+.6*prep,
+                    x=({'middle':-.9,'right':1.8,'left':-1.0}[n])*env-s*.6*recoil)
+                put('head_'+n,rot=-s*(3.5*env+2*recoil))
+            put('coil',rot=-3*hold(.14,.34,1.08,1.4)+1.8*prep)
+            put('tail',rot=-9*hold(.18,.40,1.08,1.4))
+            put('tail_tip',rot=14*hold(.24,.46,1.16,1.4))
         else:
-            put('head',rot=-3*e,y=.8*e)
-            put('hand_l',rot=18*e,x=1.0*e,y=-1.6*e)
-            put('hand_r',rot=-21*e,x=-1.2*e,y=-1.2*e)
-            release=pulse(t,.6,.10)
-            put('wool',sx=1+.025*release,sy=1-.012*release)
-            put('tuft',y=-.8*pulse(t,.6,.06))
+            e=hold(.16,.32,.94,1.2)
+            hands=hold(0,.16,.93,1.18)
+            drift=.18*math.sin((t-.32)*TAU*1.5)*e
+            put('root',y=-2.67*e)
+            put('head',rot=-3*prep+2*e,y=.55*prep)
+            put('hand_l',rot=23*hands,x=1.5*hands,y=-2*hands+drift)
+            put('hand_r',rot=-26*hands,x=-1.8*hands,y=-1.7*hands-drift)
+            put('wool',sx=1-.018*prep+.035*e,sy=1+.012*prep-.018*e)
+            put('tuft',y=-.8*hold(.20,.38,.97,1.2)+drift)
     else:
         sink=smooth(.1,1.2,t); put('root',rot=-3*sink if r.key=='bat' else 0,y=6*sink)
         if r.key=='bat':

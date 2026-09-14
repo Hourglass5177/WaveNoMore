@@ -1,0 +1,48 @@
+# 随从技能动画与光效强化
+
+2026-09-14。新版已用于正式游戏和随从审看场景，本轮没有构建发行程序。关内原画最长边约 120 px，生界偏移 `(-136,70)`；生界锚点 `(134,305)`，死界锚点 `(1786,775)`，继承角色槽的中心对称变换。
+
+## 动作与参数
+
+| 随从 | 技能长度 | 主要表现 |
+| --- | --- | --- |
+| 蝠漆漆 | 1.2 秒 | 收翼下压后展翼上提，胸纹亮起；0.22、0.50 秒释放两道光波，半径 8→48 px，各持续 0.5 秒；第二道配合小幅扇翼回弹 |
+| 苹果蛇 | 1.4 秒 | 三首先收后展，中、右、左依次喷火；各持续 0.75 秒，长度约 20、32、28 px，三层火舌、柔晕与少量余烬 |
+| 羊头仔 | 1.2 秒 | 合手上浮，三眼 0.20～0.30 秒同时渐亮，保持到 0.92 秒，1.10 秒前熄灭；头角保持刚性，绒毛舒展 3.5% |
+
+此表尺寸按正式 120 px 显示计。资源内使用 80 px 基准，正式父节点统一乘 `1.5`。`animation.json` 保存动作长度、`glow_envelope`、胸口及眼部绑定、胸波时序/半径、三嘴方向/时序/宽长。原画、骨架、网格权重、常态和死亡源动画均与修改前一致。
+
+`pet_trigger_lights.gd` 用固定面片绘制胸波与三眼；`snake_breath.gd` 沿原嘴部网格权重跟随。新增材质使用局部 `canvas_item` shader，共享 shader 但保持各实例材质独立；没有全屏后处理、逐帧创建网格或模拟粒子历史。死界统一去色并乘 0.65 亮度。
+
+羊的 `eyes_mask.png` 从原画三处黑眼连通区域提取，填回眼内原高光，收缩一源像素保留轮廓。R 通道为眼形，G 通道为预滤柔晕。面片使用头骨的完整变换；**QuadMesh 的纵向 UV 与源 PNG 相反，眼部 shader 显式转换 `1.0-UV.y`**。第一轮近景曾出现上下错位，已修正并更新图集及动图。
+
+光效年龄由歌曲时间减技能事件时间计算，避免依赖 Spine 轨道的浮点累加。重复技能在当前动作结束前不重启、不排队；结束后 0.08 秒混合回原常态相位，死亡立即取消技能光效并以 0.12 秒接管骨骼。
+
+## 审看与复现
+
+- [新版三条技能动图](../build/pet-skill-upgrade/three-triggers.gif)
+- [修改前后对照](../build/pet-skill-upgrade/before-after.gif)：各动作从零同时开始，旧短动作结束后保持基准，不循环冒充一次长技能。
+- [修正后的羊眼关键帧](../build/pet-skill-upgrade/sheep-eyes-corrected.png)、[双侧眼部近景](../build/pet-skill-upgrade/eyes-aligned-both-worlds.png)
+- [关内双侧动图](../build/pet-runtime/companions-in-game.gif)，完整 1920×1080 实拍逐帧图保留在 `build/pet-runtime/{pet_id}/`。
+- 同目录 `{pet_id}-1280-trigger.png` 为 1280×720 的释放姿态；`*-1280.png` 为常态。
+- 三只各自的 `trigger_sheet.png` 和 `frames.tres` 已更新为 30 fps，分别 36 / 42 / 36 帧；常态与死亡图集内容不变。
+
+工程内入口仍为 `scenes/tools/pet_animation/review.tscn`，默认 120 px，可暂停、定位、触发技能、死亡和重置。重新生成流程见[动画素材说明](pet-animation-studies.md)。新增审看脚本：
+
+```powershell
+godot --path . --minimized --rendering-method gl_compatibility --script tools/pet_animation/capture_skill_upgrade.gd
+godot --path . --minimized --rendering-method gl_compatibility --script tools/pet_animation/check_eye_alignment.gd
+python tools/pet_animation/package_skill_upgrade.py
+```
+
+前后对照脚本需要 `build/pet-skill-upgrade/before/{bat,snake,sheep}/trigger/` 中保存的旧版采样；该目录属于忽略的审看产物，不是运行时依赖。
+
+## 验证结果
+
+- 动画与图集：113 项检查通过，包含延长后的拒绝重复触发、独立光效暂停/定位/死亡取消、三嘴依次点火与熄灭、回到原常态相位。
+- 正式随从接入：161 项断言通过，覆盖装备进关、两侧事件、死界材质、不同帧率与会话重演、技能收益及 Replay 摘要；最终重跑也输出下述关卡元数据读取错误。
+- 原图与几何：543 张实际渲染帧、2379 组网格姿态通过；最小三角面积比 0.277，无翻面。512 px 导出画布最小透明边距 44 px，无裁切；死亡交接透明度平均误差为 0。
+- 三眼实际渲染：0.30～0.90 秒逐帧检查三眼原图点在两侧头骨变换后均被白光覆盖，共 114 个位置；另比较混合播放、暂停和回拖的实际画面，两项检查通过，通道差不超过 1/255。
+- 技能/装备领域回归：260 项断言通过。测试输出 `stage_root.gd` 可选 `planning_source_chart` 元数据读取错误及退出时两个对象未释放；接入测试和小窗口采样也遇到相同元数据日志。这不在本次动画改动范围，保留日志 `build/pet-skill-upgrade/{pet-tests,runtime-tests,layout-capture}.log`，未改动同时进行中的关卡工具工作。
+
+Compatibility 实拍检查覆盖两界、120 px、主角攻击与死亡、1920×1080 和 1280×720。三眼遮罩不再纵向翻转，胸波起点贴合胸纹，三嘴火焰保持原有蛇颈遮挡；生界随从与攻击中的主角之间留有可见间隔。

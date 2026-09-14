@@ -7,7 +7,7 @@
     246.5
   ],
   "idle": 1.2,
-  "trigger": 0.6,
+  "trigger": 1.2,
   "death": 2.05,
   "bone_death": 1.4,
   "bone_count": 8,
@@ -24,5 +24,25 @@
     0.54296875,
     0.0185546875,
     0.1640625
+  ],
+  "chest": {
+    "bone": "root",
+    "point": [
+      -8.0,
+      43.5
+    ],
+    "starts": [
+      0.22,
+      0.5
+    ],
+    "duration": 0.5,
+    "radius_from": 5.333333333333333,
+    "radius_to": 32.0
+  },
+  "glow_envelope": [
+    0.14,
+    0.29,
+    0.72,
+    1.1
   ]
 }

@@ -55,6 +55,10 @@ var _double_press_ids: Dictionary[String, bool] = {}
 ## 关卡演出给出的提前发射段；不写入编译谱和 Replay 指纹。
 var boss_emissions: Dictionary = {}
 var tempo_map: TempoMap
+## 历史定位只省略已离开恢复区间的图形，领域事件和素音预测仍完整执行。
+var preview_visible_after_us: int = -9223372036854775807
+var preview_target_us: int = -9223372036854775807
+var preview_note_ends := {}
 
 
 func configure(compiled_chart: Variant, approach_sec: float = 2.25) -> void:
@@ -234,6 +238,10 @@ func get_active_events() -> Array[Dictionary]:
 
 
 func _spawn(kind: StringName, source: Dictionary, fallback_index: int) -> void:
+	if kind == KIND_NOTE and preview_note_ends.get(str(source.get("id", "")), 9223372036854775807) < preview_target_us: return
+	# 普通音符使用上面的实际接触/失败收尾边界，不能再按通用 tail 二次截断。
+	if kind not in [KIND_SU, KIND_NOTE] and _event_end_usec(source) + _tail_usec_for(kind) < preview_visible_after_us:
+		return
 	var entry: Dictionary = source.duplicate(true)
 	var event_id: String = _event_id(entry, kind, fallback_index)
 	entry["event_id"] = event_id

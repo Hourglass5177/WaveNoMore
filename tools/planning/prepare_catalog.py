@@ -68,17 +68,24 @@ for pet, name, key, values, unit, recommended, step, limits, meaning in [
 
 for key,name,value,unit,suggested,step,low,high,meaning in [
     ('enabled','波浪动画',True,'开关','开启',1,0,1,'关闭后原画静止；只影响背景表现。'),
-    ('period_sec','缓流周期',6.0,'s','5～8',0.1,3,12,'一轮抬浪、回卷、舒展的总时长；换景保持歌曲相位。'),
-    ('stream_amplitude_px','水带起伏',3.0,'设计 px','2～4',0.1,0,6,'1920×1080 基准下的水带幅度；连接带和中央内缘保持稳定。'),
-    ('curl_amplitude_px','大浪回卷',12.0,'设计 px','8～12',0.5,0,16,'大浪身与浪尖的局部行程，按控制图平滑衰减。'),
-    ('beat_enabled','节拍回应',True,'开关','开启',1,0,1,'按谱面每拍叠加轻微舒张；关闭后仍可保留缓流。'),
-    ('beat_amplitude_px','节拍舒张幅度',1.2,'设计 px','0.6～1.2',0.1,0,2,'拍点后 0.18 拍达峰、0.80 拍前回落；浪尖为此值的至多 1.5 倍，不累积。'),
+    ('bar_interval','大浪间隔',1,'小节','1',1,1,4,'每隔此数小节首拍拍落一对大浪；每道浪持续两小节。'),
+    ('wave_height_px','大浪高度',165.0,'设计 px','150～170',1,100,190,'最高伸顶姿势的高度；修改后检查判定圈周围留白。'),
+    ('advance_px','浪身推进',190.0,'设计 px','160～200',1,100,240,'从低水脊到触水的前进距离；水沫随后再前滑约 120 px。'),
+    ('curl_travel_px','翻卷行程',90.0,'设计 px','70～110',1,70,110,'控制浪唇横向舒展与翻送尺度，浪高独立配置。'),
+    ('foam_strength','白沫强度',0.9,'比例','60%～100%',0.05,0,1,'只控制拍落后白沫和细水线的不透明度。'),
+    ('flow_enabled','基底水流',True,'开关','开启',1,0,1,'关闭后基底原纹固定，活动浪头继续播放；总动画关闭时仍恢复完整原画。'),
+    ('flow_speed_px_sec','基底流速',60.0,'设计 px/s','48～72',2,0,100,'内部色带的基准流速；局部随水带宽窄变化，不随 BPM 加速。'),
+    ('flow_strength','原纹流动强度',0.80,'比例','65%～90%',0.05,0,1,'内部流动颜色的混合比例；不改变透明轮廓和水带厚度。'),
+    ('streak_strength','细水纹强度',0.24,'比例','18%～30%',0.01,0,0.4,'原画色细水线的峰值混合比例；0 只关闭细纹，不影响原纹流动。'),
 ]:
     rows.append(dict(section='07 分界线表现',target='boundary',key=key,name=name,default=value,
                      unit=unit,suggested=suggested,step=step,minimum=low,maximum=high,meaning=meaning,
-                     type='bool' if isinstance(value,bool) else 'float',source='src/content/resources/boundary_motion_style.gd'))
+                     type='bool' if isinstance(value,bool) else ('int' if isinstance(value,int) else 'float'),source='src/content/resources/boundary_motion_style.gd'))
 
 out=ROOT/'content/rules/planning_parameters.json'
+# 角色移动的表现目录单独维护，重建玩法基线时保留这些字段。
+if out.exists():
+    rows.extend(r for r in json.loads(out.read_text(encoding='utf-8')) if r['target']=='actors')
 out.write_text(json.dumps(rows,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
 print(f'{len(rows)} 个可编辑参数')
 
@@ -89,7 +96,7 @@ def display(value, unit):
 directory=ROOT/'docs/planning'
 directory.mkdir(parents=True,exist_ok=True)
 for pet_page, filename, title in [(False,'01-全局数值.md','全局手感与数值'),(True,'02-随从数值.md','随从技能数值')]:
-    selected=[r for r in rows if r['target']!='boundary' and r['target'].startswith('pet:')==pet_page]
+    selected=[r for r in rows if r['target'] not in ['boundary','actors'] and r['target'].startswith('pet:')==pet_page]
     lines=[f'# {title}', '', '基线：2026-09-14。表格 B 列可直接修改；下列区间是试调建议，允许输入范围另列。实际值以工作簿当前值为准。', '']
     if pet_page:
         lines+=['随从中性配置的所有加成默认均为 0。下表是三只正式随从的两阶资源覆盖；只有已装备的形态生效，进阶不与基础叠加。技能描述原文未改动。', '',

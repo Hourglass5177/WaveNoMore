@@ -33,7 +33,7 @@ func run() -> void:
 	check(stage.background != null and stage.background.layers.size() == source.background.layers.size(), "装配 s08 全部背景层")
 	check(stage.visual_theme.zhu_tap_texture != null and stage.visual_theme.zhu_hold_head_texture != null, "装入正式 Tap 与 Hold 素材")
 	check(stage.stage_show.cues.is_empty(), "选择场景不自动带入教学演出")
-	check(stage.song.song_id == doc.song.song_id and stage.chart.chart_id == doc.chart().chart_id and stage.rule_set == RULES, "场景选择保留当前音乐、谱面与规则")
+	check(stage.song.song_id == doc.song.song_id and stage.chart.chart_id == doc.chart().chart_id and ChartCompiler.rules_hash(stage.rule_set) == ChartCompiler.rules_hash(RULES), "场景选择保留当前音乐、谱面与规则")
 	check(stage.visual_theme.life_color == Color("123456") and source.theme.life_color != Color("123456"), "配色仅覆盖会话副本")
 	var velocity: Vector2 = source.background.layers[0].sublayers[0].velocity
 	stage.background.layers[0].sublayers[0].velocity += Vector2(10, 20)
@@ -108,7 +108,7 @@ func preview_test(doc: StudioDocument) -> void:
 	var presentation = preview.stage_root.presentation
 	check(stage.stage_id != "s08" and presentation._parallax_actors.size() == 2 and presentation._life_actor.is_class("SpineSprite"), "自制谱 ID 装入灵均，并按主题配置挂入角色子层")
 	presentation.handheld_camera_enabled = false
-	stage.visual_theme.camera_velocity = Vector2(60, -10)
+	presentation.stage_definition.visual_theme.camera_velocity = Vector2(60, -10)
 	var director = preview.stage_root.stage_show_director
 	var expected: TempoMap = preview.stage_root.stage_session.compiled_chart.tempo_map
 	check(director.get_compiled_cues().all(func(c): return c.start_us == expected.tick_to_us(c.tick)), "原演出拍点按当前谱面的变 BPM 时间表计算")
@@ -148,7 +148,12 @@ func actor_state(presentation) -> Array:
 func same_actor_state(a: Array, b: Array) -> bool:
 	if a.size() != b.size(): return false
 	for index in a.size():
-		if a[index].track != b[index].track or a[index].poses.size() != b[index].poses.size():
+		# Spine 单精度轨道累计允许两微秒舍入差；循环、混合与骨骼姿态仍逐项核对。
+		var at: Array = a[index].track
+		var bt: Array = b[index].track
+		var same_track := at.size() == bt.size()
+		if same_track and not at.is_empty(): same_track = abs(at[0] - bt[0]) <= 2 and at[1] == bt[1] and abs(at[2] - bt[2]) <= 2 and at[3] == bt[3]
+		if not same_track or a[index].poses.size() != b[index].poses.size():
 			print("Actor track mismatch: ", a[index].track, " / ", b[index].track)
 			return false
 		for bone in a[index].poses.size():

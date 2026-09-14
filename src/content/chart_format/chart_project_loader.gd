@@ -1,14 +1,14 @@
 class_name ChartProjectLoader
 extends RefCounted
 ## 游戏和工具共用的接入点：JSON 项目直接装配正式领域资源，不另造导出音符。
-static func make_stage(song: SongDefinition, chart: SongChart) -> StageDefinition:
+static func make_stage(song: SongDefinition, chart: SongChart, projected: SongChart = null, prepared_rules: GameplayRuleSet = null) -> StageDefinition:
 	var stage := StageDefinition.new()
 	stage.stage_id = chart.chart_id
 	stage.display_name = song.title
 	stage.song = song.duplicate(true)
-	stage.rule_set = PlanningParameters.default_rules()
-	if not ChartPathAdapter.validate(chart, stage.rule_set).is_empty(): return null
-	stage.chart = ChartPathAdapter.project(chart, stage.rule_set)
+	stage.rule_set = prepared_rules if prepared_rules != null else PlanningParameters.default_rules()
+	if projected == null and not ChartPathAdapter.validate(chart, stage.rule_set).is_empty(): return null
+	stage.chart = projected if projected != null else ChartPathAdapter.project(chart, stage.rule_set)
 	stage.set_meta("planning_source_chart", chart)
 	var raw: Dictionary = chart.get_meta("json_source", {})
 	stage.song.first_beat_offset_sec = float(raw.get("timing", {}).get("first_beat_offset_ms", 0)) / 1000.0
@@ -21,6 +21,28 @@ static func make_stage(song: SongDefinition, chart: SongChart) -> StageDefinitio
 	stage.stage_show = resolved.show.duplicate(true) if resolved.show != null else StageShow.new()
 	stage.reward = RewardDefinition.new()
 	return stage
+
+static func prepare_preview(song: SongDefinition, chart: SongChart) -> Dictionary:
+	## 工作区问题列表与实际预览共用同一份校验、投影和编译结果。
+	var planning := PlanningParameters.read()
+	var rules := PlanningParameters.rules_copy(load(PlanningParameters.DEFAULT_RULES), planning)
+	var report := ValidationReport.new()
+	for error: String in planning.errors: report.add_error(&"editor.planning", error)
+	for issue: Dictionary in ChartPathAdapter.validate(chart, rules):
+		report.add_error(issue.code, issue.message, issue.event_id, StringName(issue.track), issue.tick)
+	for unknown: Dictionary in chart.get_meta("unknown_notes", []):
+		report.add_error(&"editor.unsupported_note", "暂不支持的音符：%s；原数据仍保留" % unknown.get("id", ""))
+	for issue: Dictionary in presentation_issues(chart): report.add_error(&"editor.scene", issue.message)
+	if report.has_errors(): return {"stage": null, "compiled": null, "report": report}
+	var projected := ChartPathAdapter.project(chart, rules)
+	var compiled := ChartCompiler.compile(projected, rules)
+	if not compiled.ok: return {"stage": null, "compiled": null, "report": compiled.report}
+	var stage := make_stage(song, chart, projected, rules)
+	stage.set_meta("preview_planning", planning)
+	# 编译成功数量属于技术信息，不占用谱师的“问题”栏。
+	for issue: ValidationIssue in compiled.report.issues:
+		if issue.severity != ValidationIssue.Severity.INFO: report.add_issue(issue)
+	return {"stage": stage, "compiled": compiled.compiled, "report": report}
 
 ## 同步入口完成表现检查；后台任务使用 read_project，交回主线程后再检查表现依赖。
 static func inspect_package(path: String) -> Dictionary:

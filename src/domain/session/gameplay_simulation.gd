@@ -29,13 +29,13 @@ var compiled: CompiledChart
 ## 本局规则表；判定窗、计分、魂火和物理坐标均从此读取。
 var rules: GameplayRuleSet
 var pet_effect := PetEffectProfile.new()
-## 按实际发生时间记录伤害；last_pet_trigger_us 供视图按歌曲时间恢复短反馈。
+## 实际伤害与随从表现事件分别排出，表现不反向参与结算。
 var damages: Array[DamageRecord] = []
 var _pending_damages: Array[DamageRecord] = []
 ## 只在 Hold 失败时生成剩余身体结算点，按微秒排序；不逐帧扫描全谱身体。
 var _hold_body_damages: Array[DamageRecord] = []
 var _hold_damage_cursor := 0
-var last_pet_trigger_us: int = -9000000000000000
+var _pending_pet_triggers: Array[Dictionary] = []
 var _notes_by_id: Dictionary = {}
 ## Tap/Hold 的头、持续、尾与乱按绑定判定器。
 var note_engine := NoteJudgeEngine.new()
@@ -118,7 +118,7 @@ func configure(p_compiled: CompiledChart, p_rules: GameplayRuleSet, debug_nonlet
 	_hold_body_damages.clear()
 	_hold_damage_cursor = 0
 	_notes_by_id.clear()
-	last_pet_trigger_us = -9000000000000000
+	_pending_pet_triggers.clear()
 	for note: Dictionary in compiled.notes: _notes_by_id[str(note.id)] = note
 	note_engine.configure(compiled, rules, pet_effect)
 	tuning_engine.configure(compiled, rules)
@@ -481,6 +481,9 @@ func accept_input(sample: SemanticInputSample) -> int:
 		var bound_note: Dictionary = {}
 		if consumed and _last_input_owner == GameplayTypes.InputOwner.NOTE:
 			bound_note = note_engine.last_press_binding()
+		# 起手绑定只在新接住音符时产生；续按、暂停重臂不会重复发出技能。
+		if bound_note.get("unit_kind", &"") == &"hold" and (pet_effect.hold_head_bonus_ms > 0 or pet_effect.hold_sustain_bonus_ms > 0 or pet_effect.hold_grade_boost > 0):
+			_queue_pet_trigger(sample.timestamp_us, int(bound_note.affinity))
 		var wave_qualified: bool = false
 		match _last_input_owner:
 			GameplayTypes.InputOwner.NOTE:
@@ -632,7 +635,6 @@ func snapshot() -> Dictionary:
 	var result := motion_snapshot().duplicate(false)
 	result.merge({
 		"score": score_engine.total_score(),
-		"pet_trigger_us": last_pet_trigger_us,
 		"raw_score": score_engine.raw_score,
 		"combo": score_engine.combo,
 		"max_combo": score_engine.max_combo,
@@ -824,12 +826,11 @@ func _collect_engine_records() -> void:
 		_judgment_sequence += 1
 		record.base_grade = record.grade
 		record.grade = pet_effect.promote(record.base_grade, record.unit_kind)
-		if record.grade != record.base_grade: last_pet_trigger_us = record.finalized_at_us
 		judgments.append(record)
 		_pending_judgments.append(record)
 		var old_bonus := score_engine.bonus_score
 		score_engine.apply_judgment(record)
-		if score_engine.bonus_score > old_bonus: last_pet_trigger_us = record.finalized_at_us
+		if score_engine.bonus_score > old_bonus: _queue_pet_trigger(record.finalized_at_us, record.affinity)
 		if record.base_grade == GameplayTypes.JudgmentGrade.MISS and record.unit_kind == &"hold":
 			_schedule_hold_damage(record)
 		# Tuning 只计分，不造成伤害；Tap 等待抵达，Hold 等待剩余身体逐段抵达。
@@ -860,10 +861,21 @@ func _apply_damage(record: DamageRecord) -> void:
 	record.fatal = health_engine.failed
 	damages.append(record)
 	_pending_damages.append(record)
-	if pet_effect.damage_reduction > 0.0: last_pet_trigger_us = record.timestamp_us
+	if not record.fatal and pet_effect.damage_reduction > 0.0 and record.base_damage > record.actual_damage:
+		_queue_pet_trigger(record.timestamp_us, record.affinity)
 
 
 func drain_damages() -> Array[DamageRecord]:
 	var result := _pending_damages
 	_pending_damages = []
+	return result
+
+
+func _queue_pet_trigger(time_us: int, side: int) -> void:
+	_pending_pet_triggers.append({"timestamp_us": time_us, "affinity": side})
+
+
+func drain_pet_triggers() -> Array[Dictionary]:
+	var result := _pending_pet_triggers
+	_pending_pet_triggers = []
 	return result

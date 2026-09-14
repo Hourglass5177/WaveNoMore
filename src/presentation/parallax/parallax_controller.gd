@@ -31,6 +31,9 @@ var _layers: Dictionary[int, DepthLayer] = {}
 var _objects: Dictionary[int, Registration] = {}
 var _configured_objects: Array[Node2D] = []
 var _animations: Array[AnimatedSprite2D] = []
+var boundary_motion := BoundaryMotion.new()
+var _boundary_materials: Array[Dictionary] = []
+var _background_scenes: Array[Node2D] = []
 var _leaving := false
 var _song_time := 0.0
 var _occlusion := {}
@@ -247,8 +250,8 @@ func configure(definition: StageBackgroundDefinition, apply_materials: bool = tr
 
 func _configure_entry(entry: StageBackgroundEntry, depth: int, sublayer_id: String, apply_materials: bool) -> String:
 	var index := _configured_objects.size()
-	if entry == null or (entry.texture == null) == (entry.sprite_frames == null):
-		return "背景条目 %d 必须指定贴图或 SpriteFrames，且只能指定一项。" % (index + 1)
+	if entry == null or entry.source_count() != 1:
+		return "背景条目 %d 必须指定贴图、SpriteFrames 或场景，且只能指定一项。" % (index + 1)
 	if not is_finite(entry.uniform_scale) or entry.uniform_scale < 0.01:
 		return "背景条目 %d 的缩放倍率必须至少为 0.01。" % (index + 1)
 	var object: Node2D
@@ -257,6 +260,14 @@ func _configure_entry(entry: StageBackgroundEntry, depth: int, sublayer_id: Stri
 		sprite.texture = entry.texture
 		sprite.centered = false
 		object = sprite
+	elif entry.scene != null:
+		var instance := entry.scene.instantiate()
+		if not instance is Node2D or entry.infinite:
+			instance.free()
+			return "背景场景必须以 Node2D 为根，并使用有限素材。"
+		object=instance
+		if object.has_method("configure_boundary_scene"): object.configure_boundary_scene(boundary_motion)
+		_background_scenes.append(object)
 	else:
 		if not entry.sprite_frames.has_animation(entry.animation) or entry.sprite_frames.get_frame_count(entry.animation) == 0:
 			return "背景条目 %d 的动画不存在或没有帧。" % (index + 1)
@@ -269,6 +280,9 @@ func _configure_entry(entry: StageBackgroundEntry, depth: int, sublayer_id: Stri
 		object = sprite
 	if apply_materials and entry.material != null:
 		object.material = entry.material.duplicate(false) as ShaderMaterial
+		if BoundaryMotion.accepts(object.material):
+			boundary_motion.apply(object.material, entry.uniform_scale)
+			_boundary_materials.append({"material": object.material, "scale": entry.uniform_scale})
 	add_child(object)
 	object.position = entry.position
 	object.scale = Vector2.ONE * entry.uniform_scale
@@ -283,11 +297,27 @@ func _configure_entry(entry: StageBackgroundEntry, depth: int, sublayer_id: Stri
 ## 外部注册的 AnimatedSprite2D 保留自己的动画播放控制。
 func set_song_time(song_time: float, apply_motion: bool = true) -> void:
 	_song_time = maxf(song_time, 0.0) if apply_motion else 0.0
+	var beat := boundary_motion.beat_at(song_time)
+	for item in _boundary_materials:
+		BoundaryMotion.sample(item.material, song_time, beat)
+	for object in _background_scenes:
+		if object.has_method("sample_background"): object.sample_background(song_time)
 	set_camera_position(_camera_position)
 	for sprite: AnimatedSprite2D in _animations:
 		if not is_instance_valid(sprite):
 			continue
 		sample_animation(sprite, song_time)
+
+## 一局只装载一次策划值；共享贴图与材质资源不被回写。
+func configure_boundary(chart: SongChart, first_beat_offset: float, planning: Dictionary) -> void:
+	boundary_motion.tempo_map = TempoMap.from_chart(chart) if chart != null else null
+	boundary_motion.meters.clear()
+	if chart != null: boundary_motion.meters.append_array(chart.meter_events)
+	boundary_motion.meters.sort_custom(func(a, b): return a.tick < b.tick)
+	boundary_motion.audio_offset_sec = first_beat_offset
+	boundary_motion.style = BoundaryMotion.DEFAULT_STYLE.duplicate()
+	PlanningParameters.apply_values(boundary_motion.style, "boundary", planning)
+	for item in _boundary_materials: boundary_motion.apply(item.material, item.scale)
 
 static func sample_animation(sprite: AnimatedSprite2D, song_time: float) -> void:
 		var frames := sprite.sprite_frames
@@ -321,6 +351,8 @@ func clear() -> void:
 			object.queue_free()
 	_configured_objects.clear()
 	_animations.clear()
+	_boundary_materials.clear()
+	_background_scenes.clear()
 	_camera_position = Vector2.ZERO
 	_song_time = 0.0
 	for layer: DepthLayer in _layers.values():
@@ -356,8 +388,11 @@ func clear_environment() -> void:
 		view.root.get_parent().remove_child(view.root); view.root.queue_free()
 	environment_views.clear(); environment = null
 
-func sample_environment(time_us: int, render_camera := Vector2(INF, INF)) -> void:
+func sample_environment(time_us: int, render_camera := Vector2(INF, INF), song_time_sec := NAN) -> void:
 	if environment == null: return
+	# 演出坐标是音频位置；正式游戏显式传入未应用画面提前量的歌曲主时钟。
+	var seconds := song_time_sec if is_finite(song_time_sec) else float(time_us) / 1000000.0 - boundary_motion.audio_offset_sec
+	var beat := boundary_motion.beat_at(seconds)
 	environment_time_us = time_us
 	environment_render_camera=render_camera if render_camera.is_finite() else environment.camera_at(time_us)
 	_sync_canvas_transform()
@@ -386,9 +421,10 @@ func sample_environment(time_us: int, render_camera := Vector2(INF, INF)) -> voi
 				var old: Node = view.slices[state.index]; old.get_parent().remove_child(old); old.queue_free(); view.slices.erase(state.index)
 			if not view.slices.has(state.index):
 				var slice := StageEnvironmentSlice.new(); view.root.add_child(slice)
-				slice.configure(state.source.record.resource); view.slices[state.index] = slice
+				slice.configure(state.source.record.resource, boundary_motion); view.slices[state.index] = slice
 			view.slices[state.index].set_direct(view.root,direct,maxf(1.0,canvas.x.length()))
 			view.slices[state.index].sample(state, lane.direction, canvas)
+			view.slices[state.index].sample_boundary(seconds, beat)
 			if ordinal == 0:
 				view.composite.texture = view.slices[state.index].texture
 				view.composite.scale=Vector2(1920,1080)/Vector2(view.slices[state.index].viewport.size)

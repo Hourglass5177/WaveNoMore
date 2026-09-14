@@ -233,7 +233,7 @@ func signature() -> Array:
 		result.append([record.get("layer_name",""),record.id, record.depth, record.resource.sublayer_id, record.resource.display_name, record.resource.velocity, record.resource.continuity_id, record.resource.cycle_direction, record.resource.cycle_start, record.resource.cycle_end])
 	for item in items:
 		var value: StageBackgroundEntry = item.entry
-		result.append([item.sublayer, value.texture, value.sprite_frames, value.animation, value.infinite, value.random_flip, value.position, value.uniform_scale, value.material])
+		result.append([item.sublayer, value.texture, value.sprite_frames, value.scene, value.animation, value.infinite, value.random_flip, value.position, value.uniform_scale, value.material])
 	return result
 
 
@@ -271,7 +271,7 @@ func restore(state: Dictionary) -> void:
 
 ## 添加只引用项目内美术资源的条目。新条目位于指定设计坐标。
 func add_asset(resource: Resource, position: Vector2) -> bool:
-	if not resource is Texture2D and not resource is SpriteFrames: return false
+	if not resource is Texture2D and not resource is SpriteFrames and not resource is PackedScene: return false
 	var before := snapshot()
 	var value := StageBackgroundEntry.new()
 	assign_asset(value, resource)
@@ -289,6 +289,8 @@ func add_asset(resource: Resource, position: Vector2) -> bool:
 func assign_asset(value: StageBackgroundEntry, resource: Resource) -> void:
 	value.texture = resource as Texture2D
 	value.sprite_frames = resource as SpriteFrames
+	value.scene = resource as PackedScene
+	if value.scene != null: value.infinite = false
 	if value.sprite_frames != null and not value.sprite_frames.has_animation(value.animation):
 		var names := value.sprite_frames.get_animation_names()
 		value.animation = names[0] if not names.is_empty() else &"default"
@@ -355,8 +357,10 @@ func validation_error() -> String:
 		var issue := ""
 		if not is_finite(value.uniform_scale) or value.uniform_scale < 0.01:
 			return "条目 %d：缩放倍率必须至少为 0.01" % (index + 1)
-		if (value.texture == null) == (value.sprite_frames == null):
-			issue = "必须选择一项纹理或动画资源"
+		if value.source_count() != 1:
+			issue = "必须选择一项纹理、动画或场景资源"
+		elif value.scene != null and value.infinite:
+			issue = "背景场景只支持有限素材"
 		elif value.sprite_frames != null:
 			var frames := value.sprite_frames
 			if not frames.has_animation(value.animation) or frames.get_frame_count(value.animation) == 0:
@@ -391,7 +395,7 @@ func acknowledge_external() -> void:
 		_watched[source_path] = FileAccess.get_file_as_string(source_path) if FileAccess.file_exists(source_path) else ""
 	for item in items:
 		var material: ShaderMaterial = item.entry.material
-		for resource: Resource in [item.entry.texture, item.entry.sprite_frames, material, material.shader if material != null else null]:
+		for resource: Resource in [item.entry.texture, item.entry.sprite_frames, item.entry.scene, material, material.shader if material != null else null]:
 			if resource != null and not resource.resource_path.is_empty() and not resource.resource_path.contains("::"):
 				_asset_times[resource.resource_path] = FileAccess.get_modified_time(resource.resource_path)
 

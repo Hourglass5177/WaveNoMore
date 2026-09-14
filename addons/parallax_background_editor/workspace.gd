@@ -265,7 +265,7 @@ func _build() -> void:
 	_status = _label(self, "拖入项目素材添加 · 中键浏览 · 滚轮缩放 · Esc 取消拖动")
 	_open_dialog = _file_dialog(["*.tres ; StageBackgroundDefinition 背景资源"])
 	_open_dialog.file_selected.connect(request_open)
-	_asset_dialog = _file_dialog(["*.png,*.jpg,*.jpeg,*.webp,*.svg,*.tres,*.res ; 纹理或 SpriteFrames"])
+	_asset_dialog = _file_dialog(["*.png,*.jpg,*.jpeg,*.webp,*.svg,*.tres,*.res,*.tscn,*.scn ; 纹理、SpriteFrames 或场景"])
 	_asset_dialog.file_selected.connect(_asset_chosen)
 	_material_dialog = _file_dialog(["*.tres,*.res ; ShaderMaterial"])
 	_material_dialog.file_selected.connect(_material_chosen)
@@ -414,7 +414,7 @@ func _rebuild_tree() -> void:
 func _add_entry_row(parent: TreeItem, id: int, depth: int, sublayer: int) -> void:
 	var value := document.entry(id)
 	var row := layer_tree.create_item(parent)
-	var resource: Resource = value.texture if value.texture != null else value.sprite_frames
+	var resource: Resource = value.source_resource()
 	row.set_text(0, (resource.resource_path.get_file() if not resource.resource_path.is_empty() else "内嵌素材") if resource != null else "未指定素材")
 	row.set_tooltip_text(0, "条目 %d · %s" % [document.index_of(id) + 1, resource.resource_path if resource != null else ""])
 	row.set_metadata(0, {"id": id, "depth": depth, "sublayer": sublayer})
@@ -516,7 +516,8 @@ func _update_properties() -> void:
 		_sublayer_picker.set_item_metadata(index, layer.id)
 		if layer.id == document.sublayer_of(document.selected_id): _sublayer_picker.select(index)
 	_infinite.select(1 if first.infinite else 0)
-	var resource: Resource = first.texture if first.texture != null else first.sprite_frames
+	_infinite.disabled = not editable or first.scene != null
+	var resource: Resource = first.source_resource()
 	_asset.text = (resource.resource_path if resource != null else "未指定素材") + (" · 已锁定" if document.locked.has(document.selected_id) else "")
 	_material.text = "ShaderMaterial：" + (first.material.resource_path if first.material != null and not first.material.resource_path.is_empty() else "内嵌材质") if first.material != null else "未设置 ShaderMaterial"
 	_material.tooltip_text = "Shader 参数在 Godot Inspector 中配置"
@@ -578,8 +579,8 @@ func _choose_asset(replace: bool) -> void:
 func _asset_chosen(path: String) -> void:
 	if surface.preview: return
 	var resource := load(path)
-	if not resource is Texture2D and not resource is SpriteFrames:
-		_status.text = "请选择纹理或 SpriteFrames。"
+	if not resource is Texture2D and not resource is SpriteFrames and not resource is PackedScene:
+		_status.text = "请选择纹理、SpriteFrames 或场景。"
 		return
 	if _replacing:
 		if document.editable_entry() == null: return
@@ -626,7 +627,7 @@ func _cancel_material_config() -> void:
 func _drop_assets(paths: PackedStringArray, position: Vector2) -> void:
 	if document.source_path.is_empty(): _status.text = "请先打开背景资源。"; return
 	for path in paths:
-		if not document.add_asset(load(path), position): _status.text = "跳过非纹理或 SpriteFrames：" + path
+		if not document.add_asset(load(path), position): _status.text = "跳过非纹理、SpriteFrames 或场景：" + path
 
 
 func _set_preview(value: bool) -> void:

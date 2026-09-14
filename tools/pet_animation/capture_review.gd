@@ -1,6 +1,6 @@
 extends SceneTree
 ## 审看动图直接采样正式 Spine 混合；背景对照使用现有写谱器预览装配。
-const ACTOR := preload("res://src/tools/pet_animation/pet_study_actor.gd")
+const ACTOR := preload("res://src/presentation/pets/animated_pet_visual.gd")
 const OUT := "res://build/pet-animation/"
 
 func _initialize() -> void: _run.call_deferred()
@@ -33,7 +33,7 @@ func _viewport(size: Vector2i) -> SubViewport:
 
 func _save(viewport: SubViewport, path: String) -> void:
 	await process_frame
-	await RenderingServer.frame_post_draw
+	RenderingServer.force_draw()
 	viewport.get_texture().get_image().save_png(OUT + path)
 
 func _movie() -> void:

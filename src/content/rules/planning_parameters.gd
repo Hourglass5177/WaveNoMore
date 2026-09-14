@@ -1,9 +1,10 @@
 class_name PlanningParameters
 extends RefCounted
-## 策划表在装载时读取，一局内使用独立规则副本。不会在玩法帧内访问磁盘。
+## 策划表在装载时读取；规则、随从和分界线表现分别使用独立副本，不在玩法帧内访问磁盘。
 const SCHEMA_PATH := "res://content/rules/planning_parameters.json"
 const WORKBOOK_PATH := "res://outputs/planning/策划参数.xlsx"
 const DEFAULT_RULES := "res://content/rules/default_gameplay_rules.tres"
+const BUNDLED_PATH := "res://content/rules/build_planning.json"
 
 static func workbook_path() -> String:
 	for argument in OS.get_cmdline_user_args():
@@ -12,6 +13,14 @@ static func workbook_path() -> String:
 	return OS.get_executable_path().get_base_dir().path_join("planning/策划参数.xlsx")
 
 static func read(path: String = "") -> Dictionary:
+	# 发布版使用构建时封装的值，忽略 EXE 旁遗留的开发表；工程内仍实时读取 Excel。
+	if path.is_empty():
+		var snapshot_path := BUNDLED_PATH
+		for argument in OS.get_cmdline_user_args():
+			if argument.begins_with("--planning-values="): snapshot_path = argument.trim_prefix("--planning-values=")
+		if FileAccess.file_exists(snapshot_path):
+			var snapshot: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(snapshot_path))
+			return {"values":snapshot.values,"errors":[],"path":snapshot_path}
 	if path.is_empty(): path = workbook_path()
 	var result := {"values": {}, "errors": [], "path": path}
 	if not FileAccess.file_exists(path): return result
@@ -40,7 +49,7 @@ static func read(path: String = "") -> Dictionary:
 		if not file.begins_with("xl/worksheets/") or not file.ends_with(".xml"): continue
 		for cells: Dictionary in _rows(zip.read_file(file), shared):
 			var target := str(cells.get("H", ""))
-			if target not in ["rules", "boundary"] and not target.begins_with("pet:"): continue
+			if target not in ["rules", "boundary", "actors"] and not target.begins_with("pet:"): continue
 			var id := target + "/" + str(cells.get("I", ""))
 			if not schema.has(id):
 				result.errors.append("未知策划字段：" + id)
@@ -49,6 +58,7 @@ static func read(path: String = "") -> Dictionary:
 			var value := str(cells.get("B", ""))
 			if result.values.has(id): result.errors.append("策划字段重复：" + id)
 			elif cells.get("B_formula", false): result.errors.append(entry.name + "：当前值请直接填写数字，不使用公式")
+			elif entry.type == "string": result.values[id] = value
 			elif not value.is_valid_float(): result.errors.append(entry.name + "：当前值缺失或不是数字")
 			elif not is_finite(float(value)) or float(value) < float(entry.minimum) or float(value) > float(entry.maximum):
 				result.errors.append("%s：允许范围 %s～%s" % [entry.name, entry.minimum, entry.maximum])

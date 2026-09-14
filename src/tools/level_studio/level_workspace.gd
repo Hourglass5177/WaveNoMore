@@ -9,7 +9,9 @@ var surface := LevelPreviewSurface.new()
 var inspector: LevelInspector = preload("res://scenes/tools/level_studio/inspector.tscn").instantiate()
 var viewport := SubViewport.new()
 var selection := PackedStringArray()
-var _deleted_selection := {}
+var _pending_packs: Array=[]
+var _background_choice_key:=""
+var _background_choices:={}
 var selected_track := ""
 var selected_item := ""
 var section := "song"
@@ -27,7 +29,12 @@ var _candidate_tracks: Array = []
 var _refresh_queued := false
 var _loading := false
 var _tree_updating := false
-var _object_tree := Tree.new()
+var _object_tree = preload("res://src/tools/level_studio/level_object_tree.gd").new()
+var _object_search := LineEdit.new()
+var _object_type := OptionButton.new()
+var _show_dependencies := false
+var _guide: PanelContainer
+var _sequence_list := ItemList.new()
 var _asset_list := LevelAssetList.new()
 var _asset_search := LineEdit.new()
 var _asset_category := OptionButton.new()
@@ -91,6 +98,8 @@ var _standalone_environment: ParallaxController
 var _environment_preview := {}
 var _environment_last_redraw := 0
 var _environment_switching := false
+var _review := {}
+var _review_switching := false
 var _loop_toggle: CheckBox
 
 
@@ -109,13 +118,22 @@ func _ready() -> void:
 	inspector.workspace = self
 	_build_ui()
 	timeline.environment_dropped.connect(add_environment_cue)
+	timeline.asset_dropped.connect(_drop_timeline_asset)
+	timeline.note_requested.connect(_select_reference_note)
 	timeline.bind(document)
 	document.changed.connect(_document_changed)
+	document.view_snapshot=_selection_snapshot
+	document.history_gate=_history_pack_gate
+	document.history_view_requested.connect(_restore_history_selection)
+	document.rejected.connect(func(reason):_status.text=reason)
+	document.edit_started.connect(_pause_review)
+	get_viewport().gui_focus_changed.connect(func(control):
+		if control is LineEdit or control is TextEdit or control is SpinBox or control is LevelCurveEditor:_pause_review())
 	surface.selection_changed.connect(func(ids):
 		if ids!=selection or _transform_keys().is_empty():select_objects(ids))
 	surface.transform_committed.connect(_commit_transform)
 	surface.candidate_changed.connect(func(values): _candidate_objects = values; _update_show())
-	surface.asset_dropped.connect(func(asset,at): add_asset_object(asset,at))
+	surface.asset_dropped.connect(_drop_canvas_asset)
 	timeline.selection_set_changed.connect(_timeline_selection)
 	timeline.seek_requested.connect(_scrub)
 	timeline.seek_finished.connect(func(_us): _finish_seek())
@@ -149,18 +167,22 @@ func _ready() -> void:
 	var opening:=""
 	for index in range(arguments.size()-1):
 		if arguments[index]=="--open-level":opening=arguments[index+1];break
-	if not opening.is_empty():_open_path.call_deferred(opening)
+	var resume_path:=""
+	for index in range(arguments.size()-1):
+		if arguments[index]=="--resume-level-session":resume_path=arguments[index+1];break
+	if not resume_path.is_empty():_resume_pack_session.call_deferred(resume_path)
+	elif not opening.is_empty():_open_path.call_deferred(opening)
 	elif offer_recovery_on_start:_offer_recovery.call_deferred()
 
 func _build_ui() -> void:
 	var toolbar: HFlowContainer = %Toolbar
-	_add_menu(toolbar,"文件",[["新建",_new],["打开",_open],["保存",save],["另存为",_save_as],["导入歌曲",import_song],["导出关卡包",export_package]])
-	_add_menu(toolbar,"编辑",[["撤销",func():document.undo()],["重做",func():document.undo(true)],["复制",_copy_selection],["粘贴",_paste_selection],["删除",delete_objects]])
-	_add_menu(toolbar,"素材",[["导入素材",import_asset],["导入动画",import_animation],["导入素材包",import_pack],["重新定位缺失素材",_relocate_asset],["清理未使用素材",clean_unused_assets]])
+	_add_menu(toolbar,"文件",[["新建",_new],["打开",_open],["保存",save],["另存为",_save_as],["导入歌曲",import_song],["导出关卡包",export_package],["最近工程",_recent_projects],["查看恢复稿",_show_recoveries]])
+	_add_menu(toolbar,"编辑",[["撤销",func():document.undo()],["重做",func():document.undo(true)],["复制",_copy_selection],["粘贴",_paste_selection],["删除",delete_selection],["粘贴到选中对象",func():timeline.paste_selected(selection[0] if selection.size()==1 else "@invalid")]])
+	_add_menu(toolbar,"素材",[["导入素材",import_asset],["导入动画",import_animation],["导入素材包",import_pack],["应用待更新素材包",_apply_pending_packs],["重新定位缺失素材",_relocate_asset],["清理未使用素材",clean_unused_assets]])
 	LevelUI.button(toolbar,"保存",save,"保存当前字段及工程（Ctrl+S）")
 	_trial_button=LevelUI.button(toolbar,"在游戏中试玩",playtest)
-	LevelUI.button(toolbar,"帮助",_help)
-	_scale_menu.text="界面";toolbar.add_child(_scale_menu)
+	_add_menu(toolbar,"帮助",[["操作说明",_help],["显示起步引导",func():_guide.show()]])
+	_scale_menu.text="界面";add_child(_scale_menu);_scale_menu.hide()
 	for caption in ["自动缩放","100%","125%","150%","200%"]:_scale_menu.get_popup().add_radio_check_item(caption)
 	_scale_menu.get_popup().add_separator()
 	_scale_menu.get_popup().add_item("显示整个区段",10)
@@ -168,17 +190,16 @@ func _build_ui() -> void:
 		if id==10:_fit_timeline();return
 		_ui_scale=[0.0,1.0,1.25,1.5,2.0][id];_apply_ui_scale();_save_preferences())
 	var menu := MenuButton.new(); menu.text="视图"; toolbar.add_child(menu)
-	for pair in [["恢复默认布局",0],["显隐素材与对象",1],["显隐属性面板",2],["显隐时间线",8],["专注预览 / 恢复",9]]: menu.get_popup().add_item(pair[0],pair[1])
+	for pair in [["界面倍率…",20],["布置布局",21],["动画布局",22],["BOSS 布局",23],["恢复默认布局",0],["显隐素材与对象",1],["显隐属性面板",2],["显隐时间线",8],["专注预览 / 恢复",9]]: menu.get_popup().add_item(pair[0],pair[1])
 	menu.get_popup().id_pressed.connect(_view_action)
 	menu.get_popup().about_to_popup.connect(_prepare_command)
-	var recent := MenuButton.new(); recent.text="最近工程"; toolbar.add_child(recent)
-	recent.get_popup().about_to_popup.connect(func():
-		recent.get_popup().clear()
-		for index in _recent.size(): recent.get_popup().add_item(str(_recent[index]),100+index))
-	recent.get_popup().id_pressed.connect(_view_action)
-	var tools_menu := MenuButton.new(); tools_menu.text="工程"; toolbar.add_child(tools_menu)
-	for pair in [["导入旧场景演出",5],["重新定位缺失素材",6],["选择配套游戏",7]]: tools_menu.get_popup().add_item(pair[0],pair[1])
+	var tools_menu := MenuButton.new(); tools_menu.text="工程工具"; toolbar.add_child(tools_menu)
+	for pair in [["导入旧场景演出",5],["重新定位缺失素材",6],["选择配套游戏",7],["试玩日志与重试",24]]: tools_menu.get_popup().add_item(pair[0],pair[1])
 	tools_menu.get_popup().id_pressed.connect(_view_action)
+	var ordered:=["文件","编辑","素材","视图","工程工具","帮助","保存","在游戏中试玩","更多"]
+	for index in ordered.size():
+		for child in toolbar.get_children():
+			if child is BaseButton and child.text==ordered[index]:toolbar.move_child(child,index);break
 	LevelUI.button(%InspectorTabs,"属性",func(): _show_inspector("properties"))
 	LevelUI.button(%InspectorTabs,"关卡设置",func(): _show_inspector("level"))
 	LevelUI.button(%InspectorTabs,"BOSS",open_boss_binding)
@@ -186,11 +207,19 @@ func _build_ui() -> void:
 	_asset_search.placeholder_text = "搜索素材名称或路径"; assets_panel.add_child(_asset_search); _asset_search.text_changed.connect(func(_value): _refresh_assets())
 	for caption in ["全部","场景 / BOSS","图片","音频","字体","环境场景","动画"]: _asset_category.add_item(caption)
 	_add_menu(assets_panel,"＋ 导入",[["普通素材",import_asset],["动画",import_animation],["素材包",import_pack]])
+	LevelUI.toggle(assets_panel,"显示内部依赖",false,func(value):_show_dependencies=value;_refresh_assets())
 	assets_panel.add_child(_asset_category); _asset_category.item_selected.connect(func(_index): _refresh_assets())
 	_asset_list.get_v_scroll_bar().value_changed.connect(func(_value):_refresh_visible_thumbnails.call_deferred())
 	_asset_list.size_flags_vertical = Control.SIZE_EXPAND_FILL; _asset_list.fixed_icon_size = Vector2i(48,48); _asset_list.max_columns = 1
 	assets_panel.add_child(_asset_list); _asset_list.item_activated.connect(func(index): add_asset_object(str(_asset_list.get_item_metadata(index))))
 	var objects_panel := VBoxContainer.new(); objects_panel.name = "对象"; _left_panel.add_child(objects_panel)
+	_object_search.placeholder_text="搜索对象名称";objects_panel.add_child(_object_search);_object_search.text_changed.connect(func(_value):_refresh_objects())
+	for kind in ["全部","sprite","animated_sprite","text","actor","audio","camera","group"]:_object_type.add_item(str({"sprite":"图片","animated_sprite":"动画","text":"文字","actor":"BOSS / 场景","audio":"声音","camera":"镜头","group":"分组"}.get(kind,kind)));_object_type.set_item_metadata(_object_type.item_count-1,kind)
+	objects_panel.add_child(_object_type);_object_type.item_selected.connect(func(_index):_refresh_objects())
+	_object_tree.rearrange_requested.connect(_rearrange_objects)
+	_object_tree.button_clicked.connect(func(item,_column,id,_mouse):
+		var entry:=document.find("objects",str(item.get_metadata(0)));var next:=entry.duplicate(true)
+		var field: String="hidden" if id==0 else "locked";next[field]=not bool(entry[field]);document.replace("切换对象"+field,"objects",[entry],[next]))
 	var add := MenuButton.new(); add.text = "+ 添加对象"; objects_panel.add_child(add)
 	for pair in [["精灵","sprite"],["BOSS / 场景","actor"],["环境","environment"],["HUD 文字","text"],["HUD 图片","image"],["音频","audio"],["镜头","camera"],["分组","group"]]:
 		add.get_popup().add_item(pair[0]); add.get_popup().set_item_metadata(add.get_popup().item_count-1,pair[1])
@@ -217,12 +246,26 @@ func _build_ui() -> void:
 	boss_panel=LevelBossPanel.new(); boss_panel.workspace=self; %RightPanel.add_child(boss_panel); boss_panel.hide()
 	var sequences := VBoxContainer.new(); sequences.name="片段"; _left_panel.add_child(sequences)
 	LevelUI.button(sequences,"保存选区为演出片段",_save_sequence)
+	_sequence_list.size_flags_vertical=Control.SIZE_EXPAND_FILL;sequences.add_child(_sequence_list)
+
 	LevelUI.button(sequences,"插入演出片段",_insert_sequence)
+	LevelUI.button(sequences,"重命名片段",_rename_sequence)
+	LevelUI.button(sequences,"预览所选片段",_preview_sequence)
+	LevelUI.button(sequences,"删除所选模板",_delete_sequence)
+	_guide=preload("res://scenes/tools/level_studio/workflow_panel.tscn").instantiate();%Middle.add_child(_guide);%Middle.move_child(_guide,1)
+	_guide.get_node("Body/Steps/Directory").pressed.connect(save);_guide.get_node("Body/Steps/Song").pressed.connect(import_song)
+	_guide.get_node("Body/Steps/Theme").pressed.connect(func():_show_inspector("level"));_guide.get_node("Body/Steps/Assets").pressed.connect(import_asset)
+	_guide.get_node("Body/Steps/Close").pressed.connect(_guide.hide)
+	var edges:=HBoxContainer.new();%Middle.add_child(edges);%Middle.move_child(edges,0)
+	LevelUI.button(edges,"◀ 素材／对象",func():_left_panel.visible=not _left_panel.visible)
+	var spacer:=Control.new();spacer.size_flags_horizontal=Control.SIZE_EXPAND_FILL;edges.add_child(spacer)
+	LevelUI.button(edges,"属性 ▶",func():%RightPanel.visible=not %RightPanel.visible)
 	var bottom: VBoxContainer = %Bottom
 	var transport: HFlowContainer = %Transport
 	for caption in ["曲前","歌曲","曲后"]: _section.add_item(caption)
 	_section.select(1); transport.add_child(_section); _section.item_selected.connect(func(index): set_section(LevelFormat.SECTIONS[index]))
 	LevelUI.button(transport,"开头",func(): seek(0))
+	_add_menu(transport,"整关审片",[["从曲前开始连续预览",start_full_review],["退出审片并恢复视图",end_full_review],["上一事件",func():timeline.navigate_event(-1)],["下一事件",func():timeline.navigate_event(1)]])
 	_play.text="播放";_play.icon=preload("res://assets/chart_studio/play.svg"); transport.add_child(_play); _play.pressed.connect(toggle_play)
 	_position.custom_minimum_size.x=95; transport.add_child(_position)
 	LevelUI.choice(transport,"速率",[0.5,0.75,1.0,1.25,1.5,2.0],1.0,func(value): audio.set_rate(value))
@@ -240,6 +283,7 @@ func _build_ui() -> void:
 	_add_menu(%TimelineEdit,"添加片段",[["动作",func():add_clip("action")],["显示区间",func():add_clip("visibility")],["音频",func():add_clip("audio")]])
 	LevelUI.toggle(%TimelineEdit,"自动关键帧",false,func(value):auto_key=value;surface.record_at_cursor=true;inspector.refresh())
 	LevelUI.choice(%TimelineEdit,"新轨道范围",[false,true],false,func(value):difficulty_only=value;inspector.refresh(),["所有难度","当前难度"])
+	_add_menu(%TimelineEdit,"轨道视图",[["全部／选中对象",func():timeline.only_selected=not timeline.only_selected;timeline.rebuild_rows()],["全部／当前难度",func():timeline.current_difficulty_only=not timeline.current_difficulty_only;timeline.rebuild_rows()],["显示／隐藏空轨",func():timeline.hide_empty=not timeline.hide_empty;timeline.rebuild_rows()],["适应选区",timeline.fit_selection],["上一事件",func():timeline.navigate_event(-1)],["下一事件",func():timeline.navigate_event(1)]])
 	bottom.add_child(timeline); timeline.size_flags_vertical=Control.SIZE_EXPAND_FILL
 	%ProblemToggle.toggled.connect(func(value): _problems.visible=value and _problems.item_count>0)
 	_problems.item_activated.connect(_locate_problem)
@@ -285,6 +329,7 @@ func _file_dialog(title: String, mode: FileDialog.FileMode, filters: PackedStrin
 
 func select_objects(ids: PackedStringArray,track_id:="",item_id:="") -> void:
 	LevelUI.finish_fields(%RightPanel); document.end_edit()
+	if selection==ids and selected_track==track_id and selected_item==item_id and inspector_mode=="properties":return
 	selection=ids; selected_track=track_id; selected_item=item_id
 	selected_items=PackedStringArray() if item_id.is_empty() else PackedStringArray([item_id])
 	edit_target="timeline" if not track_id.is_empty() else "objects"
@@ -298,6 +343,8 @@ func _timeline_selection(ids: PackedStringArray, track_id: String, items: Packed
 
 func _sync_selection() -> void:
 	surface.selected=selection.duplicate(); timeline.selected=selected_items.duplicate()
+	timeline.selected_objects=selection.duplicate()
+	if timeline.only_selected:timeline.rebuild_rows()
 	timeline.selected_object=selection[0] if not selection.is_empty() else ""; timeline.selected_track=selected_track
 	surface.queue_redraw(); timeline.queue_redraw(); _sync_tree_selection();_update_command_controls()
 	if inspector_mode!="boss": _show_inspector("properties")
@@ -335,16 +382,25 @@ func _refresh_objects() -> void:
 		if old_item.get_metadata(0)!=null: folded_objects[str(old_item.get_metadata(0))]=old_item.collapsed
 		old_item=old_item.get_next_in_tree()
 	_object_tree.clear();var root:=_object_tree.create_item();var items:={}
+	var included:=PackedStringArray()
+	var query:=_object_search.text.to_lower();var filter: String=str(_object_type.get_selected_metadata())
+	for object_data: Dictionary in document.entries("objects"):
+		if not query.is_empty() and not query in str(object_data.name).to_lower():continue
+		if filter!="全部" and filter!=object_data.type:continue
+		var id: String=object_data.id
+		while not id.is_empty() and id not in included:included.append(id);id=str(document.find("objects",id).get("parent_id",""))
 	for object_data:Dictionary in document.entries("objects"):
+		if object_data.id not in included:continue
 		var item:=_object_tree.create_item(root);items[object_data.id]=item
-		item.set_text(0,("🔒 " if object_data.locked else "")+("◌ " if object_data.hidden else "")+str(object_data.name));item.set_metadata(0,object_data.id);item.collapsed=bool(folded_objects.get(object_data.id,false))
+		item.set_text(0,("🔒 " if object_data.locked else "")+("◌ " if object_data.hidden else "")+str(object_data.name));item.set_metadata(0,object_data.id);item.collapsed=bool(folded_objects.get(object_data.id,false)) and query.is_empty()
+		item.add_button(0,_editor_icon("hidden" if object_data.hidden else "visible"),0,false,"显示／隐藏对象");item.add_button(0,_editor_icon("locked" if object_data.locked else "unlocked"),1,false,"锁定／解锁对象")
 	# Tree 支持层级展示；文档的父子关系仍独立于 UI 的排序。
 	for object_data:Dictionary in document.entries("objects"):
-		if items.has(object_data.parent_id):items[object_data.id].get_parent().remove_child(items[object_data.id]);items[object_data.parent_id].add_child(items[object_data.id])
+		if items.has(object_data.id) and items.has(object_data.parent_id):items[object_data.id].get_parent().remove_child(items[object_data.id]);items[object_data.parent_id].add_child(items[object_data.id])
 	_tree_updating=false;_sync_tree_selection()
 
 func _refresh_assets() -> void:
-	_asset_list.clear()
+	_asset_list.clear();_asset_list.set_meta("loaded_metadata",{})
 	var search:=_asset_search.text.to_lower();var category:=_asset_category.selected
 	for asset_id:String in _assets.entries:
 		var entry:VisualAssetEntry=_assets.entries[asset_id]
@@ -360,48 +416,66 @@ func _refresh_assets() -> void:
 		_asset_list.add_item("环境 · "+str(entry.name),entry.thumbnail);_asset_list.set_item_metadata(_asset_list.item_count-1,entry.id)
 	_asset_list.set_meta("background_ids",background_ids)
 	if document.directory.is_empty():return
+	var internal:=PackedStringArray()
+	if not _show_dependencies:
+		for file in _assets.list_files():
+			if file.ends_with(LevelAnimationAsset.SUFFIX):internal.append_array(LevelAnimationAsset.dependencies(document.directory.path_join(file)))
+	var usage:={}
+	for reference: Dictionary in LevelProjectIO.references(document.data):usage[reference.asset]=int(usage.get(reference.asset,0))+1
 	for path in _assets.list_files():
+		if document.directory.path_join(path) in internal:continue
 		var kind:=_assets.kind(path)
 		var category_id: int={"image":2,"audio":3,"font":4,"animation":6}.get(kind,-1)
 		if category_id<0 or (category!=0 and category!=category_id):continue
 		if not search.is_empty() and not search in (_asset_caption(path)+path).to_lower():continue
-		var placeholder:=PlaceholderTexture2D.new();placeholder.size=Vector2(48,48)
+		var placeholder:=_editor_icon("asset")
 		_asset_list.add_item(_asset_caption(path),placeholder);_asset_list.set_item_metadata(_asset_list.item_count-1,path)
+		_asset_list.set_item_tooltip(_asset_list.item_count-1,"来源：工程文件\n类型："+str({"image":"图片","animation":"动画","audio":"声音","font":"字体"}.get(kind,kind))+"\n引用：%d 处\n%s"%[int(usage.get(path,0)),path])
 	_refresh_visible_thumbnails.call_deferred()
 
 func _refresh_visible_thumbnails() -> void:
 	var scroll:=_asset_list.get_v_scroll_bar().value
 	var loaded:=0
 	for index in _asset_list.item_count:
-		if not _asset_list.get_item_icon(index) is PlaceholderTexture2D:continue
+		if _asset_list.get_item_icon(index)!=_editor_icon("asset"):continue
 		var rect:=_asset_list.get_item_rect(index)
 		if rect.end.y<scroll or rect.position.y>scroll+_asset_list.size.y:continue
 		var asset:=str(_asset_list.get_item_metadata(index));var kind:=_assets.kind(asset)
+		var metadata: Dictionary=_asset_list.get_meta("loaded_metadata",{})
+		if metadata.has(asset):continue
+		metadata[asset]=true
+		if kind=="audio":
+			var sound:=_assets.resolve(asset) as AudioStream
+			if sound!=null:_asset_list.set_item_tooltip(index,_asset_list.get_item_tooltip(index)+"\n时长：%.3f s"%sound.get_length())
 		if kind not in ["image","animation"]:continue
 		var resource:=_assets.resolve(asset);var thumbnail: Texture2D
-		if resource is Texture2D:thumbnail=resource
+		if resource is Texture2D:
+			thumbnail=resource;_asset_list.set_item_tooltip(index,_asset_list.get_item_tooltip(index)+"\n尺寸：%d × %d"%[resource.get_width(),resource.get_height()])
 		elif resource is SpriteFrames:
 			var action:=_assets.default_animation(asset)
-			if not action.is_empty() and resource.get_frame_count(action)>0:thumbnail=resource.get_frame_texture(action,0)
+			if not action.is_empty() and resource.get_frame_count(action)>0:
+				thumbnail=resource.get_frame_texture(action,0);_asset_list.set_item_tooltip(index,_asset_list.get_item_tooltip(index)+"\n动作："+"、".join(resource.get_animation_names())+"\n默认动作：%.3f s"%LevelAnimationAsset.duration(resource,action))
 		_asset_list.set_item_icon(index,thumbnail);loaded+=1
 		if loaded>=4:
 			if not get_tree().process_frame.is_connected(_refresh_visible_thumbnails):get_tree().process_frame.connect(_refresh_visible_thumbnails,CONNECT_ONE_SHOT)
 			return
 
 func _document_changed(kind:String) -> void:
-	if kind=="project":_deleted_selection.clear()
-	elif _deleted_selection.has(document.cursor) and document.cursor<document.history.size():
-		var saved: Dictionary=_deleted_selection[document.cursor]
-		if saved.command==document.history[document.cursor] and document.last_changes==saved.command.changes:
-			selection=saved.selection.duplicate();selected_track=saved.track;selected_items=saved.items.duplicate();selected_item=selected_items[0] if selected_items.size()==1 else "";edit_target=saved.target
-			_sync_selection.call_deferred()
 	get_window().title="冥河 · 关卡编辑器 — "+str(document.data.title)+( " *" if document.dirty else "")
 	if kind=="saved": return
+	inspector.sync_fields.call_deferred()
 	if kind=="project":
 		_refresh_tree=true; _refresh_preview=true; _refresh_checks=true; _refresh_inspector=true; _boss_signature=""
 	else:
 		for change: Dictionary in document.last_changes:
-			_refresh_checks=_refresh_checks or kind!="preview"
+			# 名称、颜色与变换不会改变资源有效性，避免每个字段扫描整份演出。
+			if kind!="preview":
+				if change.kind!="objects":_refresh_checks=true
+				elif change.before.size()!=change.after.size():_refresh_checks=true
+				else:
+					for entry: Dictionary in change.after:
+						var previous:=LevelFormat.find(change.before,entry.id)
+						if previous.get("asset")!=entry.asset or previous.get("type")!=entry.type or previous.get("fields",{}).get("font")!=entry.fields.get("font"):_refresh_checks=true
 			if change.kind=="objects":
 				_refresh_preview=true
 				if change.before.size()!=change.after.size(): _refresh_tree=true
@@ -413,14 +487,18 @@ func _document_changed(kind:String) -> void:
 			elif change.kind=="metadata":
 				for key: String in change.after:
 					if key in ["scene_id","rule_path","packs","show","song_path","initial_background","intro_us","outro_us"]: _refresh_preview=true
-		_refresh_inspector=_refresh_inspector or not _field_focused()
+		for change: Dictionary in document.last_changes:
+			if change.kind=="objects":
+				for entry: Dictionary in change.after:
+					var previous:=LevelFormat.find(change.before,entry.id)
+					if previous.get("asset")!=entry.asset or previous.get("type")!=entry.type:_refresh_inspector=true
 	if document.dirty and kind!="preview": _autosave.start()
 	if _refresh_queued: return
 	_refresh_queued=true; _refresh.call_deferred()
 
 func _field_focused() -> bool:
 	var focus:=get_viewport().gui_get_focus_owner()
-	return document.editing or (focus!=null and %RightPanel.is_ancestor_of(focus))
+	return document.editing or (focus!=null and %RightPanel.is_ancestor_of(focus) and (focus is LineEdit or focus is TextEdit or focus is SpinBox or focus is LevelCurveEditor))
 
 func _refresh() -> void:
 	_refresh_queued=false
@@ -436,6 +514,8 @@ func _refresh() -> void:
 			selected_items=valid_items;selected_item=selected_items[0] if selected_items.size()==1 else "";timeline.selected=selected_items.duplicate();_refresh_inspector=true
 		surface.selected=selection.duplicate()
 	if _refresh_tree: _refresh_objects()
+	_refresh_sequences()
+	if not document.entries("objects").is_empty() and not song_document.charts.is_empty():_guide.hide()
 	if _refresh_preview: _update_show()
 	if _refresh_checks: refresh_problems()
 	if _refresh_inspector and not _field_focused() and inspector_mode!="boss": inspector.refresh()
@@ -447,7 +527,9 @@ func _refresh() -> void:
 	if not song_document.charts.is_empty() and signature!=_stage_signature: _refresh_song_preview()
 
 func _effective_show() -> Dictionary:
-	var show: Dictionary=document.data.show.duplicate(true)
+	var show: Dictionary=document.data.show.duplicate()
+	# 轨道采样只读；只复制容器与会补默认参数的对象，避免每次改颜色深拷贝所有关键帧。
+	show.objects=document.entries("objects").duplicate(true);show.tracks=document.entries("tracks").duplicate()
 	if not _candidate_objects.is_empty():
 		var before:=[]
 		for candidate: Dictionary in _candidate_objects:
@@ -469,11 +551,16 @@ func _update_show() -> void:
 	var show:=_effective_show()
 	var signature:=JSON.stringify(show.objects.map(func(value):return [value.id,value.type,value.asset]))+JSON.stringify(document.data.packs)+document.directory
 	if signature!=_show_signature:
-		player.configure(show,document.directory,document.data.packs,difficulty());_show_signature=signature
+		player.update_show(show,document.directory,document.data.packs,difficulty());_show_signature=signature
 	else:player.show=show;player.difficulty=difficulty();player.prepare_parameters()
 	_assets=player.assets;surface.player=player
 	if is_instance_valid(preview.stage_root):
-		var boss_key := JSON.stringify([show.bindings,show.objects.map(func(item):return [item.id,item.asset,item.parent_id,item.layer,item.fields.get("position"),item.fields.get("rotation"),item.fields.get("scale")]),show.tracks.filter(func(track):return track.type=="action" or track.property in ["position","rotation","scale"]),difficulty(),_stage_signature])
+		var bound:={}
+		for binding: Dictionary in show.bindings:
+			var id: String=binding.object_id
+			while not id.is_empty() and not bound.has(id):bound[id]=true;id=str(LevelFormat.find(show.objects,id).get("parent_id",""))
+		var relevant: Array=show.objects.filter(func(item):return bound.has(item.id) or item.type=="camera")
+		var boss_key := JSON.stringify([show.bindings,relevant.map(func(item):return [item.id,item.asset,item.parent_id,item.layer,item.depth,item.fields]),show.tracks.filter(func(track):return bound.has(track.object_id) or relevant.any(func(item):return item.type=="camera" and item.id==track.object_id)),difficulty(),_stage_signature])
 		if boss_key!=_boss_signature:
 			_compiled_boss=LevelBossCompiler.compile(preview.stage_root.stage_session.stage_definition,preview.stage_root.stage_session.compiled_chart.tempo_map,player); _boss_signature=boss_key
 		var compiled: Dictionary=_compiled_boss
@@ -486,12 +573,12 @@ func _update_show() -> void:
 				var row:=track.duplicate(true);row.id=row_id;row.clips=[];row.generated=true;row.locked=true;rows[row_id]=row
 			for clip:Dictionary in track.clips:
 				var copy:=clip.duplicate(true);copy.binding_id=track.binding_id;rows[row_id].clips.append(copy)
-		timeline.generated_tracks=rows.values();timeline.rebuild_rows()
+		if timeline.generated_tracks!=rows.values():timeline.generated_tracks=rows.values();timeline.rebuild_rows()
 		if compiled.emissions!=preview.stage_root.chart_scheduler.boss_emissions:
 			preview.stage_root.chart_scheduler.configure_boss_emissions(compiled.emissions)
 			if _candidate_objects.is_empty() and _candidate_tracks.is_empty() and not _loading:preview.seek_preview(time_us)
 	_update_environment(player)
-	_sample_show(true);_request_clip_waveforms()
+	player.playing=audio.playing;player.playback_rate=audio.rate;player.refresh_visuals(section,time_us);surface.queue_redraw();_request_clip_waveforms()
 	if signature!=_asset_signature: _asset_signature=signature;_refresh_assets()
 
 func _request_clip_waveforms() -> void:
@@ -550,12 +637,14 @@ func _scrub(us:int) -> void:
 	if not _seek_pending and show_player()!=null: show_player().seek(section,us)
 
 func _finish_seek() -> void:
+	_update_command_controls()
 	if _seek_pending:
 		_seek_pending=false; _seek_elapsed=0; preview.seek_preview(time_us)
 	if show_player()!=null: show_player().seek(section,time_us)
 	if inspector_mode!="boss" and not _field_focused(): inspector.refresh()
 
 func set_section(value:String) -> void:
+	if not _review.is_empty():end_full_review()
 	if not _environment_preview.is_empty(): end_environment_preview()
 	_store_view(); _prepare_command(); audio.set_playing(false)
 	section=value; timeline.section=value; timeline.rebuild_rows(); _section.select(LevelFormat.SECTIONS.find(value))
@@ -563,12 +652,14 @@ func set_section(value:String) -> void:
 	_restore_view()
 
 func toggle_play() -> void:
+	if not _review.is_empty():_review.playing=not audio.playing
 	if not _environment_preview.is_empty():_environment_preview.playing_intent=not audio.playing
 	_follow_suspended=false;_follow.text="跟随"
 	audio.set_playing(not audio.playing)
 
 func _position_changed(seconds:float) -> void:
-	if _environment_position(seconds):return
+	_update_command_controls()
+	if _review_position(seconds) or _environment_position(seconds):return
 	time_us=roundi(seconds*1000000);timeline.time_us=time_us;timeline.update_cursor();_position.text="%8.3f s"%seconds
 	if audio.playing:
 		if _follow.button_pressed and not _follow_suspended:timeline.focus_time(time_us)
@@ -664,6 +755,7 @@ func _prepare_command() -> void:
 func _set_background(value: bool) -> void:
 	_background=value
 	if value:
+		_pause_review()
 		if not _environment_preview.is_empty():_environment_preview.playing_intent=false
 		_cancel_gestures(); document.end_edit(true); audio.set_playing(false); _audition.stop()
 	preview.set_suspended(value); Engine.max_fps=10 if value else 60
@@ -680,20 +772,24 @@ func add_asset_object(asset:String,at:=Vector2(960,540)) -> void:
 	if asset in _asset_list.get_meta("background_ids", PackedStringArray()):
 		add_environment_cue(asset,time_us);return
 	var resource:=_assets.resolve(asset)
+	if resource is Font:
+		if selection.is_empty() or not Array(selection).all(func(id):return document.find("objects",id).type=="text"):_status.text="先选择文字对象，再拖入字体。";return
+		set_property("font",asset);return
 	var kind:="actor" if resource is PackedScene else ("audio" if resource is AudioStream else ("animated_sprite" if resource is SpriteFrames else "sprite"))
 	var object_data:=LevelFormat.object(kind,asset);object_data.fields.position=[at.x,at.y]
 	if kind == "animated_sprite": object_data.animation = _assets.default_animation(asset)
 	object_data.name=_asset_caption(asset)
 	if object_data.name.is_empty():object_data.name=asset
 	var changes: Array=[{"kind":"objects","before":[],"after":[object_data]}]
-	if kind=="animated_sprite":
-		var track:=LevelFormat.track(object_data.id,"action",section,"action");track.difficulties=[difficulty()] if difficulty_only and not difficulty().is_empty() else []
+	if kind in ["animated_sprite","audio"]:
+		var track:=LevelFormat.track(object_data.id,"action" if kind=="animated_sprite" else "audio",section,"action" if kind=="animated_sprite" else "audio");track.difficulties=[difficulty()] if difficulty_only and not difficulty().is_empty() else []
 		var remaining:=_section_duration_us()-time_us
-		var duration:=remaining if remaining>0 else roundi(maxf(2.0,LevelAnimationAsset.duration(resource,object_data.animation))*1000000)
-		var clip:=LevelFormat.clip(time_us,"",duration);clip.name=object_data.name;clip.action=object_data.animation;clip.loop=resource.get_animation_loop(clip.action)
+		var duration:=remaining if remaining>0 else roundi(maxf(2.0,(LevelAnimationAsset.duration(resource,object_data.animation) if resource is SpriteFrames else resource.get_length()))*1000000)
+		var clip:=LevelFormat.clip(time_us,"",duration);clip.name=object_data.name;clip.action=object_data.animation;clip.loop=resource.get_animation_loop(clip.action) if resource is SpriteFrames else false
+		if kind=="audio":clip.asset=asset;clip.duration_us=roundi(resource.get_length()*1000000)
 		track.clips=[clip];changes.append({"kind":"tracks","before":[],"after":[track]})
 	document.commit("从素材库添加对象与动画",changes);select_objects(PackedStringArray([object_data.id]))
-	if kind=="audio":add_clip("audio")
+
 
 func set_object_field(field:String,value:Variant) -> void:
 	var before:=[];var after:=[]
@@ -708,7 +804,7 @@ func clear_object_asset_reference() -> void:
 	var before:=[];var after:=[]
 	for id in selection:
 		var current:=document.find("objects",id)
-		if current.is_empty() or not document.editable_object(id):continue
+		if current.is_empty():continue
 		var updated:=current.duplicate(true)
 		updated.asset=""
 		updated.animation=""
@@ -738,7 +834,7 @@ func set_property(property:String,value:Variant) -> void:
 	var before:=[];var after:=[]
 	for id in selection:
 		var object_data:=document.find("objects",id)
-		if object_data.is_empty() or object_data.locked:continue
+		if object_data.is_empty():continue
 		before.append(object_data.duplicate(true));object_data=object_data.duplicate(true);object_data.fields[property]=value;after.append(object_data)
 	if before!=after:document.replace("修改基础"+str(LevelFormat.PROPERTIES.get(property,property)),"objects",before,after)
 
@@ -746,7 +842,7 @@ func key_property(property:String) -> void:
 	var candidate:=LevelDocument.new();candidate.reset(document.data)
 	for id in selection:
 		var object_data:=document.find("objects",id)
-		if object_data.is_empty() or object_data.locked:continue
+		if object_data.is_empty():continue
 		var state:=LevelShowSampler.object_state(document.data.show,object_data,section,time_us,difficulty())
 		var fallback:Variant=object_data.fields.get(property)
 		if _assets.entries.has(object_data.asset):fallback=_assets.entries[object_data.asset].exposed_parameters.get(property,{}).get("default",fallback)
@@ -772,7 +868,9 @@ func set_track_field(id:String,field:String,value:Variant) -> void:
 	if before!=after:document.replace("修改轨道","tracks",[before],[after])
 
 func set_item_field(track_id:String,item_id:String,field:String,value:Variant) -> void:
-	var before:=document.find("tracks",track_id);var after:=before.duplicate(true)
+	var before:=document.find("tracks",track_id)
+	if before.is_empty():return
+	var after:=before.duplicate(true)
 	for item:Dictionary in after.keys+after.clips:
 		if item.id==item_id:
 			item[field]=value
@@ -782,7 +880,9 @@ func set_item_field(track_id:String,item_id:String,field:String,value:Variant) -
 	if before!=after:document.replace("修改关键帧或片段","tracks",[before],[after])
 
 func set_key_curve(track_id:String,key_id:String,first:Vector2,second:Vector2) -> void:
-	var before:=document.find("tracks",track_id);var after:=before.duplicate(true)
+	var before:=document.find("tracks",track_id)
+	if before.is_empty():return
+	var after:=before.duplicate(true)
 	var key:=LevelFormat.find(after.keys,key_id)
 	key.interpolation="bezier";key.out_handle=[first.x,first.y];key.in_handle=[second.x,second.y]
 	document.replace("调整贝塞尔曲线","tracks",[before],[after])
@@ -806,7 +906,9 @@ func add_clip(kind:String) -> void:
 
 func copy_objects() -> void:document.copy_objects(selection)
 func paste_objects() -> void:
-	select_objects(document.paste_objects())
+	var ids:=document.paste_objects()
+	if not document.last_error.is_empty():return
+	select_objects(ids)
 	if Array(selection).any(func(id):return document.find("objects",id).type=="actor"): _status.text="已复制演出；BOSS 副本尚未绑定音符"
 func mirror_objects() -> void:document.copy_objects(selection);select_objects(document.paste_objects(true))
 func delete_selection() -> void:
@@ -814,13 +916,8 @@ func delete_selection() -> void:
 	delete_objects()
 
 func delete_objects() -> void:
-	var cursor_before:=document.cursor
-	var saved:={"selection":selection.duplicate(),"track":selected_track,"items":selected_items.duplicate(),"target":edit_target}
-	var unlocked:=PackedStringArray()
-	for id in selection:
-		if document.editable_object(id):unlocked.append(id)
-	document.delete_objects(unlocked)
-	if document.cursor>cursor_before:saved.command=document.history[cursor_before];_deleted_selection[cursor_before]=saved
+	document.delete_objects(selection)
+	if not document.last_error.is_empty():return
 	select_objects(PackedStringArray())
 
 func align_center() -> void:
@@ -874,7 +971,7 @@ func _save_to(path:String) -> bool:
 	_status.text="已保存："+path;return true
 
 func _save_as() -> void:
-	_file_dialog("关卡另存为 · 选择新目录",FileDialog.FILE_MODE_OPEN_DIR,[],_save_as_to)
+	_file_dialog("关卡另存为 · 选择新目录",FileDialog.FILE_MODE_OPEN_DIR,[],_save_as_progress)
 
 func _save_as_to(path:String) -> bool:
 	_prepare_command()
@@ -889,6 +986,7 @@ func _save_as_to(path:String) -> bool:
 	_show_signature="";_read_song();_update_show();return true
 
 func _new() -> void:
+	end_full_review()
 	_discard_or(func():
 		end_environment_preview()
 		_autosave.stop();audio.set_playing(false);preview.clear_preview();song_document=StudioDocument.new();workspace_state={};_views.clear();document.reset(LevelFormat.new_level())
@@ -900,6 +998,7 @@ func _open() -> void:
 	_discard_or(func():_file_dialog("打开关卡工程或关卡包",FileDialog.FILE_MODE_OPEN_FILE,["*.json ; 关卡文档","*.zip ; 关卡包"],_open_path))
 
 func _open_path(path:String) -> void:
+	end_full_review()
 	_prepare_command(); _autosave.stop()
 	if path.get_extension().to_lower()=="zip":
 		_file_dialog("解压关卡包到制作目录",FileDialog.FILE_MODE_OPEN_DIR,[],func(folder):
@@ -987,19 +1086,41 @@ func import_pack() -> void:
 		for index in packs.size():
 			if packs[index].manifest==descriptor.manifest:existing=index;break
 		if existing>=0:
-			packs[existing]=entry;document.fields("更新素材包",{"packs":packs});save()
-			message("素材包已更新并保存工程。请重新启动工具并打开本工程，清理 Godot 资源包缓存后使用新版素材。")
+			packs[existing]=entry;_pending_packs=packs;_apply_pending_packs()
 		else:packs.append(entry);document.fields("导入素材包",{"packs":packs});_show_signature="";_update_show()))
 
 func export_package() -> void:
 	_prepare_command()
-	_ensure_directory(func():_file_dialog("导出完整关卡包",FileDialog.FILE_MODE_SAVE_FILE,["*.zip ; 关卡包"],func(path):
+	_ensure_directory(func():
 		refresh_problems()
 		var issues:=LevelFormat.issues(document.data,song_document.charts);issues.append_array(_assets.validate_level(document.data))
-		if not issues.is_empty():message(ChartProjectLoader.describe_issues(issues));return
-		var error:=LevelProjectIO.export_zip(document.data,document.directory,path)
-		if not error.is_empty():message(error)
-		else:_status.text="已导出关卡包："+path))
+		var errors:=issues.filter(func(issue):return issue.get("severity","error")=="error")
+		var files:=LevelProjectIO.dependencies(document.data,document.directory);var bytes:=0
+		for relative in files:bytes+=LevelProjectIO._file_size(document.directory.path_join(relative))
+		var dialog:=ConfirmationDialog.new();dialog.title="导出检查";dialog.ok_button_text="选择输出位置"
+		dialog.dialog_text="难度：%s\n依赖：%d 项，原始大小约 %.1f MB（压缩后大小以结果为准）\n%d 项错误 / %d 项提示\n%s"%["、".join(song_document.charts.map(func(chart):return chart.difficulty_id)),files.size(),float(bytes)/1048576,errors.size(),issues.size()-errors.size(),ChartProjectLoader.describe_issues(issues)]
+		add_child(dialog);dialog.get_ok_button().disabled=not errors.is_empty()
+		dialog.confirmed.connect(func():dialog.queue_free();_file_dialog("导出完整关卡包",FileDialog.FILE_MODE_SAVE_FILE,["*.zip ; 关卡包"],_export_with_progress))
+		dialog.canceled.connect(dialog.queue_free);_popup(dialog,Vector2i(660,360)))
+
+func _export_with_progress(path: String) -> void:
+	var job=preload("res://scenes/tools/level_studio/package_progress.tscn").instantiate();add_child(job);_popup(job,Vector2i(540,180))
+	var error: String=await job.run_export(document.data.duplicate(true),document.directory,path);job.queue_free()
+	if not error.is_empty():_status.text=error;return
+	_status.text="已导出关卡包："+path
+	var done:=AcceptDialog.new();done.title="导出完成";done.dialog_text=path;add_child(done)
+	done.add_button("打开输出目录",true,"folder");done.custom_action.connect(func(_id):OS.shell_open(ProjectSettings.globalize_path(path.get_base_dir())))
+	done.confirmed.connect(done.queue_free);done.canceled.connect(done.queue_free);_popup(done,Vector2i(600,180))
+
+func _save_as_progress(path: String) -> void:
+	_prepare_command()
+	if not document.directory.is_empty() and ProjectSettings.globalize_path(path).simplify_path()!=ProjectSettings.globalize_path(document.directory).simplify_path():
+		var files:=LevelProjectIO.dependencies(document.data,document.directory)
+		var protected: Array=[];_collect_asset_paths(document.history,protected);files.append_array(LevelProjectIO.expand_dependencies(PackedStringArray(protected),document.directory))
+		var job=preload("res://scenes/tools/level_studio/package_progress.tscn").instantiate();add_child(job);_popup(job,Vector2i(540,180))
+		var error: String=await job.run_copy(files,document.directory,path);job.queue_free()
+		if not error.is_empty():_status.text=error;return
+	if _save_to(path):_show_signature="";_read_song();_update_show()
 
 func _discard_or(action:Callable) -> void:
 	_prepare_command()
@@ -1015,9 +1136,10 @@ func _workspace_snapshot() -> Dictionary:
 	if _environment_preview.is_empty():_store_view()
 	var visible_layout: Dictionary=_focus_layout if not _focus_layout.is_empty() else {"left":_left_panel.visible,"right":%RightPanel.visible,"bottom":%Bottom.visible}
 	var state:=_environment_preview
-	return {"left_width":_left_width,"right_width":_right_width,"timeline_height":_timeline_height,"time_us":state.get("time_us",time_us),"section":state.get("section",section),"zoom":state.get("zoom",timeline.pixels_per_second),"left_seconds":state.get("left",timeline.left_seconds),"difficulty":difficulty(),"views":state.get("views",_views).duplicate(true),"panels":visible_layout.duplicate()}
+	return {"left_width":_left_width,"right_width":_right_width,"timeline_height":_timeline_height,"time_us":state.get("time_us",time_us),"section":state.get("section",section),"zoom":state.get("zoom",timeline.pixels_per_second),"left_seconds":state.get("left",timeline.left_seconds),"difficulty":difficulty(),"views":state.get("views",_views).duplicate(true),"panels":visible_layout.duplicate(),"pending_packs":_pending_packs.duplicate(true)}
 
 func _apply_workspace(state:Dictionary) -> void:
+	_pending_packs=state.get("pending_packs",[]).duplicate(true)
 	_left_width=int(state.get("left_width",state.get("left_split",220))); _right_width=int(state.get("right_width",310)); _timeline_height=int(state.get("timeline_height",270)); _queue_layout()
 	for index in song_document.charts.size():
 		if song_document.charts[index].difficulty_id==state.get("difficulty",""): song_document.current=index; _difficulty.select(index); break
@@ -1033,9 +1155,10 @@ func _apply_workspace(state:Dictionary) -> void:
 func _write_recovery() -> void:
 	if document.editing: _autosave.start();return
 	workspace_state.merge(_workspace_snapshot(),true)
-	StudioProjectIO.write_json(recovery_path,{"level":document.data,"directory":document.directory,"workspace":workspace_state,"updated":Time.get_datetime_string_from_system()})
+	StudioProjectIO.write_json(_recovery_file(),{"level":document.data,"directory":document.directory,"workspace":workspace_state,"updated":Time.get_datetime_string_from_system()})
 
 func _offer_recovery() -> void:
+	if not DirAccess.get_files_at("user://level_studio/recoveries").is_empty():_show_recoveries();return
 	var recovery:=LevelProjectIO.read_json(recovery_path)
 	if recovery.is_empty():return
 	var dialog:=ConfirmationDialog.new();dialog.title="恢复未保存的工程";dialog.dialog_text="找到上次的恢复稿："+str(recovery.level.get("title","未命名关卡"))+"\n"+str(recovery.get("updated","时间未知"))+" · %d 个对象"%recovery.level.show.objects.size();dialog.ok_button_text="恢复";dialog.cancel_button_text="稍后"
@@ -1077,21 +1200,31 @@ func refresh_problems() -> void:
 func _locate_problem(index:int) -> void:
 	var issue:Variant=_problems.get_item_metadata(index)
 	if not issue is Dictionary:return
+	if issue.has("pack_path"):import_pack();return
+	var route: Array=issue.get("path",[])
+	if route.size()>2 and route[0]=="show" and route[1]=="sequences":
+		_left_panel.current_tab=2
+		var id: String=document.entries("sequences")[int(route[2])].id
+		for row in _sequence_list.item_count:
+			if _sequence_list.get_item_metadata(row)==id:_sequence_list.select(row);_sequence_list.ensure_current_is_visible();break
+		_offer_reference_repair(issue);return
 	if issue.has("binding_id"):
 		var binding:=document.find("bindings",str(issue.binding_id))
 		if not binding.is_empty():
 			for chart_index in song_document.charts.size():
 				if song_document.charts[chart_index].difficulty_id==binding.difficulty and song_document.current!=chart_index: _difficulty.select(chart_index);_switch_difficulty(chart_index)
-			select_objects(PackedStringArray([str(binding.object_id)]));open_boss_binding(str(binding.id));return
-	if issue.has("object_id"):select_objects(PackedStringArray([str(issue.object_id)]))
-	elif issue.has("track_id"):
+			select_objects(PackedStringArray([str(binding.object_id)]));open_boss_binding(str(binding.id))
+			if issue.has("path"):_offer_reference_repair(issue)
+			return
+	if issue.has("track_id"):
 		var track:=document.find("tracks",str(issue.track_id))
 		if not track.is_empty():
+			for chart_index in song_document.charts.size():
+				if not track.difficulties.is_empty() and difficulty() not in track.difficulties and song_document.charts[chart_index].difficulty_id in track.difficulties:_switch_difficulty(chart_index);break
 			if section!=track.section:set_section(track.section)
-			select_objects(PackedStringArray([str(track.object_id)]),str(track.id))
-	elif issue.has("binding_id"):
-		var binding:=document.find("bindings",str(issue.binding_id))
-		if not binding.is_empty():select_objects(PackedStringArray([str(binding.object_id)]));open_boss_binding(str(binding.id))
+			timeline.folded.erase(track.object_id);timeline.rebuild_rows()
+			select_objects(PackedStringArray([str(track.object_id)]),str(track.id),str(issue.get("item_id","")))
+	elif issue.has("object_id"):select_objects(PackedStringArray([str(issue.object_id)]))
 	if issue.has("scene_cue_id"):
 		var cue:=document.find("scene_cues",str(issue.scene_cue_id))
 		if not cue.is_empty():
@@ -1100,13 +1233,17 @@ func _locate_problem(index:int) -> void:
 			if section!=cue.section:set_section(cue.section)
 		_timeline_selection(PackedStringArray(),"@environment",PackedStringArray([str(issue.scene_cue_id)]) if not cue.is_empty() else PackedStringArray())
 	if issue.has("time_us"):seek(int(issue.time_us));timeline.focus_time(time_us)
+	if issue.has("path"):_offer_reference_repair(issue)
 
 func _help() -> void:
-	message("制作流程：导入 song.json → 导入素材包或图片 → 添加对象 → 编排关键帧和动作 → 绑定 BOSS 音符 → 试玩 → 导出关卡包。\n\n预览：W 移动 / E 旋转 / R 缩放；双指平移、Ctrl+滚动缩放、中键平移；Alt 暂时关闭画面吸附。\n时间线：双指两轴浏览，Ctrl+滚动缩放，中键平移；拖动关键帧/片段，拖片段边缘裁剪，S 拆分；Shift+拖动尺标设置循环区间。\nCtrl+S 保存，Ctrl+Z 撤销，Ctrl+C/V 复制粘贴，Delete 删除，Space 播放/暂停，Esc 取消拖动。\n自动关键帧关闭时修改基础属性；开启后把当前值写入游标处。HUD 使用正向屏幕坐标。\nGodot/Spine 负责素材内部结构，关卡工具调用已声明的动作与参数。素材包更新后保存并重新启动工具。")
+	message("制作流程：导入 song.json → 导入素材包或图片 → 添加对象 → 编排关键帧和动作 → 绑定 BOSS 音符 → 试玩 → 导出关卡包。\n\n预览：W 移动 / E 旋转 / R 缩放；双指平移、Ctrl+滚动缩放、中键平移；Alt 暂时关闭画面吸附。\n时间线：双指两轴浏览，Ctrl+滚动缩放，中键平移；拖动关键帧/片段，拖片段边缘裁剪，S 拆分；Shift+拖动尺标设置循环区间。\nCtrl+S 保存，Ctrl+Z 撤销，Ctrl+C/V 复制粘贴，Delete 删除，Space 播放/暂停，Esc 取消拖动。\n自动关键帧关闭：无动画改基础值，已有位置／旋转／大小动画则整体调整当前区段；开启后记录游标处。HUD 使用正向屏幕坐标。\nGodot/Spine 负责素材内部结构，关卡工具调用已声明的动作与参数。素材包更新通过“重启并应用”恢复未保存文档和撤销历史。")
 
 func _view_action(id:int) -> void:
 	if id>=100:_discard_or(func():_open_path(str(_recent[id-100])));return
 	match id:
+		20:_scale_menu.get_popup().position=Vector2i(get_global_mouse_position());_scale_menu.get_popup().popup()
+		21,22,23:_apply_layout_preset(id-21)
+		24:_show_trial_log()
 		0:_reset_layout()
 		1:_left_panel.visible=not _left_panel.visible
 		2:%RightPanel.visible=not %RightPanel.visible
@@ -1176,7 +1313,7 @@ func _save_sequence() -> void:
 	for track:Dictionary in data.tracks:
 		for key:Dictionary in track.keys:key.time_us-=start
 		for clip:Dictionary in track.clips:clip.start_us-=start
-	document.replace("保存可复用演出片段","sequences",[],[data]);_status.text="已保存 "+str(data.name)+"，可从视图菜单插入"
+	document.replace("保存可复用演出片段","sequences",[],[data]);_status.text="已保存 "+str(data.name)+"，可从左侧片段库插入"
 
 func _insert_sequence() -> void:
 	var sequences:=document.entries("sequences")
@@ -1184,6 +1321,7 @@ func _insert_sequence() -> void:
 	var dialog:=ConfirmationDialog.new();dialog.title="插入演出片段";dialog.ok_button_text="在当前时间插入"
 	var choice:=OptionButton.new();dialog.add_child(choice)
 	for data:Dictionary in sequences:choice.add_item(str(data.name))
+	if not _sequence_list.get_selected_items().is_empty():choice.select(_sequence_list.get_selected_items()[0])
 	add_child(dialog);dialog.confirmed.connect(func():
 		var data:Dictionary=sequences[choice.selected].duplicate(true)
 		for track:Dictionary in data.tracks:
@@ -1255,8 +1393,10 @@ func _launch_trial() -> void:
 	var folder:="user://level_studio/trials/"+LevelFormat.id("trial")
 	DirAccess.make_dir_recursive_absolute(folder)
 	var path:=folder.path_join("level.zip")
-	var error:=LevelProjectIO.export_zip(_pending_trial.level,_pending_trial.directory,path)
-	if not error.is_empty():message(error);return
+	_trial_stage="preparing";_trial_button.disabled=true;_trial_button.text="准备试玩快照…"
+	var job=preload("res://scenes/tools/level_studio/package_progress.tscn").instantiate();add_child(job);_popup(job,Vector2i(540,180))
+	var error: String=await job.run_export(_pending_trial.level,_pending_trial.directory,path);job.queue_free()
+	if not error.is_empty():_trial_button.disabled=false;_trial_button.text="在游戏中试玩";_pending_trial.clear();message(error);return
 	_trial_folder=folder; _trial_request=LevelFormat.id("request"); _trial_stage=""; _trial_started=Time.get_ticks_msec(); _trial_timeout=false
 	var args:=PackedStringArray(["--log-file",ProjectSettings.globalize_path(folder.path_join("game.log")),"--","--play-level",ProjectSettings.globalize_path(path),"--difficulty",_pending_trial.difficulty,"--trial-status",ProjectSettings.globalize_path(folder.path_join("status.json")),"--trial-request",_trial_request,"--trial-log",ProjectSettings.globalize_path(folder.path_join("game.log"))])
 	# 工程内试玩直接启动同一引擎与当前源码，无需先导出配套游戏。
@@ -1266,7 +1406,7 @@ func _launch_trial() -> void:
 		engine_args.append_array(args);args=engine_args
 	_trial_pid=OS.create_process(_trial_executable,args,false)
 	_pending_trial.clear()
-	if _trial_pid<=0:message("无法启动配套游戏。");return
+	if _trial_pid<=0:_trial_button.disabled=false;_trial_button.text="在游戏中试玩";message("无法启动配套游戏。");return
 	audio.set_playing(false);_audition.stop()
 	_trial_button.disabled=true;_trial_button.text="正在启动游戏…";_status.text="可以继续编辑；游戏使用启动时的关卡快照"
 
@@ -1289,7 +1429,7 @@ func _toggle_focus_preview() -> void:
 
 func _view_key() -> String: return section+"/"+difficulty()
 func _store_view() -> void:
-	_views[_view_key()]={"time_us":time_us,"zoom":timeline.pixels_per_second,"left_seconds":timeline.left_seconds,"row_scroll":timeline.row_scroll,"folded":timeline.folded.duplicate(),"selection":Array(selection),"items":Array(selected_items),"track":selected_track,"target":edit_target,"loop":audio.loop_enabled,"start":timeline.loop_start_us,"end":timeline.loop_end_us,"pan":[surface.pan.x,surface.pan.y],"canvas_zoom":surface.zoom,"follow":_follow.button_pressed,"suspended":_follow_suspended}
+	_views[_view_key()]={"time_us":time_us,"zoom":timeline.pixels_per_second,"left_seconds":timeline.left_seconds,"row_scroll":timeline.row_scroll,"folded":timeline.folded.duplicate(),"selection":Array(selection),"items":Array(selected_items),"track":selected_track,"target":edit_target,"loop":audio.loop_enabled,"start":timeline.loop_start_us,"end":timeline.loop_end_us,"pan":[surface.pan.x,surface.pan.y],"canvas_zoom":surface.zoom,"follow":_follow.button_pressed,"suspended":_follow_suspended,"filters":{"selected":timeline.only_selected,"difficulty":timeline.current_difficulty_only,"empty":timeline.hide_empty},"object_search":_object_search.text,"object_type":_object_type.selected}
 
 func _restore_view() -> void:
 	var view: Dictionary=_views.get(_view_key(),{})
@@ -1297,16 +1437,20 @@ func _restore_view() -> void:
 	selection=PackedStringArray(view.get("selection",[])); selected_items=PackedStringArray(view.get("items",[])); selected_track=str(view.get("track","")); selected_item=selected_items[0] if selected_items.size()==1 else ""; edit_target=str(view.get("target","objects"))
 	timeline.loop_start_us=int(view.get("start",0)); timeline.loop_end_us=int(view.get("end",4000000)); audio.loop_start=float(timeline.loop_start_us)/1000000; audio.loop_end=float(timeline.loop_end_us)/1000000; audio.loop_enabled=bool(view.get("loop",false)); _loop_toggle.set_pressed_no_signal(audio.loop_enabled)
 	surface.pan=LevelFormat.vec(view.get("pan",[0,0])); surface.zoom=float(view.get("canvas_zoom",1)); _follow.set_pressed_no_signal(bool(view.get("follow",true))); _follow_suspended=bool(view.get("suspended",false))
+	var filters: Dictionary=view.get("filters",{})
+	timeline.only_selected=filters.get("selected",false);timeline.current_difficulty_only=filters.get("difficulty",true);timeline.hide_empty=filters.get("empty",false)
+	_object_search.text=view.get("object_search","");_object_type.select(int(view.get("object_type",0)))
 	timeline.rebuild_rows(); _sync_selection(); seek(int(view.get("time_us",0)))
 
 func _switch_difficulty(index: int) -> void:
+	end_full_review()
 	end_environment_preview()
 	_store_view(); _prepare_command(); song_document.current=index; _stage_signature=""; _boss_signature=""; _refresh_song_preview(); _restore_view(); _show_inspector("properties")
 
 func resource_field(parent: Node, caption: String, current: String, category: String, commit: Callable) -> void:
 	var box := LevelUI.row(parent,caption)
 	var value_id := [current]
-	var button := Button.new(); box.add_child(button); button.text=_asset_caption(current)
+	var button := Button.new(); box.add_child(button); button.text=_asset_caption(current);button.set_meta("resource_value",value_id);button.set_meta("asset_caption",_asset_caption)
 	button.pressed.connect(func(): _choose_resource(category,value_id[0],func(value):commit.call(value);value_id[0]=value;button.text=_asset_caption(value);button.tooltip_text=value))
 	# 路径用于排查素材，高频操作使用名称和选择器。
 	button.size_flags_horizontal=Control.SIZE_EXPAND_FILL; button.clip_text=true; button.tooltip_text=current
@@ -1343,8 +1487,9 @@ func _paste_selection() -> void:
 	else: paste_objects()
 
 func _discard_recovery(directory: String) -> void:
-	var recovery:=LevelProjectIO.read_json(recovery_path)
-	if recovery.get("directory") == directory:DirAccess.remove_absolute(recovery_path)
+	for path in [recovery_path,_recovery_file()]:
+		var recovery:=LevelProjectIO.read_json(path)
+		if recovery.get("directory")==directory:DirAccess.remove_absolute(path)
 
 func _notification(what: int) -> void:
 	# 原生素材/颜色弹窗仍属于本应用；只有切出应用才进入后台休眠。
@@ -1366,6 +1511,8 @@ func _update_environment(player: LevelShowPlayer) -> void:
 			_standalone_environment=ParallaxController.new();viewport.add_child(_standalone_environment)
 		controller=_standalone_environment
 		initial=_assets.background("stage:"+str(document.data.scene_id))
+		controller.configure_boundary(song_document.chart() if not song_document.charts.is_empty() else null,
+			song_document.offset_sec() if not song_document.charts.is_empty() else 0.0, PlanningParameters.read())
 	var duration:=roundi(timeline.waveform_duration*1000000.0)
 	if song_document.song!=null: duration=roundi(song_document.song.audio_stream.get_length()*1000000.0) if song_document.song.audio_stream!=null else roundi(song_document.song.fallback_duration_sec*1000000.0)
 	if is_instance_valid(preview.stage_root):duration=roundi((preview.stage_root.stage_session.get_end_song_time_sec()+preview.stage_root.stage_session.stage_definition.song.first_beat_offset_sec)*1000000.0)
@@ -1374,6 +1521,7 @@ func _update_environment(player: LevelShowPlayer) -> void:
 	timeline.rebuild_rows()
 
 func open_environment_settings() -> void:
+	end_full_review()
 	_timeline_selection(PackedStringArray(),"@environment",PackedStringArray())
 
 func choose_environment(callback: Callable) -> void:
@@ -1471,6 +1619,7 @@ func end_environment_preview() -> void:
 
 ## 多选对齐按实际显示外框计算，结果交给同一变换命令处理动画及父组坐标。
 func align_objects(operation: String) -> void:
+	if not _selection_editable():return
 	var player:=show_player()
 	if player==null:return
 	var rows:=[]
@@ -1526,7 +1675,6 @@ func transform_caption() -> String:
 func set_base_property(property: String,value: Variant) -> void:
 	var before:=[];var after:=[]
 	for id in selection:
-		if not document.editable_object(id):continue
 		var entry:=document.find("objects",id);before.append(entry.duplicate(true));entry=entry.duplicate(true);entry.fields[property]=value;after.append(entry)
 	document.replace("修改全局基础值","objects",before,after)
 
@@ -1547,13 +1695,15 @@ func select_asset_users(asset: String) -> void:
 func set_object_asset(asset: String) -> void:
 	var before:=[];var after:=[];var resource:=_assets.resolve(asset)
 	for id in selection:
-		if not document.editable_object(id):continue
 		var entry:=document.find("objects",id);before.append(entry.duplicate(true));entry=entry.duplicate(true);entry.asset=asset
 		if entry.type in ["sprite","image","animated_sprite"] and resource is SpriteFrames:entry.type="animated_sprite";entry.animation=_assets.default_animation(asset)
 		after.append(entry)
 	document.replace("替换素材并保留编排","objects",before,after)
 
 func background_layer_choices() -> Dictionary:
+	var key:=JSON.stringify([document.data.get("initial_background",""),document.data.scene_id,document.entries("scene_cues").map(func(cue):return cue.asset),document.data.packs,document.directory])
+	if key==_background_choice_key:return _background_choices.duplicate()
+	_background_choice_key=key
 	var initial:=str(document.data.get("initial_background",""))
 	var choices:={};var references: Array=[initial if not initial.is_empty() else "stage:"+str(document.data.scene_id)]
 	for cue: Dictionary in document.data.show.get("scene_cues",[]):references.append(cue.asset)
@@ -1562,12 +1712,11 @@ func background_layer_choices() -> Dictionary:
 		if background==null:continue
 		for layer: StageBackgroundLayer in background.layers:
 			choices[layer.depth]="深度 %d"%layer.depth if layer.display_name.is_empty() else layer.display_name+" · 深度 %d"%layer.depth
-	return choices
+	_background_choices=choices;return choices.duplicate()
 
 func set_occlusion_mode(value: String) -> void:
 	var before:=[];var after:=[]
 	for id in selection:
-		if not document.editable_object(id):continue
 		var entry:=document.find("objects",id);before.append(entry.duplicate(true));entry=entry.duplicate(true)
 		entry.occlusion_inherit=value=="inherit";entry.occlusion_order="none" if value=="inherit" else value;after.append(entry)
 	document.replace("修改背景遮挡关系","objects",before,after)
@@ -1578,9 +1727,13 @@ func clean_unused_assets() -> void:
 	var used:=LevelProjectIO.dependencies(document.data,document.directory)
 	# 文档历史和当前恢复稿都可能重新引用素材，回收前一起检查。
 	var protected: Array=[];_collect_asset_paths(document.history,protected)
-	var recovery:=LevelProjectIO.read_json(recovery_path)
-	if recovery.get("directory","")==document.directory:_collect_asset_paths(recovery,protected)
-	used.append_array(PackedStringArray(protected))
+	var drafts:=PackedStringArray([_recovery_file(),recovery_path])
+	for file in DirAccess.get_files_at("user://level_studio/recoveries"):
+		if file.ends_with(".json"):drafts.append("user://level_studio/recoveries/"+file)
+	for path in drafts:
+		var recovery:=LevelProjectIO.read_json(path)
+		if recovery.get("directory","")==document.directory:_collect_asset_paths(recovery,protected)
+	used.append_array(LevelProjectIO.expand_dependencies(PackedStringArray(protected),document.directory))
 	var unused:=PackedStringArray()
 	for path in _assets.list_files():
 		if path not in used:unused.append(path)
@@ -1603,7 +1756,7 @@ func clean_unused_assets() -> void:
 
 func _command_reason(group: String, index: int) -> String:
 	if group in ["插入关键帧","添加片段","对齐"] and selection.is_empty():return "请先选择可编辑对象"
-	if group in ["插入关键帧","添加片段","对齐"] and Array(selection).all(func(id):return not document.editable_object(id)):return "对象或父组已锁定／隐藏"
+	if group in ["插入关键帧","添加片段","对齐"] and Array(selection).any(func(id):return not document.editable_object(id)):return "对象或父组已锁定／隐藏"
 	if group=="对齐" and index>0 and selection.size()<(3 if index>=7 else 2):return "至少选择三个对象" if index>=7 else "至少选择两个对象"
 	if group=="添加片段" and index==0:
 		for id in selection:
@@ -1647,3 +1800,420 @@ func _record_key(candidate: LevelDocument, id: String, property: String, value: 
 		if key.time_us==time_us:key.value=value;found=true;break
 	if not found:after.keys.append(LevelFormat.key(time_us,value))
 	candidate.replace("记录当前帧","tracks",[before],[after]);return ""
+
+## 分量变更从每个对象的当前值出发，未编辑分量不从首个对象回写。
+func set_property_component(property: String, axis: int, value: float, base := false) -> void:
+	var before:=[];var after:=[]
+	for id in selection:
+		var entry:=document.find("objects",id).duplicate(true)
+		if entry.is_empty():continue
+		if not base:entry.fields=LevelShowSampler.object_state(document.data.show,entry,section,time_us,difficulty())
+		before.append(entry);entry=entry.duplicate(true);entry.fields[property][axis]=value;after.append(entry)
+	if not base and property in LevelTransformEdit.PROPERTIES:_commit_transform(before,after);return
+	var candidate:=LevelDocument.new();candidate.reset(document.data)
+	for entry: Dictionary in after:
+		if auto_key and not base:
+			var error:=_record_key(candidate,entry.id,property,entry.fields[property])
+			if not error.is_empty():_status.text=error;return
+		else:candidate.find("objects",entry.id).fields[property]=entry.fields[property]
+	var changes:=[]
+	for kind in ["objects","tracks"]:
+		var old:=[];var next:=[]
+		for entry: Dictionary in candidate.entries(kind):
+			var original:=document.find(kind,entry.id)
+			if original==entry:continue
+			if not original.is_empty():old.append(original.duplicate(true))
+			next.append(entry)
+		if not next.is_empty():changes.append({"kind":kind,"before":old,"after":next})
+	document.commit("修改"+str(LevelFormat.PROPERTIES.get(property,property))+[" X"," Y"][axis],changes)
+
+func set_item_component(track_id: String, item_id: String, field: String, axis: int, value: float) -> void:
+	var track:=document.find("tracks",track_id)
+	var item:=LevelFormat.find(track.get("keys",[])+track.get("clips",[]),item_id)
+	if item.is_empty():return
+	var next: Array=item[field].duplicate();next[axis]=value
+	set_item_field(track_id,item_id,field,next)
+
+func _offer_reference_repair(issue: Dictionary) -> void:
+	if not str(issue.asset).begins_with("assets/"):
+		var category: String={"actor":"scene","environment":"scene","sprite":"visual","image":"visual","animated_sprite":"animation"}.get(str(issue.get("kind","")),str(issue.get("kind","all")))
+		_choose_resource(category,str(issue.asset),func(value):_replace_reference_value(issue,value));return
+	var dialog:=ConfirmationDialog.new();dialog.title="修复指定引用";dialog.ok_button_text="选择替代文件"
+	dialog.dialog_text=str(issue.message)+"\n只替换此处引用；旧素材与撤销保留。"
+	add_child(dialog);dialog.confirmed.connect(func():
+		dialog.queue_free()
+		var asset: String=issue.asset
+		var extension:=str(issue.get("dependency",asset)).get_extension()
+		_file_dialog("选择替代资源",FileDialog.FILE_MODE_OPEN_FILE,["*."+extension+" ; 对应类型资源"],func(path):_repair_reference(issue,path)))
+	dialog.canceled.connect(dialog.queue_free);_popup(dialog,Vector2i(600,210))
+
+func _repair_reference(issue: Dictionary, path: String) -> void:
+	var imported:=LevelProjectIO.import_file(path,document.directory)
+	if not imported.error.is_empty():message(imported.error);return
+	var replacement: String=imported.path
+	if issue.has("dependency"):
+		var source: String=issue.asset
+		var descriptor:=LevelProjectIO.read_json(document.directory.path_join(source))
+		for animation: Dictionary in descriptor.get("animations",[]):
+			for frame: Dictionary in animation.frames:
+				var original: String=document.directory.path_join(source).get_base_dir().path_join(frame.image).simplify_path()
+				var absolute: String=document.directory.path_join(imported.path) if original==str(issue.dependency).simplify_path() else original
+				frame.image=absolute.replace("\\","/").trim_prefix(document.directory.replace("\\","/").path_join("assets")+"/")
+		replacement="assets/"+LevelFormat.id("repair")+LevelAnimationAsset.SUFFIX
+		var error:=LevelProjectIO.write_json(document.directory.path_join(replacement),descriptor)
+		if not error.is_empty():message(error);return
+	_replace_reference_value(issue,replacement)
+
+func _replace_reference_value(issue: Dictionary,replacement: String) -> void:
+	var next:=document.data.duplicate(true);var cursor: Variant=next;var route: Array=issue.path
+	for index in route.size()-1:cursor=cursor[route[index]]
+	cursor[route.back()]=replacement
+	var changes:=[]
+	if route[0]=="show":
+		var kind: String=route[1];var old: Dictionary=document.data.show[kind][route[2]];var after: Dictionary=next.show[kind][route[2]]
+		changes.append({"kind":kind,"before":[old],"after":[after]})
+	else:changes.append({"kind":"metadata","before":{route[0]:document.data[route[0]]},"after":{route[0]:next[route[0]]}})
+	document.commit("修复素材引用",changes)
+	_asset_signature="";_show_signature="";_update_show()
+
+## 审片只持有工作区状态，演出和玩法仍使用正式采样入口。
+func start_full_review() -> void:
+	_prepare_command();end_environment_preview()
+	if _review.is_empty():_review={"workspace":_workspace_snapshot(),"playing":true}
+	_review.playing=true;audio.loop_enabled=false;_loop_toggle.set_pressed_no_signal(false)
+	_review_go("intro" if int(document.data.intro_us)>0 else "song",0,true)
+
+func end_full_review() -> void:
+	if _review.is_empty():return
+	var saved: Dictionary=_review.workspace;_review={};audio.set_playing(false)
+	_apply_workspace(saved);audio.set_playing(false);_status.text="已退出整关审片，恢复原视图；修改保留。"
+
+func _pause_review() -> void:
+	if _review.is_empty() or _review_switching:return
+	_review.playing=false;audio.set_playing(false)
+
+func _input(event: InputEvent) -> void:
+	if _review.is_empty() or _modal_open():return
+	if event is InputEventMouseButton and event.pressed and event.button_index==MOUSE_BUTTON_LEFT:
+		if surface.get_global_rect().has_point(event.position) or (timeline.get_global_rect().has_point(event.position) and event.position.y>=timeline.global_position.y+LevelTimeline.RULER):_pause_review()
+
+func _review_go(next_section: String, us: int, playing: bool) -> void:
+	_review_switching=true;audio.set_playing(false);section=next_section;timeline.section=section;_section.select(LevelFormat.SECTIONS.find(section));timeline.rebuild_rows()
+	_loading=true;audio.set_stream(song_document.song.audio_stream if section=="song" and song_document.song!=null else null);_loading=false
+	seek(us);_review_switching=false;audio.set_playing(playing)
+
+func _review_position(seconds: float) -> bool:
+	if _review.is_empty() or _review_switching or not _review.get("playing",false):return false
+	var limit:=_review_duration(section)
+	if seconds*1000000>=limit:
+		if section=="intro":_review_go("song",maxi(0,roundi(seconds*1000000)-limit),true)
+		elif section=="song" and int(document.data.outro_us)>0:_review_go("outro",maxi(0,roundi(seconds*1000000)-limit),true)
+		else:_review.playing=false;audio.set_playing(false);seek(limit);_status.text="整关审片结束；可定位检查或退出恢复原视图。"
+		return true
+	if section=="song" and not audio.playing:
+		_review_switching=true;audio.set_stream(null);audio.seek(seconds);audio.set_playing(true);_review_switching=false
+	return false
+
+func _review_duration(value: String) -> int:
+	if value!="song":return int(document.data.get(value+"_us",0))
+	if is_instance_valid(preview.stage_root):return roundi((preview.stage_root.stage_session.get_end_song_time_sec()+preview.stage_root.stage_session.stage_definition.song.first_beat_offset_sec)*1000000)
+	return maxi(1,roundi(timeline.waveform_duration*1000000))
+
+func _apply_layout_preset(index: int) -> void:
+	_left_panel.show();%RightPanel.show();%Bottom.show();_focus_layout.clear()
+	_left_width=[220,180,200][index];_right_width=[285,310,360][index];_timeline_height=[210,360,300][index];_queue_layout()
+	if index==2 and not selection.is_empty() and document.find("objects",selection[0]).type=="actor":open_boss_binding()
+	_status.text=["布置布局","动画布局","BOSS 布局"][index]+"；可继续拖动分隔线调整。"
+
+func _recent_projects() -> void:
+	var dialog:=ConfirmationDialog.new();dialog.title="最近工程";dialog.ok_button_text="打开"
+	var list:=ItemList.new();list.custom_minimum_size=Vector2(600,260);dialog.add_child(list)
+	for path in _recent:list.add_item(str(path))
+	add_child(dialog);dialog.confirmed.connect(func():
+		if list.get_selected_items().is_empty():return
+		var path: String=_recent[list.get_selected_items()[0]];dialog.queue_free();_discard_or(func():_open_path(path)))
+	dialog.canceled.connect(dialog.queue_free);_popup(dialog,Vector2i(680,360))
+
+func _drop_timeline_asset(asset: String, at_us: int) -> void:
+	_prepare_command();seek(at_us)
+	var kind:=_assets.kind(asset)
+	if kind=="font":add_asset_object(asset);return
+	document.begin_edit();add_asset_object(asset)
+	if kind=="image" and not selection.is_empty():add_clip("visibility")
+	document.end_edit()
+	_status.text="已在当前区段 %.3f 秒插入 %s；一次撤销恢复。"%[float(at_us)/1000000,_asset_caption(asset)]
+
+func _select_reference_note(id: String) -> void:
+	if inspector_mode!="boss":
+		open_boss_binding()
+		if inspector_mode!="boss":return
+	var note:=song_document.find_note(id)
+	if note==null or not note.boss:_status.text="此音符未标记为 BOSS 音符。";return
+	var ids: Array=boss_panel.data.get("note_ids",[]).duplicate()
+	if id in ids:ids.erase(id)
+	else:ids.append(id)
+	boss_panel._change("note_ids",ids);boss_panel._populate_notes()
+
+func _refresh_sequences() -> void:
+	var sequences:=document.entries("sequences")
+	var signature:=JSON.stringify(sequences.map(func(item):return [item.id,item.name,item.objects.size(),item.tracks]))
+	if signature==_sequence_list.get_meta("signature",""):return
+	var selected_id: String=str(_sequence_list.get_item_metadata(_sequence_list.get_selected_items()[0])) if not _sequence_list.get_selected_items().is_empty() else ""
+	_sequence_list.set_meta("signature",signature);_sequence_list.clear()
+	for item: Dictionary in sequences:
+		var end:=0;var sections:=[]
+		for track: Dictionary in item.tracks:
+			if track.section not in sections:sections.append(track.section)
+			for event: Dictionary in track.keys+track.clips:end=maxi(end,int(event.get("time_us",event.get("start_us",0)))+int(event.get("duration_us",0)))
+		_sequence_list.add_item("%s · %d 对象 · %.2f 秒\n%s"%[item.name,item.objects.size(),float(end)/1000000," / ".join(sections)])
+		var index:=_sequence_list.item_count-1;_sequence_list.set_item_metadata(index,item.id)
+		if item.id==selected_id:_sequence_list.select(index)
+
+func _selected_sequence() -> Dictionary:
+	if _sequence_list.get_selected_items().is_empty():_status.text="先从片段库选择一个模板。";return {}
+	return document.find("sequences",str(_sequence_list.get_item_metadata(_sequence_list.get_selected_items()[0])))
+
+func _rename_sequence() -> void:
+	var entry:=_selected_sequence()
+	if entry.is_empty():return
+	var dialog:=ConfirmationDialog.new();dialog.title="命名演出片段";var edit:=LineEdit.new();edit.text=entry.name;dialog.add_child(edit);add_child(dialog)
+	dialog.confirmed.connect(func():var after:=entry.duplicate(true);after.name=edit.text;document.replace("重命名演出片段","sequences",[entry],[after]);dialog.queue_free())
+	dialog.canceled.connect(dialog.queue_free);_popup(dialog,Vector2i(480,160));edit.grab_focus()
+
+func _delete_sequence() -> void:
+	var entry:=_selected_sequence()
+	if not entry.is_empty():document.replace("删除演出模板","sequences",[entry],[])
+
+func _preview_sequence() -> void:
+	var entry:=_selected_sequence()
+	if entry.is_empty():return
+	var dialog:=ConfirmationDialog.new();dialog.title="片段预览 · "+str(entry.name);var box:=VBoxContainer.new();dialog.add_child(box)
+	var view:=SubViewport.new();view.size=Vector2i(960,540);view.size_2d_override=Vector2i(1920,1080);view.size_2d_override_stretch=true;view.transparent_bg=true;dialog.add_child(view)
+	var player:=LevelShowPlayer.new();view.add_child(player)
+	var image:=TextureRect.new();image.texture=view.get_texture();image.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;image.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED;image.custom_minimum_size=Vector2(640,360);box.add_child(image)
+	var slider:=HSlider.new();slider.step=0.001;slider.max_value=10;box.add_child(slider);add_child(dialog)
+	var show:=entry.duplicate(true)
+	for object_data: Dictionary in show.objects:
+		if LevelFormat.find(show.objects,str(object_data.parent_id)).is_empty():object_data.parent_id=""
+	var duration:=0
+	for track: Dictionary in show.tracks:
+		track.section="song";track.difficulties=[]
+		for event: Dictionary in track.keys+track.clips:duration=maxi(duration,int(event.get("time_us",event.get("start_us",0)))+int(event.get("duration_us",0)))
+	slider.max_value=maxf(1,float(duration)/1000000);player.configure(show,document.directory,document.data.packs,difficulty())
+	slider.value_changed.connect(func(value):player.seek("song",roundi(value*1000000)))
+	var playing:=[false];var timer:=Timer.new();timer.wait_time=1.0/60;dialog.add_child(timer)
+	LevelUI.button(box,"播放／暂停",func():playing[0]=not playing[0])
+	timer.timeout.connect(func():
+		if playing[0]:slider.value=fposmod(slider.value+timer.wait_time,slider.max_value))
+	timer.start();player.seek("song",0)
+	dialog.confirmed.connect(dialog.queue_free);dialog.canceled.connect(dialog.queue_free);_popup(dialog,Vector2i(760,510))
+
+func _rearrange_objects(ids: PackedStringArray, target_id: String, placement: int) -> void:
+	_prepare_command();_pause_review()
+	var target:=document.find("objects",target_id)
+	var parent_id: String=target_id if placement==0 and target.get("type","")=="group" else str(target.get("parent_id",""))
+	var roots:=PackedStringArray()
+	for id in ids:
+		var entry:=document.find("objects",id);var ancestor: String=entry.get("parent_id","");var nested:=false
+		while not ancestor.is_empty():
+			if ancestor in ids:nested=true;break
+			ancestor=str(document.find("objects",ancestor).get("parent_id",""))
+		if not nested:roots.append(id)
+	for id in roots:
+		var parent:=parent_id
+		while not parent.is_empty():
+			if parent==id:_status.text="不能把对象放进自己或自己的子组。";return
+			parent=str(document.find("objects",parent).get("parent_id",""))
+		if not document.editable_object(id):_status.text="选区包含锁定／隐藏对象，未移动。";return
+	if not parent_id.is_empty() and not document.editable_object(parent_id):_status.text="目标父组已锁定／隐藏。";return
+	var changes:=[];var old_objects:=document.entries("objects").duplicate(true);var next_objects:=old_objects.duplicate(true)
+	var old_tracks:=[];var next_tracks:=[]
+	var bake_dialog: ConfirmationDialog
+	var bake_steps:=0
+	var scopes:=PackedStringArray()
+	for chart in song_document.charts:scopes.append(chart.difficulty_id)
+	if scopes.is_empty():scopes.append(difficulty())
+	for id in roots:
+		var original:=document.find("objects",id);var entry:=LevelFormat.find(next_objects,id)
+		if entry.parent_id==parent_id:continue
+		var relevant_ids:={}
+		for start_id: String in [id,parent_id]:
+			var ancestor:=start_id
+			while not ancestor.is_empty() and not relevant_ids.has(ancestor):relevant_ids[ancestor]=true;ancestor=str(document.find("objects",ancestor).get("parent_id",""))
+		entry.parent_id=parent_id
+		var relation:=LevelShowPlayer.effective_occlusion(document.data.show,original)
+		entry.occlusion_inherit=false;entry.occlusion_order="none" if relation.is_empty() else relation[1]
+		if not relation.is_empty():entry.occlusion_depth=relation[0]
+		for track in document.entries("tracks"):
+			if track.object_id==id and track.property in ["position","rotation","scale","skew"]:old_tracks.append(track.duplicate(true))
+		for stage: String in LevelFormat.SECTIONS:
+			var times:={0:true};var end:=0
+			for track: Dictionary in document.entries("tracks"):
+				if track.section!=stage or not relevant_ids.has(track.object_id) or track.property not in ["position","rotation","scale","skew"]:continue
+				for key: Dictionary in track.keys:times[int(key.time_us)]=true;end=maxi(end,int(key.time_us))
+			for at in range(0,end,16667):times[at]=true
+			var ordered:=times.keys();ordered.sort()
+			for scope: String in scopes:
+				var tracks:={}
+				for property in ["position","rotation","scale","skew"]:
+					var track:=LevelFormat.track(id,property,stage);track.difficulties=[] if scopes.size()==1 else [scope];tracks[property]=track
+				for at: int in ordered:
+					bake_steps+=1
+					if ordered.size()>240 and bake_steps%128==0:
+						if bake_dialog==null:
+							bake_dialog=preload("res://scenes/tools/level_studio/package_progress.tscn").instantiate();bake_dialog.title="保持动画并调整父组";add_child(bake_dialog);_popup(bake_dialog,Vector2i(540,180))
+						bake_dialog.get_node("%Status").text="正在计算 %s · %s · %.2f s；可取消"%[entry.name,stage,float(at)/1000000]
+						bake_dialog.get_node("%Progress").value=100.0*float(at)/maxi(1,end)
+						await get_tree().process_frame
+						if bake_dialog._is_cancelled():bake_dialog.queue_free();_status.text="已取消层级调整，文档保持原样。";return
+					var pose:=LevelShowSampler.object_transform(document.data.show,id,stage,at,scope)
+					var parent_pose:=LevelShowSampler.object_transform(document.data.show,parent_id,stage,at,scope) if not parent_id.is_empty() else (Transform2D(PI,Vector2(1920,1080)) if entry.layer=="death" else Transform2D.IDENTITY)
+					if is_zero_approx(parent_pose.determinant()):
+						if bake_dialog!=null:bake_dialog.queue_free()
+						_status.text="目标父组在动画中缩放为零，无法保留显示变换。";return
+					pose=parent_pose.affine_inverse()*pose
+					var values:={"position":[pose.origin.x,pose.origin.y],"rotation":rad_to_deg(pose.get_rotation()),"scale":[pose.get_scale().x,pose.get_scale().y],"skew":rad_to_deg(pose.get_skew())}
+					for property in tracks:tracks[property].keys.append(LevelFormat.key(at,values[property]))
+				next_tracks.append_array(tracks.values())
+	var moved: Array=next_objects.filter(func(entry):return entry.id in roots)
+	next_objects=next_objects.filter(func(entry):return entry.id not in roots)
+	var index:=next_objects.find(LevelFormat.find(next_objects,target_id));index=next_objects.size() if index<0 else index+(1 if placement>=0 else 0)
+	for entry in moved:next_objects.insert(index,entry);index+=1
+	changes.append({"kind":"objects","before":old_objects,"after":next_objects,"before_order":old_objects.map(func(entry):return entry.id),"after_order":next_objects.map(func(entry):return entry.id)})
+	if not next_tracks.is_empty():changes.append({"kind":"tracks","before":old_tracks,"after":next_tracks})
+	if bake_dialog!=null:bake_dialog.queue_free()
+	document.commit("调整对象层级并保持变换",changes)
+	if document.last_error.is_empty():select_objects(roots)
+
+func _recovery_file() -> String:
+	if recovery_path!="user://level_studio/recovery.json":return recovery_path
+	return "user://level_studio/recoveries/"+str(document.data.level_id)+"_"+str(document.directory.simplify_path().hash())+".json"
+
+func _show_recoveries() -> void:
+	_prepare_command();_autosave.stop()
+	var choices:=[]
+	for file in DirAccess.get_files_at("user://level_studio/recoveries"):
+		if file.ends_with(".json"):choices.append("user://level_studio/recoveries/"+file)
+	if FileAccess.file_exists(recovery_path):choices.append(recovery_path)
+	var dialog:=ConfirmationDialog.new();dialog.title="恢复工程草稿";dialog.ok_button_text="恢复为未保存工程"
+	var list:=ItemList.new();list.custom_minimum_size=Vector2(640,300);dialog.add_child(list)
+	for path: String in choices:
+		var draft:=LevelProjectIO.read_json(path)
+		if not draft.has("level"):continue
+		list.add_item("%s · %s · %d 对象 / %d 轨道\n%s"%[draft.level.get("title","未命名"),draft.get("updated",""),draft.level.show.objects.size(),draft.level.show.tracks.size(),draft.get("directory","")]);list.set_item_metadata(list.item_count-1,path)
+	add_child(dialog);dialog.confirmed.connect(func():
+		if list.get_selected_items().is_empty():return
+		var draft:=LevelProjectIO.read_json(str(list.get_item_metadata(list.get_selected_items()[0])));dialog.queue_free()
+		if document.dirty:_preserve_before_restore()
+		end_full_review();end_environment_preview();audio.set_playing(false);preview.clear_preview();song_document=StudioDocument.new()
+		workspace_state=draft.get("workspace",{});document.reset(draft.level,draft.get("directory",""));document.saved_cursor=-1;document.dirty=true
+		_read_song();_apply_workspace(workspace_state);_document_changed("project"))
+	dialog.canceled.connect(func():
+		dialog.queue_free()
+		if document.dirty:_autosave.start())
+	_popup(dialog,Vector2i(720,400))
+
+## 历史只附带对应选区，撤销不强迫用户退回旧的布局。
+func _selection_snapshot() -> Dictionary:
+	return {"objects":Array(selection),"track":selected_track,"items":Array(selected_items),"target":edit_target,"section":section,"difficulty":difficulty(),"inspector_mode":inspector_mode,"binding_id":boss_panel.binding_id}
+
+func _restore_history_selection(state: Dictionary) -> void:
+	if state.is_empty():return
+	_pause_review()
+	var context_changed: bool=section!=state.section or difficulty()!=state.difficulty
+	_store_view()
+	for index in song_document.charts.size():
+		if song_document.charts[index].difficulty_id==state.difficulty:song_document.current=index;_difficulty.select(index);break
+	if section!=state.section:
+		section=state.section;timeline.section=section;_section.select(LevelFormat.SECTIONS.find(section))
+		_loading=true;audio.set_stream(song_document.song.audio_stream if section=="song" and song_document.song!=null else null);_loading=false
+	selection=PackedStringArray(state.objects);selected_track=state.track;selected_items=PackedStringArray(state.items);selected_item=selected_items[0] if selected_items.size()==1 else "";edit_target=state.target
+	if context_changed:_refresh_song_preview()
+	timeline.rebuild_rows();_sync_selection()
+	var mode: String=state.get("inspector_mode","properties")
+	if mode=="boss" and not selection.is_empty():boss_panel.open(selection[0],state.get("binding_id",""))
+	if mode!=inspector_mode:_show_inspector(mode)
+
+func _selection_editable() -> bool:
+	for id in selection:
+		if not document.editable_object(id):
+			_status.text="选区包含不可编辑对象："+str(document.find("objects",id).get("name",id))+"；整次操作未提交。";return false
+	return true
+
+func _show_trial_log() -> void:
+	if _trial_folder.is_empty():_status.text="尚未启动试玩。";return
+	var dialog:=ConfirmationDialog.new();dialog.title="试玩日志";dialog.ok_button_text="重新启动"
+	var log:=TextEdit.new();log.editable=false;log.custom_minimum_size=Vector2(740,420);log.text=FileAccess.get_file_as_string(_trial_folder.path_join("game.log")) if FileAccess.file_exists(_trial_folder.path_join("game.log")) else "日志尚未生成。";dialog.add_child(log);add_child(dialog)
+	dialog.confirmed.connect(func():
+		if _trial_pid>0 and OS.is_process_running(_trial_pid):OS.kill(_trial_pid)
+		_trial_pid=-1;_trial_button.disabled=false;dialog.queue_free();playtest())
+	dialog.canceled.connect(dialog.queue_free);_popup(dialog,Vector2i(800,520))
+
+## Godot 已挂载的资源包不能卸载；用一次重启恢复会话切换版本。
+func _apply_pending_packs() -> void:
+	if _pending_packs.is_empty():_status.text="没有待应用的素材包版本。";return
+	_prepare_command()
+	var candidate:=_history_document()
+	candidate.fields("更新素材包",{"packs":_pending_packs.duplicate(true)})
+	_offer_pack_restart(candidate,"应用新素材包")
+
+func _history_document() -> LevelDocument:
+	var candidate:=LevelDocument.new();candidate.reset(document.data.duplicate(true),document.directory)
+	candidate.history.assign(document.history.duplicate(true));candidate.cursor=document.cursor;candidate.saved_cursor=document.saved_cursor;candidate.dirty=document.dirty
+	return candidate
+
+func _history_pack_gate(command: Dictionary, redo: bool) -> bool:
+	for change: Dictionary in command.changes:
+		if change.kind=="metadata" and change.after.has("packs") and change.before.get("packs",[])!=change.after.packs:
+			var candidate:=_history_document();candidate.undo(redo)
+			_offer_pack_restart(candidate,"重做素材包版本" if redo else "撤销素材包版本")
+			return false
+	return true
+
+func _offer_pack_restart(candidate: LevelDocument, caption: String) -> void:
+	var dialog:=ConfirmationDialog.new();dialog.title=caption;dialog.ok_button_text="重启并应用";dialog.cancel_button_text="稍后"
+	var names:=PackedStringArray()
+	for entry: Dictionary in document.entries("objects"):
+		if _assets.entries.has(entry.asset):names.append(str(entry.name))
+	dialog.dialog_text="新版本已准备。切换已挂载的素材包需要重启编辑器。\n未保存文档、撤销历史和布局将恢复，正式工程不会被覆盖。\n使用素材包的对象：\n"+("无" if names.is_empty() else "、".join(names))
+	add_child(dialog);dialog.confirmed.connect(func():
+		var state:=_workspace_snapshot();state.pending_packs=[]
+		var snapshot:={"level":candidate.data,"directory":candidate.directory,"history":candidate.history,"cursor":candidate.cursor,"saved_cursor":candidate.saved_cursor,"workspace":state,"selection":_selection_snapshot(),"clipboard":document.clipboard,"timeline_clipboard":timeline._clipboard}
+		var path:="user://level_studio/restarts/"+LevelFormat.id("session")+".json"
+		var error:=LevelProjectIO.write_json(path,snapshot)
+		if not error.is_empty():message(error);return
+		var args:=PackedStringArray()
+		if OS.has_feature("editor"):args.append_array(["--path",ProjectSettings.globalize_path("res://")])
+		args.append_array(["--","--level-editor","--resume-level-session",ProjectSettings.globalize_path(path)])
+		var pid:=OS.create_process(OS.get_executable_path(),args,false)
+		if pid<=0:message("无法重新启动；会话保留在："+path);return
+		_autosave.stop();get_tree().quit())
+	dialog.canceled.connect(func():dialog.queue_free();_status.text="版本切换尚未应用；可从素材菜单继续。")
+	_popup(dialog,Vector2i(620,260))
+
+func _resume_pack_session(path: String) -> void:
+	var session:=LevelProjectIO.read_json(path)
+	if session.is_empty():message("无法恢复重启会话："+path);return
+	workspace_state=session.workspace;document.reset(session.level,session.directory)
+	document.history.assign(session.history);document.cursor=int(session.cursor);document.saved_cursor=int(session.saved_cursor);document.dirty=document.cursor!=document.saved_cursor
+	document.clipboard=session.get("clipboard",{});timeline._clipboard=session.get("timeline_clipboard",[])
+	_read_song();_apply_workspace(workspace_state);_restore_history_selection(session.get("selection",{}));_document_changed("project")
+	_status.text="素材包版本已切换；未保存修改和撤销历史已恢复。"
+
+func _drop_canvas_asset(asset: String, at: Vector2) -> void:
+	if _assets.kind(asset)=="font":
+		for id in surface.objects_at(at):
+			if document.find("objects",id).type=="text":select_objects(PackedStringArray([id]));set_property("font",asset);return
+		_status.text="请将字体拖到可编辑的文字对象上。";return
+	add_asset_object(asset,at)
+
+func _editor_icon(name: String) -> Texture2D:
+	if not has_meta("editor_icons"):set_meta("editor_icons",{})
+	var icons: Dictionary=get_meta("editor_icons")
+	if not icons.has(name):
+		icons[name]=load("res://assets/level_studio/"+name+".svg")
+	return icons[name]
+
+func _preserve_before_restore() -> void:
+	var path:="user://level_studio/recoveries/"+str(document.data.level_id)+"_before_restore_"+LevelFormat.id("draft")+".json"
+	LevelProjectIO.write_json(path,{"level":document.data,"directory":document.directory,"workspace":_workspace_snapshot(),"updated":Time.get_datetime_string_from_system(),"note":"恢复前保留的未保存文档"})

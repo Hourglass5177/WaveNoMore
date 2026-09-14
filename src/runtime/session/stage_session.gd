@@ -197,7 +197,7 @@ func configure(stage: StageDefinition) -> bool:
 	return true
 
 
-func prepare() -> bool:
+func prepare(prepared_chart: CompiledChart = null) -> bool:
 	# 第一阶段只检查“资源齐全”和“场景接线完整”，失败时不启动任何时钟或输入。
 	if stage_definition == null:
 		validation_failed.emit({"errors": ["StageDefinition is null."]})
@@ -212,7 +212,7 @@ func prepare() -> bool:
 	var compiler := ChartCompiler.new()
 	# 第二阶段把易编辑的 Resource 谱面编译成微秒时间轴；编译失败便保留在加载状态。
 	# SongClock 已把音频文件时间映射到谱面 tick 0；编译时再次传首拍偏移会重复补偿。
-	var compile_result: Dictionary = compiler.compile(stage_definition.chart, rule_set, 0)
+	var compile_result: Dictionary = compiler.compile(stage_definition.chart, rule_set, 0) if prepared_chart == null else {"ok": true, "compiled": prepared_chart}
 	if not bool(compile_result.get("ok", false)):
 		validation_failed.emit(compile_result.get("report", compile_result))
 		return false
@@ -911,14 +911,15 @@ func reset_preview() -> void:
 	state = GameplayTypes.StageState.PLAYING
 	_emit_snapshot_changes(gameplay_coordinator.frame_snapshot())
 
-func advance_preview(time_us: int, inclusive: bool = true) -> void:
+func advance_preview(time_us: int, inclusive: bool = true, restore_visuals: bool = true) -> void:
 	var seconds := float(time_us) / 1000000.0
 	# 写谱器外部时钟没有玩家设备补偿，两条调度时间使用同一个谱面时刻。
-	chart_scheduler.advance(seconds, seconds)
+	if restore_visuals: chart_scheduler.advance(seconds, seconds)
+	else: chart_scheduler.visual_time_sec = seconds
 	var preview_sample := song_clock.publish_external_time(seconds, not gameplay_coordinator.defer_preview_snapshot)
 	gameplay_coordinator.advance_to(time_us, inclusive)
 	# 大步 Seek 会在本次推进中补发早先的波接触，立即按目标时刻回收已结束的表现。
-	chart_scheduler.advance(seconds, seconds)
+	if restore_visuals: chart_scheduler.advance(seconds, seconds)
 	if not gameplay_coordinator.defer_preview_snapshot:
 		_emit_snapshot_changes(gameplay_coordinator.frame_snapshot())
 		visual_frame_ready.emit(preview_sample)

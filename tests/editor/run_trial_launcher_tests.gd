@@ -15,8 +15,9 @@ func run() -> void:
 	check(FileAccess.file_exists(launcher._folder.path_join("owner.json")), "整理遗留目录时保留运行中进程的文件")
 	var abandoned: String = launcher.temp_root.path_join("trial_abandoned")
 	StudioProjectIO.write_json(abandoned.path_join("owner.json"), {"pid": -1})
+	StudioProjectIO.write_json(abandoned.path_join("planning.json"), {"values": {}})
 	launcher._cleanup_abandoned()
-	check(not DirAccess.dir_exists_absolute(abandoned), "清理已结束的本机临时目录")
+	check(not DirAccess.dir_exists_absolute(abandoned), "清理已结束的本机临时目录及参数快照")
 	launcher._request = "latest"
 	StudioProjectIO.write_json(launcher._folder.path_join("status.json"), {"request_id": "old", "interface_version": 1, "stage": "ready"})
 	launcher._read_status()

@@ -12,3 +12,6 @@ __pycache__/
 
 # Godot 编辑器热重载的临时副本
 /bin/**/~*.dll
+
+# 策划表工具的临时检查输出
+*.xlsx.inspect.ndjson

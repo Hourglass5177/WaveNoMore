@@ -13,11 +13,11 @@ func configure(root: String, packs: Array) -> void:
 		var path := root.path_join(str(pack_data.path))
 		if not mounted.has(path):
 			if not ProjectSettings.load_resource_pack(path, false):
-				issues.append({"message": "无法加载素材包：" + str(pack_data.path), "severity": "error"}); continue
+				issues.append({"message": "无法加载素材包：" + str(pack_data.path), "severity": "error", "pack_path":str(pack_data.path)}); continue
 			mounted[path] = true
 		var manifest := load(str(pack_data.manifest)) as VisualAssetManifest
 		if manifest == null:
-			issues.append({"message": "找不到素材清单：" + str(pack_data.manifest), "severity": "error"}); continue
+			issues.append({"message": "找不到素材清单：" + str(pack_data.manifest), "severity": "error", "pack_path":str(pack_data.path)}); continue
 		for entry: VisualAssetEntry in manifest.entries:
 			entries[entry.asset_id] = entry
 
@@ -107,6 +107,16 @@ func validate_level(level: Dictionary) -> Array[Dictionary]:
 		if background(str(cue.asset)) == null:
 			result.append({"message": "环境场景资源缺失：" + str(cue.asset), "scene_cue_id": str(cue.id), "time_us": cue.get("time_us", 0), "severity": "error"})
 	var references := []
+	# 补齐模板、关键帧和动画内部图片；所有定位信息沿用资源引用枚举。
+	for reference: Dictionary in LevelProjectIO.references(level):
+		var asset: String=reference.asset
+		if not asset.begins_with("assets/"):continue
+		if not FileAccess.file_exists(directory.path_join(asset)):
+			var issue:=reference.duplicate();issue.message="素材缺失："+asset;issue.severity="error";result.append(issue)
+		elif asset.ends_with(LevelAnimationAsset.SUFFIX):
+			for dependency in LevelAnimationAsset.dependencies(directory.path_join(asset)):
+				if not FileAccess.file_exists(dependency):
+					var issue:=reference.duplicate();issue.dependency=dependency;issue.message="动画图片缺失："+dependency.get_file();issue.severity="error";result.append(issue)
 	if not str(level.get("cover", "")).is_empty(): references.append({"asset":level.cover,"kind":"image"})
 	for object_data: Dictionary in level.show.get("objects", []):
 		if not str(object_data.asset).is_empty(): references.append({"asset":object_data.asset,"object_id":object_data.id,"kind":object_data.type})
@@ -127,6 +137,7 @@ func validate_level(level: Dictionary) -> Array[Dictionary]:
 		for clip: Dictionary in track.clips:
 			if str(clip.action) not in names:result.append({"message":"动作缺失："+str(clip.action)+"；请选择此素材中的动作。","object_id":object_data.id,"track_id":track.id,"item_id":clip.id,"time_us":clip.start_us,"severity":"error"})
 	for reference: Dictionary in references:
+		if result.any(func(issue):return issue.get("asset","")==reference.asset and issue.get("object_id","")==reference.get("object_id","") and issue.get("track_id","")==reference.get("track_id","")):continue
 		var resource := resolve(str(reference.asset))
 		var valid := resource != null
 		match str(reference.kind):
@@ -137,7 +148,10 @@ func validate_level(level: Dictionary) -> Array[Dictionary]:
 			"font": valid = resource is Font
 			"effect": valid = resource is PackedScene or resource is Texture2D
 		if not valid:
-			var problem := reference.duplicate(); problem.message = "素材缺失或类型不符：" + str(reference.asset); problem.severity="error"; result.append(problem)
+			var problem := reference.duplicate()
+			for located: Dictionary in LevelProjectIO.references(level):
+				if located.asset==reference.asset and located.get("object_id","")==reference.get("object_id","") and located.get("track_id","")==reference.get("track_id",""):problem.merge(located);break
+			problem.message = "素材缺失或类型不符：" + str(reference.asset); problem.severity="error"; result.append(problem)
 	return result
 
 ## 分类不触发图片、字体或声音解码。

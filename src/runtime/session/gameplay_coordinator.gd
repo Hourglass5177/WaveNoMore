@@ -10,6 +10,8 @@ signal judgment_recorded(record: JudgmentRecord)
 signal stray_input_recorded(record: StrayInputRecord)
 ## 扣血去重和减伤完成后的事实，包含来源阵营与是否致命。
 signal damage_recorded(record: DamageRecord)
+## 已发生的随从技能收益／有效 Hold 起手，仅供表现消费。
+signal pet_triggered(timestamp_us: int, affinity: int)
 ## 生钟或死钟发出一个具有真实传播时间的声波时发出。
 signal wave_launched(wave: Dictionary)
 ## 波前在物理时间线上接触音符时发出。
@@ -187,6 +189,8 @@ func result_digest() -> String:
 
 
 func _drain_domain_events() -> void:
+	for cue: Dictionary in simulation.drain_pet_triggers():
+		pet_triggered.emit(int(cue.timestamp_us), int(cue.affinity))
 	for damage: DamageRecord in simulation.drain_damages():
 		damage_recorded.emit(damage)
 	# 同帧内先发布波，再发布判定，使表现层总能先知道结果对应的物理原因。

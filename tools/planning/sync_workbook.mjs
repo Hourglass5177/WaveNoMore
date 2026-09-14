@@ -7,9 +7,18 @@ const root=process.argv[2]||process.cwd();
 const file=process.argv[3]||path.join(root,'outputs/planning/策划参数.xlsx');
 const catalog=JSON.parse(await fs.readFile(path.join(root,'content/rules/planning_parameters.json'),'utf8'));
 const wb=await SpreadsheetFile.importXlsx(await FileBlob.load(file));
-const locations=new Map(), previous=new Map(), refs={};
+// 仅显式点名的字段采用新默认作为当前值，其余人工调整继续保留。
+const adoptDefaults=new Set(process.argv.filter(a=>a.startsWith('--adopt-default=')).map(a=>a.slice('--adopt-default='.length)));
+if(process.argv.includes('--preview')){
+  const image=await wb.render({sheetName:'07 分界线表现',range:'A1:G22',scale:1,format:'png'});
+  await fs.writeFile(path.join(root,'builds/planning/07-before.png'),new Uint8Array(await image.arrayBuffer()));
+  console.log((await wb.inspect({kind:'table',range:"'07 分界线表现'!A12:J22",include:'values,formulas',tableMaxRows:11,tableMaxCols:10})).ndjson);
+  process.exit(0);
+}
+const locations=new Map(), previous=new Map(), refs={}, occupied=new Map();
 const groups=[...new Set(catalog.map(r=>r.section))];
 const names=new Set((await wb.inspect({kind:'sheet',include:'id,name'})).ndjson.split('\n').filter(Boolean).map(line=>JSON.parse(line).name));
+const retiredNames={'boundary/period_sec':'缓流周期','boundary/stream_amplitude_px':'水带起伏','boundary/curl_amplitude_px':'大浪回卷','boundary/beat_enabled':'节拍回应','boundary/beat_amplitude_px':'节拍舒张幅度'};
 for(const name of groups){
   if(!names.has(name)){
     const sheet=wb.worksheets.add(name);
@@ -26,7 +35,12 @@ for(const name of groups){
   const sheet=wb.worksheets.getItem(name);
   const values=sheet.getRange('A6:J300').values;
   values.forEach((v,i)=>{
-    if(v[7]==='rules'||v[7]==='boundary'||String(v[7]||'').startsWith('pet:')){
+    if(v.some(value=>value!==null&&value!=='')) occupied.set(name,i+6);
+    if(String(v[0]||'').startsWith('已停用：')){
+      const old=String(v[0]).slice(4);sheet.getRange(`A${i+6}`).values=[['已停用：'+(retiredNames[old]||old)]];
+      sheet.getRange(`B${i+6}`).format.fill='#E7E8EA';
+    }
+    if(v[7]==='rules'||v[7]==='boundary'||v[7]==='actors'||String(v[7]||'').startsWith('pet:')){
       const key=v[7]+'/'+v[8]; locations.set(key,{sheet,row:i+6}); previous.set(key,v[1]);
     }
   });
@@ -43,28 +57,35 @@ for(const entry of catalog){
   let location=locations.get(key);
   if(!location){
     const sheet=wb.worksheets.getItem(entry.section);
-    const last=Math.max(5,...[...locations.values()].filter(v=>v.sheet.name===entry.section).map(v=>v.row));
+    const last=Math.max(5,occupied.get(entry.section)||5,...[...locations.values()].filter(v=>v.sheet.name===entry.section).map(v=>v.row));
     location={sheet,row:last+1}; locations.set(key,location);
+    occupied.set(entry.section,last+1);
     const range=sheet.getRange(`A${last+1}:J${last+1}`);
     range.format={font:{name:'Microsoft YaHei',size:11,color:'#27363A'},rowHeight:46,verticalAlignment:'center'};
     sheet.getRange(`B${last+1}`).format.fill='#FFF0C2';
     sheet.getRange(`G${last+1}`).format.wrapText=true;
-    sheet.dataValidations.add({range:`B${last+1}`,rule:{type:entry.type==='float'?'decimal':'whole',operator:'between',formula1:entry.minimum,formula2:entry.maximum}});
+    if(entry.type!=='string') sheet.dataValidations.add({range:`B${last+1}`,rule:{type:entry.type==='float'?'decimal':'whole',operator:'between',formula1:entry.minimum,formula2:entry.maximum}});
   }
   const {sheet,row}=location;
-  sheet.getRange(`A${row}:J${row}`).values=[[entry.name,previous.has(key)?previous.get(key):Number(entry.default),Number(entry.default),entry.unit,entry.suggested,entry.step,entry.meaning,entry.target,entry.key,entry.source]];
-  sheet.getRange(`B${row}:C${row}`).setNumberFormat(entry.unit==='比例'?'0.0%':entry.type==='float'?'0.0000':'0');
+  const baseline=entry.type==='string'?entry.default:Number(entry.default);
+  sheet.getRange(`A${row}:J${row}`).values=[[entry.name,previous.has(key)&&!adoptDefaults.has(key)?previous.get(key):baseline,baseline,entry.unit,entry.suggested,entry.step,entry.meaning,entry.target,entry.key,entry.source]];
+  sheet.getRange(`B${row}:C${row}`).setNumberFormat(entry.type==='string'?'@':entry.unit==='比例'?'0.0%':entry.type==='float'?'0.0000':'0');
   sheet.getRange(`F${row}`).setNumberFormat(entry.unit==='比例'?'0.0%':Number.isInteger(entry.step)?'0':'0.0000');
   refs[key]=`'${sheet.name}'!B${row}`;
 }
 // 退役行保留人工数值供查看，移除机器键，不再参与运行时配置。
 for(const [key,{sheet,row}] of locations){
   if(!catalog.some(e=>e.target+'/'+e.key===key)){
-    sheet.getRange(`A${row}`).values=[['已停用：'+key]];
+    sheet.getRange(`A${row}`).values=[['已停用：'+(retiredNames[key]||key)]];
+    sheet.getRange(`B${row}`).format.fill='#E7E8EA';
     sheet.getRange(`H${row}:I${row}`).values=[['','']];
   }
 }
 const intro=wb.worksheets.getItem('使用与量级');
+// 连续性标识是文本，留足宽度，不能套用数值列的窄格式。
+const actors=wb.worksheets.getItem('08 角色移动');
+actors.getRange('B1:C12').format.columnWidth=22;
+actors.getRange('A3').values=[['修改黄色当前值；参考层填写连续性标识，留空使用静息。']];
 intro.getRange('B4').values=[['在各参数页修改黄色 B 列，Ctrl+S 保存。']];
 const ref=k=>refs['rules/'+k];
 intro.getRange('A16').values=[['无随从：耗尽魂火所需 Tap 漏击组']];
@@ -83,15 +104,15 @@ intro.getRange('A31').format.font={name:'Microsoft YaHei',size:11,color:'#27363A
 wb.recalculate();
 for(const entry of catalog){
   const key=entry.target+'/'+entry.key;
-  if(previous.has(key)){
+  if(previous.has(key)&&!adoptDefaults.has(key)){
     const {sheet,row}=locations.get(key);
     if(sheet.getRange(`B${row}`).values[0][0]!==previous.get(key)) throw Error('当前值被覆盖：'+key);
   }
 }
 console.log((await wb.inspect({kind:'match',searchTerm:'#REF!|#DIV/0!|#VALUE!|#NAME\\?|#NUM!',options:{useRegex:true,maxResults:10}})).ndjson);
-for(const name of ['02 魂火与惩罚','03 调频','07 分界线表现','使用与量级']){
-  const preview=await wb.render({sheetName:name,range:name==='使用与量级'?'A1:B32':name==='03 调频'?'A5:G19':'A1:G14',scale:1,format:'png'});
+for(const name of ['02 魂火与惩罚','03 调频','07 分界线表现','08 角色移动','使用与量级']){
+  const preview=await wb.render({sheetName:name,range:name==='使用与量级'?'A1:B32':name==='03 调频'?'A5:G19':name==='07 分界线表现'?'A1:G22':'A1:G14',scale:1,format:'png'});
   await fs.writeFile(path.join(root,`builds/planning/${name}-updated.png`),new Uint8Array(await preview.arrayBuffer()));
 }
 await (await SpreadsheetFile.exportXlsx(wb)).save(file);
-console.log(`同步 ${catalog.length} 个字段，已有当前值已保留：${file}`);
+console.log(`同步 ${catalog.length} 个字段，采用新默认：${[...adoptDefaults].join(',')||'无'}；其他当前值已保留：${file}`);

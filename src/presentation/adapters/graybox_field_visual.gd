@@ -366,11 +366,7 @@ func set_slider_state(state: Dictionary) -> void:
 		"turnaround_pending",
 		_authoritative_traversal_index < _traversal_count - 1
 	))
-	if state.has("player_progress"):
-		# 玩家可能尚在滑条范围外；保留超出 0～1 的真实位置，才能看见应往哪边预定位。
-		_player_progress = float(state["player_progress"])
-	elif state.has("player_value"):
-		_player_progress = _progress_from_frequency_value(float(state["player_value"]))
+	restore_motion_control(state)
 	if state.has("guide_progress"):
 		_guide_progress = clampf(float(state["guide_progress"]), 0.0, 1.0)
 	if not _interaction_open:
@@ -898,6 +894,13 @@ func update_hold_control(visual: GrayboxHoldVisual, control_center: Vector2, rad
 	var direction: Vector2 = (cursor - control_center).normalized()
 	visual.set_head_heading(direction.angle())
 	visual.set_head_position(control_center - direction * radius_px)
+
+func restore_motion_control(state: Dictionary) -> void:
+	## 历史身体只用实际游标方向，不更新引导文字、端点标记或提交圆弧重绘。
+	_interaction_open = bool(state.get("interaction_open", true))
+	if state.has("player_progress"): _player_progress = float(state.player_progress)
+	elif state.has("player_value"): _player_progress = _progress_from_frequency_value(float(state.player_value))
+	if not _interaction_open: _player_progress = 0.0
 
 
 func _slider_center() -> Vector2:

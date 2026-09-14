@@ -70,6 +70,26 @@ var _head_heading_target: float = 0.0
 var _head_position_controlled: bool = false
 var _head_heading_controlled: bool = false
 
+const MOTION_FIELDS := [&"position", &"rotation", &"scale", &"modulate", &"visible",
+	&"approach_progress", &"hold_progress", &"judgment_grade", &"missed", &"wave_contacted", &"timing_confirmed", &"note_arrived",
+	&"_target_length", &"_spine_frozen", &"_spine_initialized", &"_body_visual_time_sec",
+	&"_head_control_center", &"_head_position_target", &"_head_heading_target", &"_head_position_controlled", &"_head_heading_controlled",
+	&"_finished_effect", &"_glow_time", &"_glow_target", &"_glow_from", &"_glow_change_time", &"glow_amount",
+	&"head_double_glow", &"_head_double_end_sec", &"_head_double_end_value", &"_preview_clock"]
+
+func capture_motion() -> Dictionary:
+	var state := {"chain": _dynamic_spine.capture_motion()}
+	for field: StringName in MOTION_FIELDS: state[field] = get(field)
+	return state
+
+func restore_motion(state: Dictionary) -> void:
+	for field: StringName in MOTION_FIELDS: set(field, state[field])
+	_dynamic_spine.restore_motion(state.chain)
+	_update_visible_spine()
+	_geometry_dirty = true
+	_last_surface_state = Vector3(INF, INF, INF); _last_head_light = -1.0
+	_sync_effect_surface()
+
 @export_group("Dynamic Body")
 ## 每段目标长度（px），尾端允许不足一个整段。
 @export_range(1.0, 64.0) var segment_length_px: float = 16.0

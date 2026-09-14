@@ -132,7 +132,7 @@ func _test_damage_facts() -> void:
 	core.accept_input(SemanticInputSample.create(core.current_time_us + 100000, 1, GameplayTypes.SemanticInputKind.LIFE_A_PRESSED))
 	records = core.drain_damages()
 	check(records.size() == 1 and records[0].affinity == SIDE.ZHU, "乱按伤害使用输入阵营")
-	core._apply_damage(DamageRecord.create("duplicate", "incoming", core.current_time_us, 20, SIDE.XUAN))
+	core._apply_damage(DamageRecord.create("duplicate", "tap:incoming", core.current_time_us, 20, SIDE.XUAN))
 	check(core.drain_damages().is_empty(), "伤害组去重不重复发受击事件")
 	core.health_engine.soul_fire = 1
 	core._apply_damage(DamageRecord.create("fatal", "fatal", core.current_time_us, 20, SIDE.XUAN))

@@ -24,16 +24,22 @@ var _action_choice: OptionButton
 var _fps: SpinBox
 var _loop: CheckBox
 var _names: Array[String]=[]
+var _readout:=Label.new()
 
 func _ready() -> void:
 	dialog_hide_on_ok=false
-	for pair in [["连续图片",_choose_images],["图片文件夹",_choose_folder],["整张精灵表",_choose_sheet],["Godot SpriteFrames",_choose_resource]]:LevelUI.button(%Sources,pair[0],pair[1])
+	for pair in [["连续图片",_choose_images],["图片文件夹",_choose_folder],["整张精灵表",_choose_sheet],["Godot SpriteFrames",_choose_resource]]:LevelUI.button(%Sources,pair[0],func():_replace_source(pair[1]))
 	LevelUI.button(%Playback,"播放／暂停",func():_playing=not _playing)
 	LevelUI.button(%Playback,"上一帧",func():_step(-1));LevelUI.button(%Playback,"下一帧",func():_step(1))
 	LevelUI.toggle(%Playback,"原始尺寸",false,func(value):%Preview.original_size=value;%Preview.queue_redraw())
 	LevelUI.toggle(%Playback,"切割辅助线",false,func(value):_show_sheet(value))
 	LevelUI.button(%FrameActions,"上移",func():_reorder(-1));LevelUI.button(%FrameActions,"下移",func():_reorder(1))
 	LevelUI.button(%FrameActions,"移除所选帧",_remove_frame)
+	LevelUI.button(%FrameActions,"追加图片",func():_file("追加到当前动作",FileDialog.FILE_MODE_OPEN_FILES,["*.png,*.jpg,*.jpeg,*.webp,*.svg ; 图片"],func(paths):load_images(paths,true)))
+	LevelUI.button(%FrameActions,"所选帧建立新动作",func():_name_action(true))
+	LevelUI.button(%Settings,"重命名动作",func():_name_action(false))
+	%Playback.add_child(_readout)
+	%Frames.select_mode=ItemList.SELECT_MULTI
 	_duration=LevelUI.number(%FrameActions,"帧时长倍率",1,func(value):
 		var selected: PackedInt32Array=%Frames.get_selected_items()
 		if not _busy and not selected.is_empty():frames.set_frame(action,selected[0],frames.get_frame_texture(action,selected[0]),value);_refresh_time(),0.1,0.01,100)
@@ -45,6 +51,8 @@ func _ready() -> void:
 		LevelUI.number(%SheetSettings,spec[0],spec[2],func(value):set(spec[1],int(value)),1,1 if spec[1] in ["columns","rows","first_frame"] else 0,10000)
 	LevelUI.button(%SheetSettings,"应用切割",slice_sheet);%SheetSettings.hide()
 	%Frames.item_selected.connect(_select_frame)
+	%Frames.multi_selected.connect(func(index,selected):
+		if selected:_select_frame(index))
 	%Frames.frame_moved.connect(_move_frame)
 	%Time.value_changed.connect(func(value):_playing=false;_seconds=value;_sample())
 	confirmed.connect(_write);canceled.connect(_close)
@@ -76,18 +84,24 @@ func _choose_sheet() -> void:
 		source_sheet=LevelAnimationAsset.read_texture(path);_fps.set_value_no_signal(12);_loop.set_pressed_no_signal(true);label=path.get_file().get_basename();_name_field.text=label;get_ok_button().disabled=true;%SheetSettings.show();_show_sheet(true))
 func _choose_resource() -> void:_file("选择 SpriteFrames",FileDialog.FILE_MODE_OPEN_FILE,["*.tres,*.res ; SpriteFrames"],func(path):_resource_replacements.clear();load_resource(path))
 
-func load_images(paths: PackedStringArray) -> void:
+func load_images(paths: PackedStringArray, append := false) -> void:
 	var ordered:=Array(paths);ordered.sort_custom(func(a,b):return str(a).naturalnocasecmp_to(str(b))<0)
-	_busy=true;get_ok_button().disabled=true;frames=SpriteFrames.new();frames.set_animation_speed("default",12);action="default";_names.clear();%SheetSettings.hide();source_sheet=null
-	for path: String in ordered:
+	_busy=true;get_ok_button().disabled=true
+	if not append:frames=SpriteFrames.new();frames.set_animation_speed("default",12);action="default"
+	_names.clear();%SheetSettings.hide();source_sheet=null;LevelUI.clear(%Missing)
+	var skipped:=PackedStringArray()
+	for index in ordered.size():
+		var path: String=ordered[index]
 		if _cancel:break
 		var texture:=LevelAnimationAsset.read_texture(path)
-		if texture!=null:frames.add_frame(action,texture);_names.append(path.get_file())
-		%Status.text="读取图片 %d / %d"%[_names.size(),ordered.size()]
+		if texture!=null:frames.add_frame(action,texture)
+		else:skipped.append(path)
+		%Status.text="读取图片 %d / %d"%[index+1,ordered.size()]
 		await get_tree().process_frame
 	_busy=false
 	if _cancel:queue_free();return
 	_refresh_actions();_refresh()
+	if not skipped.is_empty():LevelUI.label(%Missing,"以下图片无法读取，尚未导入：\n"+"\n".join(skipped),12)
 
 func load_resource(path: String) -> void:
 	if _busy:return
@@ -158,6 +172,7 @@ func _select_frame(index: int) -> void:
 func _show_frame(index: int) -> void:
 	%Preview.regions.clear();%Preview.texture=frames.get_frame_texture(action,index);%Preview.queue_redraw()
 	_duration.set_value_no_signal(frames.get_frame_duration(action,index))
+	_readout.text="第 %d / %d 帧 · %.3f / %.3f s"%[index+1,frames.get_frame_count(action),_seconds,LevelAnimationAsset.duration(frames,action)]
 func _sample() -> void:
 	var cursor:=_seconds*frames.get_animation_speed(action)
 	for index in frames.get_frame_count(action):
@@ -191,7 +206,9 @@ func _remove_frame() -> void:
 	if _busy:return
 	var selected: PackedInt32Array=%Frames.get_selected_items()
 	if selected.is_empty():return
-	frames.remove_frame(action,selected[0]);_names.clear();_refresh()
+	selected.reverse()
+	for index in selected:frames.remove_frame(action,index)
+	_names.clear();_refresh()
 func _show_sheet(enabled: bool) -> void:
 	if not enabled or source_sheet==null:_sample();return
 	_playing=false;%Preview.texture=source_sheet;%Preview.regions.clear()
@@ -210,3 +227,25 @@ func _write() -> void:
 func _close() -> void:
 	_cancel=true;hide()
 	if not _busy:queue_free()
+
+func _replace_source(callback: Callable) -> void:
+	if _busy:return
+	if frames.get_frame_count(action)==0:callback.call();return
+	var prompt:=ConfirmationDialog.new();prompt.title="替换候选动画";prompt.dialog_text="切换来源会替换当前候选动作和帧；已导入的素材不受影响。";prompt.ok_button_text="选择新来源";add_child(prompt)
+	prompt.confirmed.connect(func():prompt.queue_free();callback.call());prompt.canceled.connect(prompt.queue_free);prompt.popup_centered(Vector2i(480,160))
+
+func _name_action(copy_frames: bool) -> void:
+	if _busy:return
+	var selected: PackedInt32Array=%Frames.get_selected_items()
+	if copy_frames and selected.is_empty():%Status.text="先选择要复制的帧。";return
+	var dialog:=ConfirmationDialog.new();dialog.title="从所选帧创建动作" if copy_frames else "重命名动作";dialog.dialog_hide_on_ok=false
+	var edit:=LineEdit.new();edit.text=action+"_copy" if copy_frames else action;dialog.add_child(edit);add_child(dialog)
+	dialog.confirmed.connect(func():
+		var next:=edit.text.strip_edges()
+		if next.is_empty() or (frames.has_animation(next) and (copy_frames or next!=action)):dialog.title="动作名称为空或已存在";return
+		if copy_frames:
+			frames.add_animation(next);frames.set_animation_speed(next,frames.get_animation_speed(action));frames.set_animation_loop(next,frames.get_animation_loop(action))
+			for index in selected:frames.add_frame(next,frames.get_frame_texture(action,index),frames.get_frame_duration(action,index))
+		elif next!=action:frames.rename_animation(action,next)
+		action=next;_names.clear();_refresh_actions();_refresh();dialog.queue_free())
+	dialog.canceled.connect(dialog.queue_free);dialog.popup_centered(Vector2i(420,150));edit.grab_focus();edit.select_all()

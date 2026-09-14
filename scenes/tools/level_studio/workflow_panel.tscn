@@ -1,0 +1,34 @@
+[gd_scene format=3]
+
+[node name="WorkflowPanel" type="PanelContainer"]
+mouse_filter = 1
+
+[node name="Body" type="VBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="Body"]
+layout_mode = 2
+text = "从歌曲开始制作关卡"
+
+[node name="Steps" type="HFlowContainer" parent="Body"]
+layout_mode = 2
+
+[node name="Directory" type="Button" parent="Body/Steps"]
+layout_mode = 2
+text = "1 选择工程目录"
+
+[node name="Song" type="Button" parent="Body/Steps"]
+layout_mode = 2
+text = "2 导入歌曲"
+
+[node name="Theme" type="Button" parent="Body/Steps"]
+layout_mode = 2
+text = "3 主题与初始环境"
+
+[node name="Assets" type="Button" parent="Body/Steps"]
+layout_mode = 2
+text = "4 导入素材"
+
+[node name="Close" type="Button" parent="Body/Steps"]
+layout_mode = 2
+text = "收起引导"

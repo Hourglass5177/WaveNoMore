@@ -1,0 +1,141 @@
+{
+  "engine": "4.7.2-stable (official)",
+  "cpu": "Intel(R) Core(TM) Ultra 9 185H",
+  "rendering": "headless",
+  "max_fps": 60,
+  "seeks": [
+    {
+      "target": 4.2,
+      "total_ms": 2845.81,
+      "profile_ms": {
+        "preview_history": 1079.314,
+        "motion_snapshot": 126.336,
+        "snapshot": 0.243,
+        "domain_advance": 67.9100000000001,
+        "preview_step": 591.148,
+        "actors": 28.101,
+        "presentation": 207.255,
+        "tuning_draw": 11.696,
+        "hold_geometry": 1.712
+      },
+      "calls": {
+        "preview_history": 1,
+        "motion_snapshot": 483,
+        "snapshot": 2,
+        "domain_advance": 539,
+        "preview_step": 107,
+        "actors": 77,
+        "presentation": 483,
+        "tuning_draw": 14,
+        "hold_geometry": 2
+      },
+      "cache_bytes": 11260,
+      "cache_hits": 0,
+      "max_frame_ms": 1104.304
+    },
+    {
+      "target": 150.0,
+      "total_ms": 20115.006,
+      "profile_ms": {
+        "tuning_draw": 3.401,
+        "preview_history": 5130.593,
+        "motion_snapshot": 35.364,
+        "snapshot": 4.113,
+        "domain_advance": 2452.97600000001,
+        "preview_step": 8733.65400000002,
+        "actors": 1777.728,
+        "presentation": 150.51
+      },
+      "calls": {
+        "tuning_draw": 5,
+        "preview_history": 1,
+        "motion_snapshot": 419,
+        "snapshot": 2,
+        "domain_advance": 19043,
+        "preview_step": 9587,
+        "actors": 9442,
+        "presentation": 419
+      },
+      "cache_bytes": 11260,
+      "cache_hits": 0,
+      "max_frame_ms": 1016.465
+    },
+    {
+      "target": 299.0,
+      "total_ms": 48271.323,
+      "profile_ms": {
+        "preview_history": 6608.507,
+        "motion_snapshot": 22.607,
+        "snapshot": 8.247,
+        "domain_advance": 5614.66300000004,
+        "preview_step": 18792.917,
+        "actors": 4000.72900000001,
+        "presentation": 77.178
+      },
+      "calls": {
+        "preview_history": 1,
+        "motion_snapshot": 419,
+        "snapshot": 2,
+        "domain_advance": 41079,
+        "preview_step": 20605,
+        "actors": 20460,
+        "presentation": 419
+      },
+      "cache_bytes": 11260,
+      "cache_hits": 0,
+      "max_frame_ms": 1248.218
+    },
+    {
+      "target": 298.5,
+      "total_ms": 37232.896,
+      "profile_ms": {
+        "motion_snapshot": 24.606,
+        "snapshot": 6.486,
+        "domain_advance": 5061.62200000007,
+        "preview_step": 17017.0630000001,
+        "actors": 3671.012,
+        "presentation": 97.6039999999999
+      },
+      "calls": {
+        "motion_snapshot": 419,
+        "snapshot": 2,
+        "domain_advance": 41007,
+        "preview_step": 20569,
+        "actors": 20424,
+        "presentation": 419
+      },
+      "cache_bytes": 11260,
+      "cache_hits": 0,
+      "max_frame_ms": 79.662
+    },
+    {
+      "target": 299.0,
+      "total_ms": 37965.786,
+      "profile_ms": {
+        "motion_snapshot": 22.442,
+        "snapshot": 6.441,
+        "domain_advance": 5125.10300000004,
+        "preview_step": 17113.048,
+        "actors": 3704.735,
+        "presentation": 75.622
+      },
+      "calls": {
+        "motion_snapshot": 419,
+        "snapshot": 2,
+        "domain_advance": 41079,
+        "preview_step": 20605,
+        "actors": 20460,
+        "presentation": 419
+      },
+      "cache_bytes": 11260,
+      "cache_hits": 0,
+      "max_frame_ms": 85.701
+    }
+  ],
+  "read_ms": 106.843,
+  "note_events": 10000,
+  "tuning": 10,
+  "ghost": 10,
+  "prepare_ms": 2384.733,
+  "load_ms": 3606.858
+}

@@ -97,7 +97,6 @@ func _run() -> void:
 	await frames()
 	catalog.data = old_catalog
 	catalog._rebuild_indices()
-	catalog._discover_stage_packages()
 	saves.data = old_save
 	print("MENU NAVIGATION TESTS: %d checks, %d failures" % [checks, failures])
 	quit(1 if failures else 0)

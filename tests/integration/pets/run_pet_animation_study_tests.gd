@@ -1,6 +1,6 @@
 extends SceneTree
 ## 只检验审看素材和播放，不装配或改写正式随从技能。
-const ACTOR := preload("res://src/tools/pet_animation/pet_study_actor.gd")
+const ACTOR := preload("res://src/presentation/pets/animated_pet_visual.gd")
 var checks := 0
 var failures := 0
 func _initialize() -> void: _run.call_deferred()
@@ -22,43 +22,76 @@ func fire_state(actor: Node) -> Array:
 		result.append([flame.visible,flame.transform,flame.material.get_shader_parameter("age")])
 	return result
 
+func same_fire(one: Array, two: Array) -> bool:
+	# Spine 骨骼矩阵使用 float32；小于万分之一设计像素的累加差不构成姿态差异。
+	for i in one.size():
+		if one[i][0]!=two[i][0] or absf(one[i][2]-two[i][2])>0.0000001: return false
+		if one[i][1].origin.distance_to(two[i][1].origin)>0.0001: return false
+		if one[i][1].x.distance_to(two[i][1].x)>0.00001: return false
+	return true
+
+func light_state(actor: Node) -> Array:
+	var result := []
+	for piece in actor.trigger_lights._pieces:
+		result.append([piece.node.visible,piece.node.transform,piece.surface.get_shader_parameter("age"),piece.surface.get_shader_parameter("amount")])
+	return result
+
+func check_lights(actor: Node) -> void:
+	actor.clear_events()
+	actor.trigger(.5)
+	actor.sample(1.08)
+	var frozen := light_state(actor)
+	check(actor.trigger_lights._pieces.all(func(p): return p.node.visible),"释放段胸波或三眼可见")
+	actor.sample(1.08)
+	check(frozen==light_state(actor),"新光效暂停冻结")
+	actor.sample(1.16)
+	actor.sample(1.08)
+	check(frozen==light_state(actor),"新光效定位恢复位置与强度")
+	actor.die(1.08)
+	actor.sample(1.08)
+	check(actor.trigger_lights._pieces.all(func(p): return not p.node.visible),"死亡立即取消光效")
+	actor.sample(1.07)
+	check(actor.trigger_lights._pieces.all(func(p): return p.node.visible),"回拖到死亡前恢复光效")
+	actor.clear_events()
+	check(actor.trigger_lights._pieces.all(func(p): return not p.node.visible),"重置清除新光效")
+
 func check_breath(actor: Node) -> void:
 	check(actor.breath.flames.size()==3,"苹果蛇三嘴各有独立火焰")
 	actor.clear_events()
 	check(actor.breath.flames.all(func(f): return not f.visible),"常态不喷火")
 	actor.trigger(.5)
-	actor.sample(.72)
+	actor.sample(.74)
 	check(actor.breath.flames[0].visible and not actor.breath.flames[1].visible and not actor.breath.flames[2].visible,"中间头先喷火")
-	actor.sample(.79)
+	actor.sample(.83)
 	check(actor.breath.flames[1].visible and not actor.breath.flames[2].visible,"右头第二口火")
-	actor.sample(.85)
+	actor.sample(.91)
 	check(actor.breath.flames.all(func(f): return f.visible),"三口火短暂错开交叠")
 	var frozen := fire_state(actor)
-	actor.sample(.85)
+	actor.sample(.91)
 	check(frozen==fire_state(actor),"喷火暂停保持位置与年龄")
 	actor.sample(1.0)
-	actor.sample(.85)
-	check(frozen==fire_state(actor),"喷火回拖恢复相同形状与位置")
+	actor.sample(.91)
+	check(same_fire(frozen,fire_state(actor)),"喷火回拖恢复相同形状与位置")
 	var origin: Vector2=actor.breath.flames[0].global_position
 	actor.rotation=PI
 	actor.scale=Vector2.ONE*1.5
-	actor.sample(.85)
+	actor.sample(.91)
 	check(actor.breath.flames[0].global_position.distance_to(-origin*1.5)<.001,"喷火随所属世界旋转和缩放")
 	actor.rotation=0;actor.scale=Vector2.ONE
-	actor.die(.85)
-	actor.sample(.85)
+	actor.die(.91)
+	actor.sample(.91)
 	check(actor.breath.flames.all(func(f): return not f.visible),"死亡打断喷火")
-	actor.sample(.84)
+	actor.sample(.90)
 	check(actor.breath.flames.all(func(f): return f.visible),"回拖到死亡前恢复喷火")
 	actor.clear_events()
 	check(actor.breath.flames.all(func(f): return not f.visible),"重置清除全部火焰")
 	actor.sample_clip("trigger",.60)
 	check(actor.breath.flames.all(func(f): return f.visible),"延长后0.60秒三口火仍在喷吐")
-	actor.sample_clip("trigger",.74)
-	check(not actor.breath.flames[0].visible and not actor.breath.flames[1].visible and actor.breath.flames[2].visible,"收招时依次熄灭，最后一口持续至0.76秒")
-	actor.sample_clip("trigger",.78)
+	actor.sample_clip("trigger",1.08)
+	check(not actor.breath.flames[0].visible and not actor.breath.flames[1].visible and actor.breath.flames[2].visible,"收招时依次熄灭，最后一口持续至1.13秒")
+	actor.sample_clip("trigger",1.15)
 	check(actor.breath.flames.all(func(f): return not f.visible),"技能收招前火焰已熄灭")
-	actor.sample_clip("trigger",.35)
+	actor.sample_clip("trigger",.45)
 	check(actor.breath.flames.all(func(f): return f.visible),"离线图集与审看共用喷火")
 	actor.clear_events()
 
@@ -139,7 +172,9 @@ func _run() -> void:
 		check(frames.get_animation_speed("idle")==30 and frames.get_animation_loop("idle") and not frames.get_animation_loop("death"),id+" 图集30fps与循环属性正确")
 		var death_frames:=frames.get_frame_count("death")
 		check(is_equal_approx(frames.get_frame_duration("death",death_frames-2),.5),id+" 死亡2.05秒边界保留半帧时长")
+		check(frames.get_frame_count("trigger")==roundi(float(actor.config.trigger)*30),id+" 技能图集时长与骨骼一致")
 		if id=="snake": check_breath(actor)
+		else: check_lights(actor)
 		actor.free()
 	var review = load("res://scenes/tools/pet_animation/review.tscn").instantiate()
 	root.add_child(review)

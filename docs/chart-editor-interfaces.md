@@ -88,3 +88,19 @@ Ghost 共享运行时已由写谱器分支补充候选池随机抽取、足量�
 `TuningPathEvent.visual_radius_px` 经 `ChartPathAdapter.project` 传给该条的所有 `TuningSliderEvent`，再由编译器传入表现字典。JSON 使用同名可选字段，0／缺失沿用自动半径，不升级 v2 格式。`ChartPathAdapter` 和 `ChartValidator` 报告负数或非有限值；导入时非数值／非有限值走现有解析错误入口。
 
 半径不参与频率映射、角行程、判定、Ghost 查询或 Replay 内容哈希。`GrayboxFieldVisual` 先用旧规则计算角跨度，再用自定义半径生成轨道及附属提示；宽度、端帽、描边与文字不做径向缩放。`StudioDocument.execute` 处理半径编辑，比较、复制、保存、恢复与 ZIP 导出共用现有流程。字段及美术接入细节见 [表现说明](tap-feedback-tuning-radius.md)。
+
+## 预览准备与运动恢复（2026-09-14）
+
+`ChartProjectLoader.prepare_preview` 返回 stage、compiled、report；工作区问题面板与 `load_preview` 共用结果。`StageRoot.load_stage` 和 `StageSession.prepare` 接受可选预编译对象；未传时保留正式游戏原路径。准备时的策划配置随内部 stage metadata 传递，不进入 JSON。
+
+`StudioPreviewSession` 完整索引领域判定、接触、抵达时间，再使用调度器可见性边界与 `preview_motion_cache` 恢复目标对象。`DynamicHoldSpine`、`GrayboxHoldVisual` 导出/恢复纯运动数据；缓存不持有节点，不落盘。`GrayboxFieldVisual.restore_motion_control` 与正式圆弧共用游标方向计算。角色历史推进暂缓 Spine 网格更新，最后发布一次完整画面。
+
+这些是内部接线，不改变判定、音频或试玩进程。共享文件合并时应一并带上准备结果、调度可见性、运动恢复和角色时间边界；具体测量、失效规则及未达标项见 [性能记录](chart-editor-preview-performance-2026-09-14.md)。
+
+## 构建参数与独立试玩（2026-09-14）
+
+`addons/planning_export` 在导出回调中从开发工作簿读取当前值，写入 PCK 内 `content/rules/build_planning.json`。`PlanningParameters.read()` 优先使用封装值；工程内无封装文件时继续读取工作簿。两种导出方式均走同一插件，不向谱师交付外部 Excel 依赖。
+
+`StudioPlaytest` 将写谱器当前参数写入本次临时目录的 `planning.json`，通过参数数组中的 `--planning-values=<绝对路径>` 传给匹配游戏，沿原有进程生命周期清理。快照不写入歌曲 JSON，也不改变源项目。旧版游戏不支持此入口，因此本次同步发布 0.1.5.0 配套游戏。
+
+包内预览回归使用 Godot 开发可执行程序的 `--main-pack <写谱器EXE> --script <绝对测试脚本>`，执行 `tests/editor/run_packaged_preview_tests.gd -- --project <song.json>`；它检查发布资源中的参数和预览，不以源码环境代替发布资源验证。游戏额外使用真正导出的 EXE 与 `--play-chart` 启动参数验证。

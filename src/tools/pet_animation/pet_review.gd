@@ -1,6 +1,6 @@
 extends Control
 ## 独立审看入口，展示资源与时间切换，不写装备、存档或正式随从配置。
-const ACTOR := preload("res://src/tools/pet_animation/pet_study_actor.gd")
+const ACTOR := preload("res://src/presentation/pets/animated_pet_visual.gd")
 var actors: Array[Node2D] = []
 var clock := 0.0
 var playing := true
@@ -36,7 +36,7 @@ func _ready() -> void:
 	_button(bar,"重置",reset)
 	size_choice = OptionButton.new()
 	for label: String in ["80 px", "120 px", "放大查看"]: size_choice.add_item(label)
-	size_choice.select(2)
+	size_choice.select(1)
 	size_choice.item_selected.connect(func(_index): _layout_actors())
 	bar.add_child(size_choice)
 	var colors := OptionButton.new()

@@ -28,6 +28,8 @@
 [ext_resource type="Script" uid="uid://c4h0bmjpxthu7" path="res://src/content/resources/stage_background_layer.gd" id="layer_schema"]
 [ext_resource type="Script" uid="uid://kmwupvuwcgil" path="res://src/content/resources/stage_background_sublayer.gd" id="sublayer_schema"]
 
+[ext_resource type="PackedScene" path="res://scenes/presentation/boundary_waves.tscn" id="90_boundary"]
+
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_sh661"]
 shader = ExtResource("8_screen_split")
 
@@ -238,7 +240,7 @@ sublayers = Array[ExtResource("sublayer_schema")]([SubResource("Resource_pks16")
 
 [sub_resource type="Resource" id="Resource_og3qy"]
 script = ExtResource("2_entry")
-texture = ExtResource("11_pxfxu")
+scene = ExtResource("90_boundary")
 position = Vector2(-49.9, -10.3)
 uniform_scale = 0.7616555803103707
 

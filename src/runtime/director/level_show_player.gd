@@ -35,35 +35,57 @@ func configure(data: Dictionary, directory: String, packs: Array, difficulty_id:
 	objects.clear(); drivers.clear(); states.clear(); feedbacks.clear(); effects.clear()
 	_render_signature=""
 	show = data.duplicate(true); difficulty = difficulty_id
+	set_meta("asset_context",JSON.stringify([directory,packs]))
 	# 编译时排序一次，播放过程中直接使用稳定轨道顺序。
 	for track: Dictionary in show.get("tracks", []): track.keys.sort_custom(func(a, b): return int(a.time_us) < int(b.time_us))
 	assets.configure(directory, packs)
 	prepare_parameters()
-	for object_data: Dictionary in show.get("objects", []):
-		var wrapper := Node2D.new(); wrapper.name = str(object_data.id); add_child(wrapper)
-		objects[object_data.id] = wrapper
-		var content: Node
-		match str(object_data.type):
-			"text":
-				var label := RichTextLabel.new(); label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-				label.scroll_active = false; label.bbcode_enabled = false; content = label
-			"sprite", "image":
-				var resource:=assets.resolve(str(object_data.asset))
-				if resource is SpriteFrames:
-					var animated:=AnimatedSprite2D.new();animated.sprite_frames=resource;animated.animation=str(object_data.get("animation","")) if resource.has_animation(str(object_data.get("animation",""))) else assets.default_animation(str(object_data.asset));content=animated
-				else:
-					var sprite := Sprite2D.new(); sprite.texture = resource as Texture2D; content = sprite
-			"animated_sprite":
-				var frames := assets.resolve(str(object_data.asset)) as SpriteFrames
-				if frames != null:
-					var sprite := AnimatedSprite2D.new(); sprite.sprite_frames=frames
-					var action := str(object_data.get("animation",""))
-					sprite.animation=action if frames.has_animation(action) else assets.default_animation(str(object_data.asset)); content=sprite
-			"actor", "environment": content = assets.instantiate(str(object_data.asset))
-		if content != null:
-			content.name = "Content"; wrapper.add_child(content)
-			var driver := LevelAnimationDriver.new(); driver.configure(content); drivers[object_data.id] = driver
+	for object_data: Dictionary in show.get("objects", []):_create_object(object_data)
 	seek("song", 0)
+
+## 资源替换只更新对应实例，其他对象和声音保持原实例。
+func update_show(data: Dictionary, directory: String, packs: Array, difficulty_id: String) -> void:
+	var context:=JSON.stringify([directory,packs])
+	var changed_library: bool=context!=get_meta("asset_context","")
+	if changed_library:assets.configure(directory,packs);set_meta("asset_context",context)
+	var rebuild:=[]
+	for entry: Dictionary in data.get("objects",[]):
+		var old:=LevelFormat.find(show.get("objects",[]),entry.id)
+		if changed_library or old.is_empty() or old.get("asset")!=entry.asset or old.get("type")!=entry.type:rebuild.append(entry.id)
+	for id in objects.keys():
+		if id in rebuild or LevelFormat.find(data.get("objects",[]),id).is_empty():
+			var wrapper: Node2D=objects[id]
+			if is_instance_valid(environment_controller):environment_controller.release_object_occlusion(wrapper)
+			if wrapper.get_parent()!=null:wrapper.get_parent().remove_child(wrapper)
+			wrapper.queue_free();objects.erase(id);drivers.erase(id);states.erase(id);feedbacks.erase(id)
+	show=data.duplicate(true);difficulty=difficulty_id;prepare_parameters();_render_signature=""
+	for entry: Dictionary in show.get("objects",[]):
+		if not objects.has(entry.id):_create_object(entry)
+
+func _create_object(object_data: Dictionary) -> void:
+	var wrapper := Node2D.new(); wrapper.name = str(object_data.id); add_child(wrapper)
+	objects[object_data.id] = wrapper
+	var content: Node
+	match str(object_data.type):
+		"text":
+			var label := RichTextLabel.new(); label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			label.scroll_active = false; label.bbcode_enabled = false; content = label
+		"sprite", "image":
+			var resource:=assets.resolve(str(object_data.asset))
+			if resource is SpriteFrames:
+				var animated:=AnimatedSprite2D.new();animated.sprite_frames=resource;animated.animation=str(object_data.get("animation","")) if resource.has_animation(str(object_data.get("animation",""))) else assets.default_animation(str(object_data.asset));content=animated
+			else:
+				var sprite := Sprite2D.new(); sprite.texture = resource as Texture2D; content = sprite
+		"animated_sprite":
+			var frames := assets.resolve(str(object_data.asset)) as SpriteFrames
+			if frames != null:
+				var sprite := AnimatedSprite2D.new(); sprite.sprite_frames=frames
+				var action := str(object_data.get("animation",""))
+				sprite.animation=action if frames.has_animation(action) else assets.default_animation(str(object_data.asset)); content=sprite
+		"actor", "environment": content = assets.instantiate(str(object_data.asset))
+	if content != null:
+		content.name = "Content"; wrapper.add_child(content)
+		var driver := LevelAnimationDriver.new(); driver.configure(content); drivers[object_data.id] = driver
 
 func prepare_parameters() -> void:
 	for object_data:Dictionary in show.get("objects",[]):
@@ -87,12 +109,15 @@ func seek(section: String, time_us: int) -> void:
 	for effect: Dictionary in effects.values(): effect.node.queue_free()
 	effects.clear(); _sample(section, time_us, true)
 
-func advance(section: String, time_us: int, audible := true) -> void:
+func advance(section: String, time_us: int, audible := true, song_time_sec := NAN) -> void:
 	_audio_from_us = current_us if section == current_section and time_us >= current_us else time_us
 	if section != current_section or time_us < current_us: stop_audio()
-	_sample(section, time_us, not audible)
+	_sample(section, time_us, not audible, false, song_time_sec)
 
-func _sample(section: String, time_us: int, silent: bool) -> void:
+func refresh_visuals(section: String, time_us: int) -> void:
+	_sample(section,time_us,true,true)
+
+func _sample(section: String, time_us: int, silent: bool, preserve_audio := false, song_time_sec := NAN) -> void:
 	_sync_render_order()
 	current_section = section; current_us = time_us; states.clear()
 	var clips := LevelShowSampler.active_clips(show, section, time_us, difficulty)
@@ -108,14 +133,14 @@ func _sample(section: String, time_us: int, silent: bool) -> void:
 	for object_data: Dictionary in show.get("objects", []):
 		var wrapper: Node2D = objects[object_data.id]
 		var state: Dictionary = states[object_data.id]
-		wrapper.transform = canvas_transform(object_data, section, time_us)
-		var appearance := LevelShowSampler.local_appearance(show, object_data, section, time_us, difficulty)
+		wrapper.transform = canvas_transform(object_data, section, time_us, true)
+		var appearance := LevelShowSampler.local_appearance(show, object_data, section, time_us, difficulty, state)
 		wrapper.visible = appearance.visible; wrapper.modulate = appearance.color
 		# 平铺渲染节点仍继承父组的显示区间和颜色。
 		var parent := str(object_data.get("parent_id", ""))
 		while not parent.is_empty():
 			var ancestor := LevelFormat.find(show.objects, parent)
-			var inherited := LevelShowSampler.local_appearance(show, ancestor, section, time_us, difficulty)
+			var inherited := LevelShowSampler.local_appearance(show, ancestor, section, time_us, difficulty, states.get(parent,{}))
 			wrapper.visible = wrapper.visible and inherited.visible
 			wrapper.modulate *= inherited.color
 			parent = str(ancestor.get("parent_id", ""))
@@ -156,9 +181,9 @@ func _sample(section: String, time_us: int, silent: bool) -> void:
 					if current is Vector2:value=LevelFormat.vec(value)
 					elif current is Color and value is String:value=Color(value)
 					target.set_indexed(property,value)
-	_sample_audio(clips, silent)
+	_sample_audio(clips, silent and not preserve_audio, preserve_audio)
 	_sample_effects(clips, time_us)
-	_sample_environment()
+	_sample_environment(song_time_sec)
 	sampled.emit(section, time_us)
 
 func _effective_occlusion(object_data: Dictionary) -> Array:
@@ -206,13 +231,13 @@ func _exit_tree() -> void:
 		for wrapper in objects.values():
 			if is_instance_valid(wrapper):environment_controller.release_object_occlusion(wrapper)
 
-func canvas_transform(object_data: Dictionary, section: String, time_us: int) -> Transform2D:
-	var result := LevelShowSampler.object_transform(show, object_data.id, section, time_us, difficulty)
+func canvas_transform(object_data: Dictionary, section: String, time_us: int, sampled := false) -> Transform2D:
+	var result := LevelShowSampler.object_transform(show, object_data.id, section, time_us, difficulty, 0, states if sampled else {})
 	var top := object_data
 	while not str(top.get("parent_id", "")).is_empty(): top = LevelFormat.find(show.objects, top.parent_id)
 	if top.get("layer", "world") == "hud": return result
-	var position := Vector2.ZERO; var zoom := 1.0
-	for camera: Dictionary in show.objects:
+	var position := camera_position if sampled else Vector2.ZERO; var zoom := camera_zoom if sampled else 1.0
+	for camera: Dictionary in ([] if sampled else show.objects):
 		if camera.type != "camera": continue
 		var state := LevelShowSampler.object_state(show, camera, section, time_us, difficulty)
 		var seconds := float(time_us) / 1000000.0
@@ -223,7 +248,7 @@ func canvas_transform(object_data: Dictionary, section: String, time_us: int) ->
 	result.x *= zoom; result.y *= zoom
 	return result
 
-func _sample_audio(clips: Array, silent: bool) -> void:
+func _sample_audio(clips: Array, silent: bool, preserve_audio := false) -> void:
 	var active := {}
 	if playing and not silent:
 		for clip: Dictionary in clips:
@@ -236,8 +261,10 @@ func _sample_audio(clips: Array, silent: bool) -> void:
 			if seconds >= stream.get_length(): continue
 			var player: AudioStreamPlayer = sounds.get(clip.id)
 			if player == null:
+				if preserve_audio and clip.get("transient",false):continue
 				if clip.get("transient",false) and not (int(clip.start_us)>=_audio_from_us and int(clip.start_us)<=current_us):continue
 				player = AudioStreamPlayer.new(); player.stream = stream; add_child(player); sounds[clip.id] = player
+			if player.stream!=stream:player.stop();player.stream=stream
 			player.pitch_scale = playback_rate * float(clip.rate)
 			player.volume_db = float(states.get(clip.object_id, {}).get("volume_db", 0.0)) + float(clip.gain_db) + linear_to_db(maxf(float(clip.weight), 0.00001))
 			if not player.playing or absf(player.get_playback_position() - seconds) > 0.1: player.play(seconds)
@@ -323,7 +350,7 @@ func configure_environment(controller: ParallaxController, level: Dictionary, in
 	_environment_context=context
 	controller.set_environment(sequence)
 
-func _sample_environment() -> void:
+func _sample_environment(song_time_sec := NAN) -> void:
 	if not is_instance_valid(environment_controller) or environment_controller.environment == null: return
 	var sequence := environment_controller.environment
 	var at_us := sequence.absolute_time(current_section, current_us)
@@ -338,7 +365,7 @@ func _sample_environment() -> void:
 			var seconds := float(current_us) / 1000000.0
 			shake = Vector2(sin(seconds * 73.1), sin(seconds * 91.7)) * float(state.get("shake", 0.0))
 	environment_controller.set_camera_position(steady + shake + camera_effect)
-	environment_controller.sample_environment(at_us, steady + shake + camera_effect)
+	environment_controller.sample_environment(at_us, steady + shake + camera_effect, song_time_sec)
 
 func _root_layer(object_data: Dictionary) -> String:
 	var top:=object_data

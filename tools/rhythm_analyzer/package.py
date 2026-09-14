@@ -8,11 +8,15 @@ import zipfile
 root = Path(__file__).resolve().parents[2]
 output = root.parent / 'Charts'
 with_game = '--with-game' in sys.argv
+# 允许先打包已验证的暂存构建；谱师仍在使用旧 EXE 时不强制关闭或覆盖。
+editor_directory = Path(sys.argv[sys.argv.index('--editor-directory') + 1]).resolve() if '--editor-directory' in sys.argv else output
+reuse_licenses = '--reuse-licenses' in sys.argv
+release_version = sys.argv[sys.argv.index('--release-version') + 1] if '--release-version' in sys.argv else ''
 if with_game and not (output / 'game/minghe.exe').is_file():
     raise SystemExit('缺少配套 game/minghe.exe，请先显式构建游戏')
 licenses = output / 'rhythm_analyzer/licenses'
 licenses.mkdir(parents=True, exist_ok=True)
-for distribution in metadata.distributions():
+for distribution in ([] if reuse_licenses else metadata.distributions()):
     name = distribution.metadata['Name']
     for file in distribution.files or []:
         if any(word in file.name.lower() for word in ('license', 'copying', 'notice')):
@@ -22,7 +26,7 @@ for distribution in metadata.distributions():
                 destination.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(source, destination)
 python_license = Path(sys.base_prefix) / 'LICENSE.txt'
-if python_license.exists():
+if not reuse_licenses and python_license.exists():
     shutil.copy2(python_license, licenses / 'Python-LICENSE.txt')
 shutil.copy2(root / 'tools/rhythm_analyzer/THIRD-PARTY.md', licenses / 'THIRD-PARTY.md')
 shutil.copy2(root / 'tools/rhythm_analyzer/requirements-lock.txt', licenses / 'requirements-lock.txt')
@@ -31,9 +35,13 @@ guide = guide.replace('(chart-editor-progress.md)', '(docs/chart-editor-progress
 guide = guide.replace('(chart-editor-tuning.md)', '(docs/chart-editor-tuning.md)')
 guide = guide.replace('(local-chart-playtest.md)', '(docs/local-chart-playtest.md)')
 guide = guide.replace('(chart-studio-scenes.md)', '(docs/chart-studio-scenes.md)')
+guide = guide.replace('(chart-editor-preview-performance-2026-09-14.md)', '(docs/chart-editor-preview-performance-2026-09-14.md)')
 (output / '写谱器使用说明.md').write_text(guide, encoding='utf-8')
+shutil.copy2(root / 'docs/chart-editor-release-notes.md', output / '版本更新.md')
 # 运行目录与开发包共用当前文档清单，不把本地历史和用户工程扫入包中。
 documents = ('local-chart-playtest.md', 'local-chart-validation.md', 'chart-editor-progress.md', 'chart-editor-interfaces.md',
+             'chart-studio-scenes.md',
+             'chart-editor-preview-performance-2026-09-14.md', 'chart-editor-preview-second.json', 'chart-editor-preview-dense.json',
              'chart-editor-rhythm-analysis.md', 'chart-editor-ui-review.md',
              'chart-editor-timing-2026-09.md', 'rhythm-fit-2026-09.md',
              'game-audio-calibration-2026-09.md', 'chart-editor-cue-measurement.json',
@@ -64,10 +72,15 @@ for name in trial_screenshots:
     shutil.copy2(root / 'docs/screenshots' / name, output / 'docs/screenshots' / name)
 
 archive = output / 'releases/minghe-chart-studio-dev.zip'
+if release_version:
+    archive = output / 'releases' / f'冥河写谱器-v{release_version}-Windows.zip'
 archive.parent.mkdir(parents=True, exist_ok=True)
 with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED, compresslevel=6) as bundle:
-    for name in ('minghe-chart-studio.exe', 'libspine_godot.windows.template_release.x86_64.dll', 'wnm_controller_haptics.dll', '写谱器使用说明.md'):
-        bundle.write(output / name, name)
+    for name in ('minghe-chart-studio.exe', 'libspine_godot.windows.template_release.x86_64.dll', 'wnm_controller_haptics.dll'):
+        bundle.write(editor_directory / name, name)
+    bundle.write(output / '写谱器使用说明.md', '写谱器使用说明.md')
+    bundle.write(output / '版本更新.md', '版本更新.md')
+    bundle.write(output / '音符与玩法介绍.md', '音符与玩法介绍.md')
     if with_game:
         for name in ('minghe.exe', 'libspine_godot.windows.template_release.x86_64.dll', 'wnm_controller_haptics.dll'):
             bundle.write(output / 'game' / name, 'game/' + name)

@@ -1,6 +1,6 @@
 extends SceneTree
 ## 图集由实际 Spine 与灰烬 shader 渲染生成，固定 512 画布和原点。
-const ACTOR := preload("res://src/tools/pet_animation/pet_study_actor.gd")
+const ACTOR := preload("res://src/presentation/pets/animated_pet_visual.gd")
 const FOLDER := "res://assets/pets/animation_studies/"
 const OUT := "res://build/pet-animation/"
 
@@ -67,7 +67,7 @@ func _run() -> void:
 
 func _image(vp: SubViewport, path: String) -> Image:
 	await process_frame
-	await RenderingServer.frame_post_draw
+	RenderingServer.force_draw()
 	var image := vp.get_texture().get_image()
 	# 透明 Viewport 返回预乘 RGB，导出的 PNG 保存直通透明度以避免再导入黑边。
 	for y in image.get_height():

@@ -7,7 +7,7 @@
     437.0
   ],
   "idle": 3.2,
-  "trigger": 0.8,
+  "trigger": 1.4,
   "death": 2.05,
   "bone_death": 1.4,
   "bone_count": 10,
@@ -16,6 +16,12 @@
     "neck_right",
     "body",
     "neck_left"
+  ],
+  "glow_envelope": [
+    0.22,
+    0.38,
+    1.0,
+    1.22
   ],
   "breath": [
     {
@@ -46,12 +52,13 @@
         }
       ],
       "direction": [
-        0.2,
-        0.98
+        0.12,
+        0.99
       ],
-      "start": 0.18,
-      "duration": 0.44,
-      "length_px": 8
+      "start": 0.22,
+      "duration": 0.75,
+      "length_px": 13.333333333333334,
+      "width_px": 5.333333333333333
     },
     {
       "bindings": [
@@ -68,9 +75,10 @@
         1.0,
         -0.04
       ],
-      "start": 0.26,
-      "duration": 0.44,
-      "length_px": 10
+      "start": 0.3,
+      "duration": 0.75,
+      "length_px": 21.333333333333332,
+      "width_px": 7.333333333333333
     },
     {
       "bindings": [
@@ -87,9 +95,10 @@
         -0.72,
         0.69
       ],
-      "start": 0.32,
-      "duration": 0.44,
-      "length_px": 9
+      "start": 0.38,
+      "duration": 0.75,
+      "length_px": 18.666666666666668,
+      "width_px": 7.333333333333333
     }
   ]
 }

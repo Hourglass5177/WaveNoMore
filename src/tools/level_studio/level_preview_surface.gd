@@ -124,7 +124,12 @@ func object_bounds(object_data: Dictionary) -> Rect2:
 func _gui_input(event: InputEvent) -> void:
 	if document == null or not is_instance_valid(player): return
 	if event is InputEventPanGesture:
-		if _gesture.is_empty(): pan -= event.delta*32; queue_redraw()
+		if _gesture.is_empty():
+			if event.ctrl_pressed:
+				var anchor:=to_world(event.position);zoom=clampf(zoom*pow(1.15,-event.delta.y),0.25,5)
+				_update_display_rect();pan+=event.position-to_view(anchor)
+			else:pan-=event.delta*32
+			_update_display_rect();queue_redraw()
 		accept_event(); return
 	if event is InputEventMouseButton:
 		if event.pressed: grab_focus()
@@ -163,6 +168,8 @@ func _gui_input(event: InputEvent) -> void:
 				selection_changed.emit(selected); queue_redraw(); return
 			elif not hit in selected: selected = PackedStringArray([hit])
 			selection_changed.emit(selected)
+			if Array(selected).any(func(id):return not document.editable_object(id)):
+				document.rejected.emit("选区包含锁定／隐藏对象，整次拖动未开始。");accept_event();return
 			var before := []
 			for id in selected:
 				var object_data := document.find("objects", id)

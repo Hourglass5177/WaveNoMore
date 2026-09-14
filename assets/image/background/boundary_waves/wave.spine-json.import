@@ -1,0 +1,14 @@
+[remap]
+
+importer="spine.json"
+type="SpineSkeletonFileResource"
+uid="uid://u4n6mp4rqp6y"
+path="res://.godot/imported/wave.spine-json-9c0964f4855bc8fa0ce7195a1deb92ec.spjson"
+
+[deps]
+
+source_file="res://assets/image/background/boundary_waves/wave.spine-json"
+dest_files=["res://.godot/imported/wave.spine-json-9c0964f4855bc8fa0ce7195a1deb92ec.spjson"]
+
+[params]
+

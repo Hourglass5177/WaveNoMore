@@ -637,17 +637,9 @@ func _rebuild_preview() -> void:
 	# 候选版本仅用于预览，正式资源和撤销栈仍保持手势前的内容。
 	if not timeline.candidates.is_empty():
 		ChartEditEvents.replace(draft, timeline.candidates, timeline.candidates)
-	var rules: GameplayRuleSet = PlanningParameters.default_rules()
-	var authoring_issues := ChartPathAdapter.validate(draft, rules)
-	var report := ValidationReport.new()
-	if authoring_issues.is_empty(): report = ChartValidator.validate(ChartPathAdapter.project(draft, rules), rules)
-	else:
-		for issue in authoring_issues: report.add_error(issue.code, issue.message, issue.event_id, StringName(issue.track), issue.tick)
-	for unknown: Dictionary in draft.get_meta("unknown_notes", []):
-		report.add_error(&"editor.unsupported_note", "暂不支持的音符：%s；原数据仍保留" % unknown.get("id", ""), str(unknown.get("id", "")), &"notes", int(unknown.get("tick", 0)))
+	var prepared := ChartProjectLoader.prepare_preview(document.song, draft)
+	var report: ValidationReport = prepared.report
 	_preview_selection = ChartSceneLibrary.selection(draft.get_meta("json_source", {}).get("presentation", {}))
-	for issue: Dictionary in ChartProjectLoader.presentation_issues(draft):
-		report.add_error(&"editor.scene", issue.message)
 	var previous_messages := _problem_messages
 	_problem_messages = PackedStringArray()
 	problems.clear()
@@ -670,8 +662,7 @@ func _rebuild_preview() -> void:
 		_preview_status("无法预览")
 		_message("谱面暂时无法预览。可以继续编辑和保存，请检查问题列表。")
 		return
-	var stage := ChartProjectLoader.make_stage(document.song, draft)
-	if preview.load_preview(stage, viewport):
+	if preview.load_preview(prepared.stage, viewport, prepared.compiled):
 		audio.cues.set_sample(&"life", preview.stage_root.audio_feedback.life_strike)
 		audio.cues.set_sample(&"death", preview.stage_root.audio_feedback.death_strike)
 		await preview.seek_preview(roundi(audio.position * 1000000.0))

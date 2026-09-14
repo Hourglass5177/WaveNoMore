@@ -7,7 +7,7 @@
     263.0
   ],
   "idle": 3.6,
-  "trigger": 0.6,
+  "trigger": 1.2,
   "death": 2.05,
   "bone_death": 1.4,
   "bone_count": 6,
@@ -17,5 +17,23 @@
     "hand_l",
     "hand_r",
     "head"
-  ]
+  ],
+  "glow_envelope": [
+    0.2,
+    0.3,
+    0.92,
+    1.1
+  ],
+  "eyes": {
+    "bone": "head",
+    "point": [
+      -2.5,
+      -99.0
+    ],
+    "size": [
+      237,
+      212
+    ],
+    "texture": "eyes_mask.png"
+  }
 }

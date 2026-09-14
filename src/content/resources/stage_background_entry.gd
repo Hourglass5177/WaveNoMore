@@ -3,10 +3,12 @@
 class_name StageBackgroundEntry
 extends Resource
 
-## 静态贴图，与 sprite_frames 二选一。
+## 三种素材仅选择一项：静态贴图、SpriteFrames 或 Node2D 场景。
 @export var texture: Texture2D
-## 多帧动画，与 texture 二选一；无限动画的帧画布必须等大。
+## 多帧动画，与 texture、scene 三选一；无限动画的帧画布必须等大。
 @export var sprite_frames: SpriteFrames
+## 组合背景场景。可实现 sample_background(seconds) 接收绝对歌曲时钟；当前仅支持有限素材。
+@export var scene: PackedScene
 ## SpriteFrames 中使用的动画，遵循其帧率、帧时长与循环设置。
 @export var animation: StringName = &"default"
 ## 背景的 canvas_item Shader 材质；在 Inspector 的 Shader Parameters 中配置 uniforms。
@@ -20,3 +22,16 @@ extends Resource
 @export var position: Vector2 = Vector2.ZERO
 ## 素材自身的等比缩放倍率；与视差深度无关，不允许翻转。
 @export_range(0.01, 10.0, 0.01, "or_greater") var uniform_scale: float = 1.0
+
+func source_count() -> int:
+	return int(texture != null) + int(sprite_frames != null) + int(scene != null)
+
+func source_resource() -> Resource:
+	return texture if texture != null else (sprite_frames if sprite_frames != null else scene)
+
+func scene_size() -> Vector2:
+	var instance := scene.instantiate()
+	var extent := Vector2(1920,1080)
+	if instance.has_method("background_bounds"): extent=instance.background_bounds().size
+	instance.free()
+	return extent

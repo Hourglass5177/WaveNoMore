@@ -93,8 +93,11 @@ func _process(delta: float) -> void:
 
 func _launch() -> void:
 	var args := PackedStringArray(["--log-file", ProjectSettings.globalize_path(_folder.path_join("game.log")), "--", "--play-chart", ProjectSettings.globalize_path(_folder.path_join("chart.zip")), "--difficulty", _snapshot_charts[0].difficulty_id, "--trial-status", ProjectSettings.globalize_path(_folder.path_join("status.json")), "--trial-request", _request, "--trial-log", ProjectSettings.globalize_path(_folder.path_join("game.log"))])
-	# 独立试玩与写谱器预览共用同一份策划表，避免配套游戏目录里的副本过期。
-	args.append("--planning-sheet=" + ProjectSettings.globalize_path(PlanningParameters.workbook_path()))
+	# 传递本次预览的参数值，不要求谱师提供 Excel，也不能把 res:// 当磁盘路径交给子进程。
+	var planning_path := _folder.path_join("planning.json")
+	var planning_file := FileAccess.open(planning_path, FileAccess.WRITE)
+	planning_file.store_string(JSON.stringify({"values":PlanningParameters.read().values})); planning_file.close()
+	args.append("--planning-values=" + ProjectSettings.globalize_path(planning_path))
 	pid = OS.create_process(executable, args, false)
 	if pid <= 0:
 		notice.emit("无法启动游戏：" + executable)
@@ -138,7 +141,7 @@ func _cleanup_abandoned() -> void:
 
 func _remove_trial(path: String) -> void:
 	# 临时目录由本模块生成，仅删除明确属于一次试玩的文件。
-	for name in ["chart.zip", "chart.zip.tmp", "status.json", "status.json.tmp", "owner.json", "game.log"]:
+	for name in ["chart.zip", "chart.zip.tmp", "status.json", "status.json.tmp", "owner.json", "game.log", "planning.json"]:
 		if FileAccess.file_exists(path.path_join(name)): DirAccess.remove_absolute(path.path_join(name))
 	DirAccess.remove_absolute(path)
 

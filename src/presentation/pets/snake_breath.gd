@@ -1,13 +1,13 @@
 extends Node2D
-## 三口短促火焰使用嘴部权重跟随当前姿态，年龄由审看时间提供。
+## 三口短促火焰使用嘴部权重跟随当前姿态，年龄由随从表现时钟提供。
 const SHADER := preload("res://shaders/characters/snake_breath.gdshader")
 var flames: Array[MeshInstance2D] = []
 var _mouths: Array[Dictionary] = []
 
 func setup(skeleton: SpineSprite, definitions: Array) -> void:
 	var quad := QuadMesh.new()
-	quad.size = Vector2(18,12)
-	quad.center_offset = Vector3(8,0,0)
+	quad.size = Vector2(38,24)
+	quad.center_offset = Vector3(15,0,0)
 	for index in definitions.size():
 		var definition: Dictionary = definitions[index]
 		var binds: Array[Dictionary] = []
@@ -20,6 +20,7 @@ func setup(skeleton: SpineSprite, definitions: Array) -> void:
 		surface.shader = SHADER
 		surface.set_shader_parameter("duration",definition.duration)
 		surface.set_shader_parameter("length_px",definition.length_px)
+		surface.set_shader_parameter("width_px",definition.width_px)
 		surface.set_shader_parameter("phase",float(index)*1.7)
 		flame.material = surface
 		add_child(flame)

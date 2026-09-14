@@ -5,6 +5,7 @@ const SUFFIX := ".animation.json"
 const IMAGE_EXTENSIONS := ["png","jpg","jpeg","webp","svg"]
 
 static func read_texture(path: String) -> Texture2D:
+	if not FileAccess.file_exists(path):return null
 	var picture:=Image.load_from_file(ProjectSettings.globalize_path(path))
 	return ImageTexture.create_from_image(picture) if picture!=null else null
 

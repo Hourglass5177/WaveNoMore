@@ -13,8 +13,10 @@ func _run() -> void:
 	var before_cursor: int=workspace.document.cursor
 	workspace._trial_executable=OS.get_executable_path()
 	workspace.playtest()
-	var child_pid: int=workspace._trial_pid
 	var start:=Time.get_ticks_msec()
+	while workspace._trial_pid<=0 and Time.get_ticks_msec()-start<15000:
+		await create_timer(0.1).timeout
+	var child_pid: int=workspace._trial_pid
 	while workspace._trial_stage!="ready" and child_pid>0 and Time.get_ticks_msec()-start<15000:
 		await create_timer(0.1).timeout
 	check(workspace._trial_stage=="ready","实际游戏报告关卡已加载")

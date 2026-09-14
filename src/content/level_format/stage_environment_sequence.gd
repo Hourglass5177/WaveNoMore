@@ -125,7 +125,7 @@ static func _same(a: Dictionary, b: Dictionary) -> bool:
 	for index in left.entries.size():
 		var x: StageBackgroundEntry = left.entries[index]
 		var y: StageBackgroundEntry = right.entries[index]
-		for property in ["texture", "sprite_frames", "animation", "material", "infinite", "random_flip", "position", "uniform_scale"]:
+		for property in ["texture", "sprite_frames", "scene", "animation", "material", "infinite", "random_flip", "position", "uniform_scale"]:
 			if x.get(property) != y.get(property): return false
 	return true
 
@@ -134,7 +134,7 @@ static func _layer_values(record:Dictionary) -> Array:
 	var layer:StageBackgroundSubLayer=record.resource
 	var values:Array=[record.depth,layer.display_name,layer.velocity,layer.cycle_start,layer.cycle_end,layer.cycle_direction]
 	for entry in layer.entries:
-		values.append([entry.texture,entry.sprite_frames,entry.animation,entry.material,entry.infinite,entry.random_flip,entry.position,entry.uniform_scale])
+		values.append([entry.texture,entry.sprite_frames,entry.scene,entry.animation,entry.material,entry.infinite,entry.random_flip,entry.position,entry.uniform_scale])
 	return values
 
 static func _depth_factor(depth:int) -> float:

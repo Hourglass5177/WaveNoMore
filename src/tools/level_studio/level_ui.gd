@@ -11,7 +11,7 @@ static func button(parent: Node, text: String, action: Callable, hint := "") -> 
 	parent.add_child(control); control.pressed.connect(action); return control
 
 static func row(parent: Node, caption: String) -> HBoxContainer:
-	var box := HBoxContainer.new(); parent.add_child(box)
+	var box := HBoxContainer.new(); box.set_meta("caption",caption); parent.add_child(box)
 	var name := label(box, caption, 12); name.custom_minimum_size.x = 40 if parent is HFlowContainer else 80
 	return box
 
@@ -19,10 +19,14 @@ static func text_field(parent: Node, caption: String, value: String, commit: Cal
 	var box := row(parent, caption); var edit := LineEdit.new(); edit.text = value
 	edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL; box.add_child(edit)
 	var last := [value]
+	edit.set_meta("last_value",last)
 	var submit := func():
 		if edit.get_meta("mixed_value",false) and edit.text.is_empty(): return
 		if edit.text != last[0]: last[0] = edit.text; commit.call(edit.text)
 	edit.text_submitted.connect(func(_text): submit.call()); edit.focus_exited.connect(submit)
+	edit.gui_input.connect(func(event):
+		if event is InputEventKey and event.pressed and event.keycode==KEY_ESCAPE:
+			edit.text=last[0];edit.release_focus();edit.get_viewport().set_input_as_handled())
 	return edit
 
 static func number(parent: Node, caption: String, value: float, commit: Callable, step := 1.0, low := -100000.0, high := 100000.0) -> SpinBox:
@@ -32,7 +36,7 @@ static func number(parent: Node, caption: String, value: float, commit: Callable
 	_number_session(spin, parent, commit); return spin
 
 static func toggle(parent: Node, caption: String, value: bool, commit: Callable) -> CheckBox:
-	var control := CheckBox.new(); control.text = caption; control.button_pressed = value
+	var control := CheckBox.new(); control.text = caption; control.button_pressed = value;control.set_meta("caption",caption)
 	parent.add_child(control); control.toggled.connect(commit); return control
 
 static func choice(parent: Node, caption: String, values: Array, current: Variant, commit: Callable, captions: Array = []) -> OptionButton:
@@ -42,19 +46,23 @@ static func choice(parent: Node, caption: String, values: Array, current: Varian
 	var index := values.find(current)
 	if index<0:
 		select.add_item("未选择" if str(current).is_empty() else "缺失："+str(current)); index=select.item_count-1
-	select.select(index)
+	select.set_meta("values",values.duplicate());select.select(index)
 	select.item_selected.connect(func(chosen):
 		if chosen<values.size():commit.call(values[chosen]))
 	return select
 
-static func vector(parent: Node, caption: String, value: Vector2, commit: Callable, step := 1.0) -> void:
+static func vector(parent: Node, caption: String, value: Vector2, commit: Callable, step := 1.0, component_commit := Callable()) -> void:
 	var box := row(parent, caption)
 	var x := SpinBox.new(); var y := SpinBox.new()
 	for spin in [x,y]:
 		spin.min_value = -100000; spin.max_value = 100000; spin.step = step; spin.size_flags_horizontal = Control.SIZE_EXPAND_FILL; box.add_child(spin)
 	x.value = value.x; y.value = value.y
-	_number_session(x,parent,func(next): commit.call([next,y.value]))
-	_number_session(y,parent,func(next): commit.call([x.value,next]))
+	_number_session(x,parent,func(next):
+		if component_commit.is_valid(): component_commit.call(0,next)
+		else: commit.call([next,y.value]))
+	_number_session(y,parent,func(next):
+		if component_commit.is_valid(): component_commit.call(1,next)
+		else: commit.call([x.value,next]))
 
 static func color(parent: Node, caption: String, value: String, commit: Callable) -> ColorPickerButton:
 	var box := row(parent, caption); var picker := ColorPickerButton.new(); picker.color = Color(value)
@@ -99,6 +107,11 @@ static func _number_session(spin: SpinBox, parent: Node, commit: Callable) -> vo
 		if not Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT): timer.start())
 	timer.timeout.connect(finish)
 	spin.get_line_edit().focus_exited.connect(finish)
+	spin.get_line_edit().gui_input.connect(func(event):
+		if event is InputEventKey and event.pressed and event.keycode==KEY_ESCAPE:
+			timer.stop()
+			if doc!=null:doc.end_edit(true)
+			spin.get_line_edit().release_focus();spin.get_viewport().set_input_as_handled())
 	spin.gui_input.connect(func(event):
 		if event is InputEventMouseButton and event.button_index==MOUSE_BUTTON_LEFT and not event.pressed: finish.call())
 
@@ -108,3 +121,35 @@ static func finish_fields(parent: Node) -> void:
 		if child is LineEdit and child.has_focus(): child.release_focus()
 		if child.has_meta("finish_edit"): child.get_meta("finish_edit").call()
 		finish_fields(child)
+
+## 只同步未在输入的分量；输入框及其输入法上下文保持原实例。
+static func sync_row(row: Control, values: Array) -> void:
+	if values.is_empty():return
+	var mixed: bool=not values.all(func(v):return v==values[0])
+	var caption: String=row.get_meta("caption","")
+	if row is CheckBox:
+		row.text=caption+(" · 多个值" if mixed else "")
+		if not mixed:row.set_pressed_no_signal(bool(values[0]))
+		return
+	var axis:=0
+	for control in row.get_children():
+		if control is Label:control.text=caption+(" · 多个值" if mixed else "")
+		elif control is SpinBox:
+			var parts: Array=values.map(func(v):return v[axis] if v is Array else v)
+			if not control.get_line_edit().has_focus() and not control.has_focus():
+				if parts.all(func(v):return v==parts[0]):control.set_value_no_signal(float(parts[0]));control.get_line_edit().text=str(control.value)
+				else:control.get_line_edit().text="";control.get_line_edit().placeholder_text="多个值"
+			axis+=1
+		elif control is LineEdit and not control.has_focus():
+			control.text="" if mixed else str(values[0]);control.placeholder_text="多个值" if mixed else ""
+			control.set_meta("mixed_value",mixed)
+			if control.has_meta("last_value"):control.get_meta("last_value")[0]=control.text
+		elif control is OptionButton:
+			control.select(-1 if mixed else control.get_meta("values",[]).find(values[0]))
+			if mixed:control.text="多个值"
+		elif control is Button and control.has_meta("resource_value"):
+			control.text="多个值" if mixed else control.get_meta("asset_caption").call(str(values[0]))
+			control.get_meta("resource_value")[0]="" if mixed else str(values[0])
+		elif control is ColorPickerButton and not control.get_popup().visible:
+			control.tooltip_text="多个值" if mixed else ""
+			if not mixed:control.color=Color(str(values[0]))
