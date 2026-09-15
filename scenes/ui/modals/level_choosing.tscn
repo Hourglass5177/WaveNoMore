@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://cbj335q44rm0b" path="res://src/app/level_carousel.gd" id="1"]
 [ext_resource type="Resource" uid="uid://4r67cc8s3tb5" path="res://content/level_cards/default_level_card_catalog.tres" id="2"]
-[ext_resource type="Texture2D" path="res://assets/ui/art/common/menu_background.jpg" id="3_dfnmq"]
+[ext_resource type="Texture2D" uid="uid://diskexon1y5u" path="res://assets/ui/art/common/menu_background.jpg" id="3_dfnmq"]
 [ext_resource type="Texture2D" uid="uid://imlsdwh81w5a" path="res://assets/image/ui/选关/小部件/顶部文字飘带2.png" id="4_841id"]
 [ext_resource type="Texture2D" uid="uid://170tvm1w5pbv" path="res://assets/image/ui/选关/小部件/两侧箭头.png" id="4_i4ps7"]
 [ext_resource type="Shader" uid="uid://1qfuu3ptat6x" path="res://shaders/materials/level_heading.gdshader" id="4_mou0x"]

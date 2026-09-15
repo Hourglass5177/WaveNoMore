@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "layout": {
+    "vertical": 308,
+    "left": 220,
+    "right": 0,
+    "library": true,
+    "inspector": true,
+    "timeline": true
+  },
+  "current": 0,
+  "position": 188.769745383036,
+  "view_start": 185.885110343974,
+  "zoom": 160.0,
+  "loop_start": 0.0,
+  "loop_end": 4.0,
+  "loop_enabled": false,
+  "rate": 1.0,
+  "snap_index": 2,
+  "track_layout_version": 2,
+  "track_height": 48.0,
+  "track_folded": [
+    true,
+    true,
+    true,
+    true,
+    true
+  ],
+  "track_scroll": 0.0
+}
