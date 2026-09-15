@@ -12,7 +12,9 @@ extends Resource
 ## 相对于判定区域中心的像素偏移。
 @export var offset: Vector2 = Vector2.ZERO
 ## 可见笔画的统一高度；旧 scale 继续作为整体尺寸倍率。
-@export var glyph_height: float = 640.0
+@export var glyph_height: float = 480.0
+## 每次判定选定一个微小位置，整段动画保持不动。
+@export var position_jitter_px: float = 2.0
 @export_range(0.0,1.0,0.01) var opacity: float = 0.7
 ## 设计画布像素，不随四张源图尺寸改变。
 @export var glow_radius_px: float = 12.0

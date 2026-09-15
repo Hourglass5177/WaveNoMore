@@ -81,15 +81,20 @@ func bind(session: StageSession, clock: SongClock) -> void:
 		session.judgment_recorded.connect(_on_judgment_recorded)
 	if not clock.sample_published.is_connected(_on_clock_sample):
 		clock.sample_published.connect(_on_clock_sample)
+	if not session.timeline_seeked.is_connected(_settle_health_feedback):
+		session.timeline_seeked.connect(_settle_health_feedback)
+	if not session.run_started.is_connected(_settle_health_feedback):
+		session.run_started.connect(_settle_health_feedback)
 
 
 func _on_health_changed(current: int, maximum: int) -> void:
-	_soul_fire_bar.max_value = max(maximum, 1)
 	_soul_fire_value.text = "%d / %d" % [current, maximum]
-	var tween := create_tween()
-	tween.set_trans(Tween.TRANS_QUAD)
-	tween.set_ease(Tween.EASE_OUT)
-	tween.tween_property(_soul_fire_bar, "value", current, 0.18)
+	_soul_fire_bar.set_health(current, maximum)
+
+
+func _settle_health_feedback(_position: float) -> void:
+	# 跳转与新一局只显示目标血量，不把前一段受伤残影带过去。
+	_soul_fire_bar.settle_feedback()
 
 
 func _on_score_changed(score: int, combo: int) -> void:
@@ -113,10 +118,11 @@ func _on_judgment_recorded(record: JudgmentRecord) -> void:
 	_judgment_label.texture = _judgment_texture(record.grade)
 	_judgment_label.modulate = Color.WHITE
 	_apply_judgment_layout()
+	_judgment_label.position += _judgment_offset(record)
 	_judgment_material.set_shader_parameter("ink",judgment_textures.grade_color(record.grade))
 	_judgment_label.modulate.a = judgment_textures.opacity
 	var display_scale := maxf(0.01, judgment_textures.scale) if judgment_textures != null else 1.0
-	_judgment_label.scale = Vector2(display_scale * 1.25, display_scale * 0.78)
+	_judgment_label.scale = Vector2(display_scale * 1.02, display_scale * 0.98)
 	if _judgment_tween != null:
 		_judgment_tween.kill()
 	_judgment_tween = create_tween()
@@ -166,7 +172,7 @@ func _prepare_judgment_art() -> void:
 	if judgment_textures == null: return
 	judgment_textures = judgment_textures.duplicate()
 	var report := PlanningParameters.read()
-	for key: String in ["glyph_height","opacity","glow_radius_px","glow_strength","perfect_color","good_color","pass_color","miss_color"]:
+	for key: String in ["glyph_height","position_jitter_px","opacity","glow_radius_px","glow_strength","perfect_color","good_color","pass_color","miss_color"]:
 		var id := "judgment/"+key
 		if report.values.has(id):
 			judgment_textures.set(key,Color(str(report.values[id])) if key.ends_with("_color") else report.values[id])
@@ -193,6 +199,12 @@ func _prepare_judgment_art() -> void:
 			high = high.max(point)
 		_judgment_regions[texture] = Rect2(Vector2(low),Vector2(high-low+Vector2i.ONE))
 
+
+func _judgment_offset(record: JudgmentRecord) -> Vector2:
+	# 独立表现随机源：同一记录重演时位置一致，也不消耗玩法的随机序列。
+	var random := RandomNumberGenerator.new()
+	random.seed = hash("%s/%d/%d" % [record.unit_id,record.sequence,record.finalized_at_us])
+	return Vector2.from_angle(random.randf()*TAU)*sqrt(random.randf())*judgment_textures.position_jitter_px
 
 func _set_mouse_filter_recursive(node: Node, filter: Control.MouseFilter) -> void:
 	if node is Control:

@@ -15,7 +15,7 @@ config/description="一款以楚文化、生死同构与编钟波纹为核心的
 config/version="0.1.0-mvp"
 run/main_scene="res://scenes/app/app_main.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
-config/icon="res://icon.svg"
+config/icon="res://assets/ui/art/app_icon/ghost_icon.png"
 
 [audio]
 

@@ -63,20 +63,6 @@ text = "复位成功"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="StageName" type="Label" parent="Design"]
-unique_name_in_owner = true
-offset_left = 560.0
-offset_top = 307.0
-offset_right = 1360.0
-offset_bottom = 345.0
-mouse_filter = 2
-theme_override_font_sizes/font_size = 26
-text = ""
-text_overrun_behavior = 3
-horizontal_alignment = 1
-vertical_alignment = 1
-theme_override_colors/font_color = Color(0.69, 0.65, 0.66, 1)
-
 [node name="Score" type="Label" parent="Design"]
 unique_name_in_owner = true
 offset_left = 560.0
@@ -93,18 +79,18 @@ vertical_alignment = 1
 [node name="Rating" type="Control" parent="Design"]
 unique_name_in_owner = true
 offset_left = 886.0
-offset_top = 488.0
+offset_top = 478.0
 offset_right = 1034.0
-offset_bottom = 565.0
+offset_bottom = 555.0
 mouse_filter = 2
 script = ExtResource("mark")
 
 [node name="Eye" type="TextureRect" parent="Design"]
 unique_name_in_owner = true
-offset_left = 870.0
-offset_top = 575.0
-offset_right = 1050.0
-offset_bottom = 670.0
+offset_left = 810.0
+offset_top = 555.0
+offset_right = 1110.0
+offset_bottom = 700.0
 mouse_filter = 2
 texture = ExtResource("eye")
 expand_mode = 1

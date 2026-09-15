@@ -94,7 +94,7 @@
     "target": "rules",
     "key": "tap_miss_damage",
     "name": "Tap 漏击伤害",
-    "default": 20,
+    "default": 16,
     "unit": "点",
     "suggested": "10～25",
     "step": 1,
@@ -109,15 +109,15 @@
     "target": "rules",
     "key": "hold_segment_damage",
     "name": "Hold 每段身体伤害",
-    "default": 2,
+    "default": 1.6,
     "unit": "点/段",
     "suggested": "1～4",
-    "step": 1,
-    "meaning": "未消耗身体抵达角色后按拍逐段扣血；无额外头部或整条失败伤害。",
+    "step": 0.1,
+    "meaning": "未消耗身体抵达角色后按拍逐段扣血；支持小数并按漏失拍长累计取整，无额外头部或整条失败伤害。",
     "minimum": 0,
     "maximum": 1000,
     "source": "src/content/resources/gameplay_rule_set.gd",
-    "type": "int"
+    "type": "float"
   },
   {
     "section": "02 魂火与惩罚",
@@ -139,7 +139,7 @@
     "target": "rules",
     "key": "ghost_miss_damage",
     "name": "Ghost 漏击伤害",
-    "default": 10,
+    "default": 8,
     "unit": "点/枚",
     "suggested": "5～15",
     "step": 1,
@@ -1309,14 +1309,14 @@
     "target": "judgment",
     "key": "glyph_height",
     "name": "判定字形基准高度",
-    "default": 640,
+    "default": 480,
     "type": "float",
     "unit": "设计 px",
     "minimum": 128,
     "maximum": 1200,
-    "suggested": "512～800",
+    "suggested": "448～496",
     "step": 1,
-    "meaning": "以实体笔画包围盒等高归一；乘现有 scale=0.25，默认实际高度 160 px。",
+    "meaning": "实体笔画等高归一；乘现有 scale=0.25，默认实际高度 120 px，略小于 132 px 判定圈。",
     "source": "src/content/resources/judgment_texture_set.gd"
   },
   {
@@ -1422,6 +1422,21 @@
     "suggested": "#RRGGBB",
     "step": 0,
     "meaning": "实体笔画及柔晕共用的颜色；保留原图笔画形状，去除原有异色低透明光晕。",
+    "source": "src/content/resources/judgment_texture_set.gd"
+  },
+  {
+    "section": "13 判定表现",
+    "target": "judgment",
+    "key": "position_jitter_px",
+    "name": "判定位置微偏移",
+    "default": 2.0,
+    "type": "float",
+    "unit": "设计 px",
+    "minimum": 0,
+    "maximum": 8,
+    "suggested": "1～3",
+    "step": 0.5,
+    "meaning": "每次在中心周围圆形范围内随机偏移，整段动画不再移动；0 关闭。同一判定重演位置一致。",
     "source": "src/content/resources/judgment_texture_set.gd"
   }
 ]

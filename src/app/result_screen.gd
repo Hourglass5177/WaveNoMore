@@ -5,6 +5,9 @@ signal next_stage_requested(stage_id: String)
 signal stage_select_requested
 signal add_local_requested
 
+const LEVEL_CARDS = preload("res://content/level_cards/default_level_card_catalog.tres")
+const DEFAULT_EYE = preload("res://assets/ui/art/result/eye.tres")
+
 @onready var _title: Label = %Title
 @onready var _mark: Control = %Rating
 @onready var _summary: Label = %Score
@@ -29,8 +32,11 @@ func _ready() -> void:
 func present(stage: StageDefinition, result: Dictionary) -> void:
 	_stage = stage
 	var cleared := bool(result.get("cleared", false))
+	# 共用火框按结算状态换色；立即刷新，避免复用页面时残留上一种火色。
+	$Design/Fire.palette = 0 if cleared else 1
+	$Design/Fire.sample($Design/Fire.elapsed)
 	_title.text = "复位成功" if cleared else "魂火已熄"
-	%StageName.text = stage.display_name if stage != null else ""
+	_set_stage_eye(stage)
 	_summary.set_score(int(result.get("score", 0)))
 	_mark.set_result(result)
 	_mark.visible = _mark.texture != null
@@ -60,6 +66,18 @@ func present(stage: StageDefinition, result: Dictionary) -> void:
 	%Reward.visible = not _external and not %Reward.text.is_empty()
 	_retry.disabled = stage == null
 	_update_focus.call_deferred()
+
+func _set_stage_eye(stage: StageDefinition) -> void:
+	%Eye.texture = DEFAULT_EYE
+	if stage == null: return
+	for card in LEVEL_CARDS.cards:
+		if card.stage_id != stage.stage_id or card.eye_icon_selected == null: continue
+		# 复用选关原图，只裁去透明留边，让不同眼形按实际画面居中展示。
+		var eye := AtlasTexture.new()
+		eye.atlas = card.eye_icon_selected
+		eye.region = Rect2(eye.atlas.get_image().get_used_rect())
+		%Eye.texture = eye
+		return
 
 func configure_external(temporary: bool) -> void:
 	_external = true

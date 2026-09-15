@@ -24,6 +24,11 @@ func _run() -> void:
 	background.size = Vector2(1920,1080)
 	background.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	viewport.add_child(background)
+	var reference_rings := Node2D.new()
+	viewport.add_child(reference_rings)
+	reference_rings.draw.connect(func():
+		for grade in 4: reference_rings.draw_arc(Vector2(420+grade*360,540),66,0,TAU,128,Color(0.9,0.86,0.78,0.6),1.5,true)
+	)
 	var huds: Array = []
 	for grade in 4:
 		var hud = load("res://scenes/ui/hud/stage_hud.tscn").instantiate()
@@ -34,17 +39,25 @@ func _run() -> void:
 		hud.judgment_textures.offset = Vector2(-540+grade*360,0)
 		var record := JudgmentRecord.new()
 		record.grade = grade
+		record.sequence = grade
 		hud._on_judgment_recorded(record)
 		hud._judgment_tween.kill()
 		hud._judgment_label.scale = Vector2.ONE*hud.judgment_textures.scale
 		var glyph: Vector2 = hud._judgment_material.get_shader_parameter("glyph_size")
-		check(is_equal_approx(glyph.y*hud.judgment_textures.scale,160.0),"四级可见字形等高")
+		check(is_equal_approx(glyph.y*hud.judgment_textures.scale,120.0),"四级可见字形等高且略小于 132 像素判定圈")
+		var center: Vector2 = hud._judgment_label.position+hud._judgment_label.pivot_offset
+		var shift: Vector2 = center-Vector2(420+grade*360,540)
+		check(shift.length() <= 2.001,"位置偏移限制在 2 像素圆内")
+		check(shift.distance_to(hud._judgment_offset(record)) < 0.001,"同一记录重演偏移一致")
+		record.sequence += 100
+		check(not shift.is_equal_approx(hud._judgment_offset(record)),"不同判定位置略有变化")
 		check(is_equal_approx(hud._judgment_label.modulate.a,0.7),"不透明度为 70%")
 		if grade > 0: check(hud._judgment_material != huds[0]._judgment_material,"HUD 材质独立")
 	for i in 4: await process_frame
 	await RenderingServer.frame_post_draw
 	viewport.get_texture().get_image().save_png(OUT+"/grades-ingame.png")
 	background.hide()
+	reference_rings.hide()
 	viewport.transparent_bg = true
 	await process_frame
 	await RenderingServer.frame_post_draw

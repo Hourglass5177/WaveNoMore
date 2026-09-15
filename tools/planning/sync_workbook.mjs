@@ -72,7 +72,7 @@ for(const entry of catalog){
   const {sheet,row}=location;
   const baseline=entry.type==='string'?entry.default:Number(entry.default);
   // 分界线重编排会扩大厚度范围，已有输入格也需要同步其允许范围。
-  if(entry.target==='boundary') sheet.getRange(`B${row}`).dataValidation={rule:{type:entry.type==='float'?'decimal':'whole',operator:'between',formula1:entry.minimum,formula2:entry.maximum}};
+  if(entry.target==='boundary'||key==='rules/hold_segment_damage') sheet.getRange(`B${row}`).dataValidation={rule:{type:entry.type==='float'?'decimal':'whole',operator:'between',formula1:entry.minimum,formula2:entry.maximum}};
   sheet.getRange(`A${row}:J${row}`).values=[[entry.name,previous.has(key)&&!adoptDefaults.has(key)?previous.get(key):baseline,baseline,entry.unit,entry.suggested,entry.step,entry.meaning,entry.target,entry.key,entry.source]];
   sheet.getRange(`B${row}:C${row}`).setNumberFormat(entry.type==='string'?'@':entry.unit==='比例'?'0.0%':entry.type==='float'?'0.0000':'0');
   sheet.getRange(`F${row}`).setNumberFormat(entry.unit==='比例'?'0.0%':Number.isInteger(entry.step)?'0':'0.0000');

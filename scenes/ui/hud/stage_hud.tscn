@@ -1,22 +1,7 @@
 [gd_scene format=3 uid="uid://26rluywl4m0d"]
 
 [ext_resource type="Script" uid="uid://ba0vqevebby7k" path="res://src/presentation/adapters/stage_hud.gd" id="1_hud"]
-
-[sub_resource type="StyleBoxFlat" id="StyleSoulBg"]
-bg_color = Color(0.025, 0.03, 0.045, 0.82)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.64, 0.56, 0.43, 0.5)
-
-[sub_resource type="StyleBoxFlat" id="StyleSoulFill"]
-bg_color = Color(0.57, 0.13, 0.12, 0.94)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.9, 0.78, 0.58, 0.75)
+[ext_resource type="PackedScene" path="res://scenes/ui/hud/soul_fire_bar.tscn" id="2_soul"]
 
 [sub_resource type="StyleBoxFlat" id="StyleProgress"]
 bg_color = Color(0.86, 0.82, 0.7, 0.75)
@@ -54,22 +39,16 @@ mouse_filter = 2
 layout_mode = 2
 mouse_filter = 2
 
-[node name="SoulFireBar" type="ProgressBar" parent="Root/Margin/Layout/TopRow" unique_id=528541379]
-custom_minimum_size = Vector2(430, 26)
+[node name="SoulFireBar" parent="Root/Margin/Layout/TopRow" unique_id=528541379 instance=ExtResource("2_soul")]
 layout_mode = 2
-mouse_filter = 2
-theme_override_styles/background = SubResource("StyleSoulBg")
-theme_override_styles/fill = SubResource("StyleSoulFill")
-value = 100.0
-show_percentage = false
 
 [node name="SoulFireValue" type="Label" parent="Root/Margin/Layout/TopRow" unique_id=458295838]
 custom_minimum_size = Vector2(92, 26)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.9, 0.78, 0.58, 1)
+theme_override_colors/font_color = Color(0.79, 0.78, 0.70, 0.88)
 theme_override_colors/font_outline_color = Color(0.02, 0.025, 0.04, 0.95)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 20
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 18
 text = "100 / 100"
 vertical_alignment = 1
 

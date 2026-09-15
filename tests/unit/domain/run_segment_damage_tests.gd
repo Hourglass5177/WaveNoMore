@@ -7,7 +7,7 @@ func _initialize() -> void: run.call_deferred()
 func check(value: bool, label: String) -> void:
 	checks += 1
 	if not value: failures += 1; push_error(label)
-func make_sim(hold := true, variable_bpm := false, damage := 2) -> GameplaySimulation:
+func make_sim(hold := true, variable_bpm := false, damage := 2.0) -> GameplaySimulation:
 	var chart := DomainFixtureFactory.base_chart("body_damage", 3840)
 	var note := NoteEvent.new(); note.event_id = "note"; note.tick = 960
 	note.kind = GameplayTypes.NoteKind.HOLD if hold else GameplayTypes.NoteKind.TAP
@@ -34,7 +34,7 @@ func run() -> void:
 	check(slow.damages.size() == 8 and slow.health_engine.soul_fire == 84, "变 BPM 不改变拍长总伤害")
 	check(slow.damages[4].timestamp_us - slow.damages[3].timestamp_us == 62500, "变速后的分段间隔随 TempoMap 缩短")
 	var tap := make_sim(false); tap.force_finish()
-	check(tap.damages.size() == 1 and tap.damages[0].base_damage == 20, "Tap 独立二十点")
+	check(tap.damages.size() == 1 and tap.damages[0].base_damage == 16, "Tap 独立十六点")
 	var success := make_sim(); press(success, 1000000); success.force_finish()
 	check(success.damages.is_empty(), "成功 Hold 不受伤")
 	var brief := make_sim(); press(brief, 1000000); press(brief, 1200000, K.LIFE_A_RELEASED); press(brief, 1250000); brief.force_finish()
@@ -55,9 +55,22 @@ func run() -> void:
 	var ghost := make_sim(false)
 	ghost.compiled.su_manifestations.append({"event_id":"ghost", "time_us":500000, "count":3, "spawn_region_normalized":Rect2(0,0,1,1)})
 	ghost.advance_to(500000)
-	check(ghost.damages.size() == 3 and ghost.health_engine.soul_fire == 70, "无载波时每枚 Ghost 独立十点")
+	check(ghost.damages.size() == 3 and ghost.health_engine.soul_fire == 76, "无载波时每枚 Ghost 独立八点")
 	ghost.advance_to(500000); check(ghost.damages.size() == 3, "Ghost 不重复结算")
 	var health := HealthEngine.new(); health.configure(GameplayRuleSet.new())
 	var tuning := JudgmentRecord.new(); tuning.unit_kind = &"tuning"
 	health.apply_judgment(tuning); check(health.soul_fire == 100, "Tuning 评分失败不直接伤害")
+	# 小数伤害只在累计总量处取整；帧率、变 BPM 和重试不改变扣血。
+	var fractional := make_sim(true, false, 1.6); fractional.force_finish()
+	check(fractional.health_engine.soul_fire == 87 and fractional.damages.size() == 8, "两拍漏失累计 12.8 取整为 13 点，保留八次结算")
+	var fractional_tempo := make_sim(true, true, 1.6); fractional_tempo.force_finish()
+	check(fractional_tempo.health_engine.soul_fire == 87, "小数伤害不受变 BPM 影响")
+	var expected: Array = fractional.damages.map(func(d: DamageRecord): return d.to_dictionary())
+	for steps: Array in [[33333], [16667], [8333], [7100, 43000, 1200, 79000]]:
+		fractional.reset()
+		var time := 0; var index := 0
+		while time < fractional.last_damage_time_us():
+			time = mini(time + int(steps[index % steps.size()]), fractional.last_damage_time_us()); index += 1
+			fractional.advance_to(time)
+		check(fractional.damages.map(func(d: DamageRecord): return d.to_dictionary()) == expected, "小数伤害在不同帧率及重试下完全一致")
 	print("SEGMENT DAMAGE: %d checks, %d failures" % [checks, failures]); quit(1 if failures else 0)

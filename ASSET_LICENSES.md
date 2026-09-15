@@ -7,7 +7,7 @@
 | Graybox 角色、音符、场域 | 程序占位 | 项目内部生成 | 工程源码 | 替换为正式美术 |
 | Graybox 节拍与反馈音 | 程序生成 | 项目内部生成 | 工程源码 | 可保留作开发测试，不作正式BGM |
 | 菜单按钮音 `assets/audio/menu/crafted/*.wav` | 布料软接触实录加工 | lipalearning / [soft impact.wav](https://freesound.org/people/lipalearning/sounds/427973/) | CC0；`assets/audio/menu/ATTRIBUTION.txt` | 可修改、商业使用和发布；自愿保留来源 |
-| `icon.svg` | Godot模板占位 | Godot项目模板 | 待随最终图标复核 | 提交前替换 |
+| `assets/ui/art/app_icon/ghost_*` | Ghost 原画下缘柔光衍生图标 | 用户提供项目 Ghost 原画；OpenAI 内置 imagegen 局部修图 | `docs/ghost-icon-prompts.md`；原画权利凭证沿项目美术归档 | 已替换模板图标；PNG 与 Windows ICO |
 | 耳机与控制器图样 `assets/ui/art/boot/guides/*.png` | 按项目要求生成 | OpenAI 内置图像生成工具；项目内排版 | `docs/launch-guides-prompts.md` 保存生成提示词；参考截图未复制进素材 | 随引导页使用 |
 | 正式关卡BGM | 未交付 | 待填写 | 待归档 | 必填 |
 | 正式角色、场景、音符、VFX | 未交付 | 待填写 | 待归档 | 必填 |

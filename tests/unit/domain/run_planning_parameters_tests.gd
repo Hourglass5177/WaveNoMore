@@ -52,7 +52,7 @@ func run() -> void:
 	changed.values["rules/tap_miss_damage"] = 10
 	changed.values["rules/perfect_window_ms"] = 60
 	var variant := PlanningParameters.rules_copy(base, changed)
-	check(base.tap_miss_damage == 20 and configured.perfect_window_ms == 45, "资源缓存与前一局副本不被覆盖")
+	check(base.tap_miss_damage == 16 and configured.perfect_window_ms == 45, "资源缓存与前一局副本不被覆盖")
 	check(ChartCompiler.rules_hash(variant) != ChartCompiler.rules_hash(base), "规则变化进入现有 Replay 规则摘要")
 	var health := HealthEngine.new()
 	health.configure(variant)
