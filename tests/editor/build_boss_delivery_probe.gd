@@ -1,7 +1,7 @@
 extends SceneTree
 func _initialize() -> void:build.call_deferred()
 func build() -> void:
-	var source:=ProjectSettings.globalize_path("res://../Levels/output/boss-user-repro/tutorial_1")
+	var source:=ProjectSettings.globalize_path("res://../Levels/output/保底关卡/level_1")
 	var destination:=ProjectSettings.globalize_path("res://../Levels/output/boss-delivery-qa")
 	var opened:=LevelProjectIO.open_project(source.path_join("level.json"))
 	LevelProjectIO.copy_dependencies(LevelProjectIO.dependencies(opened.level,source),source,destination)

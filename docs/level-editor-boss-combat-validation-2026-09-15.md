@@ -41,3 +41,5 @@ GPU 使用 RTX 4060 Laptop、Godot 4.7.2 Compatibility。工程内测试不能�
 现在静息不再依赖战斗状态，单一已配置 BOSS 自动接收未分配音符；显式绑定优先，多 BOSS 不猜归属。局部预览使用独立动作优先级，避免被常态覆盖。附件 GPU 回归确认 16 个音符关联、静息时间推进及实际骨骼三段攻击，打开不修改文档。测试 `run_boss_imported_project_tests.gd`，素材与结果仅放在 `Levels/output/boss-user-repro`。交付版通过外部验收素材包运行 `boss_delivery_probe.gd`，不把探针加入用户工程或发行包。
 
 交付检查：实际 Windows Release 编辑器从外部工程加载上述骨骼，确认静息和生成攻击；通过配套 Release 游戏试玩收到 ready。`Levels/output/boss-delivery-qa/delivery-result.json` 的 errors 为空，画面见同目录 `交付版界面.png`。交付包不包含验收 PCK。导出阶段已有编辑器占用临时热重载 DLL 的提示未影响发行 DLL，实际 EXE 骨骼加载已验证。
+
+内置完整 BOSS 发行缺陷：源工程原始 PNG／Spine 文件被导出器转换为导入资源后，FileAccess 和 Spine 原始文件接口不再适用。正式 EXE 改由 ResourceLoader 读取导入后的纹理、图集和骨骼；此前用外部原始骨骼工程的发行检查未覆盖该分支。重新以保底工程中的内置蝙蝠和蛇作为发行验收对象。关卡正式名称为钟、火、牲。

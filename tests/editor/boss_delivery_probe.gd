@@ -30,6 +30,21 @@ func run() -> void:
 	var output: String=workspace.document.directory
 	await RenderingServer.frame_post_draw
 	tree.root.get_texture().get_image().save_png(output.path_join("交付版界面.png"))
+	# 再打开第二个交付工程，检查另一个内置完整表现的发行资源。
+	for arg in OS.get_cmdline_user_args():
+		if not arg.begins_with("--second-level="):continue
+		workspace._open_path(arg.trim_prefix("--second-level="))
+		for frame in 20:await tree.process_frame
+		player=workspace.surface.player
+		if workspace.surface.emissions.size()!=36:errors.append("第二关关联数量")
+		var snake=player.objects["fallback_boss_2"].get_node("Content")
+		if snake.skeleton.get_skeleton()==null:errors.append("蛇骨骼未加载")
+		workspace.preview.suspended=false
+		await workspace.preview.seek_preview(139000000)
+		player.seek("song",139000000)
+		for frame in 5:await tree.process_frame
+		await RenderingServer.frame_post_draw
+		tree.root.get_texture().get_image().save_png(output.path_join("火-交付版.png"))
 	workspace._trial_executable=OS.get_executable_path().get_base_dir().path_join("game/minghe.exe")
 	workspace.playtest()
 	var begin:=Time.get_ticks_msec()

@@ -13,7 +13,7 @@ def seconds(tick,timing):
         if end>=tick:break
     return total+timing.get('first_beat_offset_ms',0)/1000
 summary=[]
-for number,song_name,visual,title in [(1,'教程#3','bat','第一关 · 蝙蝠'),(2,'第二关#2','snake','第二关 · 蛇')]:
+for number,song_name,visual,title in [(1,'教程#3','bat','钟'),(2,'第二关#2','snake','火')]:
     dest=OUT/f'level_{number}';dest.mkdir(parents=True,exist_ok=True)
     if number==2:
         with zipfile.ZipFile('F:/Downloads/level_2.zip') as z:
@@ -33,15 +33,16 @@ for number,song_name,visual,title in [(1,'教程#3','bat','第一关 · 蝙蝠')
     chart=read(song/'charts/normal.json');notes=[n for n in chart['notes']+chart.get('ghost_events',[]) if n.get('boss')]
     first=min(seconds(n['tick'],chart['timing']) for n in notes);arrival=max(0,first-7)
     oid=f'fallback_boss_{number}'
-    obj={'id':oid,'name':title.split(' · ')[1]+' BOSS','type':'actor','asset':'','animation':'','parent_id':'','layer':'world','depth':0,'occlusion_depth':0,'occlusion_order':'none','hidden':False,'locked':False,'fields':{'position':[960,250],'scale':[.85,.85],'rotation':0,'opacity':1,'color':'ffffffff','visible':True,'size':[560,100]},'boss':{'visual':visual,'health_ratio':.8,'flight_speed':600,'spread_deg':30}}
+    obj={'id':oid,'name':('蝙蝠' if number==1 else '蛇')+' BOSS','type':'actor','asset':'','animation':'','parent_id':'','layer':'world','depth':0,'occlusion_depth':0,'occlusion_order':'none','hidden':False,'locked':False,'fields':{'position':[960,250],'scale':[.85,.85],'rotation':0,'opacity':1,'color':'ffffffff','visible':True,'size':[560,100]},'boss':{'visual':visual,'health_ratio':.8,'flight_speed':600,'spread_deg':30}}
     show['objects'].append(obj)
     def track(prop,values):
         keys=[{'id':f'{oid}_{prop}_{i}','time_us':round(t*1000000),'value':v,'interpolation':'linear','in_handle':[.666667,.666667],'out_handle':[.333333,.333333]} for i,(t,v) in enumerate(values)]
         return {'id':f'{oid}_{prop}','object_id':oid,'type':'property','property':prop,'section':'song','difficulties':[],'muted':False,'locked':False,'keys':keys,'clips':[]}
     show['tracks'] += [track('position',[(0,[960,-340]),(arrival,[960,-340]),(arrival+1.4,[960,250])]),track('opacity',[(0,0),(arrival,0),(arrival+1.2,1)])]
     show['bindings'].append({'id':f'{oid}_attack','object_id':oid,'difficulty':'normal','note_ids':[n['id'] for n in notes],'action_mode':'auto','action':'attack_start','rate':1,'release_sec':.45,'return_us':1000000,'action_duration_us':1000000,'path_mode':'auto','life_anchor':'life','death_anchor':'death'})
+    level['title']=title
     write(dest/'level.json',level);write(dest/'show.json',show)
     write(dest/'workspace.json',{'section':'song','time_us':round(arrival*1000000)})
     summary.append({'level':number,'boss':visual,'notes':len(notes),'enter_sec':round(arrival,3),'first_judgment_sec':round(first,3),'scene_cues':show.get('scene_cues',[])})
-write(OUT/'制作摘要.json',{'completed':summary,'level_3':'等待场景后制作'})
+write(OUT/'制作摘要.json',{'completed':summary,'level_3':'牲：等待场景后制作'})
 print(json.dumps(summary,ensure_ascii=False))

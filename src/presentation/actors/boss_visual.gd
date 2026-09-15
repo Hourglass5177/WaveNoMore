@@ -45,13 +45,21 @@ func setup(id: String) -> void:
 	config=JSON.parse_string(FileAccess.get_file_as_string(ROOT+id+"/animation.json"))
 	skeleton=SpineSprite.new()
 	# 审看工具直接读取派生源，避免后台编辑器导入尚未完成时采到上一次的动作。
-	for name in DirAccess.get_files_at(ROOT+id):
-		if name=="skeleton.png" or name.begins_with("eye_core_") and name.ends_with(".png") or name in config.get("texture_pages",[]):
-			var path:=ROOT+id+"/"+name
-			var texture:=_source_texture(path);texture.take_over_path(path);source_textures.append(texture)
+	# 源码审看读取原始派生文件；发行包必须走 Godot 导入映射。
+	if OS.has_feature("editor"):
+		for name in DirAccess.get_files_at(ROOT+id):
+			if name=="skeleton.png" or name.begins_with("eye_core_") and name.ends_with(".png") or name in config.get("texture_pages",[]):
+				var path:=ROOT+id+"/"+name
+				var texture:=_source_texture(path);texture.take_over_path(path);source_textures.append(texture)
 	var data:=SpineSkeletonDataResource.new()
-	var atlas:=SpineAtlasResource.new();atlas.load_from_atlas_file(ROOT+id+"/boss.atlas")
-	var file:=SpineSkeletonFileResource.new();file.load_from_file(ROOT+id+"/boss.spine-json")
+	var atlas: SpineAtlasResource
+	var file: SpineSkeletonFileResource
+	if OS.has_feature("editor"):
+		atlas=SpineAtlasResource.new();atlas.load_from_atlas_file(ROOT+id+"/boss.atlas")
+		file=SpineSkeletonFileResource.new();file.load_from_file(ROOT+id+"/boss.spine-json")
+	else:
+		atlas=load(ROOT+id+"/boss.atlas") as SpineAtlasResource
+		file=load(ROOT+id+"/boss.spine-json") as SpineSkeletonFileResource
 	data.atlas_res=atlas;data.skeleton_file_res=file;skeleton.skeleton_data_res=data
 	body_material=ShaderMaterial.new();body_material.shader=preload("res://shaders/bosses/body.gdshader")
 	if id=="bat":body_material.set_shader_parameter("tint",Color(1.,.45,.5))
@@ -76,7 +84,7 @@ func setup(id: String) -> void:
 		var node:=_quad(Vector2(800,800),RING)
 		rings.append({"node":node,"time":-INF,"duration":.75})
 	var path:=ROOT+id+"/death_pose.png"
-	if FileAccess.file_exists(path) and not id.begins_with("goat"):
+	if ResourceLoader.exists(path) and not id.begins_with("goat"):
 		fragments=_quad(Vector2(1024,1024),FRAGMENTS)
 		fragments.texture=_source_texture(path)
 		var count:=int((36 if id.begins_with("goat") else 72)*fragment_multiplier)
@@ -94,7 +102,8 @@ func _set_form(value: String) -> void:
 	skeleton.get_skeleton().set_slots_to_setup_pose()
 	skeleton.update_skeleton(0.)
 
-func _source_texture(path: String) -> ImageTexture:
+func _source_texture(path: String) -> Texture2D:
+	if not OS.has_feature("editor"):return load(path) as Texture2D
 	var image:=Image.new();image.load_png_from_buffer(FileAccess.get_file_as_bytes(path))
 	return ImageTexture.create_from_image(image)
 
