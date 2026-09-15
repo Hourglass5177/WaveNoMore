@@ -130,6 +130,7 @@ static func project(chart: SongChart, rules: GameplayRuleSet) -> SongChart:
 		for i in range(1, path.points.size()):
 			var a := path.points[i - 1]; var b := path.points[i]
 			var slider := TuningSliderEvent.new()
+			slider.visual_hold_ids = PackedStringArray([path.hold_id, path.support_hold_id])
 			slider.visual_radius_px = path.visual_radius_px
 			slider.show_rotation_cue = i == 1
 			slider.event_id = path.event_id + ":" + a.event_id

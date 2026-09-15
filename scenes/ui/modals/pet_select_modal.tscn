@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://src/app/ui/shortcut_glyph.gd" id="shortcut"]
 [ext_resource type="Script" path="res://src/app/pet_select_modal.gd" id="1"]
 [ext_resource type="Theme" path="res://content/ui/game_theme.tres" id="2"]
-[ext_resource type="Texture2D" path="res://assets/image/ui/选关/background.png" id="3"]
+[ext_resource type="Texture2D" path="res://assets/ui/art/common/menu_background.jpg" id="3"]
 [ext_resource type="Texture2D" path="res://assets/image/ui/选关/小部件/顶部文字飘带2.png" id="4"]
 [ext_resource type="Texture2D" path="res://assets/image/ui/选关/小部件/顶部文字飘带.png" id="5"]
 [ext_resource type="Script" path="res://src/app/ui/art_button.gd" id="6"]
@@ -63,6 +63,7 @@ offset_right = 1920.0
 offset_bottom = 1080.0
 texture = ExtResource("3")
 expand_mode = 1
+stretch_mode = 6
 mouse_filter = 2
 
 

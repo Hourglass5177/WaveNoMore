@@ -23,6 +23,7 @@ func _settle(ui: Control) -> void:
 		var background_material: ShaderMaterial = card.get_node("Background").material
 		_check(is_equal_approx(float(background_material.get_shader_parameter("k")), 1.0 if card == ui._cards[ui.current_index()] else 0.0), "到位时仅正前方卡片背景 k 为 1")
 		_check(is_equal_approx(float(material.get_shader_parameter("image_transparency")), 1.0 if card == ui._cards[ui.current_index()] else 0.0), "到位时仅正前方卡片显示原图")
+		_check(card.get_node("Flame").visible == (card._flame_enabled and card == ui._cards[ui.current_index()]), "火框只随选中卡片显示")
 
 func _run() -> void:
 	DirAccess.make_dir_recursive_absolute("res://builds/level-carousel")
@@ -34,6 +35,25 @@ func _run() -> void:
 	await process_frame
 	ui.set_process(false)
 	var flame_card = ui._cards[0]
+	var flame = flame_card.get_node("Flame")
+	_check(flame.visible and flame.palette==1 and flame_card._effect_frames==null,"正式目录使用蓝焰组件，不叠加旧八帧")
+	_check(flame.size.is_equal_approx(Vector2(517,1085)*.7),"火框按背景有效透明区域与倍率配准")
+	var saved_size: Vector2 = flame.size
+	flame_card.background_scale=.8
+	_check(flame.size.is_equal_approx(saved_size*(.8/.7)),"背景倍率调整联动火根尺寸")
+	flame_card.background_scale=.7
+	flame_card.set_selection_weight(.5)
+	_check(is_equal_approx(flame.modulate.a,.5),"半选中平滑降低火焰透明度")
+	flame_card.set_selection_weight(0.)
+	var hidden_time: float = flame.elapsed
+	await process_frame
+	_check(flame.elapsed==hidden_time,"未选中火框停止更新时间")
+	flame_card.set_selection_weight(1.)
+	# 可编辑的其他背景帧动画仍保留长帧补齐，正式火框不再依赖它。
+	var legacy: Dictionary = ui._levels[0].duplicate()
+	legacy.flame_palette=0
+	legacy.background_effect_frames=load("res://assets/image/ui/选关/火框燃烧_8帧_透明PNG/level_card_fire.tres")
+	flame_card.configure(legacy,0)
 	flame_card.set_process(false)
 	flame_card._effect_frame = 0
 	flame_card._effect_elapsed = 0.0
@@ -42,6 +62,7 @@ func _run() -> void:
 	_check(flame_card._effect_frame==3 and is_equal_approx(flame_card._effect_elapsed,frame_duration*0.4),"火框长帧补齐且保留余量")
 	flame_card._process(frame_duration*0.7)
 	_check(flame_card._effect_frame==4 and is_equal_approx(flame_card._effect_elapsed,frame_duration*0.1),"火框后续相位连续")
+	flame_card.configure(ui._levels[0],0)
 	_check(ui._cards[0].get_node("Score").text=="000000","无记录分数默认六位零")
 	_check(ui._cards[0].get_node("Rating").text.is_empty(),"不以示例关卡名称冒充评级")
 	_check(is_equal_approx(ui._cards[0].get_node("MonsterIcon").scale.x,2.00) and is_equal_approx(ui._cards[1].get_node("MonsterIcon").scale.x,1.0),"只放大蝙蝠")

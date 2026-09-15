@@ -46,6 +46,12 @@ func _run() -> void:
 	var ui = mount("res://scenes/ui/modals/settings_modal.tscn")
 	await frames()
 	check(ui._pages[0].visible and not ui._pages[1].visible,"默认声音分类")
+	var fire = ui.get_node("Design/Fire")
+	var panel: TextureRect = ui.get_node("Design/Panel")
+	var region: Rect2 = panel.texture.get_image().get_used_rect()
+	check(fire.position.is_equal_approx(panel.position+region.position*panel.size/panel.texture.get_size()),"设置火根按可见边缘定位")
+	check(fire.size.is_equal_approx(region.size*panel.size/panel.texture.get_size()),"设置火框排除右侧透明留白")
+	check(fire.mouse_filter==Control.MOUSE_FILTER_IGNORE and fire.palette==0,"红焰不拦截设置操作")
 	var font: Font = ui.get_theme_default_font()
 	for character in "0123456789声音画面校准继续重玩退出基础进阶分辨率毫秒%":
 		check(font.has_char(character.unicode_at(0)),"字体字符："+character)
@@ -114,6 +120,12 @@ func _run() -> void:
 	pause._on_state_changed(0,GameplayTypes.StageState.PAUSED,&"test")
 	check(pause.get_node("%Retry").position.x < pause.get_node("%Continue").position.x and pause.get_node("%Continue").position.x < pause.get_node("%Exit").position.x,"重玩、继续、退出的左右顺序")
 	await shot("pause")
+	var pause_fire = pause.get_node("Root/Design/Fire")
+	var fire_time: float = pause_fire.elapsed
+	paused=true
+	await frames()
+	check(pause_fire.elapsed>fire_time,"游戏暂停时正式火框继续燃烧")
+	paused=false
 	pause._on_resume_countdown_changed(3.0)
 	check(pause.get_node("%OpenEye").visible and not pause.get_node("%ClosedEye").visible,"恢复睁眼")
 	check(pause._title.text=="3","三秒倒计时从3开始")
@@ -125,6 +137,7 @@ func _run() -> void:
 	pause._on_resume_countdown_changed(0.0)
 	check(pause._title.text.is_empty(),"倒计时结束才清除数字")
 	check(is_zero_approx(pause._root.get_node("Design/Panel").modulate.a) and is_zero_approx(pause._root.get_node("Dim").modulate.a),"倒计时仅留眼睛，面板与遮罩退场")
+	check(is_zero_approx(pause_fire.modulate.a),"暂停火框随面板完整淡出")
 	pause.configure_external(true)
 	check(pause.get_node("%AddLocal").visible and not pause.get_node("%ExitArt").visible,"试玩附加操作与动态退出文案")
 	pause.configure_external(false)

@@ -31,10 +31,13 @@ const KIND_RAPID: StringName = &"rapid"
 const KIND_SU: StringName = &"su"
 ## 一秒包含的微秒数，用于视觉秒时间和编译谱整数时间戳之间换算。
 const USEC_PER_SEC: float = 1_000_000.0
+## 整条轨道、起手提示与柔光一起平滑显隐，使用判定时钟而非独立 Tween。
+const TUNING_FADE_IN_SEC: float = 0.12
+const TUNING_FADE_OUT_SEC: float = 0.12
 
 ## 事件在命中时刻前多少秒进入画面。数值越大，音符出现越早、飞行越慢。
 @export_range(0.1, 10.0, 0.01) var approach_duration_sec: float = 2.25
-## 调频和疾振事件结束后继续保留视觉对象的秒数；默认覆盖调频端点的 500ms 晚侧判定窗。
+## 疾振事件结束后继续保留视觉对象的秒数；调频使用独立的短暂淡出时间。
 @export_range(0.0, 5.0, 0.01) var visual_tail_sec: float = 0.55
 ## 普通音符理论结束后最多保留的秒数，需覆盖波前接触或飞到角色的额外路程。
 @export_range(0.1, 5.0, 0.01) var note_visual_tail_sec: float = 1.45
@@ -52,6 +55,9 @@ var _cursors: Dictionary[StringName, int] = {}
 var _active: Dictionary[String, Dictionary] = {}
 ## 仅用于表现；按完整谱面索引，避免另一侧尚未生成时丢失双押提示。
 var _double_press_ids: Dictionary[String, bool] = {}
+## 完整谱面预建反向依赖，失败时只访问关联分段；不会逐帧搜索 Hold。
+var _hold_tuning_ids: Dictionary = {}
+var _tuning_hidden_at: Dictionary = {}
 ## 关卡演出给出的提前发射段；不写入编译谱和 Replay 指纹。
 var boss_emissions: Dictionary = {}
 var tempo_map: TempoMap
@@ -73,6 +79,7 @@ func configure(compiled_chart: Variant, approach_sec: float = 2.25) -> void:
 	}
 	_sort_tracks()
 	_index_double_presses()
+	_index_tuning_holds()
 	reset()
 
 
@@ -93,6 +100,7 @@ func reset() -> void:
 		var active_entry: Dictionary = _active[active_id]
 		visual_despawn_requested.emit(active_entry["kind"], active_id)
 	_active.clear()
+	_tuning_hidden_at.clear()
 	_cursors = {
 		KIND_NOTE: 0,
 		KIND_TUNING: 0,
@@ -151,6 +159,8 @@ func advance(target_visual_time_sec: float, tuning_time_sec: float) -> void:
 		var active_entry: Dictionary = _active[active_id]
 		var event_data: Dictionary = active_entry["data"]
 		var expiry_usec: int = _event_end_usec(event_data) + _tail_usec_for(active_entry["kind"])
+		if active_entry["kind"] == KIND_TUNING:
+			expiry_usec = roundi((tuning_visual_end_sec(active_id, event_data) + TUNING_FADE_OUT_SEC) * USEC_PER_SEC)
 		var resolved_usec: int = int(active_entry.get("resolved_us", -1))
 		if StringName(event_data.get("unit_kind", &"")) == &"hold":
 			# Hold 的失败尾部由 Host 沿实际视觉路线送完；成功仍保留结果展示时间。
@@ -169,6 +179,12 @@ func advance(target_visual_time_sec: float, tuning_time_sec: float) -> void:
 
 
 func mark_judged(event_id: String, grade: int, at_sec: float = INF, metadata: Dictionary = {}) -> void:
+	# Hold 最终机械 Miss 才使路径失效；短暂断持仍由领域层的续接宽限处理。
+	# 记录未生成的后续分段，避免长路径在失败后重新进入预读窗。
+	if grade == GameplayTypes.JudgmentGrade.MISS:
+		for slider_id: String in _hold_tuning_ids.get(event_id, []):
+			var failed_at: float = at_sec if is_finite(at_sec) else visual_time_sec
+			_tuning_hidden_at[slider_id] = minf(float(_tuning_hidden_at.get(slider_id, INF)), failed_at)
 	if _active.has(event_id): _active[event_id]["judgment_metadata"] = metadata
 	var frame_time := visual_time_sec
 	if is_finite(at_sec): visual_time_sec = at_sec
@@ -238,6 +254,7 @@ func get_active_events() -> Array[Dictionary]:
 
 
 func _spawn(kind: StringName, source: Dictionary, fallback_index: int) -> void:
+	if kind == KIND_TUNING and _tuning_hidden_at.has(_event_id(source, kind, fallback_index)): return
 	if kind == KIND_NOTE and preview_note_ends.get(str(source.get("id", "")), 9223372036854775807) < preview_target_us: return
 	# 普通音符使用上面的实际接触/失败收尾边界，不能再按通用 tail 二次截断。
 	if kind not in [KIND_SU, KIND_NOTE] and _event_end_usec(source) + _tail_usec_for(kind) < preview_visible_after_us:
@@ -255,6 +272,42 @@ func _spawn(kind: StringName, source: Dictionary, fallback_index: int) -> void:
 		return
 	_active[event_id] = {"kind": kind, "data": entry}
 	visual_spawn_requested.emit(kind, entry)
+
+
+func tuning_visual_end_sec(event_id: String, data: Dictionary) -> float:
+	return minf(float(_event_end_usec(data)) / USEC_PER_SEC, float(_tuning_hidden_at.get(event_id, INF)))
+
+
+func tuning_visibility(event_id: String, data: Dictionary, time_sec: float) -> float:
+	var end_sec := tuning_visual_end_sec(event_id, data)
+	var spawn_sec := float(_event_start_usec(data)) / USEC_PER_SEC - approach_duration_sec
+	# 在淡入中途失败时，从当时的亮度退出，不因淡入继续推进而先变亮。
+	var appear := smoothstep(0.0, TUNING_FADE_IN_SEC, minf(time_sec, end_sec) - spawn_sec)
+	return appear * (1.0 - smoothstep(0.0, TUNING_FADE_OUT_SEC, time_sec - end_sec))
+
+
+func _index_tuning_holds() -> void:
+	_hold_tuning_ids.clear()
+	var holds := [[], []]
+	for note: Dictionary in _tracks[KIND_NOTE]:
+		if StringName(note.get("unit_kind", &"")) == &"hold":
+			holds[int(note.affinity)].append(note)
+	var cursors := [0, 0]
+	for slider: Dictionary in _tracks[KIND_TUNING]:
+		var ids := PackedStringArray(slider.get("visual_hold_ids", []))
+		# 旧资源没有显式关联，按覆盖整条滑条的两侧 Hold 推导；无关联的测试条照常显示。
+		if ids.is_empty():
+			for side: int in 2:
+				while cursors[side] < holds[side].size() and _event_end_usec(holds[side][cursors[side]]) <= _event_start_usec(slider):
+					cursors[side] += 1
+				if cursors[side] >= holds[side].size(): continue
+				var hold: Dictionary = holds[side][cursors[side]]
+				if _event_start_usec(hold) <= _event_start_usec(slider) and _event_end_usec(hold) >= _event_end_usec(slider):
+					ids.append(_event_id(hold, KIND_NOTE, cursors[side]))
+		for id: String in ids:
+			if id.is_empty(): continue
+			if not _hold_tuning_ids.has(id): _hold_tuning_ids[id] = []
+			_hold_tuning_ids[id].append(_event_id(slider, KIND_TUNING, 0))
 
 
 func _index_double_presses() -> void:
@@ -323,6 +376,8 @@ func _read_array_member(source: Variant, member_name: StringName) -> Array:
 
 
 func _tail_usec_for(kind: StringName) -> int:
+	if kind == KIND_TUNING:
+		return roundi(TUNING_FADE_OUT_SEC * USEC_PER_SEC)
 	if kind == KIND_SU:
 		return 0
 	var tail_sec: float = note_visual_tail_sec if kind == KIND_NOTE else visual_tail_sec

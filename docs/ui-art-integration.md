@@ -46,7 +46,7 @@
 
 - 来源：项目根目录 `Assets/UI`，原图未修改。副本位于 `assets/ui/art`；选关背景、飘带、箭头复用队友已有的 `assets/image/ui/选关`。
 - 暂停底图、睁眼、按钮、设置底图和分类按钮原扩展名虽为 JPG，文件实际为 RGBA PNG；工程副本纠正为 `.png`，没有重新抠图或改色。
-- 粉焰边框使用 8 帧透明素材，`fire_frame.gd` 的 `frames_per_second` 默认 12；按菜单时间循环，游戏暂停时继续播放，隐藏时停止更新。
+- 设置、暂停边框使用红色局部 shader 燃烧，选关卡片使用蓝焰。`fire_frame.gd` 按弹窗底图的可见透明区域配准，排除右侧留白；卡片火根跟随背景大小及选中权重。按菜单时间播放，游戏暂停时继续，隐藏或淡出至零时停止更新。火芯与火尖一同继承菜单透明度，完整退场。参数与素材说明见 `docs/ui-flame.md`。
 - 共同 Theme 为 `content/ui/game_theme.tres`：灰紫暗轨、赭红填充、骨白文字及滑块。开关的两个 SVG 是可替换的基础控件图形。
 - `assets/fonts/huiwen.otf` 来自 `Assets/中文 - Huiwen.otf`，字体随工程保存，无需玩家安装。正式游戏文本由 GameFont 与 Theme 接入，程序绘制的 HUD 通过 `MingheUiStyle.ui_font()` 读取；工具模式保留原字体。
 - 界面淡入 0.18 秒、淡出 0.14 秒，使用平滑曲线；关闭完成前继续隔离底层输入，随后恢复原焦点。按钮按下缩至 98%；不移动页面布局。现成书法贴图不替换成动态字体。
@@ -160,7 +160,7 @@ Godot --headless --path . --script res://tools/testing/run_stage_runtime.gd
 
 32 份键帽、摇杆分层图与柔光遮罩统一使用灰紫底、骨白细边和手绘矢量笔画，保持小尺寸清楚；不依赖字体，也没有常驻闪烁。源图在 `assets/ui/input`，`tools/ui/generate_input_glyphs.py` 同时生成矢量副本与 `src/app/ui/input_glyph_data.gd`，运行时从同源内嵌数据预热并缓存纹理，导出包不依赖原始 SVG 是否被保留。`shortcut_glyph.gd` 只在设备变化时更新，节点位置保存在场景中，不遮挡原按钮。
 
-主界面选中线位于按钮下方 10 px、线宽 2.4 px；选中美术字用温骨白提亮，非选中保持较暗层次。每次仍只有一个焦点。暂停面板、火框与按钮缩至原布局 84%，锚点向判定中心移动；睁眼独立使用原图圆孔中心约 `(418,169)`、内半径 129 px，对齐设计中心 `(960,540)` 和判定圈 66 px 半径。数字居中，原来的 3、2、1 各一秒不变。暂停主按钮方向左右循环，试玩附加按钮参与 Tab 与向下导航。
+主界面选中线位于按钮下方 10 px、线宽 2.4 px；选中美术字用温骨白提亮，非选中保持较暗层次。每次仍只有一个焦点。暂停底框用 AtlasTexture 去除原图非对称透明留白，可见宽度约 904 px，与眼睛及继续按钮共用 x=960 中轴；火根自动跟随可见边缘。三个主按钮约 221×70 px，以各自中心等比缩小，中心横坐标为 674.4／960／1245.6。睁眼独立使用原图圆孔中心约 `(418,169)`、内半径 129 px，对齐设计中心 `(960,540)` 和判定圈 66 px 半径。数字居中，原来的 3、2、1 各一秒不变。暂停主按钮方向左右循环，试玩附加按钮参与 Tab 与向下导航。
 
 验证使用 `tools/ui/run_ui_review.ps1 -Suites controller,title,art`，在独立用户目录运行正式 AppMain。键位验证使用合成的真实 `InputEventJoypadButton` / `InputEventJoypadMotion` 事件，并单独检查设备名称和厂商 ID；不等同于三款实体手柄均已插机测试。截图位于 `builds/controller-review`，包括五类键帽、选关、随从、设置、主菜单和暂停眼眶。
 
@@ -192,3 +192,5 @@ Godot --headless --path . --script res://tools/testing/run_stage_runtime.gd
 验证入口：`tools/ui/run_ui_review.ps1 -Suites title,app-flow`；开屏截图输出至 `builds/title-review/memo-splash.png`。
 
 多节点 Tuning 拆成运行时分段后，仅首段显示起点摇杆动画，后续分段不重复绘制。表现标记随编译和对象池准备传递，不参与判定或 Replay；旧版独立滑条仍默认显示起点提示。
+
+菜单通用底图为 `assets/ui/art/common/menu_background.jpg`，由提供的图片原样复制（源文件扩展名虽为 PNG，实际为 JPEG）。选关、随从和 `MingheUiStyle.add_backdrop` 共用，覆盖加载、本地谱面、结算及默认占位页；保持比例居中铺满，移除旧红黑分区和斜线。主界面与 Memo 开屏保留各自素材。

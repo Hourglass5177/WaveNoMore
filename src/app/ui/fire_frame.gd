@@ -1,18 +1,19 @@
-@tool
-extends TextureRect
-## 透明边框共用贴图，按 UI 时间播放，玩法暂停不冻结菜单。
-@export var frames_per_second := 12.0
-var _time := 0.0
-var _frame := -1
-var _textures: Array[Texture2D] = []
+extends "res://src/presentation/ui/flame_frame_visual.gd"
+## 正式弹窗复用燃烧组件，火根与底图可见边缘配准，原面板布局保持不变。
+@export var panel_path: NodePath = ^"../Panel"
+var _panel: TextureRect
+var _visible_region: Rect2
+
 func _ready() -> void:
-	for index in range(1,9):
-		_textures.append(load("res://assets/ui/art/粉焰火框_8帧_透明PNG/粉焰火框_%02d.png" % index))
-	texture = _textures[0]
-func _process(delta: float) -> void:
-	if Engine.is_editor_hint() or not is_visible_in_tree(): return
-	_time += delta
-	var index := int(_time*frames_per_second)%8
-	if index != _frame:
-		_frame = index
-		texture = _textures[index]
+	super._ready()
+	apply_planning(PlanningParameters.read())
+	_panel = get_node(panel_path)
+	_visible_region = _panel.texture.get_image().get_used_rect()
+	_panel.item_rect_changed.connect(_fit_panel)
+	_fit_panel()
+
+func _fit_panel() -> void:
+	# 现有弹窗底图使用 SCALE；留白随底图一起缩放，不能计入燃烧根部宽度。
+	var ratio := _panel.size / _panel.texture.get_size()
+	position = _panel.position + _visible_region.position * ratio
+	size = _visible_region.size * ratio

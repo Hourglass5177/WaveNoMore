@@ -34,7 +34,7 @@ func run() -> void:
 		if entry.target == "rules": actual = base.get(entry.key)
 		elif entry.target == "boundary": actual = load("res://content/presentation/boundary_motion_style.tres").get(entry.key)
 		elif entry.target == "actors": actual = StageVisualTheme.new().get(entry.key)
-		elif entry.target == "boss":
+		elif entry.target in ["boss","ui_flame"]:
 			# 审看资源直接读取脚本默认，不创建尚未装配的表现节点。
 			actual=load("res://"+entry.source).get_property_default_value(entry.key)
 		else:

@@ -1,0 +1,49 @@
+{
+  "1_flame": {
+    "cpu_render_median_ms": 0.101999998092651,
+    "cpu_render_p95_ms": 0.202000007033348,
+    "cpu_script_median_ms": 0.012,
+    "cpu_script_p95_ms": 0.024,
+    "draw_calls": 2,
+    "gpu_median_ms": 0.163000002503395,
+    "gpu_p95_ms": 0.172999992966652
+  },
+  "1_static": {
+    "cpu_render_median_ms": 0.0879999995231628,
+    "cpu_render_p95_ms": 0.175999999046326,
+    "cpu_script_median_ms": 0.0,
+    "cpu_script_p95_ms": 0.001,
+    "draw_calls": 1,
+    "gpu_median_ms": 0.0529999993741512,
+    "gpu_p95_ms": 0.0599999986588955
+  },
+  "5_flame": {
+    "cpu_render_median_ms": 0.136000007390976,
+    "cpu_render_p95_ms": 0.287000000476837,
+    "cpu_script_median_ms": 0.03,
+    "cpu_script_p95_ms": 0.065,
+    "draw_calls": 10,
+    "gpu_median_ms": 0.386000007390976,
+    "gpu_p95_ms": 0.397000014781952
+  },
+  "5_static": {
+    "cpu_render_median_ms": 0.109999999403954,
+    "cpu_render_p95_ms": 0.17399999499321,
+    "cpu_script_median_ms": 0.0,
+    "cpu_script_p95_ms": 0.001,
+    "draw_calls": 1,
+    "gpu_median_ms": 0.0520000010728836,
+    "gpu_p95_ms": 0.0649999976158142
+  },
+  "environment": {
+    "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+    "measured_frames": 180,
+    "renderer": "Compatibility",
+    "resolution": [
+      1920,
+      1080
+    ],
+    "shared_effect_textures_rgba8_bytes": 268288,
+    "warmup_frames": 120
+  }
+}

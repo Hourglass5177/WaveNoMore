@@ -9,6 +9,9 @@ var _effect_scale := 1.0
 var _effect_offset := Vector2.ZERO
 var _eye_selected: Texture2D
 var _eye_unselected: Texture2D
+var _flame_enabled := false
+var _selection_weight := 0.0
+var _background_region: Rect2
 
 ## 背景围绕卡片中心等比缩放，1.0 对应素材原始尺寸。
 @export_range(0.01, 10.0, 0.01, "or_greater") var background_scale: float = 1.0:
@@ -42,8 +45,9 @@ func _update_score_gradient() -> void:
 func _update_background_scale() -> void:
 	$Background.pivot_offset = $Background.size * 0.5
 	$Background.scale = Vector2.ONE * background_scale
+	_layout_flame()
 
-func configure(data: Dictionary, _index: int) -> void:
+func configure(data: Dictionary, index: int) -> void:
 	$Score.text = "%06d" % maxi(0,int(data.get("score",0)))
 	_update_score_gradient()
 	$Rating.text = str(data.get("rating", ""))
@@ -55,8 +59,13 @@ func configure(data: Dictionary, _index: int) -> void:
 	_eye_unselected = data.get("eye_icon_unselected") as Texture2D
 	$EyeIcon.texture = _eye_unselected if _eye_unselected != null else _eye_selected
 	$Background.texture = (data.get("background") as Texture2D) if data.get("background") != null else data.get("image") as Texture2D
+	_background_region = $Background.texture.get_image().get_used_rect() if $Background.texture != null else Rect2()
+	_flame_enabled = int(data.get("flame_palette", 0)) > 0
+	$Flame.palette = maxi(0, int(data.get("flame_palette", 0)) - 1)
+	$Flame.random_seed = index * 19 + 4
+	$Flame.visible = _flame_enabled and _selection_weight > 0.0
 	background_scale = float(data.get("background_scale", background_scale))
-	_effect_frames = data.get("background_effect_frames") as SpriteFrames
+	_effect_frames = null if _flame_enabled else data.get("background_effect_frames") as SpriteFrames
 	var animation_value: Variant = data.get("background_effect_animation", "default")
 	_effect_animation = StringName(str(animation_value)) if animation_value != null and not str(animation_value).is_empty() else &"default"
 	var scale_value: Variant = data.get("background_effect_scale", 1.0)
@@ -93,6 +102,7 @@ func _update_effect_frame() -> void:
 	_layout_effect()
 
 func _layout_effect() -> void:
+	_layout_flame()
 	if $BackgroundEffect.texture == null: return
 	var texture_size: Vector2 = $BackgroundEffect.texture.get_size()
 	# 尺寸保持纹理原始大小，倍率只作用于渲染变换，避免 TextureRect 布局刷新覆盖缩放。
@@ -101,6 +111,12 @@ func _layout_effect() -> void:
 	$BackgroundEffect.scale = Vector2.ONE * _effect_scale
 	$BackgroundEffect.position = size * 0.5 - texture_size * 0.5 + _effect_offset
 
+func _layout_flame() -> void:
+	if not _flame_enabled or $Background.texture == null: return
+	# 背景为原尺寸居中显示后等比缩放；火焰按设计像素生成，不随贴图拉长。
+	$Flame.position = size * 0.5 + (_background_region.position - $Background.texture.get_size() * 0.5) * background_scale
+	$Flame.size = _background_region.size * background_scale
+
 ## 供轮播或编辑器在运行中修改特效倍率，并立即应用到当前帧。
 func set_background_effect_scale(value: float) -> void:
 	_effect_scale = value if is_finite(value) and value > 0.0 else 1.0
@@ -108,6 +124,9 @@ func set_background_effect_scale(value: float) -> void:
 
 ## 接收轮播平滑计算的中心权重，同步当前卡片的怪物透明度与背景 k。
 func set_selection_weight(weight: float) -> void:
+	_selection_weight = clampf(weight, 0.0, 1.0)
+	$Flame.modulate.a = _selection_weight
+	$Flame.visible = _flame_enabled and _selection_weight > 0.0
 	$Score.modulate.a = clampf(weight,0.0,1.0)
 	$Rating.modulate.a = clampf(weight,0.0,1.0)
 	var icon_material := $MonsterIcon.material as ShaderMaterial

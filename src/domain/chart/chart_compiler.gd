@@ -151,6 +151,7 @@ static func _compile_tuning_sliders(chart: SongChart, tempo_map: TempoMap) -> Ar
 			"visual_offset_px": slider.visual_offset_px,
 			"visual_radius_px": slider.visual_radius_px,
 			"show_rotation_cue": slider.show_rotation_cue,
+			"visual_hold_ids": slider.visual_hold_ids,
 			"damage_group_id": unit_id,
 		})
 	result.sort_custom(_sort_compiled_unit)

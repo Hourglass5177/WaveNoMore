@@ -49,7 +49,7 @@ static func read(path: String = "") -> Dictionary:
 		if not file.begins_with("xl/worksheets/") or not file.ends_with(".xml"): continue
 		for cells: Dictionary in _rows(zip.read_file(file), shared):
 			var target := str(cells.get("H", ""))
-			if target not in ["rules", "boundary", "actors", "boss"] and not target.begins_with("pet:"): continue
+			if target not in ["rules", "boundary", "actors", "boss", "ui_flame"] and not target.begins_with("pet:"): continue
 			var id := target + "/" + str(cells.get("I", ""))
 			if not schema.has(id):
 				result.errors.append("未知策划字段：" + id)
