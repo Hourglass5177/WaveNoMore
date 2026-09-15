@@ -1,0 +1,40 @@
+[gd_scene load_steps=2 format=3]
+[ext_resource type="Script" path="res://src/tools/level_studio/level_spine_import.gd" id="1"]
+[node name="SpineImport" type="ConfirmationDialog"]
+title = "导入 Spine 骨骼动画"
+size = Vector2i(900, 680)
+ok_button_text = "导入骨骼动画"
+cancel_button_text = "取消"
+script = ExtResource("1")
+[node name="Body" type="VBoxContainer" parent="."]
+[node name="Sources" type="HBoxContainer" parent="Body"]
+unique_name_in_owner = true
+layout_mode = 2
+[node name="Status" type="Label" parent="Body"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "选择骨骼文件及对应图集。支持工程 Spine 4.3 运行库使用的 JSON / SKEL。"
+autowrap_mode = 3
+[node name="Settings" type="HBoxContainer" parent="Body"]
+unique_name_in_owner = true
+layout_mode = 2
+[node name="Actions" type="OptionButton" parent="Body"]
+unique_name_in_owner = true
+layout_mode = 2
+[node name="Preview" type="TextureRect" parent="Body"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(640, 300)
+layout_mode = 2
+size_flags_vertical = 3
+expand_mode = 1
+stretch_mode = 5
+[node name="Time" type="HSlider" parent="Body"]
+unique_name_in_owner = true
+layout_mode = 2
+step = 0.001
+[node name="Readout" type="Label" parent="Body"]
+unique_name_in_owner = true
+layout_mode = 2
+[node name="Controls" type="HFlowContainer" parent="Body"]
+unique_name_in_owner = true
+layout_mode = 2

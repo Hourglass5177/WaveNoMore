@@ -57,7 +57,7 @@ func _select(index: int) -> void:
 	get_ok_button().disabled=_resource==null
 	%Info.text="素材不可用，请重新定位来源并导入。" if _resource==null else str(caption.call(current))
 	for name in library.actions(current):_actions.add_item(name)
-	_action=library.default_animation(current) if _frames!=null else ("default" if library.actions(current).has("default") else (_actions.get_item_text(0) if _actions.item_count else ""))
+	_action=library.default_animation(current) if _frames!=null or current.ends_with(LevelSpineAsset.SUFFIX) else ("default" if library.actions(current).has("default") else (_actions.get_item_text(0) if _actions.item_count else ""))
 	if _frames!=null and _action.is_empty():get_ok_button().disabled=true;%Info.text="素材中的动作都没有帧，请先补齐图片。"
 	for item in _actions.item_count:
 		if _actions.get_item_text(item)==_action:_actions.select(item)
@@ -86,7 +86,7 @@ func _sample() -> void:
 	elif _resource is PackedScene:
 		if not _player.show.objects.is_empty():
 			var track:=LevelFormat.track(_player.show.objects[0].id,"action","song","action")
-			var clip:=LevelFormat.clip(0,"",3600000000);clip.action=_action;clip.loop=true;track.clips=[clip];_player.show.tracks=[track]
+			var clip:=LevelFormat.clip(0,"",3600000000);clip.id="asset_preview";clip.action=_action;clip.loop=true;track.clips=[clip];_player.show.tracks=[track]
 			_player.seek("song",roundi(_seconds*1000000));%Preview.texture=_view.get_texture();_view.render_target_update_mode=SubViewport.UPDATE_ONCE
 	%Preview.queue_redraw()
 

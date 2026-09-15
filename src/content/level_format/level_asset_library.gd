@@ -29,7 +29,8 @@ func resolve(asset: String) -> Resource:
 	else:
 		var path := asset if asset.begins_with("res://") else directory.path_join(asset)
 		if not FileAccess.file_exists(path) and not ResourceLoader.exists(path): return null
-		if asset.ends_with(LevelAnimationAsset.SUFFIX): result=LevelAnimationAsset.load_frames(path)
+		if asset.ends_with(LevelSpineAsset.SUFFIX):result=LevelSpineAsset.load_scene(path)
+		elif asset.ends_with(LevelAnimationAsset.SUFFIX): result=LevelAnimationAsset.load_frames(path)
 		elif path.get_extension().to_lower() in ["tres","res"]:result=load(path)
 		elif asset.begins_with("res://"): result = load(path)
 		else:
@@ -50,17 +51,29 @@ func instantiate(asset: String) -> Node:
 	return null
 
 func animation_names(asset: String) -> PackedStringArray:
+	if asset.ends_with(LevelSpineAsset.SUFFIX):
+		var names:=PackedStringArray()
+		for action in LevelProjectIO.read_json(directory.path_join(asset)).get("actions",[]):names.append(str(action.name))
+		return names
 	var resource := resolve(asset)
 	if resource is SpriteFrames: return resource.get_animation_names()
 	return PackedStringArray()
 
 func default_animation(asset: String) -> String:
+	if asset.ends_with(LevelSpineAsset.SUFFIX):return str(LevelProjectIO.read_json(directory.path_join(asset)).get("default_animation",""))
 	var frames:=resolve(asset) as SpriteFrames
 	if frames==null:return ""
 	var preferred:=""
 	if asset.ends_with(LevelAnimationAsset.SUFFIX):
 		preferred=str(LevelProjectIO.read_json(directory.path_join(asset)).get("default_animation",""))
 	return LevelAnimationAsset.default_action(frames,preferred)
+
+func action_duration(asset: String, action: String) -> float:
+	if asset.ends_with(LevelSpineAsset.SUFFIX):
+		for entry in LevelProjectIO.read_json(directory.path_join(asset)).get("actions",[]):
+			if entry.name==action:return float(entry.duration)
+	var frames:=resolve(asset) as SpriteFrames
+	return LevelAnimationAsset.duration(frames,action) if frames!=null and frames.has_animation(action) else 1.0
 
 ## 内置环境只借用 StageDefinition 的背景，不切换主题、歌曲或玩法。
 func background(asset: String) -> StageBackgroundDefinition:
@@ -86,6 +99,7 @@ func actions(asset: String) -> PackedStringArray:
 	return entries[asset].state_names if entries.has(asset) else animation_names(asset)
 
 func release_time(asset: String, action: String) -> float:
+	if asset.ends_with(LevelSpineAsset.SUFFIX):return float(LevelProjectIO.read_json(directory.path_join(asset)).get("markers",{}).get(action,0.0))
 	if not entries.has(asset): return 0.0
 	return float(entries[asset].action_markers.get(action, {}).get("release_sec", 0.0))
 
@@ -95,7 +109,8 @@ func list_files(folder := "assets") -> PackedStringArray:
 	for file in DirAccess.get_files_at(directory.path_join(folder)): result.append(folder.path_join(file))
 	for child in DirAccess.get_directories_at(directory.path_join(folder)):
 		var nested:=folder.path_join(child)
-		if FileAccess.file_exists(directory.path_join(nested).path_join("asset"+LevelAnimationAsset.SUFFIX)):result.append(nested.path_join("asset"+LevelAnimationAsset.SUFFIX))
+		if FileAccess.file_exists(directory.path_join(nested).path_join("asset"+LevelSpineAsset.SUFFIX)):result.append(nested.path_join("asset"+LevelSpineAsset.SUFFIX))
+		elif FileAccess.file_exists(directory.path_join(nested).path_join("asset"+LevelAnimationAsset.SUFFIX)):result.append(nested.path_join("asset"+LevelAnimationAsset.SUFFIX))
 		else:result.append_array(list_files(nested))
 	return result
 
@@ -117,6 +132,10 @@ func validate_level(level: Dictionary) -> Array[Dictionary]:
 			for dependency in LevelAnimationAsset.dependencies(directory.path_join(asset)):
 				if not FileAccess.file_exists(dependency):
 					var issue:=reference.duplicate();issue.dependency=dependency;issue.message="动画图片缺失："+dependency.get_file();issue.severity="error";result.append(issue)
+		elif asset.ends_with(LevelSpineAsset.SUFFIX):
+			for dependency in LevelSpineAsset.dependencies(directory.path_join(asset)):
+				if not FileAccess.file_exists(dependency):
+					var issue:=reference.duplicate();issue.dependency=dependency;issue.message="骨骼依赖缺失："+dependency.get_file();issue.severity="error";result.append(issue)
 	if not str(level.get("cover", "")).is_empty(): references.append({"asset":level.cover,"kind":"image"})
 	for object_data: Dictionary in level.show.get("objects", []):
 		if not str(object_data.asset).is_empty(): references.append({"asset":object_data.asset,"object_id":object_data.id,"kind":object_data.type})
@@ -156,6 +175,7 @@ func validate_level(level: Dictionary) -> Array[Dictionary]:
 
 ## 分类不触发图片、字体或声音解码。
 func kind(asset: String) -> String:
+	if asset.ends_with(LevelSpineAsset.SUFFIX):return "scene"
 	if entries.has(asset):
 		return "background" if entries[asset].background!=null else "scene"
 	if asset.ends_with(LevelAnimationAsset.SUFFIX):return "animation"

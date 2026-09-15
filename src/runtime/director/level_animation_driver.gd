@@ -82,7 +82,8 @@ func sample(clips: Array, time_us: int) -> void:
 			seconds -= duration
 	# 有状态素材固定以 60Hz 推进，避免可变帧长累计出不同的骨骼物理结果。
 	# 正常播放续算整数步；回拖、换动作时从起点恢复，同一目标帧结果一致。
-	var key := str(active.get("id", ""))
+	# 同一片段修改动作或循环设置也必须重置，不能继续采样上一个动作。
+	var key := str(active.get("id", ""))+"|"+str(active.get("action",""))+"|"+str(active.get("loop",false))
 	var seconds := float(active.get("local_us", 0)) / 1000000.0
 	var steps := maxi(0, floori(seconds * 60.0 + 0.000001))
 	var restart := key != str(previous.get("id", "")) or steps < int(previous.get("steps", 0)) or previous.is_empty()
@@ -96,7 +97,9 @@ func sample(clips: Array, time_us: int) -> void:
 			spine.get_animation_state().clear_tracks()
 			spine.get_skeleton().set_to_setup_pose(); spine.get_skeleton().set_time(0.0)
 			spine.get_skeleton().update_world_transform(SpineConstant.Physics_Reset)
-			if not active.is_empty(): spine.get_animation_state().set_animation(str(active.action), bool(active.loop), 0)
+			var action:=str(active.get("action",spine.get_meta("level_default_animation","")))
+			if not action.is_empty() and spine.skeleton_data_res.find_animation(action)!=null:
+				spine.get_animation_state().set_animation(action, bool(active.get("loop",false)), 0)
 		for step in delta_steps: spine.update_skeleton(1.0 / 60.0)
 		spine.update_skeleton(0.0)
 	previous = {"id": key, "steps": steps, "time_us": time_us}

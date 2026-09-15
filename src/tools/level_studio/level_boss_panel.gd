@@ -87,7 +87,10 @@ func _defaults() -> Dictionary:
 	var object_data: Dictionary=workspace.document.find("objects",object_id)
 	var actions: PackedStringArray=workspace.assets().actions(str(object_data.get("asset","")))
 	var action := str(actions[0]) if not actions.is_empty() else "attack"
-	return {"id":LevelFormat.id("binding"),"object_id":object_id,"difficulty":workspace.difficulty(),"note_ids":[],"action":action,"release_sec":workspace.assets().release_time(str(object_data.get("asset","")),action),"return_us":600000,"action_duration_us":1000000,"rate":1.0,"life_anchor":"life","death_anchor":"death","sound":"","effect":"","hit_effect":"","miss_effect":""}
+	var preferred: String=workspace.assets().default_animation(str(object_data.get("asset","")))
+	if not preferred.is_empty():action=preferred
+	var duration: float=workspace.assets().action_duration(str(object_data.get("asset","")),action)
+	return {"id":LevelFormat.id("binding"),"object_id":object_id,"difficulty":workspace.difficulty(),"note_ids":[],"action":action,"release_sec":workspace.assets().release_time(str(object_data.get("asset","")),action),"return_us":600000,"action_duration_us":maxi(10000,roundi(duration*1000000)),"rate":1.0,"life_anchor":"life","death_anchor":"death","sound":"","effect":"","hit_effect":"","miss_effect":""}
 
 func open(id: String, binding := "") -> void:
 	object_id=id; binding_id=binding
@@ -151,7 +154,9 @@ func _rebuild_form() -> void:
 	var actions: PackedStringArray=workspace.assets().actions(str(object_data.asset))
 	if not actions.is_empty():
 		LevelUI.choice(_form,"素材动作",Array(actions),str(data.action),func(value):
-			workspace.document.begin_edit(); _change("action",value); _change("release_sec",workspace.assets().release_time(object_data.asset,value)); workspace.document.end_edit(); _rebuild_form())
+			workspace.document.begin_edit(); _change("action",value); _change("release_sec",workspace.assets().release_time(object_data.asset,value))
+			if str(object_data.asset).ends_with(LevelSpineAsset.SUFFIX):_change("action_duration_us",roundi(workspace.assets().action_duration(object_data.asset,value)/float(data.rate)*1000000))
+			workspace.document.end_edit(); _rebuild_form())
 	else: LevelUI.label(_form,"素材未声明动作，请在素材库替换 BOSS 素材。",12)
 	LevelUI.number(_form,"出手帧 秒",float(data.release_sec),func(value):_change("release_sec",value),0.001,0,120)
 	LevelUI.number(_form,"动作长度 秒",float(data.action_duration_us)/1000000,func(value):_change("action_duration_us",roundi(value*1000000)),0.01,0.01,120)

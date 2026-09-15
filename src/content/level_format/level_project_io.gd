@@ -101,6 +101,10 @@ static func expand_dependencies(paths: PackedStringArray, root: String) -> Packe
 	root=root.replace("\\","/").simplify_path().trim_suffix("/")
 	var result:=paths.duplicate()
 	for asset in paths:
+		if asset.ends_with(LevelSpineAsset.SUFFIX):
+			for dependency in LevelSpineAsset.dependencies(root.path_join(asset)):
+				var relative:=dependency.trim_prefix(root+"/")
+				if relative not in result:result.append(relative)
 		if asset.ends_with(LevelAnimationAsset.SUFFIX):
 			for dependency in LevelAnimationAsset.dependencies(root.path_join(asset)):
 				var relative:=dependency.trim_prefix(root+"/")
