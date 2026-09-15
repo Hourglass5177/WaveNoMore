@@ -255,7 +255,7 @@ sublayers = Array[ExtResource("sublayer_schema")]([SubResource("Resource_onwqa")
 [sub_resource type="Resource" id="Resource_4ov75"]
 script = ExtResource("2_entry")
 scene = ExtResource("90_boundary")
-position = Vector2(-49.9, -10.3)
+position = Vector2(-49.9, 0)
 uniform_scale = 0.7616555803103707
 
 [sub_resource type="Resource" id="Resource_payyd"]

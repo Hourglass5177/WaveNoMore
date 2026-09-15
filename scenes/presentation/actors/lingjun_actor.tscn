@@ -3,6 +3,7 @@
 [ext_resource type="SpineSkeletonDataResource" uid="uid://c8jfawtuasw04" path="res://assets/character/lingjun/lingjun_gameplay.tres" id="1_skeleton"]
 [ext_resource type="Shader" uid="uid://drem6vne4bjte" path="res://shaders/materials/lingjun.gdshader" id="2_7cjwj"]
 [ext_resource type="PackedScene" path="res://assets/character/lingjun/lingjun_ashes.tscn" id="2_ashes"]
+[ext_resource type="Texture2D" uid="uid://1bmc74nprqtx" path="res://assets/image/scene/bell1.png" id="4_te74s"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_qfdje"]
 shader = ExtResource("2_7cjwj")
@@ -16,8 +17,8 @@ preview_animation = "-- Empty --"
 preview_frame = false
 preview_time = 0.0
 material = SubResource("ShaderMaterial_qfdje")
-position = Vector2(0, 280.645)
-scale = Vector2(0.405, 0.405)
+position = Vector2(-141, 281)
+scale = Vector2(0.32, 0.32)
 metadata/attack_segments = 2
 metadata/attack_loop = "attack_loop"
 metadata/attack_start_sec = 0.46
@@ -29,3 +30,9 @@ metadata/death = "death"
 
 [node name="Ashes" parent="." unique_id=702919063 instance=ExtResource("2_ashes")]
 show_behind_parent = true
+
+[node name="Bell" type="Sprite2D" parent="." unique_id=61900974]
+show_behind_parent = true
+position = Vector2(712.50006, -756.25)
+scale = Vector2(0.25760305, 0.25760308)
+texture = ExtResource("4_te74s")
