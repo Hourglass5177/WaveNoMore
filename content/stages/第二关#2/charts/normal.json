@@ -1,0 +1,3507 @@
+{
+  "format": "minghe-chart",
+  "format_version": 2,
+  "notes": [
+    {
+      "id": "event_a7f61357edaf131f",
+      "kind": "hold",
+      "affinity": "zhu",
+      "tick": 0,
+      "duration_ticks": 3840,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_74c5558a3e426269",
+      "kind": "hold",
+      "affinity": "xuan",
+      "tick": 4020,
+      "duration_ticks": 3720,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_59d4f347eadbc787",
+      "kind": "hold",
+      "affinity": "zhu",
+      "tick": 8160,
+      "duration_ticks": 2880,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_886958e2d7318f86",
+      "kind": "hold",
+      "affinity": "xuan",
+      "tick": 10560,
+      "duration_ticks": 3840,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_6fc06e9261524987",
+      "kind": "hold",
+      "affinity": "zhu",
+      "tick": 14400,
+      "duration_ticks": 2400,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_807a48a81097dadf",
+      "kind": "hold",
+      "affinity": "xuan",
+      "tick": 20640,
+      "duration_ticks": 3360,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_56c6392bfed0e686",
+      "kind": "hold",
+      "affinity": "zhu",
+      "tick": 25440,
+      "duration_ticks": 7200,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_e305460adb291811",
+      "kind": "hold",
+      "affinity": "xuan",
+      "tick": 29040,
+      "duration_ticks": 3600,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_7c933dd9a550f117",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 33120,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_78309843275db7ff",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 33120,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_fe88fb62573ab6d5",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 33840,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_16c5a180deffc154",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 34560,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_8de12f197c3ef23f",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 35040,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_75af23a6c8846bb7",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 35760,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_fa626deec196639d",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 36480,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_5fc091be6fd4442c",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 36960,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_6603ff568c76f967",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 37680,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_3f2e787d366591e0",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 38400,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_e2b85583433982ae",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 38880,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_1d47326f0c1f302e",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 39600,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_45d5cb522364c857",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 40320,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_22090b31e2cdeec0",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 40800,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_5f11f9d87ac2f283",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 41520,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_b7d2f8afe6843597",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 42240,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_09a0a5e592a76b5c",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 42720,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_de77a7b3b5f13d5b",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 43440,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_459a308902b94cdf",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 44160,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_5e8e89f44bdcd603",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 44640,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_8309dd24bc90ee1e",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 45360,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_1484d2fdd1876b82",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 46080,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_600286c44c202d57",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 46560,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_edd0b38c7a15c531",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 47280,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_9522a7dbed3641fa",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 48000,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_403035b3db21e01b",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 48480,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_922ab20ecb646343",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 49200,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_87f123147c553a35",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 49920,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_e9ca8738aebf5f3c",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 50400,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_0a845ea7f9864841",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 51120,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_30d871f24eec212f",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 51840,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_853c21cbbab425d7",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 52320,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_87d8971aaa2126a8",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 53040,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_e40342c2f935bbda",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 53760,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_f75d695c41bc26b5",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 54240,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_d21b3bef5d34bf16",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 54960,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_662ee67d37236940",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 55680,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_24de8412a3d1194c",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 56160,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_8343192e97d67b8b",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 56880,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_46c1d7883e68d36e",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 57600,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_e511737e81b50013",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 58080,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_c3a95cd704a3b705",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 58800,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_cdd4d2be7e29343c",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 59520,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_b0dc994a1692cac7",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 60000,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_54b72e994744e997",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 60720,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_48eae32e84bff2e5",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 61440,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_fcee3365a0825be6",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 61920,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_49fe2be35aeb0384",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 62640,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_623cdf019ba8103d",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 63360,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_d41597b5e157bad3",
+      "kind": "hold",
+      "affinity": "xuan",
+      "tick": 63840,
+      "duration_ticks": 3360,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_e1c782386629c916",
+      "kind": "hold",
+      "affinity": "zhu",
+      "tick": 65280,
+      "duration_ticks": 1920,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_6942b72c82bf40f9",
+      "kind": "hold",
+      "affinity": "zhu",
+      "tick": 67680,
+      "duration_ticks": 3360,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_8098d25e98fc141e",
+      "kind": "hold",
+      "affinity": "xuan",
+      "tick": 69120,
+      "duration_ticks": 1920,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_cc604789245768e3",
+      "kind": "hold",
+      "affinity": "xuan",
+      "tick": 71520,
+      "duration_ticks": 3360,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_13ffb182320386a5",
+      "kind": "hold",
+      "affinity": "zhu",
+      "tick": 72960,
+      "duration_ticks": 1920,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_ec3b3fda79420d56",
+      "kind": "hold",
+      "affinity": "zhu",
+      "tick": 75360,
+      "duration_ticks": 3360,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_3c65a54149dcaf19",
+      "kind": "hold",
+      "affinity": "xuan",
+      "tick": 76800,
+      "duration_ticks": 1920,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_2762d601b8c71423",
+      "kind": "hold",
+      "affinity": "zhu",
+      "tick": 79200,
+      "duration_ticks": 3360,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_3c7188c3d2ae5b63",
+      "kind": "hold",
+      "affinity": "xuan",
+      "tick": 79200,
+      "duration_ticks": 3360,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_be7096527aa8b409",
+      "kind": "hold",
+      "affinity": "zhu",
+      "tick": 83040,
+      "duration_ticks": 3360,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_15a48865df21b52d",
+      "kind": "hold",
+      "affinity": "xuan",
+      "tick": 83040,
+      "duration_ticks": 3360,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_e5f9b6150ab5b2dc",
+      "kind": "hold",
+      "affinity": "zhu",
+      "tick": 86880,
+      "duration_ticks": 3360,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_0866f556f8a22606",
+      "kind": "hold",
+      "affinity": "xuan",
+      "tick": 86880,
+      "duration_ticks": 3360,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_5324c4957ec97acd",
+      "kind": "hold",
+      "affinity": "zhu",
+      "tick": 90720,
+      "duration_ticks": 3360,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_2e845f757d995465",
+      "kind": "hold",
+      "affinity": "xuan",
+      "tick": 90720,
+      "duration_ticks": 3360,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_8d0f05a0c3966556",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 94560,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_56b43508f38c289d",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 95040,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_1acc0a4ee1113e49",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 95280,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_d1ec5d746330a47c",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 96000,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_52201e8e64391607",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 96240,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_a63e1c144f46d887",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 96480,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_c450b24c33c162bb",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 97200,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_442c67f56415493a",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 97920,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_556640c2882e8d31",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 98400,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_e59314c1c5e5a95a",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 98880,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_a1802a99be1019ea",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 99120,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_361c0cc0ae9017cf",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 99840,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_ce811b88ea6f17d1",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 100080,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_68c71bc470475dcb",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 100320,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_f9b362d2f0cb3900",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 101040,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_4e6450cc6ef322d7",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 101760,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_18575676329d3717",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 102240,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_678db6b3bd8530f1",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 102720,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_f2736e8e98bb01d9",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 102960,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_6d53a61834e08175",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 103680,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_e1589794eebb52f7",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 103920,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_49dc38e12a275fc7",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 104160,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_763af21c503cb5ef",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 104880,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_c32ec14a61bd2ccc",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 105600,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_ecca43230fb82231",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 106080,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_6a0142ac00de82bb",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 106560,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_d4b94d5866226505",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 106800,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_fea94732e1eced66",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 107520,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_79bcc0f931497b8a",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 107760,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_5cbaa54320494666",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 108000,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_3d0f17bba3e95789",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 108720,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_c95268aa0990e814",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 109440,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_fc531c31a205ee4c",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 109920,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_9b357f8944902f22",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 110400,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_ef4f780fed86f72d",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 110640,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_f5fe1a1e9d4a2f55",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 111360,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_96f8c3126eb7eaac",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 111600,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_43b3cbe044bec061",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 111840,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_e2e09368dc35c76f",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 112560,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_78c032159726be81",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 113280,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_6f7331a408c68085",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 113760,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_0a03432273878b0f",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 114240,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_b9a975e9a3bd522a",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 114480,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_724ce5274a38292c",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 115200,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_d1cc9fadb0a02adf",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 115440,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_5894c118e87c0ffd",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 115680,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_b0bed66f8e10def5",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 116400,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_c4d0ca2370484f20",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 117120,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_27d17d92695c14cf",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 117600,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_fd7f6985f8df858c",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 118080,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_9e42261a35325479",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 118320,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_100e8baa0871c799",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 119040,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_aa30802b0717825b",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 119280,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_0c56fbdf7a203375",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 119520,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_d7aefdf16a6cd5b7",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 120240,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_4532f5aba3ecdd14",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 120960,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_6a789101a8adbbe0",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 121440,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_6c8978b5295b6fa4",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 121920,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_21c8074bcbfd127b",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 122160,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_398e6ba80a22c9fe",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 122880,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_4f43c8755f83d583",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 123120,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_abeaa2ee49bdd4fc",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 123360,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_43e40c1ea4b283d8",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 124080,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_7a9d80f0a50c2b4a",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 124800,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_997635e2c4516d2c",
+      "kind": "hold",
+      "affinity": "zhu",
+      "tick": 125280,
+      "duration_ticks": 3360,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_8c4cd1578a8f8544",
+      "kind": "hold",
+      "affinity": "xuan",
+      "tick": 125280,
+      "duration_ticks": 3360,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_ef783d4ffc70c046",
+      "kind": "hold",
+      "affinity": "zhu",
+      "tick": 129120,
+      "duration_ticks": 3360,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_fe669f3c3f2bdfcb",
+      "kind": "hold",
+      "affinity": "xuan",
+      "tick": 129120,
+      "duration_ticks": 3360,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_fee88eeeadef9b4a",
+      "kind": "hold",
+      "affinity": "zhu",
+      "tick": 132960,
+      "duration_ticks": 3360,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_69f65784330f90ea",
+      "kind": "hold",
+      "affinity": "xuan",
+      "tick": 132960,
+      "duration_ticks": 3360,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_ae4d652e8abc676d",
+      "kind": "hold",
+      "affinity": "zhu",
+      "tick": 136800,
+      "duration_ticks": 3360,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_0c5dcbe53bc301e3",
+      "kind": "hold",
+      "affinity": "xuan",
+      "tick": 136800,
+      "duration_ticks": 3360,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_1f388eedcdde78b9",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 140640,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_e29429fdc940c73a",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 140640,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_a8cee534ae0b868a",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 142560,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_c66259964bb7ed6d",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 144480,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_24b5a1593705d8ef",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 144960,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_a1e07eac7228540c",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 147360,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_bb7a2f6e6801a00d",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 147360,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_b6578d7f2fdc0a94",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 148320,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_eb1a1509d0bea323",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 150240,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_d0c294a54415959e",
+      "kind": "hold",
+      "affinity": "xuan",
+      "tick": 151200,
+      "duration_ticks": 4800,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_6396e41bb860a521",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 154080,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_8dd3d3d5cfde189a",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 155040,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_beca3c594fe547d9",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 155520,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_9f5d4b5b20aa18b7",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 156000,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_8f47f052d953335c",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 156960,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_2f5f209fefdb6b0c",
+      "kind": "hold",
+      "affinity": "xuan",
+      "tick": 156960,
+      "duration_ticks": 960,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "event_3997e38974a16ab4",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 157920,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_0c682df2b8a68888",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 158880,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_1dcc6c49d083731d",
+      "kind": "hold",
+      "affinity": "xuan",
+      "tick": 158880,
+      "duration_ticks": 960,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "event_21eaa3a8fb71e071",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 159840,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_1b522ca9bc14228d",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 160800,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_5816063b5da3c78b",
+      "kind": "hold",
+      "affinity": "xuan",
+      "tick": 160800,
+      "duration_ticks": 960,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "event_51abbad551f357f7",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 161760,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_414dfa4870847d71",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 162720,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_a676797251434b68",
+      "kind": "hold",
+      "affinity": "xuan",
+      "tick": 162720,
+      "duration_ticks": 960,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "event_f871b16737dfdc83",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 163680,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_b9aabef86ca2dcd5",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 164160,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_6bffd4ee55af0121",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 164640,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_24c57eba4d1b5deb",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 165120,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_1c10bc10d2331804",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 165600,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_b507dfaee366aaec",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 166080,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_b324dc9e76cb87a6",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 166560,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_12ec94a3a18d6f06",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 167040,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_24d8d4d46d2ded72",
+      "kind": "hold",
+      "affinity": "zhu",
+      "tick": 167520,
+      "duration_ticks": 480,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_59ab288328cb295a",
+      "kind": "hold",
+      "affinity": "xuan",
+      "tick": 168000,
+      "duration_ticks": 480,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_78bf3ac9ab160aed",
+      "kind": "hold",
+      "affinity": "zhu",
+      "tick": 168480,
+      "duration_ticks": 480,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_dcb328d7cbdeb3d7",
+      "kind": "hold",
+      "affinity": "xuan",
+      "tick": 168960,
+      "duration_ticks": 480,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_d845947dfbd794ee",
+      "kind": "hold",
+      "affinity": "zhu",
+      "tick": 169440,
+      "duration_ticks": 480,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_1f3d2f1cc56f796f",
+      "kind": "hold",
+      "affinity": "xuan",
+      "tick": 169920,
+      "duration_ticks": 480,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_3ce7f59e82d832cb",
+      "kind": "hold",
+      "affinity": "zhu",
+      "tick": 170400,
+      "duration_ticks": 480,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_4771beb4623bdba2",
+      "kind": "hold",
+      "affinity": "xuan",
+      "tick": 170880,
+      "duration_ticks": 480,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_38cbb1180537773b",
+      "kind": "hold",
+      "affinity": "zhu",
+      "tick": 171360,
+      "duration_ticks": 3840,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_771848f595d4df34",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 172080,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "event_48cea4a8577f4a66",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 172800,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "event_485a290bb9b9e014",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 173040,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "event_71f8ba6d63f95c2a",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 173280,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "event_a5fbb75be1d5711b",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 174000,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "event_4ffe5a7ec53a1fdb",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 174720,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "event_daf3853c65674225",
+      "kind": "hold",
+      "affinity": "xuan",
+      "tick": 175200,
+      "duration_ticks": 3840,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_39fee4bfd87c8b1a",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 175920,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "event_e9fd644997f3bba4",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 176640,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "event_355735e62bc1b3bf",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 176880,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "event_0774199767d9d9dc",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 177120,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "event_2e97d3b46215c2b6",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 177840,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "event_eaf21a9a63574bfc",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 178560,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "event_1ec8884cd151888d",
+      "kind": "hold",
+      "affinity": "zhu",
+      "tick": 179040,
+      "duration_ticks": 3840,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_0a6d43493912a989",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 179760,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "event_ad05ec4677d2a588",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 180480,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "event_bcf34de8c3dad31d",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 180720,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "event_971d4a04655255d1",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 180960,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "event_88c7b2973e6bc633",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 181680,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "event_1881da8db3bf8c59",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 182400,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "event_78d3c7fa4441deba",
+      "kind": "hold",
+      "affinity": "xuan",
+      "tick": 182880,
+      "duration_ticks": 3840,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_5ba6830420050676",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 183600,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "event_62a11a4325289e55",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 184320,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "event_c0597607007b80ae",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 184560,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "event_852a3e007ea5fe09",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 184800,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "event_01a124cf29f5ce4e",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 185520,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "event_f7bb137cbed9dc62",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 186240,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "event_5bebe98d92ffdd7e",
+      "kind": "hold",
+      "affinity": "zhu",
+      "tick": 186720,
+      "duration_ticks": 3360,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_de369d26bd115dd9",
+      "kind": "hold",
+      "affinity": "xuan",
+      "tick": 188160,
+      "duration_ticks": 1920,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "event_2526f0db8964eb82",
+      "kind": "hold",
+      "affinity": "xuan",
+      "tick": 190560,
+      "duration_ticks": 3360,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_0244fa864240599a",
+      "kind": "hold",
+      "affinity": "zhu",
+      "tick": 192000,
+      "duration_ticks": 1920,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "event_d30cf126e0624f2e",
+      "kind": "hold",
+      "affinity": "zhu",
+      "tick": 194400,
+      "duration_ticks": 3360,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_0b0495260cf0b835",
+      "kind": "hold",
+      "affinity": "xuan",
+      "tick": 195840,
+      "duration_ticks": 1920,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "event_2f3b75362ba3ad13",
+      "kind": "hold",
+      "affinity": "xuan",
+      "tick": 198240,
+      "duration_ticks": 3360,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_dbf85d05e29ac03d",
+      "kind": "hold",
+      "affinity": "zhu",
+      "tick": 199680,
+      "duration_ticks": 1920,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "event_3d3206ab83951cf5",
+      "kind": "hold",
+      "affinity": "zhu",
+      "tick": 202080,
+      "duration_ticks": 3360,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_0f0c5fcaf21f3b20",
+      "kind": "hold",
+      "affinity": "xuan",
+      "tick": 203520,
+      "duration_ticks": 1920,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "event_6b564e460dfafaa0",
+      "kind": "hold",
+      "affinity": "xuan",
+      "tick": 205920,
+      "duration_ticks": 3360,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_6e5b181a8cbcb1e8",
+      "kind": "hold",
+      "affinity": "zhu",
+      "tick": 207360,
+      "duration_ticks": 1920,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "event_ea9f12348d2c14bd",
+      "kind": "hold",
+      "affinity": "zhu",
+      "tick": 209760,
+      "duration_ticks": 3360,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_fe1ca9e636efde46",
+      "kind": "hold",
+      "affinity": "xuan",
+      "tick": 211200,
+      "duration_ticks": 1920,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "event_46defd887efcaad4",
+      "kind": "hold",
+      "affinity": "xuan",
+      "tick": 213600,
+      "duration_ticks": 2880,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_9154a5dde9012b7c",
+      "kind": "hold",
+      "affinity": "zhu",
+      "tick": 215040,
+      "duration_ticks": 1440,
+      "visual_variant": "default",
+      "boss": true
+    },
+    {
+      "id": "event_c5d039dc47963ee8",
+      "kind": "tap",
+      "affinity": "xuan",
+      "tick": 216960,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    },
+    {
+      "id": "event_0bbf7ec6ecf53a01",
+      "kind": "tap",
+      "affinity": "zhu",
+      "tick": 217200,
+      "duration_ticks": 0,
+      "visual_variant": "default",
+      "boss": false
+    }
+  ],
+  "sections": [],
+  "presentation": {
+    "scene_id": "s08",
+    "use_scene_show": false
+  },
+  "timing": {
+    "ppq": 480,
+    "first_beat_offset_ms": 1955.7648136372,
+    "chart_offset_ticks": 0,
+    "end_tick": 220800,
+    "tempo_events": [
+      {
+        "tick": 0,
+        "bpm": 143.0
+      }
+    ],
+    "meter_events": [
+      {
+        "tick": 0,
+        "numerator": 4,
+        "denominator": 4
+      }
+    ]
+  },
+  "chart_id": "chart_3a323bb6e82964c5",
+  "song_id": "song_813ba24df25019f8",
+  "difficulty_id": "normal",
+  "difficulty_name": "normal",
+  "mapper": "",
+  "tuning_paths": [
+    {
+      "id": "event_38c2e7bf599d725d",
+      "affinity": "zhu",
+      "tick": 65280,
+      "hold_id": "event_e1c782386629c916",
+      "support_hold_id": "event_d41597b5e157bad3",
+      "points": [
+        {
+          "id": "point_d26a5b5e936ec94c",
+          "offset_ticks": 0,
+          "angle_deg": -90.6422464572087
+        },
+        {
+          "id": "point_5df12257fb7996b9",
+          "offset_ticks": 1920,
+          "angle_deg": -30.6422464572087
+        }
+      ]
+    },
+    {
+      "id": "event_7a864cb3865a1d9f",
+      "affinity": "xuan",
+      "tick": 69120,
+      "hold_id": "event_8098d25e98fc141e",
+      "support_hold_id": "event_6942b72c82bf40f9",
+      "points": [
+        {
+          "id": "point_7e47bb46e27a0e1a",
+          "offset_ticks": 0,
+          "angle_deg": 89.3577535427913
+        },
+        {
+          "id": "point_cf53ca54dc049dce",
+          "offset_ticks": 1920,
+          "angle_deg": 149.357753542791
+        }
+      ]
+    },
+    {
+      "id": "event_46fcf56dff5716f2",
+      "affinity": "zhu",
+      "tick": 72960,
+      "hold_id": "event_13ffb182320386a5",
+      "support_hold_id": "event_cc604789245768e3",
+      "points": [
+        {
+          "id": "point_85bc36e4bc690339",
+          "offset_ticks": 0,
+          "angle_deg": -90.6422464572087
+        },
+        {
+          "id": "point_4237ba9d57ce9cb7",
+          "offset_ticks": 1920,
+          "angle_deg": -30.6422464572087
+        }
+      ]
+    },
+    {
+      "id": "event_c3f30e3386227c9a",
+      "affinity": "xuan",
+      "tick": 76800,
+      "hold_id": "event_3c65a54149dcaf19",
+      "support_hold_id": "event_ec3b3fda79420d56",
+      "points": [
+        {
+          "id": "point_129dfbde859fc41a",
+          "offset_ticks": 0,
+          "angle_deg": 89.3577535427913
+        },
+        {
+          "id": "point_d3a21885b70ef4cd",
+          "offset_ticks": 1920,
+          "angle_deg": 149.357753542791
+        }
+      ]
+    },
+    {
+      "visual_radius_px": 350.0,
+      "id": "event_75ff3e39621d0a5a",
+      "affinity": "xuan",
+      "tick": 80640,
+      "hold_id": "event_3c7188c3d2ae5b63",
+      "support_hold_id": "event_2762d601b8c71423",
+      "points": [
+        {
+          "id": "point_a14e5e4c4d8c4a52",
+          "offset_ticks": 0,
+          "angle_deg": 89.3577535427913
+        },
+        {
+          "id": "point_5698227a0855ea55",
+          "offset_ticks": 1920,
+          "angle_deg": 149.357753542791
+        }
+      ]
+    },
+    {
+      "visual_radius_px": 350.0,
+      "id": "event_7e1cfc92b1d68a8b",
+      "affinity": "zhu",
+      "tick": 80640,
+      "hold_id": "event_2762d601b8c71423",
+      "support_hold_id": "event_3c7188c3d2ae5b63",
+      "points": [
+        {
+          "id": "point_b586f2a0dc60aa55",
+          "offset_ticks": 0,
+          "angle_deg": -90.6422464572087
+        },
+        {
+          "id": "point_68893b6d9b4ec477",
+          "offset_ticks": 1920,
+          "angle_deg": -30.6422464572087
+        }
+      ]
+    },
+    {
+      "visual_radius_px": 350.0,
+      "id": "event_08f26a2da92d21b2",
+      "affinity": "xuan",
+      "tick": 84480,
+      "hold_id": "event_15a48865df21b52d",
+      "support_hold_id": "event_be7096527aa8b409",
+      "points": [
+        {
+          "id": "point_fa41782e529d6341",
+          "offset_ticks": 0,
+          "angle_deg": 89.3577535427913
+        },
+        {
+          "id": "point_0ecf72944c12443e",
+          "offset_ticks": 1920,
+          "angle_deg": 149.357753542791
+        }
+      ]
+    },
+    {
+      "visual_radius_px": 350.0,
+      "id": "event_62a1b68b50583c1f",
+      "affinity": "zhu",
+      "tick": 84480,
+      "hold_id": "event_be7096527aa8b409",
+      "support_hold_id": "event_15a48865df21b52d",
+      "points": [
+        {
+          "id": "point_d9f5c60dfb01c396",
+          "offset_ticks": 0,
+          "angle_deg": -90.6422464572087
+        },
+        {
+          "id": "point_ebe5a95f60a1d227",
+          "offset_ticks": 1920,
+          "angle_deg": -30.6422464572087
+        }
+      ]
+    },
+    {
+      "visual_radius_px": 350.0,
+      "id": "event_cd3f3b726d65dc66",
+      "affinity": "zhu",
+      "tick": 88320,
+      "hold_id": "event_e5f9b6150ab5b2dc",
+      "support_hold_id": "event_0866f556f8a22606",
+      "points": [
+        {
+          "id": "point_3a5647108fcd2fe2",
+          "offset_ticks": 0,
+          "angle_deg": -90.6422464572087
+        },
+        {
+          "id": "point_e1d90a02d832014c",
+          "offset_ticks": 1920,
+          "angle_deg": -30.6422464572087
+        }
+      ]
+    },
+    {
+      "visual_radius_px": 350.0,
+      "id": "event_efd2aef254de54e9",
+      "affinity": "xuan",
+      "tick": 88320,
+      "hold_id": "event_0866f556f8a22606",
+      "support_hold_id": "event_e5f9b6150ab5b2dc",
+      "points": [
+        {
+          "id": "point_fe448f82ddd1cf72",
+          "offset_ticks": 0,
+          "angle_deg": 89.3577535427913
+        },
+        {
+          "id": "point_91c9189ca2390059",
+          "offset_ticks": 1920,
+          "angle_deg": 149.357753542791
+        }
+      ]
+    },
+    {
+      "visual_radius_px": 350.0,
+      "id": "event_74fc1a43e35ecd7f",
+      "affinity": "xuan",
+      "tick": 92160,
+      "hold_id": "event_2e845f757d995465",
+      "support_hold_id": "event_5324c4957ec97acd",
+      "points": [
+        {
+          "id": "point_eb7388bc283066b2",
+          "offset_ticks": 0,
+          "angle_deg": 89.3577535427913
+        },
+        {
+          "id": "point_c47c294a4d43489c",
+          "offset_ticks": 1920,
+          "angle_deg": 149.357753542791
+        }
+      ]
+    },
+    {
+      "visual_radius_px": 350.0,
+      "id": "event_90483925f7329cc9",
+      "affinity": "zhu",
+      "tick": 92160,
+      "hold_id": "event_5324c4957ec97acd",
+      "support_hold_id": "event_2e845f757d995465",
+      "points": [
+        {
+          "id": "point_96c056c34f0abe07",
+          "offset_ticks": 0,
+          "angle_deg": -90.6422464572087
+        },
+        {
+          "id": "point_17e639c26e5f9f9d",
+          "offset_ticks": 1920,
+          "angle_deg": -30.6422464572087
+        }
+      ]
+    },
+    {
+      "visual_radius_px": 475.0,
+      "id": "event_22a22d066a9b2335",
+      "affinity": "zhu",
+      "tick": 125280,
+      "hold_id": "event_997635e2c4516d2c",
+      "support_hold_id": "event_8c4cd1578a8f8544",
+      "points": [
+        {
+          "id": "point_4e7ed009efeaef01",
+          "offset_ticks": 0,
+          "angle_deg": -90.6422464572087
+        },
+        {
+          "id": "point_76786623fc54d52f",
+          "offset_ticks": 1800,
+          "angle_deg": -0.0428960958272541
+        }
+      ]
+    },
+    {
+      "visual_radius_px": 475.0,
+      "id": "event_5e8e215664e8c8aa",
+      "affinity": "xuan",
+      "tick": 127080,
+      "hold_id": "event_8c4cd1578a8f8544",
+      "support_hold_id": "event_997635e2c4516d2c",
+      "points": [
+        {
+          "id": "point_bd865f3ccd60d22c",
+          "offset_ticks": 0,
+          "angle_deg": 89.3577535427913
+        },
+        {
+          "id": "point_cf62cf041b1d1ec0",
+          "offset_ticks": 1560,
+          "angle_deg": 180.0
+        }
+      ]
+    },
+    {
+      "visual_radius_px": 475.0,
+      "id": "event_c571114a9d99c6d0",
+      "affinity": "zhu",
+      "tick": 129120,
+      "hold_id": "event_ef783d4ffc70c046",
+      "support_hold_id": "event_fe669f3c3f2bdfcb",
+      "points": [
+        {
+          "id": "point_32e833ddd5b9531a",
+          "offset_ticks": 0,
+          "angle_deg": -90.6422464572087
+        },
+        {
+          "id": "point_1e8240dd9de58368",
+          "offset_ticks": 1800,
+          "angle_deg": -0.0428960958272541
+        }
+      ]
+    },
+    {
+      "visual_radius_px": 475.0,
+      "id": "event_231d513e7ef19c46",
+      "affinity": "xuan",
+      "tick": 130920,
+      "hold_id": "event_fe669f3c3f2bdfcb",
+      "support_hold_id": "event_ef783d4ffc70c046",
+      "points": [
+        {
+          "id": "point_c94aeb4f104a55fa",
+          "offset_ticks": 0,
+          "angle_deg": 89.3577535427913
+        },
+        {
+          "id": "point_d94f91b0fcbc9689",
+          "offset_ticks": 1560,
+          "angle_deg": 180.0
+        }
+      ]
+    },
+    {
+      "visual_radius_px": 475.0,
+      "id": "event_2b54c343236a006a",
+      "affinity": "xuan",
+      "tick": 132960,
+      "hold_id": "event_69f65784330f90ea",
+      "support_hold_id": "event_fee88eeeadef9b4a",
+      "points": [
+        {
+          "id": "point_931405019ad0442a",
+          "offset_ticks": 0,
+          "angle_deg": 89.3577535427913
+        },
+        {
+          "id": "point_9b23dfd556c289aa",
+          "offset_ticks": 1680,
+          "angle_deg": 180.0
+        }
+      ]
+    },
+    {
+      "visual_radius_px": 475.0,
+      "id": "event_be0b9e081e1ba318",
+      "affinity": "zhu",
+      "tick": 134640,
+      "hold_id": "event_fee88eeeadef9b4a",
+      "support_hold_id": "event_69f65784330f90ea",
+      "points": [
+        {
+          "id": "point_1d16d678c948841e",
+          "offset_ticks": 0,
+          "angle_deg": -90.6422464572087
+        },
+        {
+          "id": "point_5f72a2c179438f12",
+          "offset_ticks": 1680,
+          "angle_deg": -0.0428960958272541
+        }
+      ]
+    },
+    {
+      "visual_radius_px": 475.0,
+      "id": "event_a508562c7c42a416",
+      "affinity": "xuan",
+      "tick": 136800,
+      "hold_id": "event_0c5dcbe53bc301e3",
+      "support_hold_id": "event_ae4d652e8abc676d",
+      "points": [
+        {
+          "id": "point_5f57ffbb87c5a863",
+          "offset_ticks": 0,
+          "angle_deg": 89.3577535427913
+        },
+        {
+          "id": "point_e5e562e516290706",
+          "offset_ticks": 1680,
+          "angle_deg": 180.0
+        }
+      ]
+    },
+    {
+      "visual_radius_px": 475.0,
+      "id": "event_0e180e6a2db8795d",
+      "affinity": "zhu",
+      "tick": 138480,
+      "hold_id": "event_ae4d652e8abc676d",
+      "support_hold_id": "event_0c5dcbe53bc301e3",
+      "points": [
+        {
+          "id": "point_1d772117939f57df",
+          "offset_ticks": 0,
+          "angle_deg": -90.6422464572087
+        },
+        {
+          "id": "point_c4023c1cdf3c9f5d",
+          "offset_ticks": 1680,
+          "angle_deg": -0.0428960958272541
+        }
+      ]
+    },
+    {
+      "visual_radius_px": 450.0,
+      "id": "event_2300534537eb56ce",
+      "affinity": "xuan",
+      "tick": 188160,
+      "hold_id": "event_de369d26bd115dd9",
+      "support_hold_id": "event_5bebe98d92ffdd7e",
+      "points": [
+        {
+          "id": "point_e8f06874ba76d270",
+          "offset_ticks": 0,
+          "angle_deg": 60.0
+        },
+        {
+          "id": "point_27c614ea768367c2",
+          "offset_ticks": 1920,
+          "angle_deg": 150.0
+        }
+      ]
+    },
+    {
+      "visual_radius_px": 450.0,
+      "id": "event_b2222fd8005dd20c",
+      "affinity": "zhu",
+      "tick": 188160,
+      "hold_id": "event_5bebe98d92ffdd7e",
+      "support_hold_id": "event_de369d26bd115dd9",
+      "points": [
+        {
+          "id": "point_f085b1fc39fa5834",
+          "offset_ticks": 0,
+          "angle_deg": -120.0
+        },
+        {
+          "id": "point_2510e420ae8b596c",
+          "offset_ticks": 1920,
+          "angle_deg": -30.0
+        }
+      ]
+    },
+    {
+      "visual_radius_px": 450.0,
+      "id": "event_346ee438357949fa",
+      "affinity": "xuan",
+      "tick": 192000,
+      "hold_id": "event_2526f0db8964eb82",
+      "support_hold_id": "event_0244fa864240599a",
+      "points": [
+        {
+          "id": "point_a5a4273f2033acbe",
+          "offset_ticks": 0,
+          "angle_deg": 90.0
+        },
+        {
+          "id": "point_b795b1fb30b7aecd",
+          "offset_ticks": 1920,
+          "angle_deg": 180.0
+        }
+      ]
+    },
+    {
+      "visual_radius_px": 450.0,
+      "id": "event_ef3e5b54c653dcc7",
+      "affinity": "zhu",
+      "tick": 192000,
+      "hold_id": "event_0244fa864240599a",
+      "support_hold_id": "event_2526f0db8964eb82",
+      "points": [
+        {
+          "id": "point_71ca5969fb8fb942",
+          "offset_ticks": 0,
+          "angle_deg": -90.0
+        },
+        {
+          "id": "point_340ab73abc616e0d",
+          "offset_ticks": 1920,
+          "angle_deg": 0.0
+        }
+      ]
+    },
+    {
+      "visual_radius_px": 450.0,
+      "id": "event_09d10409a877ad6d",
+      "affinity": "xuan",
+      "tick": 195840,
+      "hold_id": "event_0b0495260cf0b835",
+      "support_hold_id": "event_d30cf126e0624f2e",
+      "points": [
+        {
+          "id": "point_f88c5e81052f5dbb",
+          "offset_ticks": 0,
+          "angle_deg": 60.0
+        },
+        {
+          "id": "point_5baf168f75fcc9e7",
+          "offset_ticks": 1920,
+          "angle_deg": 150.0
+        }
+      ]
+    },
+    {
+      "visual_radius_px": 450.0,
+      "id": "event_40f2fd335730a091",
+      "affinity": "zhu",
+      "tick": 195840,
+      "hold_id": "event_d30cf126e0624f2e",
+      "support_hold_id": "event_0b0495260cf0b835",
+      "points": [
+        {
+          "id": "point_7e284387711e093f",
+          "offset_ticks": 0,
+          "angle_deg": -120.0
+        },
+        {
+          "id": "point_99dd3e263d05e9bc",
+          "offset_ticks": 1920,
+          "angle_deg": -30.0
+        }
+      ]
+    },
+    {
+      "visual_radius_px": 450.0,
+      "id": "event_b9a220763d18a4c7",
+      "affinity": "xuan",
+      "tick": 199680,
+      "hold_id": "event_2f3b75362ba3ad13",
+      "support_hold_id": "event_dbf85d05e29ac03d",
+      "points": [
+        {
+          "id": "point_4ac3ee1374f60b4a",
+          "offset_ticks": 0,
+          "angle_deg": 90.0
+        },
+        {
+          "id": "point_a39f2403a297bfba",
+          "offset_ticks": 1920,
+          "angle_deg": 180.0
+        }
+      ]
+    },
+    {
+      "visual_radius_px": 450.0,
+      "id": "event_ff014f249e4fd03d",
+      "affinity": "zhu",
+      "tick": 199680,
+      "hold_id": "event_dbf85d05e29ac03d",
+      "support_hold_id": "event_2f3b75362ba3ad13",
+      "points": [
+        {
+          "id": "point_a9c42991e75b1826",
+          "offset_ticks": 0,
+          "angle_deg": -90.0
+        },
+        {
+          "id": "point_c6b267cb8ccb8041",
+          "offset_ticks": 1920,
+          "angle_deg": 0.0
+        }
+      ]
+    },
+    {
+      "visual_radius_px": 450.0,
+      "id": "event_3571217cff69469c",
+      "affinity": "xuan",
+      "tick": 203520,
+      "hold_id": "event_0f0c5fcaf21f3b20",
+      "support_hold_id": "event_3d3206ab83951cf5",
+      "points": [
+        {
+          "id": "point_816ee525dc94ee44",
+          "offset_ticks": 0,
+          "angle_deg": 90.0
+        },
+        {
+          "id": "point_16e0df8d6f1cc7d6",
+          "offset_ticks": 1920,
+          "angle_deg": 180.0
+        }
+      ]
+    },
+    {
+      "visual_radius_px": 450.0,
+      "id": "event_cbf6fb53267531ef",
+      "affinity": "zhu",
+      "tick": 203520,
+      "hold_id": "event_3d3206ab83951cf5",
+      "support_hold_id": "event_0f0c5fcaf21f3b20",
+      "points": [
+        {
+          "id": "point_ed31360a3615f5c2",
+          "offset_ticks": 0,
+          "angle_deg": -30.0
+        },
+        {
+          "id": "point_b207937b1340f6a5",
+          "offset_ticks": 1920,
+          "angle_deg": -120.0
+        }
+      ]
+    },
+    {
+      "visual_radius_px": 450.0,
+      "id": "event_7bcd1f7cef128246",
+      "affinity": "zhu",
+      "tick": 207360,
+      "hold_id": "event_6e5b181a8cbcb1e8",
+      "support_hold_id": "event_6b564e460dfafaa0",
+      "points": [
+        {
+          "id": "point_2188908b7b8df1c4",
+          "offset_ticks": 0,
+          "angle_deg": -30.0
+        },
+        {
+          "id": "point_7b0bcc3ff18315d7",
+          "offset_ticks": 1920,
+          "angle_deg": -120.0
+        }
+      ]
+    },
+    {
+      "visual_radius_px": 450.0,
+      "id": "event_c4554b2c69ce7577",
+      "affinity": "xuan",
+      "tick": 207360,
+      "hold_id": "event_6b564e460dfafaa0",
+      "support_hold_id": "event_6e5b181a8cbcb1e8",
+      "points": [
+        {
+          "id": "point_445bf3f551d2705b",
+          "offset_ticks": 0,
+          "angle_deg": 90.0
+        },
+        {
+          "id": "point_b5b6277c559e056b",
+          "offset_ticks": 1920,
+          "angle_deg": 180.0
+        }
+      ]
+    },
+    {
+      "visual_radius_px": 450.0,
+      "id": "event_2c54db82321a9f51",
+      "affinity": "xuan",
+      "tick": 211200,
+      "hold_id": "event_fe1ca9e636efde46",
+      "support_hold_id": "event_ea9f12348d2c14bd",
+      "points": [
+        {
+          "id": "point_30256e7e91c7767d",
+          "offset_ticks": 0,
+          "angle_deg": 150.0
+        },
+        {
+          "id": "point_f50bb59042231f62",
+          "offset_ticks": 1920,
+          "angle_deg": 60.0
+        }
+      ]
+    },
+    {
+      "visual_radius_px": 450.0,
+      "id": "event_f2a3ac440661ba8b",
+      "affinity": "zhu",
+      "tick": 211200,
+      "hold_id": "event_ea9f12348d2c14bd",
+      "support_hold_id": "event_fe1ca9e636efde46",
+      "points": [
+        {
+          "id": "point_ab2d165c631b0ffa",
+          "offset_ticks": 0,
+          "angle_deg": -90.0
+        },
+        {
+          "id": "point_d85c52327c4e05d7",
+          "offset_ticks": 1920,
+          "angle_deg": 0.0
+        }
+      ]
+    },
+    {
+      "visual_radius_px": 450.0,
+      "id": "event_79c7118c90f2ba53",
+      "affinity": "zhu",
+      "tick": 215040,
+      "hold_id": "event_9154a5dde9012b7c",
+      "support_hold_id": "event_46defd887efcaad4",
+      "points": [
+        {
+          "id": "point_6c4a1bf9edf81b9d",
+          "offset_ticks": 0,
+          "angle_deg": -90.0
+        },
+        {
+          "id": "point_465bdb020cbc6f7a",
+          "offset_ticks": 1440,
+          "angle_deg": 0.0
+        }
+      ]
+    },
+    {
+      "visual_radius_px": 450.0,
+      "id": "event_7e40d54dff80561f",
+      "affinity": "xuan",
+      "tick": 215040,
+      "hold_id": "event_46defd887efcaad4",
+      "support_hold_id": "event_9154a5dde9012b7c",
+      "points": [
+        {
+          "id": "point_f6a2b5ec0a8cb528",
+          "offset_ticks": 0,
+          "angle_deg": 150.0
+        },
+        {
+          "id": "point_1204ae8f4dc906a7",
+          "offset_ticks": 1440,
+          "angle_deg": 60.0
+        }
+      ]
+    }
+  ],
+  "ghost_events": [
+    {
+      "id": "event_0de8b8457e25652f",
+      "tick": 66240,
+      "count": 1,
+      "tuning_ids": [
+        "event_38c2e7bf599d725d"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_08b1ceb0a08d3b57",
+      "tick": 70080,
+      "count": 1,
+      "tuning_ids": [
+        "event_7a864cb3865a1d9f"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_242a1e04c0ff7561",
+      "tick": 73920,
+      "count": 1,
+      "tuning_ids": [
+        "event_46fcf56dff5716f2"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_cca15ccc3007639a",
+      "tick": 77760,
+      "count": 1,
+      "tuning_ids": [
+        "event_c3f30e3386227c9a"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_bac186dda45f7d9a",
+      "tick": 81120,
+      "count": 1,
+      "tuning_ids": [
+        "event_7e1cfc92b1d68a8b",
+        "event_75ff3e39621d0a5a"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_976ec94b81334b43",
+      "tick": 81600,
+      "count": 1,
+      "tuning_ids": [
+        "event_7e1cfc92b1d68a8b",
+        "event_75ff3e39621d0a5a"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_2577ca1992a7308a",
+      "tick": 82080,
+      "count": 1,
+      "tuning_ids": [
+        "event_7e1cfc92b1d68a8b",
+        "event_75ff3e39621d0a5a"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_a5b642302202c0d3",
+      "tick": 84960,
+      "count": 1,
+      "tuning_ids": [
+        "event_62a1b68b50583c1f",
+        "event_08f26a2da92d21b2"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_e44b7ca517fd4bd4",
+      "tick": 85440,
+      "count": 1,
+      "tuning_ids": [
+        "event_62a1b68b50583c1f",
+        "event_08f26a2da92d21b2"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_51e2ce684cc946d3",
+      "tick": 85920,
+      "count": 1,
+      "tuning_ids": [
+        "event_62a1b68b50583c1f",
+        "event_08f26a2da92d21b2"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_2a2e19f3d8c0a5cb",
+      "tick": 88800,
+      "count": 1,
+      "tuning_ids": [
+        "event_cd3f3b726d65dc66",
+        "event_efd2aef254de54e9"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_c58c027c05ddb810",
+      "tick": 89280,
+      "count": 1,
+      "tuning_ids": [
+        "event_cd3f3b726d65dc66",
+        "event_efd2aef254de54e9"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_69b23e7ccfd7af80",
+      "tick": 89760,
+      "count": 1,
+      "tuning_ids": [
+        "event_cd3f3b726d65dc66",
+        "event_efd2aef254de54e9"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_6ce45953cd062155",
+      "tick": 92640,
+      "count": 1,
+      "tuning_ids": [
+        "event_90483925f7329cc9",
+        "event_74fc1a43e35ecd7f"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_2f5c5801f4bf89d5",
+      "tick": 93120,
+      "count": 1,
+      "tuning_ids": [
+        "event_90483925f7329cc9",
+        "event_74fc1a43e35ecd7f"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_76353cb0002fd0c1",
+      "tick": 93600,
+      "count": 1,
+      "tuning_ids": [
+        "event_90483925f7329cc9",
+        "event_74fc1a43e35ecd7f"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_c2c0c1f534ea3a91",
+      "tick": 125760,
+      "count": 1,
+      "tuning_ids": [
+        "event_22a22d066a9b2335"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_f3314660b7f27cda",
+      "tick": 126240,
+      "count": 1,
+      "tuning_ids": [
+        "event_22a22d066a9b2335"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_324fcada31e659f3",
+      "tick": 126720,
+      "count": 1,
+      "tuning_ids": [
+        "event_22a22d066a9b2335"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_b2a410949840d400",
+      "tick": 127680,
+      "count": 1,
+      "tuning_ids": [
+        "event_5e8e215664e8c8aa"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_99e69a4a17a2c47e",
+      "tick": 128160,
+      "count": 1,
+      "tuning_ids": [
+        "event_5e8e215664e8c8aa"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_2d8c4e6dfbc9fb9d",
+      "tick": 129600,
+      "count": 1,
+      "tuning_ids": [
+        "event_c571114a9d99c6d0"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_a207a259e958e20a",
+      "tick": 130080,
+      "count": 1,
+      "tuning_ids": [
+        "event_c571114a9d99c6d0"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_7b5a65ef7dc96c06",
+      "tick": 130560,
+      "count": 1,
+      "tuning_ids": [
+        "event_c571114a9d99c6d0"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_7e946f63246a853c",
+      "tick": 131520,
+      "count": 1,
+      "tuning_ids": [
+        "event_231d513e7ef19c46"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_9306bedfef023ec2",
+      "tick": 132000,
+      "count": 1,
+      "tuning_ids": [
+        "event_231d513e7ef19c46"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_034e3126e1b9ca4e",
+      "tick": 133440,
+      "count": 1,
+      "tuning_ids": [
+        "event_2b54c343236a006a"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_b3ecde65730e3681",
+      "tick": 133920,
+      "count": 1,
+      "tuning_ids": [
+        "event_2b54c343236a006a"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_c510be2b5d7af41e",
+      "tick": 134400,
+      "count": 1,
+      "tuning_ids": [
+        "event_2b54c343236a006a"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_3a48ed8258bfa77c",
+      "tick": 134880,
+      "count": 1,
+      "tuning_ids": [
+        "event_be0b9e081e1ba318"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_d95f4c589d7327a4",
+      "tick": 135360,
+      "count": 1,
+      "tuning_ids": [
+        "event_be0b9e081e1ba318"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_581d8204e80aac40",
+      "tick": 135840,
+      "count": 1,
+      "tuning_ids": [
+        "event_be0b9e081e1ba318"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_eeee31ac2eccc126",
+      "tick": 137280,
+      "count": 1,
+      "tuning_ids": [
+        "event_a508562c7c42a416"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_36bb40a18486f2df",
+      "tick": 137760,
+      "count": 1,
+      "tuning_ids": [
+        "event_a508562c7c42a416"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_a6627b162a037be3",
+      "tick": 138240,
+      "count": 1,
+      "tuning_ids": [
+        "event_a508562c7c42a416"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_ff2312b2e9dda4b7",
+      "tick": 138720,
+      "count": 1,
+      "tuning_ids": [
+        "event_0e180e6a2db8795d"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_ee35f99ab5f51425",
+      "tick": 139200,
+      "count": 1,
+      "tuning_ids": [
+        "event_0e180e6a2db8795d"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_a13f7a2fb9c82ee8",
+      "tick": 139680,
+      "count": 1,
+      "tuning_ids": [
+        "event_0e180e6a2db8795d"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_c11e8de712ce839f",
+      "tick": 188640,
+      "count": 1,
+      "tuning_ids": [
+        "event_b2222fd8005dd20c",
+        "event_2300534537eb56ce"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_8d5ea2f33c69ebff",
+      "tick": 189120,
+      "count": 1,
+      "tuning_ids": [
+        "event_b2222fd8005dd20c",
+        "event_2300534537eb56ce"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_695fc14e73722ad5",
+      "tick": 189600,
+      "count": 1,
+      "tuning_ids": [
+        "event_b2222fd8005dd20c",
+        "event_2300534537eb56ce"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_202368fc90a3dc2f",
+      "tick": 192480,
+      "count": 1,
+      "tuning_ids": [
+        "event_ef3e5b54c653dcc7",
+        "event_346ee438357949fa"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_7489fc888107f0d1",
+      "tick": 192960,
+      "count": 1,
+      "tuning_ids": [
+        "event_ef3e5b54c653dcc7",
+        "event_346ee438357949fa"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_e23fbf662c136d33",
+      "tick": 193440,
+      "count": 1,
+      "tuning_ids": [
+        "event_ef3e5b54c653dcc7",
+        "event_346ee438357949fa"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_81a192e2be205e69",
+      "tick": 196320,
+      "count": 1,
+      "tuning_ids": [
+        "event_40f2fd335730a091",
+        "event_09d10409a877ad6d"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_fa26199416946f05",
+      "tick": 196800,
+      "count": 1,
+      "tuning_ids": [
+        "event_40f2fd335730a091",
+        "event_09d10409a877ad6d"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_cef51b1d1b1bfece",
+      "tick": 197160,
+      "count": 1,
+      "tuning_ids": [
+        "event_40f2fd335730a091",
+        "event_09d10409a877ad6d"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_2b8f22805a61866e",
+      "tick": 200160,
+      "count": 1,
+      "tuning_ids": [
+        "event_ff014f249e4fd03d",
+        "event_b9a220763d18a4c7"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_49f00158dfb65579",
+      "tick": 200640,
+      "count": 1,
+      "tuning_ids": [
+        "event_ff014f249e4fd03d",
+        "event_b9a220763d18a4c7"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_53a8960adb0dd10e",
+      "tick": 201120,
+      "count": 1,
+      "tuning_ids": [
+        "event_ff014f249e4fd03d",
+        "event_b9a220763d18a4c7"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_ca504e5d5782427e",
+      "tick": 203520,
+      "count": 1,
+      "tuning_ids": [
+        "event_cbf6fb53267531ef",
+        "event_3571217cff69469c"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_de41cc88dd2fd20d",
+      "tick": 203760,
+      "count": 1,
+      "tuning_ids": [
+        "event_cbf6fb53267531ef",
+        "event_3571217cff69469c"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_8afea1d6336725d0",
+      "tick": 204000,
+      "count": 1,
+      "tuning_ids": [
+        "event_cbf6fb53267531ef",
+        "event_3571217cff69469c"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_5a8a1b00a2336d2b",
+      "tick": 204480,
+      "count": 1,
+      "tuning_ids": [
+        "event_cbf6fb53267531ef",
+        "event_3571217cff69469c"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_8687de226fc78794",
+      "tick": 204960,
+      "count": 1,
+      "tuning_ids": [
+        "event_cbf6fb53267531ef",
+        "event_3571217cff69469c"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_9fe0ed393e64e4c8",
+      "tick": 207360,
+      "count": 1,
+      "tuning_ids": [
+        "event_7bcd1f7cef128246",
+        "event_c4554b2c69ce7577"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_459da9182c0e4a1b",
+      "tick": 207600,
+      "count": 1,
+      "tuning_ids": [
+        "event_7bcd1f7cef128246",
+        "event_c4554b2c69ce7577"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_a4dfc1cce0f4145c",
+      "tick": 207840,
+      "count": 1,
+      "tuning_ids": [
+        "event_7bcd1f7cef128246",
+        "event_c4554b2c69ce7577"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_017efe033bb5a53f",
+      "tick": 208320,
+      "count": 1,
+      "tuning_ids": [
+        "event_7bcd1f7cef128246",
+        "event_c4554b2c69ce7577"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_3021d5b3d7a1230c",
+      "tick": 208800,
+      "count": 1,
+      "tuning_ids": [
+        "event_7bcd1f7cef128246",
+        "event_c4554b2c69ce7577"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_9060627e7c5ec1d8",
+      "tick": 211200,
+      "count": 1,
+      "tuning_ids": [
+        "event_f2a3ac440661ba8b",
+        "event_2c54db82321a9f51"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_b3b798533967edc3",
+      "tick": 211440,
+      "count": 1,
+      "tuning_ids": [
+        "event_f2a3ac440661ba8b",
+        "event_2c54db82321a9f51"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_2333cb2f5d871bff",
+      "tick": 211680,
+      "count": 1,
+      "tuning_ids": [
+        "event_f2a3ac440661ba8b",
+        "event_2c54db82321a9f51"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_182992f316ce1bf9",
+      "tick": 212160,
+      "count": 1,
+      "tuning_ids": [
+        "event_f2a3ac440661ba8b",
+        "event_2c54db82321a9f51"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_3a366103a6da26cf",
+      "tick": 212640,
+      "count": 1,
+      "tuning_ids": [
+        "event_f2a3ac440661ba8b",
+        "event_2c54db82321a9f51"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_bafdff4299ca2ee3",
+      "tick": 215040,
+      "count": 1,
+      "tuning_ids": [
+        "event_79c7118c90f2ba53",
+        "event_7e40d54dff80561f"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_a5f3b59d40007b9e",
+      "tick": 215280,
+      "count": 1,
+      "tuning_ids": [
+        "event_79c7118c90f2ba53",
+        "event_7e40d54dff80561f"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_f108c1621fdb4466",
+      "tick": 215520,
+      "count": 1,
+      "tuning_ids": [
+        "event_79c7118c90f2ba53",
+        "event_7e40d54dff80561f"
+      ],
+      "boss": false
+    },
+    {
+      "id": "event_108db9282f35ecb1",
+      "tick": 216000,
+      "count": 1,
+      "tuning_ids": [
+        "event_79c7118c90f2ba53",
+        "event_7e40d54dff80561f"
+      ],
+      "boss": false
+    }
+  ]
+}

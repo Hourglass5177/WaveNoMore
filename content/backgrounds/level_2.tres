@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="VisualAssetManifest" format=3 uid="uid://cooar8x75s0x6"]
+
+[ext_resource type="Script" uid="uid://1ripw1fv282p" path="res://src/content/resources/visual_asset_entry.gd" id="1_1dwqe"]
+[ext_resource type="Script" uid="uid://dw4idp43p5kbu" path="res://src/content/resources/visual_asset_manifest.gd" id="2_2jhhm"]
+[ext_resource type="Resource" uid="uid://b8l7kkfoa7rly" path="res://content/backgrounds/s02_grave2_background.tres" id="2_2pos4"]
+
+[sub_resource type="Resource" id="Resource_2pos4"]
+script = ExtResource("1_1dwqe")
+asset_id = "level_2_background_1"
+category = &"environment"
+background = ExtResource("2_2pos4")
+state_names = PackedStringArray()
+required_anchors = PackedStringArray()
+required_states = PackedStringArray()
+metadata/_custom_type_script = "uid://1ripw1fv282p"
+
+[resource]
+script = ExtResource("2_2jhhm")
+entries = Array[ExtResource("1_1dwqe")]([SubResource("Resource_2pos4")])
+metadata/_custom_type_script = "uid://dw4idp43p5kbu"
