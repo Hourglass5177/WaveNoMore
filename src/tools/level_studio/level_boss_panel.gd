@@ -31,6 +31,10 @@ func _ready() -> void:
 	var scroll := ScrollContainer.new(); scroll.size_flags_vertical=Control.SIZE_EXPAND_FILL; scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED; add_child(scroll)
 	scroll.add_child(_content); _content.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	LevelUI.label(_content,"BOSS 攻击编排",18)
+	var navigation:=HFlowContainer.new();_content.add_child(navigation)
+	for pair in [["动作设置","Actions"],["战斗与阶段","Battle"],["发射路径","Paths"]]:
+		LevelUI.button(navigation,pair[0],func():
+			if _form.get_child_count()>0:scroll.ensure_control_visible(_form.get_child(0).get_node(pair[1])))
 	_content.add_child(_binding_select); _binding_select.item_selected.connect(_select_binding)
 	LevelUI.button(_content,"复制动作配置并重新选音符",_copy_settings)
 	var search := LineEdit.new(); search.placeholder_text="搜索音符时间或 ID"; _content.add_child(search)
@@ -186,7 +190,7 @@ func _rebuild_form() -> void:
 			_preview_role=pair[1]
 			_slider.max_value=7.0 if pair[1]=="death" else 3.0
 			_slider.value=0;_sample_action())
-		button.disabled=str(spec.get(pair[1],"")).is_empty() and str(spec.get("attack","")).is_empty()
+		button.disabled=str(spec.get(pair[1],"" )).is_empty() and (pair[1] not in ["attack_start","attack_loop"] or str(spec.get("attack","")).is_empty())
 	LevelUI.number(form,"血量 / 理论伤害",float(object_data.get("boss",{}).get("health_ratio",0.8)),func(value):_object_setting("health_ratio",value),0.05,0.05,2)
 	var profiles := {"沿用导入素材":"","蝙蝠完整表现":"bat","蛇完整表现":"snake","羊头双阶段完整表现":"goat","羊头真眼完整表现":"goat_eye"}
 	LevelUI.choice(form,"完整表现素材",profiles.keys(),profiles.find_key(str(object_data.get("boss",{}).get("visual",""))),func(value):_object_setting("visual",profiles[value]))
@@ -222,7 +226,9 @@ func _sample_action() -> void:
 	object_data.fields.position=[320,180]; object_data.fields.scale=[1,1]; object_data.fields.rotation=0; object_data.parent_id=""; object_data.layer="world"
 	var track:=LevelFormat.track(object_id,"action","song","action")
 	var spec:=LevelBossActions.resolve(workspace.assets(),object_data,data)
-	var clip:=LevelFormat.clip(0,"",maxi(1,roundi(_slider.max_value*1000000))); clip.action=spec.get(_preview_role,spec.action) if not _preview_role.is_empty() else spec.action; clip.rate=1.0; track.clips=[clip]
+	var clip:=LevelFormat.clip(0,"",maxi(1,roundi(_slider.max_value*1000000))); clip.action=spec.get(_preview_role,spec.action) if not _preview_role.is_empty() else spec.action; clip.rate=1.0
+	if str(clip.action).is_empty() and _preview_role in ["attack_start","attack_loop"]:clip.action=spec.attack
+	track.clips=[clip]
 	var show:={"objects":[object_data],"tracks":[track],"bindings":[]}
 	var signature: String = str(object_data.id)+"|"+str(object_data.asset)+workspace.document.directory+JSON.stringify(workspace.document.data.packs)+JSON.stringify(object_data.get("boss",{}))
 	if signature!=_preview_signature: _preview.configure(show,workspace.document.directory,workspace.document.data.packs,workspace.difficulty()); _preview_signature=signature

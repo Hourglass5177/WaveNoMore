@@ -1,6 +1,6 @@
 # BOSS 动画审看
 
-2026-09-15。基于 `Assets/BOSS` 原始 Spine 3.8.75 导出，为蝙蝠、蛇、羊头及羊头眼球形态生成独立的 Spine 4.3.23 派生资源。当前只供素材审看，没有接入正式 BOSS 事件，没有构建发行程序。
+2026-09-15。基于 `Assets/BOSS` 原始 Spine 3.8.75 导出，为蝙蝠、蛇、羊头及羊头眼球形态生成独立的 Spine 4.3.23 派生资源。完整表现现已可由关卡编辑器的 BOSS 属性选择，接入自动攻击、受击、阶段与死亡；本轮未构建发行程序。
 
 ## 打开与操作
 
@@ -73,7 +73,7 @@ python tools/boss_animation/package_goat_phases.py
 
 `--prepare-bakes` 紧跟每次新烘焙执行一次，将透明渲染的预乘颜色转换为普通透明贴图。不要对同一张已转换的贴图重复执行。
 
-骨骼播放器、固定光波/火焰网格、显式时间采样位于 `tools/boss_animation/boss_visual.gd`。光效源码位于 `shaders/bosses/`。审看播放器直接加载生成的 JSON、Atlas 和源 PNG，避免后台编辑器尚未导入完成时显示旧素材；正式集成时可以使用附带的 `boss.tres`。
+骨骼播放器、固定光波/火焰网格、显式时间采样位于 `src/presentation/actors/boss_visual.gd`，审看脚本继承该正式实现。关卡适配层为 `level_boss_visual.gd`；光效源码位于 `shaders/bosses/`。播放器直接加载生成的 JSON、Atlas 和源 PNG，导出配置包含这些原始依赖。
 
 ## 检查与输出
 

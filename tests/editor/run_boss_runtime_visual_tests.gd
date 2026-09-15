@@ -34,5 +34,11 @@ func run() -> void:
 	player.seek("song",10500000);await settle();viewport.get_texture().get_image().save_png(output.path_join("fragments.png"))
 	player.seek("song",15000000);await settle();check(not player.objects.goat.visible,"死亡播完隐藏主体")
 	player.seek("song",0);await settle();check(viewport.get_texture().get_image().get_data()==initial.get_data(),"回拖恢复相同画面")
+	# 完整表现与通用素材同样遵守编排速率，出手不被状态机默认时长拖延。
+	for rate in [0.5,1.0,2.0]:
+		var track:=LevelFormat.track("goat","action","song","action");track.binding_id="rate"
+		var clip:=LevelFormat.clip(0,"",roundi(1000000/rate));clip.action="attack_start";clip.rate=rate;track.clips=[clip]
+		content.sample_show([track],"goat",{},roundi(250000/rate),0)
+		check(is_equal_approx(content.skeleton.get_animation_state().get_track(0).get_track_time(),0.25),"完整表现攻击素材时间遵守倍率")
 	player.boss_preview_mode="miss";player.seek("song",7000000);await settle();check(player.boss_battle.states.goat.hp>0,"未击败模拟不能假装击杀")
 	viewport.queue_free();await settle();print("BOSS RUNTIME VISUAL failures=",failures);quit(failures)

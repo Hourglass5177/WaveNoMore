@@ -44,7 +44,7 @@ func _details() -> void:
 	%Locate.disabled=record.is_empty() or record.get("time_us",-1)<0
 	%Source.disabled=record.is_empty() or record.get("owners",[]).is_empty()
 	var target: Dictionary=workspace.document.find("objects",workspace.selection[0]) if workspace.selection.size()==1 else {}
-	%Add.disabled=%Locate.disabled or target.get("type","")!="actor"
+	%Add.disabled=%Locate.disabled or target.get("type","") not in ["actor","animated_sprite"]
 	%Add.text="加入绑定："+str(target.get("name","")) if not %Add.disabled else "加入绑定（请先选中一个 BOSS 对象）"
 	%Add.tooltip_text="将此音符加入所选对象的当前绑定；无当前绑定时创建草稿。已有来源绑定不会自动移除。"
 	var available:=_visible_timed()

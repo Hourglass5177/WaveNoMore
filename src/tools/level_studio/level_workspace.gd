@@ -551,7 +551,7 @@ func _update_show() -> void:
 	if player==null:
 		_standalone=LevelShowPlayer.new();viewport.add_child(_standalone);player=_standalone
 	var show:=_effective_show()
-	var signature:=JSON.stringify(show.objects.map(func(value):return [value.id,value.type,value.asset]))+JSON.stringify(document.data.packs)+document.directory
+	var signature:=JSON.stringify(show.objects.map(func(value):return [value.id,value.type,value.asset,value.get("boss",{}).get("visual","")]))+JSON.stringify(document.data.packs)+document.directory
 	if signature!=_show_signature:
 		player.update_show(show,document.directory,document.data.packs,difficulty());_show_signature=signature
 	else:player.show=show;player.difficulty=difficulty();player.prepare_parameters()
@@ -1397,7 +1397,7 @@ func _json_parameters(value:Variant) -> Variant:
 
 func open_boss_binding(binding_id:="") -> void:
 	if selection.is_empty() or song_document.charts.is_empty(): message("先导入歌曲，并选择一个 BOSS 对象。");return
-	if document.find("objects",selection[0]).get("type","")!="actor":message("请选择对象列表中的 BOSS / 场景对象，再编排攻击。");return
+	if document.find("objects",selection[0]).get("type","") not in ["actor","animated_sprite"]:message("请选择 BOSS 场景或帧动画对象，再编排攻击。");return
 	_prepare_command(); boss_panel.open(selection[0],binding_id); _show_inspector("boss")
 
 func test_feedback(hit:bool) -> void:
@@ -2013,7 +2013,7 @@ func open_boss_overview(note_id := "") -> void:
 	dialog.workspace=self;dialog.selected_id=note_id;add_child(dialog);_popup(dialog,Vector2i(850,620))
 
 func _add_boss_reference(id: String) -> void:
-	if selection.size()!=1 or document.find("objects",selection[0]).get("type","")!="actor":message("请先选中一个 BOSS 对象。");return
+	if selection.size()!=1 or document.find("objects",selection[0]).get("type","") not in ["actor","animated_sprite"]:message("请先选中一个 BOSS 对象。");return
 	if boss_panel.object_id!=selection[0]:open_boss_binding()
 	if inspector_mode!="boss":
 		open_boss_binding()

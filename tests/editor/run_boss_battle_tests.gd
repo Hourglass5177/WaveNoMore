@@ -15,6 +15,8 @@ func _initialize() -> void:
 	record=JudgmentRecord.new();record.unit_id="b";record.grade=GameplayTypes.JudgmentGrade.PERFECT;record.finalized_at_us=2000000
 	battle.observe(record)
 	check(battle.states.boss.hp==0 and battle.states.boss.finish_us==-1, "零血先破防，不立刻死亡")
+	# 判定成功后仍等待真实传播接触完成，不能只用判定时间结束战斗。
+	battle.resolve_contact("a",1100000);battle.resolve_contact("b",2100000)
 	battle.advance(3000000,true,NoteJudgeEngine.new(),TuningEngine.new())
 	check(battle.states.boss.finish_us>2000000,"等待最后判定窗口结束")
 	battle.reset();check(battle.states.boss.hp==1600 and battle.history.is_empty(),"重试清理状态")

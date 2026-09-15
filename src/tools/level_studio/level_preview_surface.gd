@@ -48,6 +48,11 @@ func _draw() -> void:
 	_update_display_rect()
 	if is_instance_valid(viewport): draw_texture_rect(viewport.get_texture(), _display_rect, false)
 	else: draw_rect(_display_rect, Color("253043"))
+	if is_instance_valid(player) and player.boss_battle != null and not player.boss_preview_mode.is_empty():
+		var lines:=PackedStringArray(["BOSS · 全 Perfect 模拟" if player.boss_preview_mode=="perfect" else "BOSS · 未击败模拟"])
+		for state: Dictionary in player.boss_battle.states.values():
+			if state.maximum>0:lines.append("%s · %d%% · %s"%[state.name,roundi(float(state.hp)/state.maximum*100),"破防" if state.hp==0 else ("二阶段" if state.phase_us>=0 else "一阶段")])
+		for i in lines.size():draw_string(get_theme_default_font(),Vector2(10,22+i*18),lines[i],HORIZONTAL_ALIGNMENT_LEFT,size.x-20,12,Color("e6d3ac"))
 	if show_grid:
 		for x in range(0, 1921, 120): draw_line(to_view(Vector2(x,0)), to_view(Vector2(x,1080)), Color(0.7,0.8,0.9,0.08))
 		for y in range(0, 1081, 120): draw_line(to_view(Vector2(0,y)), to_view(Vector2(1920,y)), Color(0.7,0.8,0.9,0.08))

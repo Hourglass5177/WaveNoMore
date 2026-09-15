@@ -32,10 +32,17 @@ static func scatter(origin: Vector2, profile: Dictionary, approach_sec: float, e
 	# 固定字符散列只用于表现，不读取进程随机种子。
 	var seed := 17
 	for character in seed_text.to_utf8_buffer(): seed = (seed*31+int(character))%2147483647
-	var angle := deg_to_rad(spread_deg)*(float(seed%65536)/32767.5-1.0)
+	var random:=RandomNumberGenerator.new();random.seed=seed
+	var angle := deg_to_rad(spread_deg)*random.randf_range(-1.0,1.0)
 	var distance := origin.distance_to(target)
 	var direction := (target-origin).normalized().rotated(angle)
 	var controls := PackedVector2Array([origin,origin+direction*distance*0.42,target-tangent*minf(distance*0.35,240.0),target])
+	var center: Vector2=profile.controls[3]
+	var side_normal: Vector2=(profile.controls[0]-center).normalized()
+	# 控制点进入所属侧半平面，保证进入后不再次绕过判定中心到另一侧。
+	for i in [1,2]:
+		var projection: float=(controls[i]-center).dot(side_normal)
+		if projection<0:controls[i]-=side_normal*projection
 	var lengths := PackedFloat32Array([0.0]); var previous := origin
 	for i in range(1,97):
 		var point := controls[0].bezier_interpolate(controls[1],controls[2],controls[3],float(i)/96)
@@ -45,7 +52,7 @@ static func scatter(origin: Vector2, profile: Dictionary, approach_sec: float, e
 	var ramp := minf(0.3,minf(duration*0.2,length/maxf(terminal_speed,1.0)))
 	var cruise := (length-terminal_speed*ramp*0.5)/(duration-ramp)
 	var arc := {"controls":controls,"cumulative_lengths":lengths,"segment_count":96,"length_px":length}
-	return {"controls":controls,"lengths":lengths,"arc_profile":arc,"duration_us":roundi(duration*1000000),"join_lead_us":roundi(lead*1000000),"terminal_speed":terminal_speed,"cruise":cruise,"ramp":ramp}
+	return {"side_center":center,"side_normal":side_normal,"controls":controls,"lengths":lengths,"arc_profile":arc,"duration_us":roundi(duration*1000000),"join_lead_us":roundi(lead*1000000),"terminal_speed":terminal_speed,"cruise":cruise,"ramp":ramp}
 
 static func _sample_scatter(path: Dictionary, elapsed_us: int) -> Dictionary:
 	var revision: int=path.origin_revision.call() if path.has("origin_revision") else -1
@@ -55,6 +62,9 @@ static func _sample_scatter(path: Dictionary, elapsed_us: int) -> Dictionary:
 		var controls: PackedVector2Array=path.controls
 		if not origin.is_equal_approx(controls[0]):
 			controls[1]+=origin-controls[0];controls[0]=origin
+			# 转阶段锚点改变后，仍约束同一侧的展开控制点。
+			var projection: float=(controls[1]-path.side_center).dot(path.side_normal)
+			if projection<0:controls[1]-=path.side_normal*projection
 			var lengths:=PackedFloat32Array([0.0]);var previous:=origin
 			for i in range(1,97):
 				var point:=controls[0].bezier_interpolate(controls[1],controls[2],controls[3],float(i)/96)
