@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="VisualAssetManifest" format=3 uid="uid://clgdfqu06b50r"]
+
+[ext_resource type="Script" uid="uid://1ripw1fv282p" path="res://src/content/resources/visual_asset_entry.gd" id="1_i7dwk"]
+[ext_resource type="Script" uid="uid://dw4idp43p5kbu" path="res://src/content/resources/visual_asset_manifest.gd" id="2_phopr"]
+
+[resource]
+script = ExtResource("2_phopr")
+metadata/_custom_type_script = "uid://dw4idp43p5kbu"
