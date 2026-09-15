@@ -20,6 +20,28 @@ func run() -> void:
 	check(not dialog.get_ok_button().disabled,"工程已有 BOSS 骨骼和图集可导入")
 	if dialog.get_ok_button().disabled:printerr(dialog.get_node("%Status").text);quit(1);return
 	check(dialog.candidate.actions.size()>1,"读取真实骨骼动作列表")
+	var play_button: Button=dialog.get_node("%Controls").get_child(0)
+	var play_point:=play_button.get_global_rect().get_center()+Vector2(dialog.position)
+	var before_seconds: float=dialog.seconds
+	var before_pose: Array=dialog.actor.get_child(0).get_skeleton().get_bones().map(func(bone):return bone.get_global_transform())
+	var before_pixels:=PackedByteArray()
+	if DisplayServer.get_name()!="headless":
+		await RenderingServer.frame_post_draw;before_pixels=dialog.viewport.get_texture().get_image().get_data()
+	for pressed in [true,false]:
+		var event:=InputEventMouseButton.new();event.button_index=MOUSE_BUTTON_LEFT;event.pressed=pressed;event.position=play_point;root.push_input(event,true)
+	await create_timer(0.4).timeout
+	check(dialog.playing and dialog.seconds>before_seconds+0.1,"实际点击骨骼播放后动作时间持续推进")
+	check(dialog.actor.get_child(0).get_animation_state().get_track(0).get_track_time()>0.1,"播放推进原生骨骼动画轨道")
+	check(before_pose!=dialog.actor.get_child(0).get_skeleton().get_bones().map(func(bone):return bone.get_global_transform()),"播放后骨骼姿态实际变化")
+	if DisplayServer.get_name()!="headless":
+		await RenderingServer.frame_post_draw
+		check(before_pixels!=dialog.viewport.get_texture().get_image().get_data(),"播放后骨骼画面像素实际变化")
+	dialog.playing=false
+	if DisplayServer.get_name()!="headless":
+		await RenderingServer.frame_post_draw
+		var paused_pixels: PackedByteArray=dialog.viewport.get_texture().get_image().get_data()
+		await create_timer(0.2).timeout;await RenderingServer.frame_post_draw
+		check(paused_pixels==dialog.viewport.get_texture().get_image().get_data(),"暂停时骨骼画面不会自行推进")
 	dialog.seconds=0.25;dialog._sample();dialog.settings.markers[dialog.settings.default_animation]=0.25
 	if DisplayServer.get_name()!="headless":
 		await RenderingServer.frame_post_draw
@@ -46,6 +68,17 @@ func run() -> void:
 	var player=workspace.show_player();check(player.drivers.has(object_id),"正式播放器接入骨骼驱动")
 	var driver: LevelAnimationDriver=player.drivers[object_id]
 	check(driver.spines.size()==1,"运行场景保留真实 Spine 骨骼")
+	if DisplayServer.get_name()!="headless":
+		var isolated_view:=SubViewport.new();isolated_view.size=Vector2i(640,360);isolated_view.transparent_bg=true;isolated_view.render_target_update_mode=SubViewport.UPDATE_ALWAYS;root.add_child(isolated_view)
+		var isolated_player:=LevelShowPlayer.new();isolated_view.add_child(isolated_player)
+		var show: Dictionary=workspace.document.data.show.duplicate(true);show.objects[0].fields.position=[320,180];show.tracks[0].clips[0].start_us=0
+		isolated_player.configure(show,output,[],"");isolated_player.seek("song",0);await settle();await RenderingServer.frame_post_draw
+		var first_image:=isolated_view.get_texture().get_image().get_data()
+		isolated_player.seek("song",500000);await settle();await RenderingServer.frame_post_draw
+		check(first_image!=isolated_view.get_texture().get_image().get_data(),"正式演出播放器的骨骼网格随时间改变")
+		isolated_player.seek("song",0);await settle();await RenderingServer.frame_post_draw
+		check(first_image==isolated_view.get_texture().get_image().get_data(),"正式预览回拖恢复相同画面")
+		isolated_view.queue_free();await settle()
 	var clips:=[{"id":"test","action":selected_action,"loop":false,"weight":1.0,"local_us":500000}]
 	driver.sample(clips,500000)
 	var spine=driver.spines[0];var first=spine.get_skeleton().get_bones()[1].get_global_transform()

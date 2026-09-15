@@ -274,6 +274,7 @@ func _build_ui() -> void:
 	transport.add_child(_follow);_follow.toggled.connect(func(_value):
 		if _follow_suspended:_follow.set_pressed_no_signal(true)
 		_follow_suspended=false;_follow.text="跟随")
+	LevelUI.button(transport,"BOSS 音符总览",open_boss_overview)
 	timeline.manual_browse.connect(func():_follow_suspended=true;_follow.text="跟随暂停")
 	_add_menu(transport,"环境场景",[["编辑环境编排",open_environment_settings],["添加换景",func():choose_environment(func(asset):add_environment_cue(asset,time_us))],["退出衔接预览",end_environment_preview]])
 	_add_menu(transport,"循环范围",[["设置循环起点",func():timeline.loop_start_us=time_us;audio.loop_start=float(time_us)/1000000;timeline.queue_redraw()],["设置循环终点",func():timeline.loop_end_us=time_us;audio.loop_end=float(time_us)/1000000;timeline.queue_redraw()]])
@@ -515,6 +516,7 @@ func _refresh() -> void:
 		surface.selected=selection.duplicate()
 	if _refresh_tree: _refresh_objects()
 	_refresh_sequences()
+	timeline.boss_notes=LevelBossReference.collect(self);timeline.queue_redraw()
 	if not document.entries("objects").is_empty() and not song_document.charts.is_empty():_guide.hide()
 	if _refresh_preview: _update_show()
 	if _refresh_checks: refresh_problems()
@@ -624,7 +626,8 @@ func _refresh_song_preview() -> void:
 	timeline.tempo=song_document.tempo_map();timeline.sections=song_document.chart().sections
 	timeline.difficulty=difficulty();timeline.reference_notes=[]
 	for note in ChartEditEvents.all(song_document.chart()):
-		if note is NoteEvent or note is GhostEvent: timeline.reference_notes.append({"id":note.event_id,"time_us":timeline.tempo.tick_to_us(note.tick)})
+		if note is NoteEvent or note is GhostEvent: timeline.reference_notes.append({"id":note.event_id,"time_us":timeline.tempo.tick_to_us(note.tick),"boss":note.boss})
+	timeline.boss_notes=LevelBossReference.collect(self)
 	timeline.rebuild_rows()
 	_loading=false
 
@@ -1988,14 +1991,33 @@ func _drop_timeline_asset(asset: String, at_us: int) -> void:
 	_status.text="已在当前区段 %.3f 秒插入 %s；一次撤销恢复。"%[float(at_us)/1000000,_asset_caption(asset)]
 
 func _select_reference_note(id: String) -> void:
+	_locate_boss_reference(id)
+	var note:=song_document.find_note(id)
+	if note!=null and note.boss:open_boss_overview(id)
+
+func _locate_boss_reference(id: String) -> void:
+	var note:=song_document.find_note(id)
+	if note==null:return
+	_prepare_command()
+	if section!="song":set_section("song")
+	seek(song_document.tempo_map().tick_to_us(note.tick));timeline.focus_time(time_us)
+
+func open_boss_overview(note_id := "") -> void:
+	_prepare_command()
+	var dialog=load("res://scenes/tools/level_studio/boss_overview.tscn").instantiate()
+	dialog.workspace=self;dialog.selected_id=note_id;add_child(dialog);_popup(dialog,Vector2i(850,620))
+
+func _add_boss_reference(id: String) -> void:
+	if selection.size()!=1 or document.find("objects",selection[0]).get("type","")!="actor":message("请先选中一个 BOSS 对象。");return
+	if boss_panel.object_id!=selection[0]:open_boss_binding()
 	if inspector_mode!="boss":
 		open_boss_binding()
 		if inspector_mode!="boss":return
 	var note:=song_document.find_note(id)
 	if note==null or not note.boss:_status.text="此音符未标记为 BOSS 音符。";return
 	var ids: Array=boss_panel.data.get("note_ids",[]).duplicate()
-	if id in ids:ids.erase(id)
-	else:ids.append(id)
+	if id in ids:return
+	ids.append(id)
 	boss_panel._change("note_ids",ids);boss_panel._populate_notes()
 
 func _refresh_sequences() -> void:

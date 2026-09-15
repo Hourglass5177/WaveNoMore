@@ -30,7 +30,10 @@ func configure(node: Node) -> void:
 				base_values.append({"target": target, "property": property, "value": target.get_indexed(property)})
 	for sprite in sprites:
 		sprite.set_meta("level_default_animation",sprite.animation); sprite.pause()
-	for spine in spines: spine.call("set_update_mode", SpineConstant.UpdateMode_Manual)
+	for spine in spines:
+		spine.call("set_update_mode", SpineConstant.UpdateMode_Manual)
+		# 骨骼时间由演出手动采样，但原生节点仍需处理绘制通知以更新网格。
+		spine.process_mode = Node.PROCESS_MODE_PAUSABLE
 
 func _collect(node: Node) -> void:
 	if node is CanvasItem and node.material!=null:node.material=node.material.duplicate()

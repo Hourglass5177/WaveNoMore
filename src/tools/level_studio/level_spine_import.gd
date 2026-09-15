@@ -13,6 +13,7 @@ var driver:=LevelAnimationDriver.new()
 var viewport:=SubViewport.new()
 var name_field: LineEdit
 var scale_field: SpinBox
+var play_button: Button
 
 func _ready() -> void:
 	dialog_hide_on_ok=false;get_ok_button().disabled=true
@@ -20,7 +21,7 @@ func _ready() -> void:
 	LevelUI.button(%Sources,"选择对应图集",func():_choose("选择 Spine 图集",["*.atlas ; Spine 图集"],func(path):atlas=path;_load()))
 	name_field=LevelUI.text_field(%Settings,"素材名称",settings.name,func(value):settings.name=value)
 	scale_field=LevelUI.number(%Settings,"显示比例",settings.scale,func(value):settings.scale=value;_rebuild(),0.01,0.001,100)
-	LevelUI.button(%Controls,"播放／暂停",func():playing=not playing)
+	play_button=LevelUI.button(%Controls,"播放",func():playing=not playing;_readout())
 	LevelUI.button(%Controls,"上一帧",func():_step(-1));LevelUI.button(%Controls,"下一帧",func():_step(1))
 	LevelUI.button(%Controls,"将当前动作帧设为出手帧",func():settings.markers[settings.default_animation]=seconds;_readout())
 	%Actions.item_selected.connect(func(index):settings.default_animation=%Actions.get_item_text(index);seconds=0;_rebuild())
@@ -69,6 +70,7 @@ func _sample() -> void:
 	%Time.set_value_no_signal(seconds);viewport.render_target_update_mode=SubViewport.UPDATE_ONCE;_readout()
 
 func _readout() -> void:
+	play_button.text="暂停" if playing else "播放"
 	%Readout.text="动作时间 %.3f 秒 / %.3f 秒 · 出手标记 %.3f 秒"%[seconds,%Time.max_value,float(settings.markers.get(settings.default_animation,0))]
 
 func _step(direction: int) -> void:

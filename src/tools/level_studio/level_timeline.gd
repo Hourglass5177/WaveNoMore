@@ -47,6 +47,7 @@ var _cursor := Control.new()
 var _stack := PopupMenu.new()
 var _stack_hits: Array = []
 var reference_notes: Array = []
+var boss_notes: Array[Dictionary] = []
 var only_selected := false
 var current_difficulty_only := false
 var hide_empty := false
@@ -55,7 +56,7 @@ var environment: StageEnvironmentSequence
 signal environment_dropped(asset: String, time_us: int)
 
 const HEADER := 206.0
-const RULER := 82.0
+const RULER := 106.0
 const ROW := 24.0
 const COLORS := {"property": Color("ddbb77"), "action": Color("988bd6"), "audio": Color("67b7aa"), "visibility": Color("749ac3"), "sequence": Color("b886b9")}
 
@@ -227,9 +228,32 @@ func _draw() -> void:
 	if x_at(0) >= HEADER and x_at(0) <= size.x:
 		draw_line(Vector2(x_at(0),0),Vector2(x_at(0),size.y),Color("d4bf92"),2)
 	for note: Dictionary in reference_notes:
+		if note.get("boss",false):continue
 		var x := x_at(int(note.time_us))
 		if section == "song" and x >= HEADER and x < size.x-14:
 			draw_line(Vector2(x,37),Vector2(x,48),Color("bc8ed6"),2)
+	draw_rect(Rect2(0,82,size.x,24),Color("202d40"))
+	draw_string(font,Vector2(12,99),"BOSS · 橙未绑 / 绿已绑 / 红失效",HORIZONTAL_ALIGNMENT_LEFT,HEADER-20,10,Color("e3c99a"))
+	if section=="song":
+		for note in boss_notes:
+			if note.time_us<0:continue
+			var rect:=_boss_rect(note)
+			if rect.end.x<HEADER or rect.position.x>size.x-14:continue
+			rect=rect.intersection(Rect2(HEADER,83,maxf(0,size.x-HEADER-14),22))
+			draw_rect(rect,LevelBossReference.COLORS[note.status])
+			if rect.size.x>32:draw_string(font,rect.position+Vector2(3,12),note.side+" "+note.kind,HORIZONTAL_ALIGNMENT_LEFT,rect.size.x-6,10,Color("172033"))
+
+func _boss_rect(note: Dictionary) -> Rect2:
+	var start:=x_at(int(note.time_us));var end:=x_at(int(note.end_us))
+	return Rect2(start-4,85,maxf(8,end-start+8),17)
+
+func _get_tooltip(at: Vector2) -> String:
+	if section=="song" and at.x>=HEADER and at.y>=82 and at.y<RULER:
+		var descriptions:=PackedStringArray()
+		for note in boss_notes:
+			if note.time_us>=0 and _boss_rect(note).has_point(at):descriptions.append(LevelBossReference.describe(note,document))
+		return "\n\n".join(descriptions) if not descriptions.is_empty() else "BOSS 音符参考轨 · 点击标记仅定位并查看详情"
+	return ""
 
 func update_cursor() -> void:
 	_cursor.queue_redraw()
@@ -377,7 +401,12 @@ func _gui_input(event: InputEvent) -> void:
 			return
 		if event.position.y>=35 and event.position.y<=51 and section=="song":
 			for note: Dictionary in reference_notes:
+				if note.get("boss",false):continue
 				if absf(x_at(int(note.time_us))-event.position.x)<8:note_requested.emit(str(note.id));return
+		if event.position.y>=82 and event.position.y<RULER and section=="song":
+			for note in boss_notes:
+				if note.time_us>=0 and _boss_rect(note).has_point(event.position):note_requested.emit(str(note.id));return
+			return
 		if event.position.y < RULER:
 			manual_browse.emit()
 			_drag={"mode":"loop" if event.shift_pressed else "seek","start":snap(time_at(event.position.x),event.alt_pressed),"loop_before":Vector2i(loop_start_us,loop_end_us)}

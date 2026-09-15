@@ -1,0 +1,55 @@
+[gd_scene load_steps=2 format=3]
+[ext_resource type="Script" path="res://src/tools/level_studio/level_boss_overview.gd" id="1"]
+[node name="BossOverview" type="AcceptDialog"]
+title = "BOSS 音符总览 · 只读谱面"
+size = Vector2i(850, 620)
+ok_button_text = "关闭"
+script = ExtResource("1")
+[node name="Body" type="VBoxContainer" parent="."]
+[node name="Summary" type="Label" parent="Body"]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 3
+[node name="Search" type="LineEdit" parent="Body"]
+unique_name_in_owner = true
+layout_mode = 2
+placeholder_text = "搜索时间、类型、生死侧、ID、对象或动作"
+[node name="Filter" type="OptionButton" parent="Body"]
+unique_name_in_owner = true
+layout_mode = 2
+item_count = 4
+selected = 0
+popup/item_0/text = "全部"
+popup/item_1/text = "未绑定"
+popup/item_2/text = "已绑定"
+popup/item_3/text = "失效关联"
+[node name="Notes" type="ItemList" parent="Body"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0, 280)
+size_flags_vertical = 3
+[node name="Details" type="Label" parent="Body"]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 3
+[node name="Navigation" type="HBoxContainer" parent="Body"]
+layout_mode = 2
+[node name="Previous" type="Button" parent="Body/Navigation"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "上一处 BOSS 音符"
+[node name="Locate" type="Button" parent="Body/Navigation"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "定位所选音符"
+[node name="Next" type="Button" parent="Body/Navigation"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "下一处 BOSS 音符"
+[node name="Source" type="Button" parent="Body"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "查看来源绑定（失效关联可在此重新选音符）"
+[node name="Add" type="Button" parent="Body"]
+unique_name_in_owner = true
+layout_mode = 2
