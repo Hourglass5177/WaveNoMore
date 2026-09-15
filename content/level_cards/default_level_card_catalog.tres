@@ -3,7 +3,6 @@
 [ext_resource type="Script" uid="uid://cbk81e0jmhnau" path="res://src/content/resources/level_card_catalog.gd" id="1"]
 [ext_resource type="Script" uid="uid://hdbtdjofj14n" path="res://src/content/resources/level_card_entry.gd" id="2"]
 [ext_resource type="Texture2D" uid="uid://ci6su6vgfj5bt" path="res://assets/image/ui/选关/怪物/蝙蝠.png" id="2_7ogen"]
-[ext_resource type="SpriteFrames" uid="uid://c1lbb3ibs2mb1" path="res://assets/image/ui/选关/火框燃烧_8帧_透明PNG/level_card_fire.tres" id="2_dwpdq"]
 [ext_resource type="Texture2D" uid="uid://cilhj5hlvcyre" path="res://assets/image/ui/选关/顶部文字/壹.png" id="2_fkwas"]
 [ext_resource type="Texture2D" uid="uid://85ubl17xm0jc" path="res://assets/image/ui/选关/眼睛/微信图片_20260914121932_1932_127.png" id="3_4asjf"]
 [ext_resource type="Texture2D" uid="uid://ctd7kmx186akd" path="res://assets/image/ui/选关/怪物/蛇.png" id="4_7xqlx"]
@@ -28,11 +27,8 @@ eye_icon_unselected = ExtResource("4_nx3ka")
 background = ExtResource("6_heading")
 background_scale = 0.7
 heading_texture = ExtResource("2_fkwas")
-background_effect_frames = ExtResource("2_dwpdq")
-background_effect_scale = 2.0
-background_effect_offset = Vector2(0, -25)
-description = "〔你坚信生命依然
-在棺椁中流动。〕"
+flame_palette = 2
+description = "〔你坚信生命依然\n在棺椁中流动。〕"
 
 [sub_resource type="Resource" id="Entry2"]
 script = ExtResource("2")
@@ -44,11 +40,8 @@ eye_icon_unselected = ExtResource("9_63cwa")
 background = ExtResource("6_heading")
 background_scale = 0.7
 heading_texture = ExtResource("5_dwpdq")
-background_effect_frames = ExtResource("2_dwpdq")
-background_effect_scale = 2.0
-background_effect_offset = Vector2(0, -25)
-description = "〔别着香草的美人，
-烧光了整片沼泽。〕"
+flame_palette = 2
+description = "〔别着香草的美人，\n烧光了整片沼泽。〕"
 
 [sub_resource type="Resource" id="Resource_s6mt0"]
 script = ExtResource("2")
@@ -60,11 +53,8 @@ eye_icon_unselected = ExtResource("13_1uasq")
 background = ExtResource("6_heading")
 background_scale = 0.7
 heading_texture = ExtResource("7_2s8gp")
-background_effect_frames = ExtResource("2_dwpdq")
-background_effect_scale = 2.0
-background_effect_offset = Vector2(0, -25)
-description = "〔成礼兮会鼓，传芭兮代舞，
-姱女倡兮容与。〕"
+flame_palette = 2
+description = "〔成礼兮会鼓，传芭兮代舞，\n姱女倡兮容与。〕"
 metadata/_custom_type_script = "uid://hdbtdjofj14n"
 
 [resource]

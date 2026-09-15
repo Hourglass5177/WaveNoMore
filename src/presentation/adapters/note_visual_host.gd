@@ -481,6 +481,9 @@ func _update_tuning_preview_presentation() -> void:
 	for event_id: String in _active:
 		var entry: Dictionary = _active[event_id]
 		if entry.kind != ChartScheduler.KIND_TUNING: continue
+		if _scheduler.tuning_visual_end_sec(event_id, entry.data) <= _judge_visual_time:
+			phases[event_id] = 2
+			continue
 		var state := _active_tuning_slider_state(event_id)
 		phases[event_id] = 0 if bool(state.get("interaction_open", false)) else (1 if _start_usec(entry.data) > roundi(_judge_visual_time * 1000000.0) else 2)
 	if phases == _tuning_order_phases: return
@@ -497,7 +500,9 @@ func _update_tuning_preview_presentation() -> void:
 		if group_key.is_empty():
 			group_key = event_id
 		var phase: int = 2 # 0：当前；1：未来；2：已结束但仍在播放收尾。
-		if bool(state.get("interaction_open", false)):
+		if _scheduler.tuning_visual_end_sec(event_id, data) <= _judge_visual_time:
+			phase = 2
+		elif bool(state.get("interaction_open", false)):
 			phase = 0
 		elif start_us > roundi(_judge_visual_time * 1_000_000.0):
 			phase = 1
@@ -530,6 +535,8 @@ func _update_tuning_preview_presentation() -> void:
 	var future_rank: int = 0
 	for group: Dictionary in ordered_groups:
 		var phase: int = int(group["phase"])
+		# 收尾沿用退出前的预读亮度；避免先骤降到旧收尾亮度，再开始淡出。
+		if phase == 2: continue
 		var alpha: float = 0.24
 		var layer: int = 0
 		var order_number: int = 0
@@ -549,11 +556,13 @@ func _update_tuning_preview_presentation() -> void:
 			var visual: Node2D = _active[event_id]["node"]
 			visual.z_index = layer
 			if visual.has_method("set_preview_presentation"):
+				_active[event_id]["tuning_layer_alpha"] = 1.0
 				# 调频滑条需要把“退后的轨道”和“醒目的起手缩圈”分层绘制。
 				# 因此不再把整个节点一并压暗，而是只把层级透明度交给滑条自身。
 				visual.modulate = Color.WHITE
 				visual.call("set_preview_presentation", order_number, phase, alpha)
 			else:
+				_active[event_id]["tuning_layer_alpha"] = alpha
 				visual.modulate = Color(1.0, 1.0, 1.0, alpha)
 
 
@@ -594,6 +603,10 @@ func _update_visual(event_id: String, active_entry: Dictionary) -> void:
 			_place_tap_at(visual, data, presentation_time)
 		if visual is GrayboxNoteVisual: visual.set_note_glow_time(presentation_time, time_to_hit_sec)
 	elif kind == ChartScheduler.KIND_TUNING:
+		# 父节点透明度同时作用于条身、文字、缩圈及子网格，材质与几何继续复用。
+		var opacity := _scheduler.tuning_visibility(event_id, data, presentation_time)
+		visual.modulate.a = opacity * float(active_entry.get("tuning_layer_alpha", 1.0))
+		visual.visible = opacity > 0.0
 		# 调频视觉使用完整设计画布坐标绘制，FieldSlot 原点就是画布左上角；
 		# 不再叠加以画布中心为值的 approach_origin，避免中心被平移到右下角。
 		visual.position = Vector2.ZERO

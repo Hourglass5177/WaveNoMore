@@ -42,3 +42,5 @@ extends Resource
 
 ## 角度路径拆段时仅首段保留起手提示；表现标记随资源复制保留，不进入 JSON 或 Replay。
 @export_storage var show_rotation_cue: bool = true
+## 角度路径拆段后保留双 Hold 依赖，仅用于失效退场；旧滑条由调度器按时间覆盖推导。
+@export_storage var visual_hold_ids: PackedStringArray = []

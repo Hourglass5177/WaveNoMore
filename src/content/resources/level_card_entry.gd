@@ -16,6 +16,8 @@ extends Resource
 ## 相对于背景素材原始尺寸的等比缩放；不影响卡片主图或文字。
 @export_range(0.01, 10.0, 0.01, "or_greater") var background_scale: float = 1.0
 @export var heading_texture: Texture2D
+## 正式燃烧框：按背景可见边缘定位；启用时替代背景特效帧动画。
+@export_enum("无", "红焰", "蓝焰") var flame_palette: int = 0
 ## 背景特效帧动画；每帧按 SpriteFrames 的纹理替换特效图层。
 @export var background_effect_frames: SpriteFrames
 @export var background_effect_animation: StringName = &"default"

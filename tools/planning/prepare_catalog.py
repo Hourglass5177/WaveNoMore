@@ -22,7 +22,7 @@ rule('01 判定与容错','perfect_window_ms','Perfect 时间窗','ms','30～60'
 rule('01 判定与容错','good_window_ms','Good 时间窗','ms','60～110',5,'超出 Perfect 后仍可获得 Good 的最大绝对误差。',1,500)
 rule('01 判定与容错','pass_window_ms','Pass 时间窗','ms','100～160',5,'主动输入被接受的最外边界；不是 Miss 窗。',1,500)
 rule('01 判定与容错','miss_window_ms','无人命中超时','ms','150～220',5,'头部未命中，在判定时间之后超过该值才记 Miss。',1,1000)
-rule('01 判定与容错','hold_sustain_grace_ms','Hold 断持宽限','ms','60～150',10,'短暂松开允许续接；超过宽限失败，尾点自动完成，无松尾判定。',1,500)
+rule('01 判定与容错','hold_sustain_grace_ms','Hold 断持宽限','ms','60～150',10,'短暂松开可续接；超时失败并淡出关联调频条。尾点自动完成，无松尾判定。',1,500)
 rule('02 魂火与惩罚','max_soul_fire','开局与最大魂火','点','80～150',10,'共享生命池；没有普通命中自动回血。',1,1000)
 rule('02 魂火与惩罚','tap_miss_damage','Tap 漏击伤害','点','10～25',1,'抵达角色时扣血；同一 Tap 伤害组只扣一次。',0,1000)
 rule('02 魂火与惩罚','hold_segment_damage','Hold 每段身体伤害','点/段','1～4',1,'未消耗身体抵达角色后按拍逐段扣血；无额外头部或整条失败伤害。',0,1000)
@@ -36,7 +36,7 @@ rule('03 调频','tuning_stick_deadzone','摇杆径向死区','比例','15%～25
 rule('03 调频','tuning_endpoint_capture_ratio','端点捕获比例','比例','1%～6%',0.005,'端点吸附与视觉捕获区，另用于 Ghost 区间内引导进度的容差；Tuning 终点评分读取完成度阈值。',0.001,0.25)
 rule('03 调频','tuning_perfect_completion','Tuning Perfect 完成度','比例','95%～100%',0.01,'每程规定终点时刻最低完成比例；须按住对应钟，允许提前完成。',0,1)
 rule('03 调频','tuning_good_completion','Tuning Good 完成度','比例','85%～95%',0.01,'不足 Perfect 时达到此比例记 Good；不增加晚到窗口。',0,1)
-rule('03 调频','tuning_pass_completion','Tuning Pass 完成度','比例','70%～85%',0.01,'最低成功比例；低于此值或松开对应钟记 Miss。滑条不扣血，关联 Ghost 失败才扣血。',0,1)
+rule('03 调频','tuning_pass_completion','Tuning Pass 完成度','比例','70%～85%',0.01,'最低成功比例；低于此值或松开记 Miss。关联 Hold 失败后滑条淡出，仍按原时刻结算；仅 Ghost 扣血。',0,1)
 rule('03 调频','tuning_base_frequency_hz','基准载波频率','Hz','2～4',0.25,'普通段及调频段起始基频；影响载波疏密和 Ghost 候选。',0.1,30)
 rule('03 调频','tuning_min_frequency_hz','最低载波频率','Hz','0.5～2',0.25,'应低于最高频率，并且不高于基频。',0.1,30)
 rule('03 调频','tuning_max_frequency_hz','最高载波频率','Hz','5～9',0.25,'提高会增加波纹密度，并改变角度到频率的映射；需复查整谱。',0.1,30)
@@ -85,7 +85,7 @@ for key,name,value,unit,suggested,step,low,high,meaning in [
 out=ROOT/'content/rules/planning_parameters.json'
 # 角色移动的表现目录单独维护，重建玩法基线时保留这些字段。
 if out.exists():
-    rows.extend(r for r in json.loads(out.read_text(encoding='utf-8')) if r['target'] in ['actors','boss'])
+    rows.extend(r for r in json.loads(out.read_text(encoding='utf-8')) if r['target'] in ['actors','boss','ui_flame'])
 out.write_text(json.dumps(rows,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
 print(f'{len(rows)} 个可编辑参数')
 
@@ -96,7 +96,7 @@ def display(value, unit):
 directory=ROOT/'docs/planning'
 directory.mkdir(parents=True,exist_ok=True)
 for pet_page, filename, title in [(False,'01-全局数值.md','全局手感与数值'),(True,'02-随从数值.md','随从技能数值')]:
-    selected=[r for r in rows if r['target'] not in ['boundary','actors','boss'] and r['target'].startswith('pet:')==pet_page]
+    selected=[r for r in rows if r['target'] not in ['boundary','actors','boss','ui_flame'] and r['target'].startswith('pet:')==pet_page]
     lines=[f'# {title}', '', '基线：2026-09-14。表格 B 列可直接修改；下列区间是试调建议，允许输入范围另列。实际值以工作簿当前值为准。', '']
     if pet_page:
         lines+=['随从中性配置的所有加成默认均为 0。下表是三只正式随从的两阶资源覆盖；只有已装备的形态生效，进阶不与基础叠加。技能描述原文未改动。', '',

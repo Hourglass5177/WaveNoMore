@@ -21,6 +21,16 @@
 
 ## 验证
 
+### 2026-09-15：Hold 依赖与显隐
+
+- 新版路径沿用 `hold_id` 与 `support_hold_id`，拆成运行滑条后保留为纯表现字段 `visual_hold_ids`。本侧或支撑 Hold 漏击、断持超出宽限后，关联滑条淡出，后续分段不再生成。旧滑条按覆盖它的双 Hold 时间窗推导依赖。
+- 保留 Hold 断持宽限（原型 100 ms，包含随从加成），宽限内续接不隐藏滑条；正式失败后重新按键不恢复这条路径。其他 Hold 组的后续路径照常出现。
+- 进入预读窗后 0.12 秒淡入，正常尾点或依赖失败后 0.12 秒淡出，使用平滑曲线；轨道、填充、轮廓、缩圈、文字与光晕一起显隐。淡入中失败从当时亮度退出。
+- 时间由判定时钟绝对求值，暂停冻结，定位经现有事件重演恢复。失败反向索引在装谱时准备，运行时不逐帧找 Hold；淡出后复用原有对象池。
+- 显隐不改变 Tuning 四档判定、Ghost 结算、Hold 分段伤害、输入与 Replay 内容哈希。固定显隐时长在 `ChartScheduler.TUNING_FADE_IN_SEC / TUNING_FADE_OUT_SEC`，不增加细碎的策划表参数。
+- `tests/visual/run_tuning_lifecycle_tests.gd` 覆盖依赖、后续分段、暂停、回退、重演、回收、复用及 Compatibility 实际透明像素。
+- 本轮通过：显隐专项 33 项、滑条实际渲染及正式预览 43 项、四档调频 149 项、分段伤害 25 项、策划参数 92 项。显隐对照截图保存在 `builds/visual-review/tuning-lifecycle/visible.png` 与 `fading.png`。未构建发布包。
+
 - `tests/visual/run_tuning_style_tests.gd`：41 项实际 Compatibility 渲染检查通过，包括接合透明度、颜色、往返填充、起点预填、缩圈裁切、40／80／300／720 px 半径、光晕透景、材质复用与回收。
 - `tests/editor/run_tuning_radius_tests.gd`：39 项半径、编译数据、理想输入、Replay、Ghost、保存、恢复、撤销和正式预览回归。
 - 正式背景上的 2.5／3.8／5.75 秒截图保存在 `builds/visual-review/tuning-style/preview-*.png`。本轮重新通过 41 项图形检查，普通填充实际 alpha 为 0.788；本轮没有更新 build，既有构建记录见 [build-output.md](build-output.md)。

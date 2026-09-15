@@ -9,6 +9,7 @@
 [ext_resource type="FontFile" path="res://assets/fonts/huiwen.otf" id="7_s3cit"]
 
 [ext_resource type="Material" path="res://content/ui/score_gradient.tres" id="score_gradient"]
+[ext_resource type="Script" path="res://src/presentation/ui/flame_frame_visual.gd" id="flame"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_whbbo"]
 shader = ExtResource("2_whbbo")
@@ -59,6 +60,13 @@ stretch_mode = 3
 material = SubResource("ShaderMaterial_effect")
 layout_mode = 0
 mouse_filter = 2
+
+[node name="Flame" type="Control" parent="."]
+visible = false
+layout_mode = 0
+mouse_filter = 2
+script = ExtResource("flame")
+palette = 1
 
 [node name="MonsterIcon" type="TextureRect" parent="." unique_id=1970233100]
 material = SubResource("ShaderMaterial_fkwas")

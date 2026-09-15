@@ -20,28 +20,16 @@ const SU := Color("f4edcf")
 
 
 static func add_backdrop(parent: Control) -> void:
-	var background := ColorRect.new()
+	# 与选关、随从共用美术底图，按比例铺满并居中裁切。
+	var background := TextureRect.new()
 	background.name = "Backdrop"
-	background.color = INK
+	background.texture = preload("res://assets/ui/art/common/menu_background.jpg")
+	background.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	background.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	parent.add_child(background)
 	parent.move_child(background, 0)
-	var life_field := Polygon2D.new()
-	life_field.name = "LifeField"
-	life_field.polygon = PackedVector2Array([
-		Vector2(0, 0), Vector2(1420, 0), Vector2(470, 1080), Vector2(0, 1080)
-	])
-	life_field.color = Color(0.28, 0.035, 0.03, 0.82)
-	background.add_child(life_field)
-	var boundary := ColorRect.new()
-	boundary.name = "Boundary"
-	boundary.color = Color(0.92, 0.82, 0.62, 0.16)
-	boundary.position = Vector2(500, 538)
-	boundary.size = Vector2(920, 2)
-	boundary.rotation = -0.65
-	boundary.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	background.add_child(boundary)
 
 
 static func panel_style() -> StyleBoxFlat:

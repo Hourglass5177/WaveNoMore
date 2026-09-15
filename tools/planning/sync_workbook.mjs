@@ -43,7 +43,7 @@ for(const name of groups){
       const old=String(v[0]).slice(4);sheet.getRange(`A${i+6}`).values=[['已停用：'+(retiredNames[old]||old)]];
       sheet.getRange(`B${i+6}`).format.fill='#E7E8EA';
     }
-    if(v[7]==='rules'||v[7]==='boundary'||v[7]==='actors'||v[7]==='boss'||String(v[7]||'').startsWith('pet:')){
+    if(v[7]==='rules'||v[7]==='boundary'||v[7]==='actors'||v[7]==='boss'||v[7]==='ui_flame'||String(v[7]||'').startsWith('pet:')){
       const key=v[7]+'/'+v[8]; locations.set(key,{sheet,row:i+6}); previous.set(key,v[1]);
     }
   });
@@ -109,6 +109,7 @@ intro.getRange('A31').values=[['参数增删或含义变化时同步目录和本
 intro.getRange('A31').format.font={name:'Microsoft YaHei',size:11,color:'#27363A'};
 }
 if(onlyTarget==='boss')wb.worksheets.getItem('09 BOSS 表现').getRange('A3').values=[['修改黄色当前值，重新打开 BOSS 审看场景后生效。']];
+if(onlyTarget==='ui_flame')wb.worksheets.getItem('10 UI 火框').getRange('A3').values=[['修改黄色当前值，重新打开 UI 火框审看场景后生效；本轮尚未替换正式界面。']];
 wb.recalculate();
 for(const entry of catalog){
   const key=entry.target+'/'+entry.key;
