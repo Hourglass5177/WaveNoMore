@@ -49,7 +49,7 @@ static func read(path: String = "") -> Dictionary:
 		if not file.begins_with("xl/worksheets/") or not file.ends_with(".xml"): continue
 		for cells: Dictionary in _rows(zip.read_file(file), shared):
 			var target := str(cells.get("H", ""))
-			if target not in ["rules", "boundary", "actors", "boss", "ui_flame"] and not target.begins_with("pet:"): continue
+			if target not in ["rules", "boundary", "actors", "boss", "ui_flame", "ui_guides", "judgment"] and not target.begins_with("pet:") and not target.begins_with("reward:"): continue
 			var id := target + "/" + str(cells.get("I", ""))
 			if not schema.has(id):
 				result.errors.append("未知策划字段：" + id)
@@ -67,7 +67,10 @@ static func read(path: String = "") -> Dictionary:
 			else:
 				result.values[id] = bool(int(value)) if entry.type == "bool" else (int(value) if entry.type == "int" else float(value))
 	zip.close()
-	if result.values.size() != schema.size(): result.errors.append("策划表需要保留全部 %d 个参数行" % schema.size())
+	# 新增参数尚未同步进旧表时沿用登记默认值，不能因此阻止整关启动。
+	# 已有行的非法输入仍保留上面的错误，绝不以默认值掩盖策划填写问题。
+	for id: String in schema:
+		if not result.values.has(id): result.values[id] = schema[id].default
 	if result.errors.is_empty():
 		result.errors.append_array(validate_rules(rules_copy(load(DEFAULT_RULES), result)))
 	return result

@@ -17,7 +17,15 @@ func _run() -> void:
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(OUTPUT_DIR))
 	var app := (load("res://scenes/app/app_main.tscn") as PackedScene).instantiate()
 	root.add_child(app)
-	await create_timer(2.9).timeout
+	await create_timer(6.9).timeout
+	var confirm := InputEventKey.new()
+	confirm.keycode = KEY_ENTER
+	confirm.pressed = true
+	Input.parse_input_event(confirm)
+	await create_timer(1.1).timeout
+	confirm = confirm.duplicate()
+	confirm.pressed = false
+	Input.parse_input_event(confirm)
 	await _wait_frames(5)
 	_capture("title-waiting.png")
 	var wake := InputEventKey.new()

@@ -7,6 +7,7 @@ var _down := false
 var _art: Control
 var _art_origin := Vector2.ZERO
 func _ready() -> void:
+	get_node("/root/MenuAudioService").bind_control(self)
 	if underline_enabled:
 		MenuInteraction.attach(self)
 	else:

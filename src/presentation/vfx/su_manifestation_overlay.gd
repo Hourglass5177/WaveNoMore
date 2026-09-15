@@ -1,126 +1,136 @@
 class_name SuManifestationOverlay
 extends Node2D
 
-## 素音目标及原地命中动画。存储坐标全部为 UV，只有绘制时转成画布像素。
-## 外部使用 Gameplay 判定时钟推进；查询和绘制不推进生命周期。
-
-@export var canvas_size: Vector2 = Vector2(1920.0, 1080.0):
+## Ghost 的眼睛与原地结果反馈；一个事件共用一份材质、一个静态网格。
+## 时钟推进只提交 phase，定位与暂停无需 Tween 或逐帧重建几何。
+@export var style: GhostNoteStyle = preload("res://content/presentation/ghost_note_style.tres")
+@export var canvas_size := Vector2(1920.0, 1080.0):
 	set(value):
 		if canvas_size == value: return
 		canvas_size = value
-		queue_redraw()
-@export var bone_color: Color = Color("fff1d1")
-@export var failure_color: Color = Color("8c8790")
-@export_range(0.1, 2.0, 0.01) var lifetime_sec: float = 0.78
+		for entry: Dictionary in _entries.values(): _build_mesh(entry)
+@export_range(0.1, 2.0, 0.01) var lifetime_sec := 0.78
 
-var _visual_time_sec: float = 0.0
-## 每个事件含多个独立圆形目标；已准备的位置不会被结果快照覆盖。
+const EYE_SHADER = preload("res://shaders/notes/ghost_eye.gdshader")
+var _visual_time_sec := 0.0
 var _entries: Dictionary[String, Dictionary] = {}
+var _pool: Array[MeshInstance2D] = []
 
+func _ready() -> void:
+	# 加载阶段准备常用数量；超过既有峰值才扩容，后续批次复用。
+	for i in maxi(0, 8 - get_child_count()): _pool.append(_create_view())
+
+func _create_view() -> MeshInstance2D:
+	var view := MeshInstance2D.new()
+	view.mesh = ArrayMesh.new()
+	var surface := ShaderMaterial.new()
+	surface.shader = EYE_SHADER
+	view.material = surface
+	view.visible = false
+	add_child(view)
+	return view
 
 func prepare_targets(event_data: Dictionary) -> void:
-	## 为首次预测成功的全部 UV 点创建固定目标；重复快照不重新生成。
-	var event_id: String = str(event_data["event_id"])
-	if _entries.has(event_id):
-		return
-	var points_uv := PackedVector2Array()
-	for point: Vector2 in event_data.get("points", []):
-		points_uv.append(point)
-	if points_uv.is_empty():
-		return
-	var variant: StringName = StringName(event_data.get("target_visual_variant", &""))
-	if variant == &"":
-		variant = StringName(event_data.get("visual_variant", &"default"))
-	_entries[event_id] = {
-		"points": points_uv,
-		"target_time_sec": float(event_data["time_us"]) / 1_000_000.0,
+	var event_id := str(event_data["event_id"])
+	if _entries.has(event_id): return
+	var points := PackedVector2Array()
+	for point: Vector2 in event_data.get("points", []): points.append(point)
+	if points.is_empty(): return
+	var target := float(event_data["time_us"]) / 1000000.0
+	var view: MeshInstance2D = _pool.pop_back() if not _pool.is_empty() else _create_view()
+	var entry := {"points": points, "target_time_sec": target,
+		"visible_from_sec": float(event_data.get("visible_from_us", roundi((target - 2.7) * 1000000.0))) / 1000000.0,
 		"duration_sec": float(event_data.get("target_hold_duration_sec", lifetime_sec)),
-		"visual_variant": variant,
-		"resolved": false,
-		"success": false,
-	}
-	queue_redraw()
+		"resolved": false, "success": false, "view": view}
+	_entries[event_id] = entry
+	var surface := view.material as ShaderMaterial
+	surface.set_shader_parameter("closed_eye", style.closed_texture)
+	surface.set_shader_parameter("open_eye", style.open_texture)
+	surface.set_shader_parameter("closed_distance", style.closed_glow)
+	surface.set_shader_parameter("open_distance", style.open_glow)
+	surface.set_shader_parameter("bone_color", style.bone_color)
+	surface.set_shader_parameter("eye_anchor", style.eye_anchor_uv)
+	surface.set_shader_parameter("body_width", style.width_px)
+	surface.set_shader_parameter("halo_width", style.halo_width_px)
+	surface.set_shader_parameter("surface_light", Vector2(style.closed_surface_light, style.open_surface_light))
+	var source_size := style.open_texture.get_size()
+	surface.set_shader_parameter("mask_content_size", (source_size * (192.0 / maxf(source_size.x, source_size.y))).round())
+	surface.set_shader_parameter("result_kind", 0.0)
+	_build_mesh(entry)
+	_update_entry(entry)
+	view.visible = true
 
+func _build_mesh(entry: Dictionary) -> void:
+	var scale_px := minf(canvas_size.x / 1920.0, canvas_size.y / 1080.0)
+	var source_size := style.open_texture.get_size()
+	var size := source_size * (style.width_px / source_size.x) * scale_px
+	var pad := Vector2.ONE * style.halo_width_px * scale_px
+	var vertices := PackedVector2Array()
+	var uvs := PackedVector2Array()
+	var indices := PackedInt32Array()
+	for point: Vector2 in entry.points:
+		var start := vertices.size()
+		var origin := point * canvas_size - style.eye_anchor_uv * size
+		for corner: Vector2 in [Vector2.ZERO, Vector2.RIGHT, Vector2.ONE, Vector2.DOWN]:
+			var offset := corner * (size + 2.0 * pad) - pad
+			vertices.append(origin + offset)
+			uvs.append(offset / size)
+		for index: int in [0, 1, 2, 0, 2, 3]: indices.append(start + index)
+	var arrays := []; arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = vertices
+	arrays[Mesh.ARRAY_TEX_UV] = uvs
+	arrays[Mesh.ARRAY_INDEX] = indices
+	var mesh: ArrayMesh = entry.view.mesh
+	mesh.clear_surfaces()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 
 func resolve_targets(result: Dictionary) -> void:
-	## 在原目标位置播放一次结果；无合法目标的 Miss 不凭空创建中心 Note。
-	var event_id: String = str(result["event_id"])
-	if not _entries.has(event_id):
-		return
+	var event_id := str(result["event_id"])
+	if not _entries.has(event_id): return
 	var entry: Dictionary = _entries[event_id]
-	if bool(entry["resolved"]):
-		return
-	entry["resolved"] = true
-	# 部分数量不足不会把已有真实交点也画成失败；缺失目标没有虚构位置。
-	entry["success"] = int(result["hit_count"]) > 0 if result.has("hit_count") else bool(result["success"])
-	queue_redraw()
+	if entry.resolved: return
+	entry.resolved = true
+	entry.success = int(result.hit_count) > 0 if result.has("hit_count") else bool(result.success)
+	entry.view.material.set_shader_parameter("result_kind", 1.0 if entry.success else -1.0)
+	_update_entry(entry)
 
+func visual_phase(entry: Dictionary) -> Vector4:
+	var open_start := float(entry.target_time_sec) - style.open_before_sec
+	var opening := smoothstep(open_start, open_start + style.open_duration_sec, _visual_time_sec)
+	var opacity := smoothstep(float(entry.visible_from_sec), float(entry.visible_from_sec) + style.appear_sec, _visual_time_sec)
+	var glow := lerpf(style.closed_glow_strength, style.open_glow_strength, opening)
+	var result_progress := 0.0
+	if entry.resolved:
+		result_progress = clampf((_visual_time_sec - float(entry.target_time_sec)) / float(entry.duration_sec), 0.0, 1.0)
+		opacity *= 1.0 - smoothstep(0.0, 1.0, result_progress)
+		glow = lerpf(1.1, 0.0, result_progress) if entry.success else 0.0
+	return Vector4(opening, opacity, glow, result_progress)
+
+func _update_entry(entry: Dictionary) -> void:
+	entry.view.material.set_shader_parameter("phase", visual_phase(entry))
 
 func set_visual_time(time_sec: float) -> void:
-	## 使用绝对判定时间过期；等待目标时不回收，暂停不增长动画年龄。
+	if _visual_time_sec == time_sec: return
 	_visual_time_sec = time_sec
-	var animating := false
 	for event_id: String in _entries.keys():
 		var entry: Dictionary = _entries[event_id]
-		if not bool(entry["resolved"]): continue
-		animating = true
-		if time_sec >= float(entry["target_time_sec"]) + float(entry["duration_sec"]):
+		if entry.resolved and time_sec >= float(entry.target_time_sec) + float(entry.duration_sec):
+			_recycle(entry)
 			_entries.erase(event_id)
-	# 未结算的目标完全静止，保留已有绘制命令；只重画结果动画或过期帧。
-	if animating: queue_redraw()
+		else: _update_entry(entry)
 
+func _recycle(entry: Dictionary) -> void:
+	var view: MeshInstance2D = entry.view
+	view.visible = false
+	_pool.append(view)
 
 func clear() -> void:
-	## Seek、重试和会话清场时释放全部图案和时钟状态。
+	for entry: Dictionary in _entries.values(): _recycle(entry)
 	_entries.clear()
 	_visual_time_sec = 0.0
-	queue_redraw()
-
 
 func has_active_entries() -> bool:
-	## 供父层判断可见性，不依赖当前是否还有载波或调频条。
 	return not _entries.is_empty()
 
-
 func debug_snapshot() -> Dictionary:
-	## 仅返回状态摘要，不推进动画。
 	return {"time_sec": _visual_time_sec, "active_count": _entries.size(), "event_ids": _entries.keys()}
-
-
-func _draw() -> void:
-	for entry: Dictionary in _entries.values():
-		var progress: float = clampf(
-			(_visual_time_sec - float(entry["target_time_sec"])) / float(entry["duration_sec"]), 0.0, 1.0
-		)
-		for uv: Vector2 in entry["points"]:
-			var center: Vector2 = uv * canvas_size
-			if not bool(entry["resolved"]):
-				_draw_target(center)
-			elif bool(entry["success"]):
-				_draw_hit(center, progress)
-			else:
-				_draw_miss(center, progress)
-
-
-func _draw_target(center: Vector2) -> void:
-	## 高对比圆形目标：预读期间不移动、不渐隐，区别于载波背景。
-	draw_circle(center, 32.0, Color("111827"))
-	draw_circle(center, 25.0, bone_color)
-	draw_arc(center, 34.0, 0.0, TAU, 64, Color("36e6ff"), 5.0, true)
-	draw_circle(center, 7.0, Color.WHITE)
-
-
-func _draw_hit(center: Vector2, progress: float) -> void:
-	## 原地闪亮、收缩和外扩圆环；整个动画始终使用同一个中心。
-	var fade: float = 1.0 - progress
-	var radius: float = lerpf(30.0, 0.0, smoothstep(0.0, 1.0, progress))
-	draw_circle(center, radius, Color(bone_color.lerp(Color.WHITE, fade), fade))
-	draw_arc(center, lerpf(34.0, 78.0, progress), 0.0, TAU, 64, Color(0.2, 0.9, 1.0, fade), 5.0, true)
-
-
-func _draw_miss(center: Vector2, progress: float) -> void:
-	## 已有目标但调频组失败时，只在真实目标原位播放断裂圆环。
-	for index: int in range(3):
-		var start: float = float(index) * TAU / 3.0
-		draw_arc(center, lerpf(34.0, 52.0, progress), start, start + PI * 0.45,
-			24, Color(failure_color, 1.0 - progress), 4.0, true)

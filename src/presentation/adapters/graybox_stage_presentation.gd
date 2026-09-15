@@ -74,6 +74,7 @@ var _death_actor_slot: Node2D
 ## 保留角色实例引用，不依赖视差注册之后的父节点位置。
 var _life_actor: Node
 var _death_actor: Node
+var _actor_bells: Dictionary[Node, BellVisual] = {}
 var _life_attacking := false
 var _death_attacking := false
 ## 写谱预览由歌曲时间推进角色，暂停与分批重演不使用墙钟时间。
@@ -149,6 +150,7 @@ func configure(stage: StageDefinition) -> void:
 		if is_instance_valid(actor):
 			parallax_controller.unregister_object(actor)
 	_parallax_actors.clear()
+	_actor_bells.clear()
 	_life_actor = null
 	_death_actor = null
 	_life_attacking = false
@@ -200,6 +202,15 @@ func configure(stage: StageDefinition) -> void:
 		_instance_if_present(visual_theme.life_bell_scene, _life_actor_slot)
 		_death_actor = _instance_if_present(visual_theme.death_actor_scene, _death_actor_slot)
 		_instance_if_present(visual_theme.death_bell_scene, _death_actor_slot)
+		for actor in [_life_actor, _death_actor]:
+			if not actor is Node2D: continue
+			actor.position.x += visual_theme.actor_shift_px
+			var bell := actor.get_node_or_null("Bell") as BellVisual
+			if bell != null:
+				bell.inset(visual_theme.bell_inset_px)
+				bell.configure(GameplayTypes.Affinity.ZHU if actor == _life_actor else GameplayTypes.Affinity.XUAN,
+					visual_theme.bell_float_height_px, visual_theme.bell_glow_strength)
+				_actor_bells[actor] = bell
 		_apply_lingjun_tint(_life_actor, visual_theme.life_lingjun_target_color, visual_theme.life_lingjun_color_strength)
 		_apply_lingjun_tint(_death_actor, visual_theme.death_lingjun_target_color, visual_theme.death_lingjun_color_strength)
 		_instance_if_present(visual_theme.boundary_scene, _boundary_slot)
@@ -218,6 +229,9 @@ func configure_pet(pet: PetDefinition, advanced: bool) -> Array[PetVisual]:
 		anchor.name = "PetAnchor"
 		anchor.position = pet.world_offset
 		anchor.scale = Vector2.ONE * pet.world_scale
+		if stage_definition != null and stage_definition.visual_theme != null:
+			anchor.position.x += stage_definition.visual_theme.pet_shift_px
+			anchor.scale *= stage_definition.visual_theme.pet_scale_multiplier
 		slot.add_child(anchor)
 		var scene := pet.visual_scene(advanced)
 		var view := scene.instantiate() as PetVisual if scene != null else PetVisual.new()
@@ -330,7 +344,7 @@ func _sync_canvas_layers() -> void:
 var _parallax_actors: Array[Node2D] = []
 
 
-## 角色层级由主题选择；编钟和随从继续保留在原槽位。
+## 附属编钟跟随角色进入视差层；随从和独立编钟场景继续保留在原槽位。
 func attach_actors_to_parallax() -> void:
 	if stage_definition == null or stage_definition.visual_theme == null or not stage_definition.visual_theme.actors_in_parallax:
 		return
@@ -397,6 +411,8 @@ func _update_actor_snapshot(snapshot: Dictionary) -> void:
 	_advance_actor_time(time_sec)
 	for actor in [_life_actor, _death_actor]:
 		_record_actor_strike(actor)
+		if _actor_bells.has(actor):
+			_actor_bells[actor].set_visual_time(time_sec, actor.get_meta("_attack_last_hit_sec", -INF))
 	_update_actor_attacks(bool(snapshot.get("life_held", false)), bool(snapshot.get("death_held", false)))
 	# 先推进旧频率的时间区间，再接收边界上的新频率；变速保留当前动作相位。
 	if _life_attacking: _continue_actor_attack(_life_actor, float(snapshot.get("life_frequency_hz", attack_reference_hz)))
@@ -625,6 +641,7 @@ func _reset_preview_actors() -> void:
 	_life_attacking = false
 	_death_attacking = false
 	for actor in [_life_actor, _death_actor]:
+		if _actor_bells.has(actor): _actor_bells[actor].reset_pose()
 		if is_instance_valid(actor) and actor.is_class("SpineSprite"):
 			for key in ["_attack_sample_phase", "_attack_last_hit_sec", "_attack_last_start_sec", "_actor_dead"]:
 				if actor.has_meta(key): actor.remove_meta(key)

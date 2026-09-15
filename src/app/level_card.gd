@@ -31,16 +31,6 @@ func _ready() -> void:
 		$BackgroundEffect.material = $BackgroundEffect.material.duplicate(false)
 	$Background.resized.connect(_update_background_scale)
 	_update_background_scale()
-	$Score.resized.connect(_update_score_gradient)
-	_update_score_gradient()
-
-## 渐变覆盖整组居中数字，位数增多也不会截断或让每个字单独染色。
-func _update_score_gradient() -> void:
-	var label: Label = $Score
-	var settings: LabelSettings = label.label_settings
-	var width := settings.font.get_string_size(label.text,HORIZONTAL_ALIGNMENT_LEFT,-1,settings.font_size).x
-	label.material.set_shader_parameter("text_extent",Vector2((label.size.x-width)*0.5,width))
-
 ## 在卡片布局尺寸改变后同步缩放中心，避免背景偏移。
 func _update_background_scale() -> void:
 	$Background.pivot_offset = $Background.size * 0.5
@@ -48,9 +38,8 @@ func _update_background_scale() -> void:
 	_layout_flame()
 
 func configure(data: Dictionary, index: int) -> void:
-	$Score.text = "%06d" % maxi(0,int(data.get("score",0)))
-	_update_score_gradient()
-	$Rating.text = str(data.get("rating", ""))
+	$Score.set_score(int(data.get("score",0)))
+	$Rating.texture = preload("res://src/app/ui/clear_mark.gd").texture_for(data)
 	$Description.text = str(data.get("description", ""))
 	$MonsterIcon.texture = data.get("monster_icon", data.get("image")) as Texture2D
 	$MonsterIcon.pivot_offset = $MonsterIcon.size*0.5
@@ -128,7 +117,7 @@ func set_selection_weight(weight: float) -> void:
 	$Flame.modulate.a = _selection_weight
 	$Flame.visible = _flame_enabled and _selection_weight > 0.0
 	$Score.modulate.a = clampf(weight,0.0,1.0)
-	$Rating.modulate.a = clampf(weight,0.0,1.0)
+	$Rating.set_emphasis(weight)
 	var icon_material := $MonsterIcon.material as ShaderMaterial
 	if icon_material != null:
 		icon_material.set_shader_parameter("image_transparency", clampf(weight, 0.0, 1.0))

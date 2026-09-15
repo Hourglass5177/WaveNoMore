@@ -1,6 +1,12 @@
 [gd_resource type="Resource" script_class="RewardDefinition" format=3]
 
-[ext_resource type="Script" path="res://src/content/resources/reward_definition.gd" id="1_opj4r"]
+[ext_resource type="Script" path="res://src/content/resources/reward_definition.gd" id="1"]
+[ext_resource type="Resource" path="res://content/pets/pet_nu_tu_fu.tres" id="2"]
 
 [resource]
-script = ExtResource("1_opj4r")
+script = ExtResource("1")
+reward_id = "reward_tutorial2"
+next_stage_id = "s07"
+pet = ExtResource("2")
+fc_grants_base_pet = true
+ap_grants_advanced_pet = true

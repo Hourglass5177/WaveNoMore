@@ -562,12 +562,17 @@ func _update_show() -> void:
 			var id: String=binding.object_id
 			while not id.is_empty() and not bound.has(id):bound[id]=true;id=str(LevelFormat.find(show.objects,id).get("parent_id",""))
 		var relevant: Array=show.objects.filter(func(item):return bound.has(item.id) or item.type=="camera")
-		var boss_key := JSON.stringify([show.bindings,relevant.map(func(item):return [item.id,item.asset,item.parent_id,item.layer,item.depth,item.fields]),show.tracks.filter(func(track):return bound.has(track.object_id) or relevant.any(func(item):return item.type=="camera" and item.id==track.object_id)),difficulty(),_stage_signature])
+		var boss_key := JSON.stringify([show.bindings,relevant.map(func(item):return [item.id,item.asset,item.parent_id,item.layer,item.depth,item.fields,item.get("boss",{})]),show.tracks.filter(func(track):return bound.has(track.object_id) or relevant.any(func(item):return item.type=="camera" and item.id==track.object_id)),difficulty(),_stage_signature])
 		if boss_key!=_boss_signature:
 			_compiled_boss=LevelBossCompiler.compile(preview.stage_root.stage_session.stage_definition,preview.stage_root.stage_session.compiled_chart.tempo_map,player); _boss_signature=boss_key
+			var simulation: GameplaySimulation=preview.stage_root.stage_session.gameplay_coordinator.simulation
+			simulation.boss_battle.configure(_compiled_boss.battles,simulation.compiled,simulation.rules)
+			player.boss_battle=BossBattleEngine.new();player.boss_battle.configure(_compiled_boss.battles,simulation.compiled,simulation.rules)
+			if player.boss_preview_mode.is_empty():player.boss_preview_mode="perfect"
+			player.boss_offset_us=roundi(preview.stage_root.stage_session.stage_definition.song.first_beat_offset_sec*1000000)
 		var compiled: Dictionary=_compiled_boss
 		player.show.tracks.append_array(compiled.tracks)
-		surface.emissions=compiled.emissions
+		surface.emissions=compiled.emissions;player.boss_emissions=compiled.emissions
 		var rows:={}
 		for track:Dictionary in compiled.tracks:
 			var row_id:="generated_"+str(track.object_id)+"_"+str(track.type)

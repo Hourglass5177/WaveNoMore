@@ -46,6 +46,9 @@ static func panel_style() -> StyleBoxFlat:
 
 
 static func style_button(button: Button, accent: bool = false) -> void:
+	# 程序创建的旧界面和暂停按钮也使用同一套菜单声音。
+	if button.is_node_ready(): button.get_node("/root/MenuAudioService").bind_control(button)
+	else: button.ready.connect(func(): button.get_node("/root/MenuAudioService").bind_control(button), CONNECT_ONE_SHOT)
 	button.custom_minimum_size = Vector2(360, 58)
 	button.add_theme_font_size_override("font_size", 24)
 	button.add_theme_color_override("font_color", BONE)

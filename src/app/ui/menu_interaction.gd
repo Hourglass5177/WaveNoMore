@@ -27,6 +27,7 @@ static func attach(control: Control) -> MenuInteraction:
 
 func _ready() -> void:
 	_control = get_parent() as Control
+	get_node("/root/MenuAudioService").bind_control(_control)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	focus_mode = Control.FOCUS_NONE
 	_control.mouse_entered.connect(refresh)

@@ -17,7 +17,9 @@ archive.parent.mkdir(parents=True, exist_ok=True)
 temporary = archive.with_suffix('.zip.tmp')
 
 with zipfile.ZipFile(args.base) as previous:
-    old_prefix = previous.namelist()[0].split('/')[0] + '/'
+    # 现有发行包同时有顶层目录版和直接放置 EXE 的版本，均保留原依赖。
+    old_prefix = next(name[:-len('minghe-chart-studio.exe')] for name in previous.namelist()
+                      if name == 'minghe-chart-studio.exe' or name.endswith('/minghe-chart-studio.exe'))
     entries = {entry.filename[len(old_prefix):]: entry for entry in previous.infolist() if not entry.is_dir()}
     replacements = {}
     # 两个导出目标各有自己的原生库，不能只带 EXE。

@@ -1,0 +1,22 @@
+[gd_scene format=3]
+
+[node name="BossOptions" type="VBoxContainer"]
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
+
+[node name="Actions" type="VBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Battle" type="VBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Paths" type="VBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Advanced" type="FoldableContainer" parent="."]
+layout_mode = 2
+title = "高级动作映射（仅此对象覆盖）"
+folded = true
+
+[node name="Content" type="VBoxContainer" parent="Advanced"]
+layout_mode = 2

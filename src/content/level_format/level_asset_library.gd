@@ -4,10 +4,15 @@ extends RefCounted
 var directory := ""
 var entries := {}
 var cache := {}
+var boss_defaults := {}
 var issues: Array[Dictionary] = []
 static var mounted := {}
 
 func configure(root: String, packs: Array) -> void:
+	boss_defaults.clear()
+	var values: Dictionary=PlanningParameters.read().get("values",{})
+	for key in ["health_ratio","flight_speed","spread_deg","glow_strength","effect_scale","fragment_multiplier"]:
+		if values.has("boss/"+key):boss_defaults[key]=values["boss/"+key]
 	directory = root; entries.clear(); cache.clear(); issues.clear()
 	for pack_data: Dictionary in packs:
 		var path := root.path_join(str(pack_data.path))
@@ -60,6 +65,9 @@ func animation_names(asset: String) -> PackedStringArray:
 	return PackedStringArray()
 
 func default_animation(asset: String) -> String:
+	if entries.has(asset):
+		for name in ["idle","default"]:
+			if name in entries[asset].state_names: return name
 	if asset.ends_with(LevelSpineAsset.SUFFIX):return str(LevelProjectIO.read_json(directory.path_join(asset)).get("default_animation",""))
 	var frames:=resolve(asset) as SpriteFrames
 	if frames==null:return ""
@@ -69,11 +77,30 @@ func default_animation(asset: String) -> String:
 	return LevelAnimationAsset.default_action(frames,preferred)
 
 func action_duration(asset: String, action: String) -> float:
+	if entries.has(asset):
+		var marker: Dictionary = entries[asset].action_markers.get(action,{})
+		if marker.has("duration_sec"): return float(marker.duration_sec)
+		var key := "duration:"+asset+":"+action
+		if cache.has(key): return float(cache[key])
+		var scene: PackedScene = entries[asset].runtime_scene
+		if scene != null:
+			var node := scene.instantiate()
+			var found := _node_action_duration(node,action)
+			node.free();cache[key]=found
+			return found
 	if asset.ends_with(LevelSpineAsset.SUFFIX):
 		for entry in LevelProjectIO.read_json(directory.path_join(asset)).get("actions",[]):
 			if entry.name==action:return float(entry.duration)
 	var frames:=resolve(asset) as SpriteFrames
 	return LevelAnimationAsset.duration(frames,action) if frames!=null and frames.has_animation(action) else 1.0
+
+func _node_action_duration(node: Node, action: String) -> float:
+	if node is AnimationPlayer and node.has_animation(action): return node.get_animation(action).length
+	if node is AnimatedSprite2D and node.sprite_frames != null and node.sprite_frames.has_animation(action): return LevelAnimationAsset.duration(node.sprite_frames,action)
+	for child in node.get_children():
+		var duration := _node_action_duration(child,action)
+		if duration > 0: return duration
+	return 0.0
 
 ## 内置环境只借用 StageDefinition 的背景，不切换主题、歌曲或玩法。
 func background(asset: String) -> StageBackgroundDefinition:
@@ -97,6 +124,16 @@ func anchor(asset: String, anchor_name: String) -> Vector2:
 
 func actions(asset: String) -> PackedStringArray:
 	return entries[asset].state_names if entries.has(asset) else animation_names(asset)
+
+func has_release_marker(asset: String, action: String) -> bool:
+	if asset.ends_with(LevelSpineAsset.SUFFIX): return LevelProjectIO.read_json(directory.path_join(asset)).get("markers", {}).has(action)
+	return entries.has(asset) and entries[asset].action_markers.get(action, {}).has("release_sec")
+
+func boss_action_mapping(asset: String) -> Dictionary:
+	if entries.has(asset): return entries[asset].boss_actions.duplicate()
+	if asset.ends_with(LevelSpineAsset.SUFFIX) or asset.ends_with(LevelAnimationAsset.SUFFIX):
+		return LevelProjectIO.read_json(directory.path_join(asset)).get("boss_actions",{}).duplicate()
+	return {}
 
 func release_time(asset: String, action: String) -> float:
 	if asset.ends_with(LevelSpineAsset.SUFFIX):return float(LevelProjectIO.read_json(directory.path_join(asset)).get("markers",{}).get(action,0.0))

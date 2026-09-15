@@ -78,9 +78,10 @@ func _tool(workspace) -> void:
 	workspace.set_object_field("name","未保存的发布验收快照")
 	var cursor: int=workspace.document.cursor
 	workspace.playtest()
-	var pid: int=workspace._trial_pid
 	var started:=Time.get_ticks_msec()
-	while pid>0 and workspace._trial_stage!="ready" and Time.get_ticks_msec()-started<15000:await tree.create_timer(0.1).timeout
+	# 试玩先异步打包快照；等待启动阶段完成后再记录进程，不能把准备阶段当成失败。
+	while workspace._trial_stage!="ready" and Time.get_ticks_msec()-started<15000:await tree.create_timer(0.1).timeout
+	var pid: int=workspace._trial_pid
 	check(workspace._trial_stage=="ready","发布编辑器发起配套游戏并收到 ready")
 	check(workspace.document.cursor==cursor and workspace.document.dirty,"实际试玩不改变保存状态或历史")
 	workspace._set_background(false);workspace.set_object_field("name","试玩打开时继续编辑")

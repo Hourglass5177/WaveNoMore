@@ -59,7 +59,7 @@ func _test_scores_health() -> void:
 		var h := HealthEngine.new(); h.configure(rules, false, pet("gui_jin_yang").effect(advanced))
 		var expected := 16 if advanced else 18
 		var damage := DamageRecord.create("a", "dual", 1, 20)
-		check(h.apply_damage(damage) == expected and damage.actual_damage == expected, "羊头仔减伤")
+		check(h.apply_damage(damage) == expected and damage.actual_damage == expected, "鬼金羊减伤")
 		check(h.apply_damage(DamageRecord.create("b", "dual", 1, 20)) == 0, "同组双押只扣一次")
 		check(h.apply_damage(DamageRecord.create("round", "round", 1, 15)) == (12 if advanced else 14), "独立伤害按四舍五入取整")
 		for i in 10: h.apply_damage(DamageRecord.create(str(i), str(i), i + 2, 20))
@@ -151,7 +151,7 @@ func _test_hold() -> void:
 	var neutral := sim(DomainFixtureFactory.tuning_only_chart())
 	var with_snake := sim(DomainFixtureFactory.tuning_only_chart(), pet("yi_huo_she").effect(true))
 	neutral.force_finish(); with_snake.force_finish()
-	check(ReplayRunner.result_digest(neutral.judgments, neutral.strays, neutral.result_summary()) == ReplayRunner.result_digest(with_snake.judgments, with_snake.strays, with_snake.result_summary()), "苹果蛇不修改调频和素音结果")
+	check(ReplayRunner.result_digest(neutral.judgments, neutral.strays, neutral.result_summary()) == ReplayRunner.result_digest(with_snake.judgments, with_snake.strays, with_snake.result_summary()), "翼火蛇不修改调频和素音结果")
 
 func _test_time() -> void:
 	var c := chart(true, 14)
@@ -255,7 +255,7 @@ func _test_flow() -> void:
 	var arrival := core.wave_engine.next_arrival_us()
 	scene.stage_session.advance_preview(arrival + 125000)
 	check(core.health_engine.soul_fire == 98 and scene.hud._soul_fire_value.text == "98 / 100", "身体抵达时真实扣血并刷新 HUD")
-	check(scene.hud._judgment_label.text.to_lower() == "pass", "受伤时保留最终 Pass 判定文字")
+	check(scene.hud._judgment_label.texture == scene.hud.judgment_textures.pass_texture, "受伤时保留最终过判定贴图")
 	await screenshot("pets-stage")
 	scene.stage_session.reset_preview()
 	scene.stage_session.advance_preview(0)
@@ -266,7 +266,7 @@ func _test_flow() -> void:
 	var settled := {}
 	scene.stage_finished.connect(func(result: Dictionary) -> void: settled.merge(result))
 	scene._on_stage_result_ready(core.result_summary().to_dictionary())
-	check(settled.pet_name == "苹果蛇" and settled.pet_advanced, "结算记录本局装备")
+	check(settled.pet_name == "翼火蛇" and settled.pet_advanced, "结算记录本局装备")
 	scene.queue_free(); await process_frame
 
 func screenshot(name: String) -> void:

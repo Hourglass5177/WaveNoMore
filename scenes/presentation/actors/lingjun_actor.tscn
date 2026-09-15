@@ -3,6 +3,7 @@
 [ext_resource type="SpineSkeletonDataResource" uid="uid://c8jfawtuasw04" path="res://assets/character/lingjun/lingjun_gameplay.tres" id="1_skeleton"]
 [ext_resource type="Shader" uid="uid://drem6vne4bjte" path="res://shaders/materials/lingjun.gdshader" id="2_7cjwj"]
 [ext_resource type="PackedScene" path="res://assets/character/lingjun/lingjun_ashes.tscn" id="2_ashes"]
+[ext_resource type="Script" path="res://src/presentation/actors/bell_visual.gd" id="5_bell"]
 [ext_resource type="Texture2D" uid="uid://1bmc74nprqtx" path="res://assets/image/scene/bell1.png" id="4_te74s"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_qfdje"]
@@ -32,6 +33,7 @@ metadata/death = "death"
 show_behind_parent = true
 
 [node name="Bell" type="Sprite2D" parent="." unique_id=61900974]
+script = ExtResource("5_bell")
 show_behind_parent = true
 position = Vector2(712.50006, -756.25)
 scale = Vector2(0.25760305, 0.25760308)

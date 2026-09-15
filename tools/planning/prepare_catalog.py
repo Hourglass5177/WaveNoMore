@@ -50,14 +50,15 @@ rule('04 计分','miss_score','Miss 基础分','分','通常为 0',1,'Miss 会�
 rule('04 计分','max_combo_multiplier','最高 Combo 倍率','倍','1～2',0.1,'从 1 倍线性爬升；高连击影响总分权重。',0,10)
 rule('04 计分','combo_steps_to_max','倍率爬升步数','次','50～150',10,'倍率按 (Combo−1)/步数计算；默认第 101 连达到上限。',1,500)
 rule('05 读谱与声波','approach_duration_sec','音符接近时间','s','1.5～3',0.1,'生成至判定点的时间；增大能更早看见音符，且改变速度与接触几何。',0.1,10)
+rule('05 读谱与声波','ghost_preview_extra_sec','Ghost 额外预告','s','0.2～0.8',0.05,'在普通接近时间前额外显示闭眼 Ghost；同步提前固定预测位置的取样边界，不改变结算时刻、调频评分或伤害。',0,2)
 rule('05 读谱与声波','wave_speed_px_sec','声波传播速度','设计 px/s','1800～3000',100,'影响实际接触、载波间距与 Ghost 选点；不改变按键时间窗。',10,4000)
 
 for pet, name, key, values, unit, recommended, step, limits, meaning in [
-    ('nu_tu_fu','蝠漆漆','perfect_score_bonus',[0.02,0.03],'比例','1%～5%',0.005,(0,1),'对含 Combo 的 Perfect 分累计奖励，最后累计取整。'),
-    ('gui_jin_yang','羊头仔','damage_reduction',[0.1,0.2],'比例','5%～25%',0.05,(0,1),'基础伤害乘 (1−减免比例) 后取整。'),
-    ('yi_huo_she','苹果蛇','hold_head_bonus_ms',[10,10],'ms','5～20',5,(0,100),'只给 Hold 头部四档窗口追加同样毫秒数。'),
-    ('yi_huo_she','苹果蛇','hold_sustain_bonus_ms',[20,20],'ms','10～40',10,(0,200),'追加 Hold 断持宽限。'),
-    ('yi_huo_she','苹果蛇','hold_grade_boost',[0,1],'级','0 或 1',1,(0,3),'整条 Hold 最终得分等级提升；机械失败与伤害不被免除。'),
+    ('nu_tu_fu','女土蝠','perfect_score_bonus',[0.02,0.03],'比例','1%～5%',0.005,(0,1),'对含 Combo 的 Perfect 分累计奖励，最后累计取整。'),
+    ('gui_jin_yang','鬼金羊','damage_reduction',[0.1,0.2],'比例','5%～25%',0.05,(0,1),'基础伤害乘 (1−减免比例) 后取整。'),
+    ('yi_huo_she','翼火蛇','hold_head_bonus_ms',[10,10],'ms','5～20',5,(0,100),'只给 Hold 头部四档窗口追加同样毫秒数。'),
+    ('yi_huo_she','翼火蛇','hold_sustain_bonus_ms',[20,20],'ms','10～40',10,(0,200),'追加 Hold 断持宽限。'),
+    ('yi_huo_she','翼火蛇','hold_grade_boost',[0,1],'级','0 或 1',1,(0,3),'整条 Hold 最终得分等级提升；机械失败与伤害不被免除。'),
 ]:
     for tier, value in zip(['base','advanced'],values):
         rows.append(dict(section='06 随从',target=f'pet:{pet}:{tier}',key=key,
@@ -85,7 +86,7 @@ for key,name,value,unit,suggested,step,low,high,meaning in [
 out=ROOT/'content/rules/planning_parameters.json'
 # 角色移动的表现目录单独维护，重建玩法基线时保留这些字段。
 if out.exists():
-    rows.extend(r for r in json.loads(out.read_text(encoding='utf-8')) if r['target'] in ['actors','boss','ui_flame'])
+    rows.extend(r for r in json.loads(out.read_text(encoding='utf-8')) if r['target'] in ['actors','boss','ui_flame','ui_guides','judgment'] or r['target'].startswith('reward:'))
 out.write_text(json.dumps(rows,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
 print(f'{len(rows)} 个可编辑参数')
 
@@ -96,11 +97,11 @@ def display(value, unit):
 directory=ROOT/'docs/planning'
 directory.mkdir(parents=True,exist_ok=True)
 for pet_page, filename, title in [(False,'01-全局数值.md','全局手感与数值'),(True,'02-随从数值.md','随从技能数值')]:
-    selected=[r for r in rows if r['target'] not in ['boundary','actors','boss','ui_flame'] and r['target'].startswith('pet:')==pet_page]
+    selected=[r for r in rows if r['target'] not in ['boundary','actors','boss','ui_flame','ui_guides','judgment'] and r['target'].startswith('pet:')==pet_page]
     lines=[f'# {title}', '', '基线：2026-09-14。表格 B 列可直接修改；下列区间是试调建议，允许输入范围另列。实际值以工作簿当前值为准。', '']
     if pet_page:
         lines+=['随从中性配置的所有加成默认均为 0。下表是三只正式随从的两阶资源覆盖；只有已装备的形态生效，进阶不与基础叠加。技能描述原文未改动。', '',
-                '羊头仔默认使每组 20 点伤害变为 18 / 16 点，100 魂火分别在第 6 / 7 组耗尽。苹果蛇两阶头部窗口实际为 55/100/145/190 ms，断持宽限 120 ms；进阶对最终得分等级提一级，失败伤害仍保留。', '']
+                '鬼金羊默认使每组 20 点伤害变为 18 / 16 点，100 魂火分别在第 6 / 7 组耗尽。翼火蛇两阶头部窗口实际为 55/100/145/190 ms，断持宽限 120 ms；进阶对最终得分等级提一级，失败伤害仍保留。', '']
     for section in dict.fromkeys(r['section'] for r in selected):
         lines += [f'## {section}', '', '| 参数／字段 | 原型默认 | 单位 | 建议区间；步长 | 允许范围 |', '| --- | ---: | --- | --- | --- |']
         part=[r for r in selected if r['section']==section]

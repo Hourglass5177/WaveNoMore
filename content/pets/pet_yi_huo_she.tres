@@ -18,7 +18,7 @@ hold_grade_boost = 1
 [resource]
 script = ExtResource("1")
 pet_id = "yi_huo_she"
-display_name = "苹果蛇"
+display_name = "翼火蛇"
 base_description = "Hold的判定窗口更宽松"
 advanced_description = "Hold的判定窗口更宽松，且判定等级固定提高一级"
 base_effect = SubResource("base")

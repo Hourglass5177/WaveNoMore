@@ -199,6 +199,20 @@ func has_active_hold(affinity: int = -1) -> bool:
 	return false
 
 
+func boss_active_heads() -> Array:
+	var result: Array = []
+	for state: Dictionary in _states:
+		if state.status == &"holding" and not state.components.is_empty():
+			var head: JudgmentComponentRecord = state.components[0]
+			result.append({"id":str(state.note.id),"grade":head.grade,"time_us":head.observed_us})
+	return result
+
+func boss_sustain_grade(id: String) -> int:
+	for state: Dictionary in _states:
+		if str(state.note.id) == id and state.status == &"holding":
+			return GameplayTypes.JudgmentGrade.GOOD if state.sustain_degraded else GameplayTypes.JudgmentGrade.PERFECT
+	return GameplayTypes.JudgmentGrade.MISS
+
 func active_hold_ids(held_only: bool = false) -> PackedStringArray:
 	# 表现层可以查询哪些 Hold 头已被真实接受，但不能根据视觉时间自行推断。
 	# 这里只暴露基于稳定 ID 的只读视图，使美术表现与判定决策保持解耦。

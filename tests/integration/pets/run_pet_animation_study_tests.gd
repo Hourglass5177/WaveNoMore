@@ -56,7 +56,7 @@ func check_lights(actor: Node) -> void:
 	check(actor.trigger_lights._pieces.all(func(p): return not p.node.visible),"重置清除新光效")
 
 func check_breath(actor: Node) -> void:
-	check(actor.breath.flames.size()==3,"苹果蛇三嘴各有独立火焰")
+	check(actor.breath.flames.size()==3,"翼火蛇三嘴各有独立火焰")
 	actor.clear_events()
 	check(actor.breath.flames.all(func(f): return not f.visible),"常态不喷火")
 	actor.trigger(.5)

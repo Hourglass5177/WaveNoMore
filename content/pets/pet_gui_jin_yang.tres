@@ -15,7 +15,7 @@ damage_reduction = 0.2
 [resource]
 script = ExtResource("1")
 pet_id = "gui_jin_yang"
-display_name = "羊头仔"
+display_name = "鬼金羊"
 base_description = "受到的伤害-10%"
 advanced_description = "受到的伤害-20%"
 base_effect = SubResource("base")

@@ -100,6 +100,9 @@ var _level: Dictionary = {}
 var _level_section := "song"
 var _section_elapsed_us := 0.0
 var _pending_level_result := {}
+var _boss_tail_us := 0
+var _boss_finish_origin_us := 0
+var _boss_hud: CanvasLayer
 
 func set_pet(pet: PetDefinition, advanced: bool = false) -> void:
 	active_pet = pet
@@ -380,7 +383,18 @@ func _on_stage_result_ready(result: Dictionary) -> void:
 	final.equipped_pet_id = active_pet.pet_id if active_pet != null else ""
 	final.pet_name = active_pet.display_name if active_pet != null else ""
 	final.pet_advanced = pet_advanced
-	if bool(final.get("success", false)) and int(_level.get("outro_us", 0)) > 0 and not stage_session.external_preview:
+	_boss_tail_us = 0
+	if is_instance_valid(level_show_player) and level_show_player.boss_battle != null:
+		var battle := level_show_player.boss_battle
+		_boss_finish_origin_us = stage_session.gameplay_coordinator.simulation.current_time_us
+		final.bosses = []
+		for state: Dictionary in battle.states.values():
+			if state.maximum == 0: continue
+			if state.finish_us < 0: state.finish_us = maxi(_boss_finish_origin_us,int(state.phase_us)+int(state.config.phase_duration_us))
+			var duration := int(state.config.death_duration_us) if state.hp == 0 else 600000
+			_boss_tail_us = maxi(_boss_tail_us,int(state.finish_us)+duration-_boss_finish_origin_us)
+			final.bosses.append({"object_id":state.config.id,"defeated":state.hp==0,"remaining_health":state.hp})
+	if bool(final.get("success", false)) and (int(_level.get("outro_us", 0)) > 0 or _boss_tail_us > 0) and not stage_session.external_preview:
 		_pending_level_result = final
 		_level_section = "outro"; _section_elapsed_us = 0.0
 		level_show_player.playing = true; level_show_player.seek("outro", 0)
@@ -399,6 +413,15 @@ func _configure_level_show(stage: StageDefinition) -> void:
 	var compiled := LevelBossCompiler.compile(stage, stage_session.compiled_chart.tempo_map, level_show_player)
 	level_show_player.show.tracks.append_array(compiled.tracks)
 	chart_scheduler.configure_boss_emissions(compiled.emissions)
+	level_show_player.boss_emissions=compiled.emissions
+	var battle := stage_session.gameplay_coordinator.simulation.boss_battle
+	battle.configure(compiled.battles, stage_session.compiled_chart, stage.rule_set)
+	if stage_session.is_replay_playback() and is_instance_valid(replay_input_driver) and replay_input_driver.replay_data != null and not replay_input_driver.replay_data.boss_battles.is_empty():
+		battle.configure(replay_input_driver.replay_data.boss_battles,stage_session.compiled_chart,stage.rule_set)
+	level_show_player.boss_battle = battle
+	level_show_player.boss_offset_us = roundi(stage.song.first_beat_offset_sec*1000000)
+	if not is_instance_valid(_boss_hud):
+		_boss_hud=load("res://scenes/presentation/boss_hud.tscn").instantiate();add_child(_boss_hud)
 	var duration_us := roundi((stage_session.get_end_song_time_sec() + stage.song.first_beat_offset_sec) * 1000000.0)
 	level_show_player.configure_environment(get_parallax_controller(), _level, stage.background, Vector3i(int(_level.get("intro_us",0)), duration_us, int(_level.get("outro_us",0))), stage.visual_theme.camera_velocity if stage.visual_theme != null else Vector2.ZERO)
 	var first_beat_offset:=stage.song.first_beat_offset_sec
@@ -410,6 +433,7 @@ func _update_level_show(sample: ClockSample) -> void:
 	if level_show_external or not is_instance_valid(level_show_player) or _level_section != "song": return
 	var audio_us := roundi((sample.visual_time_sec + stage_session.stage_definition.song.first_beat_offset_sec) * 1000000.0)
 	level_show_player.advance("song", audio_us, not stage_session.external_preview, sample.song_time_sec)
+	_update_boss_hud(roundi(sample.song_time_sec*1000000))
 	# 摄像头只影响环境视差，判定基准和波源坐标不随演出移动。
 	if get_parallax_controller().environment == null:
 		get_parallax_controller().set_camera_position(get_parallax_controller().get_camera_position() + level_show_player.camera_position)
@@ -451,6 +475,10 @@ func _process(delta: float) -> void:
 	if _level_section not in ["intro", "outro"] or not is_instance_valid(level_show_player): return
 	_section_elapsed_us += delta * 1000000.0
 	var duration := int(_level.get(_level_section + "_us", 0))
+	if _level_section == "outro":
+		duration=maxi(duration,_boss_tail_us)
+		level_show_player.boss_song_us=_boss_finish_origin_us+roundi(_section_elapsed_us)
+		_update_boss_hud(level_show_player.boss_song_us)
 	level_show_player.advance(_level_section, mini(roundi(_section_elapsed_us), duration))
 	if _section_elapsed_us < duration: return
 	level_show_player.stop_audio()
@@ -465,3 +493,10 @@ func _process(delta: float) -> void:
 func _on_replay_saved(path: String, replay: ReplayData, _run_log: Dictionary) -> void:
 	last_replay = replay
 	replay_persisted.emit(path)
+
+func _update_boss_hud(at: int) -> void:
+	if not is_instance_valid(_boss_hud) or level_show_player.boss_battle == null: return
+	var flash := 0.0
+	for driver in level_show_player.drivers.values():
+		if driver.root.has_method("sample_show"): flash=maxf(flash,float(driver.root.white_flash))
+	_boss_hud.display(level_show_player.boss_battle,at,flash)

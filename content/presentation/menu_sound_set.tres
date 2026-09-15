@@ -1,0 +1,88 @@
+[gd_resource type="Resource" script_class="MenuSoundSet" load_steps=23 format=3]
+
+[ext_resource type="Script" path="res://src/content/resources/menu_sound_set.gd" id="1"]
+[ext_resource type="AudioStream" path="res://assets/audio/menu/provided/Ambient1.ogg" id="2"]
+[ext_resource type="AudioStream" path="res://assets/audio/menu/crafted/focus.wav" id="focus"]
+[ext_resource type="AudioStream" path="res://assets/audio/menu/crafted/focus_2.wav" id="focus_2"]
+[ext_resource type="AudioStream" path="res://assets/audio/menu/crafted/focus_3.wav" id="focus_3"]
+[ext_resource type="AudioStream" path="res://assets/audio/menu/crafted/confirm.wav" id="confirm"]
+[ext_resource type="AudioStream" path="res://assets/audio/menu/crafted/confirm_2.wav" id="confirm_2"]
+[ext_resource type="AudioStream" path="res://assets/audio/menu/crafted/confirm_3.wav" id="confirm_3"]
+[ext_resource type="AudioStream" path="res://assets/audio/menu/crafted/cancel.wav" id="cancel"]
+[ext_resource type="AudioStream" path="res://assets/audio/menu/crafted/cancel_2.wav" id="cancel_2"]
+[ext_resource type="AudioStream" path="res://assets/audio/menu/crafted/cancel_3.wav" id="cancel_3"]
+[ext_resource type="AudioStream" path="res://assets/audio/menu/crafted/adjust.wav" id="adjust"]
+[ext_resource type="AudioStream" path="res://assets/audio/menu/crafted/adjust_2.wav" id="adjust_2"]
+[ext_resource type="AudioStream" path="res://assets/audio/menu/crafted/adjust_3.wav" id="adjust_3"]
+[ext_resource type="AudioStream" path="res://assets/audio/menu/crafted/open.wav" id="open"]
+[ext_resource type="AudioStream" path="res://assets/audio/menu/crafted/open_2.wav" id="open_2"]
+[ext_resource type="AudioStream" path="res://assets/audio/menu/crafted/open_3.wav" id="open_3"]
+
+[sub_resource type="AudioStreamRandomizer" id="Random_focus"]
+playback_mode = 0
+random_pitch = 1.0
+random_volume_offset_db = 0.0
+streams_count = 3
+stream_0/stream = ExtResource("focus")
+stream_0/weight = 1.0
+stream_1/stream = ExtResource("focus_2")
+stream_1/weight = 1.0
+stream_2/stream = ExtResource("focus_3")
+stream_2/weight = 1.0
+
+[sub_resource type="AudioStreamRandomizer" id="Random_confirm"]
+playback_mode = 0
+random_pitch = 1.0
+random_volume_offset_db = 0.0
+streams_count = 3
+stream_0/stream = ExtResource("confirm")
+stream_0/weight = 1.0
+stream_1/stream = ExtResource("confirm_2")
+stream_1/weight = 1.0
+stream_2/stream = ExtResource("confirm_3")
+stream_2/weight = 1.0
+
+[sub_resource type="AudioStreamRandomizer" id="Random_cancel"]
+playback_mode = 0
+random_pitch = 1.0
+random_volume_offset_db = 0.0
+streams_count = 3
+stream_0/stream = ExtResource("cancel")
+stream_0/weight = 1.0
+stream_1/stream = ExtResource("cancel_2")
+stream_1/weight = 1.0
+stream_2/stream = ExtResource("cancel_3")
+stream_2/weight = 1.0
+
+[sub_resource type="AudioStreamRandomizer" id="Random_adjust"]
+playback_mode = 0
+random_pitch = 1.0
+random_volume_offset_db = 0.0
+streams_count = 3
+stream_0/stream = ExtResource("adjust")
+stream_0/weight = 1.0
+stream_1/stream = ExtResource("adjust_2")
+stream_1/weight = 1.0
+stream_2/stream = ExtResource("adjust_3")
+stream_2/weight = 1.0
+
+[sub_resource type="AudioStreamRandomizer" id="Random_open"]
+playback_mode = 0
+random_pitch = 1.0
+random_volume_offset_db = 0.0
+streams_count = 3
+stream_0/stream = ExtResource("open")
+stream_0/weight = 1.0
+stream_1/stream = ExtResource("open_2")
+stream_1/weight = 1.0
+stream_2/stream = ExtResource("open_3")
+stream_2/weight = 1.0
+
+[resource]
+script = ExtResource("1")
+ambient = ExtResource("2")
+focus = SubResource("Random_focus")
+confirm = SubResource("Random_confirm")
+cancel = SubResource("Random_cancel")
+adjust = SubResource("Random_adjust")
+open = SubResource("Random_open")

@@ -65,7 +65,10 @@ func set_catalog(value: Resource) -> void:
 			levels.append({"id": "card_%02d" % (index + 1), "title": entry.title, "image": entry.image, "monster_scale": entry.monster_scale, "background": entry.background, "background_scale": entry.background_scale, "background_effect_frames": entry.background_effect_frames, "background_effect_animation": entry.background_effect_animation, "background_effect_scale": entry.background_effect_scale, "background_effect_offset": entry.background_effect_offset, "eye_icon_selected": entry.eye_icon_selected, "eye_icon_unselected": entry.eye_icon_unselected, "heading_texture": entry.heading_texture, "description": entry.description})
 			levels.back()["stage_id"] = entry.stage_id
 			levels.back()["flame_palette"] = entry.flame_palette
-			levels.back()["score"] = SaveService.stage_result(entry.stage_id).get("best_score",0)
+			var record: Dictionary = SaveService.stage_result(entry.stage_id)
+			levels.back()["score"] = record.get("best_score",0)
+			levels.back()["full_combo"] = record.get("full_combo",false)
+			levels.back()["all_perfect"] = record.get("all_perfect",false)
 	set_levels(levels)
 
 
@@ -90,6 +93,7 @@ func set_levels(levels: Array[Dictionary], initial_index: int = 0) -> void:
 func step(direction: int) -> void:
 	if _levels.size() < 2 or direction == 0:
 		return
+	get_node("/root/MenuAudioService").play_ui(&"focus")
 	_target += 1 if direction > 0 else -1
 	_begin_heading_change()
 	_moving = true
@@ -102,6 +106,7 @@ func focus_index(index: int) -> void:
 	if delta > _levels.size() / 2: delta -= _levels.size()
 	_target += delta
 	if delta != 0:
+		get_node("/root/MenuAudioService").play_ui(&"focus")
 		_begin_heading_change()
 		_moving = true
 		set_process(true)
@@ -125,8 +130,10 @@ func select_current() -> void:
 	var card := _cards[current_index()]
 	if not SaveService.is_stage_unlocked(stage):
 		card.set_locked(true)
+		get_node("/root/MenuAudioService").play_ui(&"cancel")
 		print("关卡未解锁：", stage_id); return
 	card.set_locked(false)
+	get_node("/root/MenuAudioService").play_ui(&"confirm")
 	stage_requested.emit(stage_id)
 
 func _unhandled_input(event: InputEvent) -> void:

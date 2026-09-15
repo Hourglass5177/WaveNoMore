@@ -43,7 +43,7 @@ for(const name of groups){
       const old=String(v[0]).slice(4);sheet.getRange(`A${i+6}`).values=[['已停用：'+(retiredNames[old]||old)]];
       sheet.getRange(`B${i+6}`).format.fill='#E7E8EA';
     }
-    if(v[7]==='rules'||v[7]==='boundary'||v[7]==='actors'||v[7]==='boss'||v[7]==='ui_flame'||String(v[7]||'').startsWith('pet:')){
+    if(v[7]==='rules'||v[7]==='boundary'||v[7]==='actors'||v[7]==='boss'||v[7]==='ui_flame'||v[7]==='ui_guides'||v[7]==='judgment'||String(v[7]||'').startsWith('pet:')||String(v[7]||'').startsWith('reward:')){
       const key=v[7]+'/'+v[8]; locations.set(key,{sheet,row:i+6}); previous.set(key,v[1]);
     }
   });
@@ -96,7 +96,7 @@ intro.getRange('B4').values=[['在各参数页修改黄色 B 列，Ctrl+S 保存
 const ref=k=>refs['rules/'+k];
 intro.getRange('A16').values=[['无随从：耗尽魂火所需 Tap 漏击组']];
 intro.getRange('B16').formulas=[[`=IF(${ref('tap_miss_damage')}=0,"不扣血",ROUNDUP(${ref('max_soul_fire')}/${ref('tap_miss_damage')},0))`]];
-intro.getRange('A20').values=[['羊头仔基础：每组 Tap 伤害（点）']];
+intro.getRange('A20').values=[['鬼金羊基础：每组 Tap 伤害（点）']];
 intro.getRange('B20').formulas=[[`=ROUND(${ref('tap_miss_damage')}*(1-${refs['pet:gui_jin_yang:base/damage_reduction']}),0)`]];
 intro.getRange('A27:A29').values=[['无随从：每拍 Hold 漏失身体伤害'],['无随从：漏掉两拍 Hold 的伤害'],['无随从：耗尽魂火所需 Ghost 漏击数']];
 intro.getRange('B27:B29').formulas=[
@@ -108,7 +108,13 @@ intro.getRange('A27:B29').format={font:{name:'Microsoft YaHei',size:11,color:'#2
 intro.getRange('A31').values=[['参数增删或含义变化时同步目录和本表；同步工具按字段保留黄色当前值。']];
 intro.getRange('A31').format.font={name:'Microsoft YaHei',size:11,color:'#27363A'};
 }
-if(onlyTarget==='boss')wb.worksheets.getItem('09 BOSS 表现').getRange('A3').values=[['修改黄色当前值，重新打开 BOSS 审看场景后生效。']];
+if(groups.includes('11 关卡奖励')) {
+  const rewards=wb.worksheets.getItem('11 关卡奖励');
+  rewards.getRange('A3').values=[['修改黄色当前值，下次正式装载生效。玄同收服、至臻进阶；不会撤回既有奖励。']];
+  rewards.getRange('B1:C30').format.columnWidth=20;
+}
+if(onlyTarget==='boss')wb.worksheets.getItem('09 BOSS 表现').getRange('A3').values=[['修改黄色当前值，重新装载关卡或 BOSS 审看场景后生效；对象和绑定可覆盖战斗及发射默认值。']];
+if(onlyTarget==='ui_guides')wb.worksheets.getItem('12 开屏引导').getRange('A3').values=[['修改黄色当前值，下次启动正式游戏生效；操作说明由玩家确认后继续。']];
 if(onlyTarget==='ui_flame')wb.worksheets.getItem('10 UI 火框').getRange('A3').values=[['修改黄色当前值，重新打开 UI 火框审看场景后生效；本轮尚未替换正式界面。']];
 wb.recalculate();
 for(const entry of catalog){
@@ -119,7 +125,7 @@ for(const entry of catalog){
   }
 }
 console.log((await wb.inspect({kind:'match',searchTerm:'#REF!|#DIV/0!|#VALUE!|#NAME\\?|#NUM!',options:{useRegex:true,maxResults:10}})).ndjson);
-for(const name of onlyTarget?groups:['02 魂火与惩罚','03 调频','07 分界线表现','08 角色移动','使用与量级']){
+for(const name of onlyTarget?groups:['02 魂火与惩罚','03 调频','07 分界线表现','08 角色移动','11 关卡奖励','使用与量级']){
   const preview=await wb.render({sheetName:name,range:name==='使用与量级'?'A1:B32':name==='03 调频'?'A5:G19':name==='07 分界线表现'?'A1:G28':'A1:G14',scale:1,format:'png'});
   await fs.writeFile(path.join(root,`builds/planning/${name}-updated.png`),new Uint8Array(await preview.arrayBuffer()));
 }

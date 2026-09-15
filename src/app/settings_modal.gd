@@ -8,6 +8,7 @@ var _pages: Array[Control]
 var _tabs: Array[Button]
 var _page_motion: Tween
 var _tab_index := 0
+var _controls_guide: Control
 func _ready() -> void:
 	super._ready()
 	if Engine.is_editor_hint(): return
@@ -34,6 +35,7 @@ func _ready() -> void:
 	%Debug.visible = OS.is_debug_build()
 	%Save.pressed.connect(_save_and_close)
 	%Cancel.pressed.connect(_close)
+	%Controls.pressed.connect(_show_controls)
 	for field in [%Resolution,%Fullscreen,%Debug]: MenuInteraction.attach(field)
 	for field in [%CalibrationPage.get_node("%AudioOffset"),%CalibrationPage.get_node("%InputOffset"),%CalibrationPage.get_node("%VisualOffset")]:
 		MenuInteraction.attach(field.get_line_edit())
@@ -75,11 +77,14 @@ func _close() -> void:
 	%CalibrationPage.deactivate()
 	close_requested.emit()
 func _unhandled_input(event: InputEvent) -> void:
+	if _controls_guide != null: return
 	if event.is_action_pressed("ui_cancel"):
 		get_viewport().set_input_as_handled()
+		get_node("/root/MenuAudioService").play_ui(&"cancel")
 		_close()
 
 func _input(event: InputEvent) -> void:
+	if _controls_guide != null: return
 	super._input(event)
 	if closing or not is_visible_in_tree(): return
 	# 文本框中的 E 仍可输入科学计数法；肩键随时可切分类。
@@ -88,6 +93,27 @@ func _input(event: InputEvent) -> void:
 		if not event.is_action(action): continue
 		get_viewport().set_input_as_handled()
 		if event.is_action_pressed(action):
+			get_node("/root/MenuAudioService").play_ui(&"focus")
 			select_tab(posmod(_tab_index + (-1 if action == &"menu_previous" else 1), _pages.size()))
 			_tabs[_tab_index].grab_focus()
 		return
+
+func _show_controls() -> void:
+	# 暂时隔离设置内容，保留未保存的数值与滚动位置。
+	$Design.focus_behavior_recursive = Control.FOCUS_BEHAVIOR_DISABLED
+	%CalibrationPage.set_process(false)
+	_controls_guide = preload("res://src/app/ui/instruction_guide.gd").new()
+	_controls_guide.name = "ControlsGuide"
+	_controls_guide.page = _controls_guide.Page.CONTROLLER
+	_controls_guide.navigation_text = "返回"
+	_controls_guide.allow_cancel = true
+	_controls_guide.dismissed.connect(_hide_controls)
+	add_child(_controls_guide)
+	_controls_guide.activate()
+
+func _hide_controls() -> void:
+	_controls_guide.queue_free()
+	_controls_guide = null
+	$Design.focus_behavior_recursive = Control.FOCUS_BEHAVIOR_INHERITED
+	if _tab_index == 2: %CalibrationPage.set_process(true)
+	%Controls.grab_focus()

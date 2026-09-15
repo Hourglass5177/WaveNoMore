@@ -54,7 +54,7 @@ intro.getRange('A4:B12').values=[
  ['发布程序','旧 build 尚不支持本表。下一次构建后，可放 EXE 旁 planning/策划参数.xlsx。'],
  ];
 intro.getRange('A15:B15').values=[['随当前值计算','结果']];
-intro.getRange('A16:A21').values=[['无随从：耗尽魂火所需伤害组'],['Perfect 完整窗口（ms）'],['Good / Perfect 基础分比例'],['最高 Combo 倍率开始的连击数'],['羊头仔基础：每次受伤（点）'],['调频一程 1 s：满幅理想耗时（s）']];
+intro.getRange('A16:A21').values=[['无随从：耗尽魂火所需伤害组'],['Perfect 完整窗口（ms）'],['Good / Perfect 基础分比例'],['最高 Combo 倍率开始的连击数'],['鬼金羊基础：每次受伤（点）'],['调频一程 1 s：满幅理想耗时（s）']];
 const r=k=>refs['rules/'+k];
 intro.getRange('B16:B21').formulas=[
  [`=IF(${r('tap_miss_damage')}=0,"不扣血",ROUNDUP(${r('max_soul_fire')}/${r('tap_miss_damage')},0))`],

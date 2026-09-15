@@ -154,6 +154,11 @@ func _show_stage(stage: StageDefinition) -> void:
 	if not ResourceLoader.exists(STAGE_ROOT_PATH):
 		_show_error("StageRoot 尚未生成。")
 		return
+	# 正式关卡的奖励草稿固定在本次装载；不改资源缓存，也不覆盖本地谱面的配置。
+	if _run_context.is_empty() and stage.reward != null:
+		stage = stage.duplicate(false) as StageDefinition
+		stage.reward = stage.reward.duplicate(false) as RewardDefinition
+		PlanningParameters.apply_values(stage.reward, "reward:" + stage.stage_id, PlanningParameters.read())
 	_current_stage = stage
 	var packed := load(STAGE_ROOT_PATH) as PackedScene
 	var stage_root := packed.instantiate()
@@ -175,6 +180,9 @@ func _show_stage(stage: StageDefinition) -> void:
 		_run_pet_advanced = SaveService.equipped_pet_advanced() if _run_pet != null else false
 		_run_pet_ready = true
 	stage_root.set_pet(_run_pet, _run_pet_advanced)
+	# 先收集原因，装载返回后再切页，避免在信号回调中卸载仍在执行的关卡。
+	var load_errors: Array[String] = []
+	stage_root.stage_load_failed.connect(func(message: String): load_errors.append(message))
 	var stage_started := false
 	if not _run_context.is_empty():
 		stage_started = stage_root.load_stage(stage, false)
@@ -196,8 +204,10 @@ func _show_stage(stage: StageDefinition) -> void:
 	# 关卡节点已经挂上树，并不代表编译、音频和会话真的准备成功。
 	# 失败时必须立刻撤下空壳关卡；否则歌曲时间永远停在 0，看起来像程序卡死。
 	if not stage_started:
-		ChartTrialLaunch.report(_run_context, "error", "谱面编译或关卡准备失败")
-		_show_error("关卡载入失败：谱面或运行配置无效。")
+		var reason := "；".join(load_errors) if not load_errors.is_empty() else "谱面编译或关卡准备失败"
+		ChartTrialLaunch.report(_run_context, "error", reason)
+		push_error("关卡 %s 载入失败：%s" % [stage.stage_id, reason])
+		_show_error("关卡载入失败：" + reason)
 
 
 func _show_result(stage: StageDefinition, result: Dictionary) -> void:
@@ -213,6 +223,9 @@ func _show_result(stage: StageDefinition, result: Dictionary) -> void:
 		else: AppRouter.navigate(AppRouter.ROUTE_LOADING, {"stage_id": stage_id}, false)
 	)
 	screen.stage_select_requested.connect(_on_stage_exit_requested)
+	screen.next_stage_requested.connect(func(stage_id: String) -> void:
+		AppRouter.navigate(AppRouter.ROUTE_LOADING, {"stage_id": stage_id}, false)
+	)
 
 
 func _on_stage_finished(result: Variant = {}) -> void:
@@ -386,7 +399,7 @@ func _add_trial_to_library() -> void:
 		if is_instance_valid(_current_screen):
 			var pause := _current_screen.get_node_or_null("PauseLayer")
 			if pause != null: pause._continue_button.grab_focus()
-			elif _current_screen.has_method("configure_external"): _current_screen._retry.grab_focus())
+			elif _current_screen.has_method("restore_external_focus"): _current_screen.restore_external_focus())
 	modal.import_path(str(_run_context.path))
 
 func _unhandled_input(event: InputEvent) -> void:

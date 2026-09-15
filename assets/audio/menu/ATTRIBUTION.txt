@@ -1,0 +1,14 @@
+菜单按钮音效：布料软接触实录加工
+
+soft impact.wav — lipalearning
+https://freesound.org/people/lipalearning/sounds/427973/
+Creative Commons Zero (CC0):
+https://creativecommons.org/publicdomain/zero/1.0/
+
+原录音为布团落在沙发、地毯及枕头上的声音。
+加工：从公开高质量预听中截取、转换采样率、调整响度、平滑剪辑边缘。
+衍生文件：crafted/focus.wav、confirm.wav、cancel.wav、adjust.wav、open.wav。
+以上五类的 _2.wav、_3.wav 随机变体来自同一实录的其他落点，使用相同许可。
+未使用 Minecraft 的游戏音频。
+
+provided/Ambient1.ogg 和 Button1–3.ogg 来自项目用户提供的音效包，不属于上述采样许可。

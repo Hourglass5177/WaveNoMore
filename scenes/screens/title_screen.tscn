@@ -12,6 +12,12 @@
 [ext_resource type="Texture2D" path="res://assets/ui/art/主界面/操作设置.png" id="art2"]
 [ext_resource type="Texture2D" path="res://assets/ui/art/主界面/退出游戏.png" id="art3"]
 
+[ext_resource type="Shader" path="res://shaders/ui/title_arrival.gdshader" id="arrival_shader"]
+
+[sub_resource type="ShaderMaterial" id="ArrivalMaterial"]
+resource_local_to_scene = true
+shader = ExtResource("arrival_shader")
+
 [sub_resource type="AtlasTexture" id="Background"]
 atlas = ExtResource("bg")
 region = Rect2(45,0,2560,1440)
@@ -44,7 +50,7 @@ anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
-color = Color(0.022,0.012,0.040,1)
+color = Color(0,0,0,1)
 
 [node name="Design" type="Control" parent="."]
 layout_mode = 0
@@ -261,3 +267,12 @@ focus_only = true
 underline_offset = 10.0
 underline_width = 2.4
 underline_strength = 0.95
+
+[node name="Arrival" type="ColorRect" parent="Design"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 0
+offset_right = 1920.0
+offset_bottom = 1080.0
+mouse_filter = 2
+material = SubResource("ArrivalMaterial")

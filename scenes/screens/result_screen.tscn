@@ -1,6 +1,23 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3]
 
-[ext_resource type="Script" path="res://src/app/result_screen.gd" id="1_script"]
+[ext_resource type="Script" path="res://src/app/result_screen.gd" id="screen"]
+[ext_resource type="Theme" path="res://content/ui/game_theme.tres" id="theme"]
+[ext_resource type="Texture2D" path="res://assets/ui/art/result/panel.tres" id="panel"]
+[ext_resource type="Texture2D" path="res://assets/ui/art/result/eye.tres" id="eye"]
+[ext_resource type="Texture2D" path="res://assets/ui/art/result/next.tres" id="next"]
+[ext_resource type="Texture2D" path="res://assets/ui/art/result/retry.tres" id="retry"]
+[ext_resource type="Texture2D" path="res://assets/ui/art/result/exit.tres" id="exit"]
+[ext_resource type="Script" path="res://src/app/ui/art_button.gd" id="button"]
+[ext_resource type="Script" path="res://src/app/ui/fire_frame.gd" id="fire"]
+[ext_resource type="Script" path="res://src/app/ui/clear_mark_visual.gd" id="mark"]
+[ext_resource type="Script" path="res://src/app/ui/score_label.gd" id="score"]
+[ext_resource type="FontFile" path="res://assets/fonts/huiwen.otf" id="font"]
+
+[sub_resource type="StyleBoxEmpty" id="empty"]
+
+[sub_resource type="LabelSettings" id="score_font"]
+font = ExtResource("font")
+font_size = 108
 
 [node name="ResultScreen" type="Control"]
 layout_mode = 3
@@ -9,5 +26,312 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_script")
+script = ExtResource("screen")
+theme = ExtResource("theme")
 
+[node name="Design" type="Control" parent="."]
+offset_right = 1920.0
+offset_bottom = 1080.0
+mouse_filter = 2
+
+[node name="Panel" type="TextureRect" parent="Design"]
+offset_left = 240.0
+offset_top = 190.0
+offset_right = 1680.0
+offset_bottom = 890.0
+mouse_filter = 2
+texture = ExtResource("panel")
+expand_mode = 1
+
+[node name="Fire" type="Control" parent="Design"]
+offset_left = 240.0
+offset_top = 190.0
+offset_right = 1680.0
+offset_bottom = 890.0
+mouse_filter = 2
+script = ExtResource("fire")
+
+[node name="Title" type="Label" parent="Design"]
+unique_name_in_owner = true
+offset_left = 560.0
+offset_top = 246.0
+offset_right = 1360.0
+offset_bottom = 304.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 44
+text = "复位成功"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="StageName" type="Label" parent="Design"]
+unique_name_in_owner = true
+offset_left = 560.0
+offset_top = 307.0
+offset_right = 1360.0
+offset_bottom = 345.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 26
+text = ""
+text_overrun_behavior = 3
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_colors/font_color = Color(0.69, 0.65, 0.66, 1)
+
+[node name="Score" type="Label" parent="Design"]
+unique_name_in_owner = true
+offset_left = 560.0
+offset_top = 350.0
+offset_right = 1360.0
+offset_bottom = 480.0
+mouse_filter = 2
+text = "000000"
+script = ExtResource("score")
+label_settings = SubResource("score_font")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Rating" type="Control" parent="Design"]
+unique_name_in_owner = true
+offset_left = 886.0
+offset_top = 488.0
+offset_right = 1034.0
+offset_bottom = 565.0
+mouse_filter = 2
+script = ExtResource("mark")
+
+[node name="Eye" type="TextureRect" parent="Design"]
+unique_name_in_owner = true
+offset_left = 870.0
+offset_top = 575.0
+offset_right = 1050.0
+offset_bottom = 670.0
+mouse_filter = 2
+texture = ExtResource("eye")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="HitCaption" type="Label" parent="Design"]
+unique_name_in_owner = true
+offset_left = 395.0
+offset_top = 385.0
+offset_right = 695.0
+offset_bottom = 427.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 28
+text = "命中率"
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_colors/font_color = Color(0.74, 0.70, 0.68, 1)
+
+[node name="HitRate" type="Label" parent="Design"]
+unique_name_in_owner = true
+offset_left = 395.0
+offset_top = 432.0
+offset_right = 695.0
+offset_bottom = 507.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 50
+text = "—"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PerfectCaption" type="Label" parent="Design"]
+unique_name_in_owner = true
+offset_left = 1225.0
+offset_top = 385.0
+offset_right = 1525.0
+offset_bottom = 427.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 28
+text = "臻率"
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_colors/font_color = Color(0.74, 0.70, 0.68, 1)
+
+[node name="PerfectRate" type="Label" parent="Design"]
+unique_name_in_owner = true
+offset_left = 1225.0
+offset_top = 432.0
+offset_right = 1525.0
+offset_bottom = 507.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 50
+text = "—"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Soul" type="Label" parent="Design"]
+unique_name_in_owner = true
+offset_left = 395.0
+offset_top = 560.0
+offset_right = 695.0
+offset_bottom = 602.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 28
+text = "魂火  0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Reward" type="Label" parent="Design"]
+unique_name_in_owner = true
+offset_left = 1225.0
+offset_top = 545.0
+offset_right = 1525.0
+offset_bottom = 617.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 28
+text = ""
+text_overrun_behavior = 3
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Bonus" type="Label" parent="Design"]
+unique_name_in_owner = true
+offset_left = 520.0
+offset_top = 705.0
+offset_right = 1400.0
+offset_bottom = 732.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 22
+text = ""
+text_overrun_behavior = 3
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_colors/font_color = Color(0.72, 0.67, 0.64, 1)
+
+[node name="Counts" type="HBoxContainer" parent="Design"]
+unique_name_in_owner = true
+offset_left = 440.0
+offset_top = 660.0
+offset_right = 1480.0
+offset_bottom = 705.0
+mouse_filter = 2
+theme_override_constants/separation = 40
+alignment = 1
+
+[node name="Perfect" type="Label" parent="Design/Counts"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 24
+text = "臻  0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Good" type="Label" parent="Design/Counts"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 24
+text = "良  0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Pass" type="Label" parent="Design/Counts"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 24
+text = "过  0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Miss" type="Label" parent="Design/Counts"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 24
+text = "失  0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Actions" type="HBoxContainer" parent="Design"]
+unique_name_in_owner = true
+offset_left = 450.0
+offset_top = 742.0
+offset_right = 1470.0
+offset_bottom = 816.0
+mouse_filter = 2
+theme_override_constants/separation = 65
+alignment = 1
+
+[node name="Next" type="Button" parent="Design/Actions"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(230, 74)
+layout_mode = 2
+script = ExtResource("button")
+theme_override_styles/normal = SubResource("empty")
+theme_override_styles/hover = SubResource("empty")
+theme_override_styles/pressed = SubResource("empty")
+
+[node name="Art" type="TextureRect" parent="Design/Actions/Next"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("next")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Retry" type="Button" parent="Design/Actions"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(230, 74)
+layout_mode = 2
+script = ExtResource("button")
+theme_override_styles/normal = SubResource("empty")
+theme_override_styles/hover = SubResource("empty")
+theme_override_styles/pressed = SubResource("empty")
+
+[node name="Art" type="TextureRect" parent="Design/Actions/Retry"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("retry")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Exit" type="Button" parent="Design/Actions"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(230, 74)
+layout_mode = 2
+script = ExtResource("button")
+theme_override_styles/normal = SubResource("empty")
+theme_override_styles/hover = SubResource("empty")
+theme_override_styles/pressed = SubResource("empty")
+
+[node name="Art" type="TextureRect" parent="Design/Actions/Exit"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("exit")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="AddLocal" type="Button" parent="Design"]
+unique_name_in_owner = true
+offset_left = 825.0
+offset_top = 913.0
+offset_right = 1095.0
+offset_bottom = 968.0
+mouse_filter = 0
+visible = false
+text = "加入本地谱面"
+script = ExtResource("button")
+
+[node name="Notice" type="RichTextLabel" parent="Design"]
+unique_name_in_owner = true
+offset_left = 410.0
+offset_top = 979.0
+offset_right = 1510.0
+offset_bottom = 1039.0
+mouse_filter = 2
+visible = false
+text = ""
+theme_override_font_sizes/normal_font_size = 22
+scroll_active = true
+bbcode_enabled = false

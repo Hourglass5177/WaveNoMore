@@ -45,7 +45,14 @@ func _run() -> void:
 		return
 	_expect_equal(router.current_route, &"title", "boot routes to Title")
 	_expect(_has_child_named(app.get_node("ScreenHost"), "TitleScreen"), "TitleScreen is mounted")
-	await create_timer(2.9).timeout
+	await create_timer(6.9).timeout
+	# 先确认开屏操作说明，松键不穿透到标题唤醒。
+	_send_joy_button(JOY_BUTTON_A, true)
+	for _frame in 240:
+		await process_frame
+		if app._current_screen.phase == app._current_screen.Phase.WAITING: break
+	_send_joy_button(JOY_BUTTON_A, false)
+	await process_frame
 	# 首次确认只展开主菜单，必须释放后再次确认才能进入选关。
 	_send_joy_button(JOY_BUTTON_A, true)
 	await process_frame
@@ -211,6 +218,28 @@ func _run() -> void:
 			# Headless 的 Dummy 音频在线程中处理停止命令。
 			# 正常页面切换自然会留出这点时间，烟雾测试则会立即退出。
 			await create_timer(0.08, true).timeout
+	# 正式结算 → 下一关 → 加载 → 正式关卡，验证宿主接线而非只检查信号名。
+	var result_stage: StageDefinition = content_catalog.get_stage("tutorial2").duplicate(false)
+	result_stage.reward = load(result_stage.reward_resource_path)
+	router.navigate(&"result", {"stage":result_stage,"result":{"cleared":true,"score":165467}}, false)
+	await create_timer(0.3).timeout
+	var result_screen := app.get_node("ScreenHost/ResultScreen")
+	_expect(result_screen.get_node("%Next").has_focus(), "result focuses Next after transition")
+	_send_joy_button(JOY_BUTTON_A, true)
+	await process_frame
+	_send_joy_button(JOY_BUTTON_A, false)
+	for _index in 300:
+		await process_frame
+		if router.current_route == &"stage": break
+	_expect_equal(router.current_route, &"stage", "result Next routes through loading into stage")
+	var next_root := app.get_node("ScreenHost").get_node_or_null("StageRoot")
+	_expect(next_root != null, "next stage is mounted")
+	if next_root != null:
+		_expect_equal(next_root.stage_session.stage_definition.stage_id, "s07", "next stage comes from reward configuration")
+		_expect_equal(app._current_stage.reward.pet.display_name, "翼火蛇", "next stage carries the matching reward")
+		next_root.teardown()
+		await process_frame
+		await create_timer(0.08).timeout
 	_finish()
 
 

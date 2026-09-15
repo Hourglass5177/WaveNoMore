@@ -1,5 +1,13 @@
 # 构建目录
 
+## 2026-09-15 全部程序更新
+
+以当前 develop 工作区（包含未提交的界面、声音和角色资源修改）导出三个 Windows Release 预设，更新 `builds/windows/minghe-mvp.exe`、`../Charts/minghe-chart-studio.exe`、`../Levels/minghe-level-studio.exe`；两个编辑器的 `game/minghe.exe` 和原生 DLL 同步使用本次游戏构建。
+
+实际游戏和写谱器通过 Compatibility 图形启动；关卡编辑器实际 EXE 的 20 项检查、游戏的 8 项检查通过，包括外部动画和 PCK、另存、多尺寸布局、试玩 ready 及试玩期间继续编辑。旧发布探针补上异步快照准备等待，避免过早读取 PID。导入、导出及最终启动日志无错误。日志和截图保存在 `../Levels/output/build-all-20260915/`。
+
+更新写谱器 v0.1.5 发布包和开发包，新增关卡编辑器 2026-09-15 发布包；旧日期发行包保留为历史版本。识别器源码未变化，沿用既有程序、模型和许可。发布脚本兼容含顶层目录和无顶层目录两种旧 ZIP。用户关卡与谱面不纳入发布包。真实触摸板、中文组合输入、跨屏 DPI 和长时间真人制作未测。
+
 从 2026-09-12 起，写谱器运行文件移到与 `Game` 同级的 `Charts`。下文旧日期中的 `builds/chart-studio` 是历史路径。
 
 - `../Charts/`：写谱器 EXE、原生 DLL、使用说明、`game/` 配套游戏及 `rhythm_analyzer/` 离线识别器。

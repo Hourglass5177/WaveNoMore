@@ -65,6 +65,7 @@ var _death_state_changed_us: int = -1
 var _operation_table: Array[Dictionary] = []
 ## 本局全部已完成判定；按 record.sequence 稳定排列，直到本局销毁。
 var judgments: Array[JudgmentRecord] = []
+var boss_battle := BossBattleEngine.new()
 ## 本局全部未被机制消费的乱按；按输入 sequence 稳定排列。
 var strays: Array[StrayInputRecord] = []
 
@@ -138,6 +139,7 @@ func configure(p_compiled: CompiledChart, p_rules: GameplayRuleSet, debug_nonlet
 	for _index in range(GameplayOperationKind.ENUM_MAX):
 		_operation_table.append({"exists": false, "timestamp_us": -1})
 	judgments.clear()
+	boss_battle.reset()
 	strays.clear()
 	_summary_judgments = 0; _summary_strays = 0
 	_summary_misses = 0; _summary_nonperfect = 0; _summary_stray_breaks = 0
@@ -156,7 +158,7 @@ func configure(p_compiled: CompiledChart, p_rules: GameplayRuleSet, debug_nonlet
 	_su_resolved_ids.clear()
 	for event: Dictionary in compiled.su_manifestations:
 		var prepared_event := event.duplicate()
-		prepared_event["prepare_at_us"] = int(event.get("preparation_base_us",event.time_us)) - roundi(rules.approach_duration_sec * 1000000.0)
+		prepared_event["prepare_at_us"] = int(event.get("preparation_base_us",event.time_us)) - roundi((rules.approach_duration_sec + rules.ghost_preview_extra_sec) * 1000000.0)
 		# 旧资源没有路径关联时，用显式组或覆盖目标时刻的旧滑条作为关联。
 		var ids := PackedStringArray(event.get("tuning_ids", []))
 		if ids.is_empty():
@@ -208,6 +210,7 @@ func _advance_systems_to(time_us: int, inclusive: bool) -> void:
 	_process_su_manifestations(time_us, inclusive)
 	_collect_engine_records()
 	_collect_wave_events()
+	boss_battle.advance(time_us, inclusive, note_engine, tuning_engine)
 	while _hold_damage_cursor < _hold_body_damages.size():
 		var damage := _hold_body_damages[_hold_damage_cursor]
 		if damage.timestamp_us > time_us or (damage.timestamp_us == time_us and not inclusive): break
@@ -217,6 +220,7 @@ func _advance_systems_to(time_us: int, inclusive: bool) -> void:
 
 func _next_boundary_us() -> int:
 	var boundary := mini(note_engine.next_transition_us(), wave_engine.next_arrival_us())
+	boundary = mini(boundary, boss_battle.next_boundary_us())
 	if _hold_damage_cursor < _hold_body_damages.size(): boundary = mini(boundary, _hold_body_damages[_hold_damage_cursor].timestamp_us)
 	if _su_cursor < compiled.su_manifestations.size(): boundary = mini(boundary, int(compiled.su_manifestations[_su_cursor].time_us))
 	if _su_prepare_cursor < _su_prepare_order.size(): boundary = mini(boundary, int(_su_prepare_order[_su_prepare_cursor].prepare_at_us))
@@ -755,7 +759,7 @@ func _try_prepare_su(event: Dictionary, prepared_at_us: int) -> void:
 	target["points"] = points_uv
 	target["requested_count"] = int(event["count"])
 	target["prepared_at_us"] = prepared_at_us
-	target["visible_from_us"] = int(event.time_us) - roundi(rules.approach_duration_sec * 1000000.0) if rules != null else prepared_at_us
+	target["visible_from_us"] = int(event.time_us) - roundi((rules.approach_duration_sec + rules.ghost_preview_extra_sec) * 1000000.0) if rules != null else prepared_at_us
 	target["generation_issue"] = &"insufficient_predicted_intersections" if points.size() < int(event.count) else &""
 	_su_prepared[event_id] = target
 
@@ -827,6 +831,7 @@ func _collect_engine_records() -> void:
 		record.base_grade = record.grade
 		record.grade = pet_effect.promote(record.base_grade, record.unit_kind)
 		judgments.append(record)
+		boss_battle.observe(record)
 		_pending_judgments.append(record)
 		var old_bonus := score_engine.bonus_score
 		score_engine.apply_judgment(record)
@@ -838,9 +843,12 @@ func _collect_engine_records() -> void:
 
 func _collect_wave_events() -> void:
 	_pending_wave_launches.append_array(wave_engine.drain_launches())
-	_pending_wave_contacts.append_array(wave_engine.drain_contacts())
+	for contact: Dictionary in wave_engine.drain_contacts():
+		_pending_wave_contacts.append(contact)
+		boss_battle.resolve_contact(str(contact.note_id),int(contact.contact_us))
 	for arrival: Dictionary in wave_engine.drain_arrivals():
 		_pending_note_arrivals.append(arrival)
+		boss_battle.resolve_contact(str(arrival.note_id),int(arrival.arrival_us))
 		var note: Dictionary = _notes_by_id[str(arrival.note_id)]
 		if note.unit_kind == &"tap":
 			_apply_damage(DamageRecord.create(str(arrival.note_id), "tap:" + str(note.damage_group_id), int(arrival.arrival_us), rules.tap_miss_damage, int(note.affinity)))

@@ -16,6 +16,8 @@ var _charts: Array[String] = []
 @onready var message: Label = %Message
 
 func _ready() -> void:
+	get_node("/root/MenuAudioService").bind_control(list)
+	get_node("/root/MenuAudioService").bind_control(difficulties)
 	MingheUiStyle.add_backdrop(self)
 	MingheUiStyle.style_title(%Title, 42)
 	for button in [%Import, %Play, %Remove, %Back]: MingheUiStyle.style_button(button)
@@ -152,6 +154,7 @@ func _back() -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
+		get_node("/root/MenuAudioService").play_ui(&"cancel")
 		get_viewport().set_input_as_handled()
 		_back()
 

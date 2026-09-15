@@ -53,6 +53,28 @@ func _run() -> void:
 	await create_timer(0.6).timeout
 	await shot("memo-splash")
 	await create_timer(2.0).timeout
+	var splash = page.get_node("BootSplash")
+	check(splash.stage == splash.Stage.HEADPHONES,"MEMO 之后显示耳机提示")
+	await create_timer(0.8).timeout
+	await shot("headphones-splash")
+	await create_timer(3.3).timeout
+	check(splash.stage == splash.Stage.CONTROLLER and splash.guide.interactive,"耳机之后显示操作说明并等待确认")
+	await shot("controller-splash")
+	await joy(JOY_BUTTON_B,true)
+	await joy(JOY_BUTTON_B,false)
+	check(page.phase == page.Phase.SPLASH,"返回键不跳过开屏操作说明")
+	await joy(JOY_BUTTON_A,true)
+	await create_timer(0.8).timeout
+	check(page.phase == page.Phase.ENTERING and not page._prompt.visible,"控制器说明结束后先溶解背景，提示仍隐藏")
+	await shot("arrival-start")
+	await joy(JOY_BUTTON_A,false)
+	await joy(JOY_BUTTON_A,true)
+	await joy(JOY_BUTTON_A,false)
+	check(page.phase == page.Phase.ENTERING,"颗粒溶解期间确认不穿透")
+	await create_timer(0.4).timeout
+	await shot("arrival-middle")
+	await create_timer(page.arrival_duration_sec + page.prompt_delay_sec + page.prompt_fade_sec).timeout
+	check(not page._arrival.visible,"显现完成后停止绘制颗粒层")
 	check(not page.has_node("BootSplash"), "开屏结束回收节点")
 	var initial_count: int = page.get_child_count()
 	check(page.name == "TitleScreen" and page.phase == page.Phase.WAITING,"正式启动进入美术等待页")
@@ -112,6 +134,35 @@ func _run() -> void:
 	await create_timer(0.25).timeout
 	check(app.modal_host.get_child_count() == 1,"操作设置打开正式设置弹窗")
 	var modal = app.modal_host.get_child(0)
+	modal.get_node("%Music").value = -13.0
+	modal.get_node("%Controls").grab_focus()
+	await shot("settings-controls-entry")
+	await joy(JOY_BUTTON_A,true)
+	await joy(JOY_BUTTON_A,false)
+	check(modal._controls_guide != null,"设置中打开操作说明")
+	await shot("settings-controls-guide")
+	await joy(JOY_BUTTON_RIGHT_SHOULDER,true)
+	await joy(JOY_BUTTON_RIGHT_SHOULDER,false)
+	await joy(JOY_BUTTON_DPAD_DOWN,true)
+	await joy(JOY_BUTTON_DPAD_DOWN,false)
+	check(modal._tab_index == 0 and modal._controls_guide.is_ancestor_of(root.gui_get_focus_owner()),"说明页隔离底层肩键与焦点")
+	await joy(JOY_BUTTON_B,true)
+	await joy(JOY_BUTTON_B,false)
+	check(modal._controls_guide == null and modal.get_node("%Controls").has_focus(),"返回说明后设置仍打开并恢复原按钮")
+	check(is_equal_approx(modal.get_node("%Music").value,-13.0),"查看说明不丢失设置草稿")
+	modal._show_controls()
+	await frames()
+	var guide_button: Button = modal._controls_guide._button
+	var guide_click := InputEventMouseButton.new()
+	guide_click.button_index = MOUSE_BUTTON_LEFT
+	guide_click.pressed = true
+	guide_click.position = guide_button.get_global_transform_with_canvas()*(guide_button.size*0.5)
+	root.push_input(guide_click,true)
+	await frames()
+	check(modal._controls_guide == null and app.modal_host.get_child_count() == 1,"鼠标返回说明不会关闭整个设置")
+	guide_click = guide_click.duplicate()
+	guide_click.pressed = false
+	root.push_input(guide_click,true)
 	for i in 5:
 		await joy(JOY_BUTTON_DPAD_DOWN,true)
 		await joy(JOY_BUTTON_DPAD_DOWN,false)

@@ -34,10 +34,19 @@ func run() -> void:
 		check(result.points.size()>0 and result.points.size()<=int(result.count),"未来理想改频生成合法目标："+str(result.event_id))
 		check(str(result.generation_issue).is_empty() == (result.points.size()==int(result.count)),"足量与不足量均如实报告")
 		check(perfect._su_prepared[str(result.event_id)].prepared_at_us < int(result.time_us),"目标在结算之前固定")
+		check(int(perfect._su_prepared[str(result.event_id)].visible_from_us) == int(result.time_us) - roundi((rules.approach_duration_sec + rules.ghost_preview_extra_sec) * 1000000.0), "Ghost 提前量接入可见时间")
 		check(perfect._su_prepared[str(result.event_id)].points == missed._su_prepared[str(result.event_id)].points,"预测之后错误调频不移动目标")
 	check(missed.snapshot().su_manifestations[0].miss_count==2,"保持双 Hold 但不调频时该批两枚 Ghost 漏击")
 	check(missed.damages.any(func(d: DamageRecord): return d.source_id.contains(":ghost:") and d.base_damage==10),"Ghost 按枚独立伤害")
 	check(missed.damages.all(func(d: DamageRecord): return d.source_id.contains(":ghost:")),"成功持有时滑条失败不附加 Hold 或 Tuning 伤害")
+	var old_rules := rules.duplicate() as GameplayRuleSet
+	old_rules.ghost_preview_extra_sec = 0.0
+	var old_timing := simulate(compiled, old_rules, 16667, true)
+	check(ChartCompiler.rules_hash(old_rules) == ChartCompiler.rules_hash(rules), "视觉提前量不改变 Replay 规则哈希")
+	check(ReplayRunner.result_digest(old_timing.judgments, old_timing.strays, old_timing.result_summary()) == ReplayRunner.result_digest(perfect.judgments, perfect.strays, perfect.result_summary()), "视觉提前量不改变 Replay 成绩摘要")
+	for i in results.size():
+		var old: Dictionary = old_timing.snapshot().su_manifestations[i]
+		check(old.time_us == results[i].time_us and old.grade == results[i].grade and old.hit_count == results[i].hit_count, "提前预告不改变结算时刻或评级")
 	for step: int in [8333,33333,197777]:
 		var other := simulate(compiled,rules,step,true)
 		check(other.snapshot().su_manifestations==results,"预测与判定不随帧步改变 %d"%step)

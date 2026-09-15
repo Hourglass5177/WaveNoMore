@@ -39,6 +39,8 @@ var _displayed_score: int = 0
 var _score_tween: Tween
 # 当前判定文字的淡出补间；新判定出现前会停止旧补间。
 var _judgment_tween: Tween
+var _judgment_regions: Dictionary = {}
+var _judgment_material: ShaderMaterial
 
 
 func _ready() -> void:
@@ -48,6 +50,7 @@ func _ready() -> void:
 	_score_label = get_node(score_label_path) as Label
 	_combo_label = get_node(combo_label_path) as Label
 	_judgment_label = get_node(judgment_label_path) as TextureRect
+	_prepare_judgment_art()
 	_song_progress = get_node(song_progress_path) as ProgressBar
 	_soul_fire_bar.step = 0.0
 	_song_progress.step = 0.0
@@ -106,10 +109,12 @@ func _on_score_changed(score: int, combo: int) -> void:
 
 
 func _on_judgment_recorded(record: JudgmentRecord) -> void:
+	if judgment_textures == null: return
 	_judgment_label.texture = _judgment_texture(record.grade)
 	_judgment_label.modulate = Color.WHITE
 	_apply_judgment_layout()
-	_judgment_label.modulate.a = 1.0
+	_judgment_material.set_shader_parameter("ink",judgment_textures.grade_color(record.grade))
+	_judgment_label.modulate.a = judgment_textures.opacity
 	var display_scale := maxf(0.01, judgment_textures.scale) if judgment_textures != null else 1.0
 	_judgment_label.scale = Vector2(display_scale * 1.25, display_scale * 0.78)
 	if _judgment_tween != null:
@@ -141,12 +146,52 @@ func _apply_judgment_layout() -> void:
 	if judgment_textures == null: return
 	var texture := _judgment_label.texture
 	if texture == null: return
-	var base_size := texture.get_size()
+	var region: Rect2 = _judgment_regions[texture]
+	var glyph_size := Vector2(region.size.x/region.size.y,1.0)*judgment_textures.glyph_height
+	var padding := judgment_textures.glow_radius_px*2.0/maxf(judgment_textures.scale,0.01)
+	var base_size := glyph_size+Vector2.ONE*padding*2.0
+	var source_size := texture.get_size()
+	_judgment_material.set_shader_parameter("source_rect",Vector4(region.position.x/source_size.x,region.position.y/source_size.y,region.size.x/source_size.x,region.size.y/source_size.y))
+	_judgment_material.set_shader_parameter("glyph_size",glyph_size)
+	_judgment_material.set_shader_parameter("padding",padding)
+	_judgment_material.set_shader_parameter("radius",judgment_textures.glow_radius_px/maxf(judgment_textures.scale,0.01))
+	_judgment_material.set_shader_parameter("strength",judgment_textures.glow_strength)
 	_judgment_label.set_anchors_preset(Control.PRESET_TOP_LEFT)
 	_judgment_label.size = base_size
 	_judgment_label.pivot_offset = base_size * 0.5
 	_judgment_label.scale = Vector2.ONE * maxf(0.01, judgment_textures.scale)
 	_judgment_label.position = Vector2(960.0, 540.0) - base_size * 0.5 + judgment_textures.offset
+
+func _prepare_judgment_art() -> void:
+	if judgment_textures == null: return
+	judgment_textures = judgment_textures.duplicate()
+	var report := PlanningParameters.read()
+	for key: String in ["glyph_height","opacity","glow_radius_px","glow_strength","perfect_color","good_color","pass_color","miss_color"]:
+		var id := "judgment/"+key
+		if report.values.has(id):
+			judgment_textures.set(key,Color(str(report.values[id])) if key.ends_with("_color") else report.values[id])
+	_judgment_material = ShaderMaterial.new()
+	_judgment_material.shader = preload("res://shaders/ui/judgment_glow.gdshader")
+	_judgment_label.material = _judgment_material
+	_judgment_label.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	_judgment_label.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_judgment_label.stretch_mode = TextureRect.STRETCH_SCALE
+	# 装载时缓存实体笔画的包围盒，命中时不读回图片、不遍历像素。
+	for texture: Texture2D in [judgment_textures.perfect,judgment_textures.good,judgment_textures.pass_texture,judgment_textures.miss]:
+		if texture == null: continue
+		var image := texture.get_image()
+		image.convert(Image.FORMAT_RGBA8)
+		var pixels := image.get_data()
+		var width := image.get_width()
+		var low := Vector2i(image.get_size())
+		var high := Vector2i.ZERO
+		for index in range(3,pixels.size(),4):
+			if pixels[index] < 128: continue
+			var pixel := (index-3)/4
+			var point := Vector2i(pixel%width,pixel/width)
+			low = low.min(point)
+			high = high.max(point)
+		_judgment_regions[texture] = Rect2(Vector2(low),Vector2(high-low+Vector2i.ONE))
 
 
 func _set_mouse_filter_recursive(node: Node, filter: Control.MouseFilter) -> void:

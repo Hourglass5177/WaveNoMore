@@ -13,6 +13,11 @@ var current_section := "song"
 var current_us := 0
 var playing := false
 var playback_rate := 1.0
+var boss_battle: BossBattleEngine
+var boss_song_us := 0
+var boss_offset_us := 0
+var boss_preview_mode := ""
+var boss_emissions := {}
 var camera_position := Vector2.ZERO
 var camera_zoom := 1.0
 ## 反馈仅叠加颜色/特效，不切走预定攻击动作；同刻同对象合并一次。
@@ -51,7 +56,7 @@ func update_show(data: Dictionary, directory: String, packs: Array, difficulty_i
 	var rebuild:=[]
 	for entry: Dictionary in data.get("objects",[]):
 		var old:=LevelFormat.find(show.get("objects",[]),entry.id)
-		if changed_library or old.is_empty() or old.get("asset")!=entry.asset or old.get("type")!=entry.type:rebuild.append(entry.id)
+		if changed_library or old.is_empty() or old.get("asset")!=entry.asset or old.get("type")!=entry.type or old.get("boss",{}).get("visual","")!=entry.get("boss",{}).get("visual",""):rebuild.append(entry.id)
 	for id in objects.keys():
 		if id in rebuild or LevelFormat.find(data.get("objects",[]),id).is_empty():
 			var wrapper: Node2D=objects[id]
@@ -83,6 +88,12 @@ func _create_object(object_data: Dictionary) -> void:
 				var action := str(object_data.get("animation",""))
 				sprite.animation=action if frames.has_animation(action) else assets.default_animation(str(object_data.asset)); content=sprite
 		"actor", "environment": content = assets.instantiate(str(object_data.asset))
+	var boss_visual := str(object_data.get("boss",{}).get("visual",""))
+	if boss_visual in ["bat","snake","goat","goat_eye"]:
+		if content != null: content.free()
+		content = load("res://src/presentation/actors/level_boss_visual.gd").new()
+		for key in ["glow_strength","effect_scale","fragment_multiplier"]:content.set(key,float(assets.boss_defaults.get(key,1.0)))
+		content.setup(boss_visual)
 	if content != null:
 		content.name = "Content"; wrapper.add_child(content)
 		var driver := LevelAnimationDriver.new(); driver.configure(content); drivers[object_data.id] = driver
@@ -118,8 +129,9 @@ func refresh_visuals(section: String, time_us: int) -> void:
 	_sample(section,time_us,true,true)
 
 func _sample(section: String, time_us: int, silent: bool, preserve_audio := false, song_time_sec := NAN) -> void:
+	if boss_battle != null and not boss_preview_mode.is_empty(): boss_battle.simulate(time_us-boss_offset_us if section=="song" else boss_song_us,boss_preview_mode=="perfect")
 	_sync_render_order()
-	current_section = section; current_us = time_us; states.clear()
+	current_section = section; current_us = time_us; states.clear();queue_redraw()
 	var clips := LevelShowSampler.active_clips(show, section, time_us, difficulty)
 	camera_position = Vector2.ZERO; camera_zoom = 1.0
 	for object_data: Dictionary in show.get("objects", []):
@@ -157,11 +169,35 @@ func _sample(section: String, time_us: int, silent: bool, preserve_audio := fals
 			wrapper.z_index=0
 		elif is_instance_valid(environment_controller):environment_controller.release_object_occlusion(wrapper)
 		var object_clips: Array = clips.filter(func(clip): return clip.object_id == object_data.id and clip.type == "action")
+		var automatic: Array=object_clips.filter(func(clip):return clip.get("boss_control",false))
+		if not automatic.is_empty():
+			automatic.sort_custom(func(a,b):return int(a.start_us)<int(b.start_us))
+			object_clips=[automatic.back()]
+		if boss_battle != null and boss_battle.states.has(object_data.id):
+			var battle: Dictionary = boss_battle.states[object_data.id]
+			var at := time_us - boss_offset_us if section == "song" else boss_song_us
+			if not battle.hits.is_empty():
+				var age:=at-int(battle.hits.back())
+				if age>=0 and age<180000:wrapper.modulate=wrapper.modulate.lerp(Color.WHITE,0.45*(1.0-float(age)/180000))
+			var pose := _boss_pose(battle, at)
+			if not pose.is_empty(): object_clips = [pose]
+			if battle.finish_us >= 0:
+				var duration := int(battle.config.death_duration_us) if battle.hp == 0 else 600000
+				var age := at - int(battle.finish_us)
+				if battle.hp > 0 or str(battle.config.actions.death).is_empty(): wrapper.modulate.a *= 1.0-clampf(float(age)/duration,0,1)
+				wrapper.visible = wrapper.visible and age < duration
 		if drivers.has(object_data.id):
 			var animation:=str(object_data.get("animation",""))
 			for sprite: AnimatedSprite2D in drivers[object_data.id].sprites:
 				if sprite.sprite_frames!=null and sprite.sprite_frames.has_animation(animation):sprite.set_meta("level_default_animation",animation)
-			drivers[object_data.id].sample(object_clips, time_us)
+			var root: Node = drivers[object_data.id].root
+			if root.has_method("sample_show"):
+				root.sample_show(show.tracks,object_data.id,boss_battle.states.get(object_data.id,{}) if boss_battle != null else {},time_us-boss_offset_us if section=="song" else boss_song_us,boss_offset_us)
+			else:
+				if object_clips.is_empty() and boss_battle != null and boss_battle.states.has(object_data.id):
+					var idle: String = boss_battle.states[object_data.id].config.actions.idle
+					if not idle.is_empty():object_clips=[{"id":"boss_idle","action":idle,"local_us":maxi(0,time_us),"loop":true,"weight":1.0}]
+				drivers[object_data.id].sample(object_clips, time_us)
 		var content := wrapper.get_node_or_null("Content")
 		if content is RichTextLabel:
 			content.size = LevelFormat.vec(state.get("size", [560, 100])); content.position = -content.size * 0.5
@@ -275,6 +311,11 @@ func anchor_at(object_id: String, anchor_name: String, section: String, time_us:
 	var object_data := LevelFormat.find(show.get("objects", []), object_id)
 	if object_data.is_empty(): return Vector2.ZERO
 	var local := assets.anchor(str(object_data.asset), anchor_name)
+	if objects.has(object_id):
+		var content: Node = objects[object_id].get_node_or_null("Content")
+		if content != null and content.has_method("sample_show"):
+			content.sample_show(show.tracks,object_id,boss_battle.states.get(object_id,{}) if boss_battle != null else {},time_us-boss_offset_us,boss_offset_us)
+			local=content.emission_anchor(anchor_name)
 	if assets.entries.has(object_data.asset) and objects.has(object_id):
 		var definition: Variant = assets.entries[object_data.asset].anchors.get(anchor_name)
 		if definition is String or definition is NodePath:
@@ -283,8 +324,22 @@ func anchor_at(object_id: String, anchor_name: String, section: String, time_us:
 			if node != null:
 				var active := LevelShowSampler.active_clips(show, section, time_us, difficulty).filter(func(clip): return clip.object_id == object_id and clip.type == "action")
 				if not action_clip.is_empty(): active.append(action_clip)
+				if boss_battle != null and boss_battle.states.has(object_id):
+					var pose:=_boss_pose(boss_battle.states[object_id],time_us-boss_offset_us)
+					if not pose.is_empty():active=[pose]
 				if drivers.has(object_id): drivers[object_id].sample(active, time_us)
 				local = objects[object_id].to_local(node.global_position)
+	# 查询历史出手帧后恢复当前姿态，不能让路径辅助线把画面停在出手帧。
+	if drivers.has(object_id):
+		var root: Node=drivers[object_id].root
+		var battle: Dictionary=boss_battle.states.get(object_id,{}) if boss_battle != null else {}
+		var now:=current_us-boss_offset_us if current_section=="song" else boss_song_us
+		if root.has_method("sample_show"):root.sample_show(show.tracks,object_id,battle,now,boss_offset_us)
+		else:
+			var active:=LevelShowSampler.active_clips(show,current_section,current_us,difficulty).filter(func(clip):return clip.object_id==object_id and clip.type=="action")
+			var pose:=_boss_pose(battle,now) if not battle.is_empty() else {}
+			if not pose.is_empty():active=[pose]
+			drivers[object_id].sample(active,current_us)
 	return canvas_transform(object_data, section, time_us) * local
 
 func feedback(object_id: String, hit: bool, at_us: int, effect_asset := "") -> void:
@@ -371,3 +426,25 @@ func _root_layer(object_data: Dictionary) -> String:
 	var top:=object_data
 	while not str(top.get("parent_id","")).is_empty():top=LevelFormat.find(show.objects,top.parent_id)
 	return str(top.get("layer","world"))
+
+func _boss_pose(state: Dictionary, at: int) -> Dictionary:
+	var action := ""
+	var start := 0
+	if state.finish_us >= 0 and at >= int(state.finish_us) and state.hp == 0:
+		action = str(state.config.actions.death); start = state.finish_us
+	elif state.phase_us >= 0 and at >= int(state.phase_us) and at < int(state.phase_us)+int(state.config.phase_duration_us):
+		action = str(state.config.actions.phase_break); start = state.phase_us
+	if action.is_empty(): return {}
+	return {"id":"boss_state_"+str(state.config.id)+action,"action":action,"local_us":maxi(0,at-start),"loop":false,"weight":1.0}
+
+func _draw() -> void:
+	if current_section != "song":return
+	var at:=current_us-boss_offset_us
+	for path: Dictionary in boss_emissions.values():
+		if not path.get("ghost",false) or at<int(path.release_us) or at>=int(path.entry_us):continue
+		var sample:=BossEmissionPath.sample(path,at-int(path.release_us))
+		var tint:=Color("efb87e") if path.side=="life" else Color("a8cde5")
+		var remaining:=float(int(path.entry_us)-at)/1000000
+		tint.a=clampf(remaining/0.2,0,1)
+		draw_circle(sample.position,10,tint,false,2,true)
+		draw_line(sample.position-sample.velocity.normalized()*26,sample.position,tint,3,true)

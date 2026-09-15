@@ -28,7 +28,7 @@ func _test_cues() -> void:
 			check(s.drain_pet_triggers().is_empty(), "续按、重臂和尾部提档均不重复触发")
 			var missed := sim(c, pet("yi_huo_she").effect(advanced))
 			missed.force_finish()
-			check(missed.drain_pet_triggers().is_empty(), "漏接没有苹果蛇技能")
+			check(missed.drain_pet_triggers().is_empty(), "漏接没有翼火蛇技能")
 			var tap_chart := c.duplicate(true) as SongChart
 			tap_chart.note_events[0].kind = GameplayTypes.NoteKind.TAP
 			tap_chart.note_events[0].duration_ticks = 0
@@ -37,7 +37,7 @@ func _test_cues() -> void:
 			check(bat.drain_pet_triggers() == [{"timestamp_us": 1000000, "affinity": side}], "实际加分事件保留阵营")
 			var good := sim(tap_chart, pet("nu_tu_fu").effect(advanced))
 			press(good, 1070000, down)
-			check(good.drain_pet_triggers().is_empty(), "非 Perfect 没有蝠漆漆技能")
+			check(good.drain_pet_triggers().is_empty(), "非 Perfect 没有女土蝠技能")
 		for side in [A.ZHU, A.XUAN, A.SU]:
 			var sheep := sim(chart(), pet("gui_jin_yang").effect(advanced))
 			# 从统一伤害入口覆盖机制提供的双侧来源与去重。

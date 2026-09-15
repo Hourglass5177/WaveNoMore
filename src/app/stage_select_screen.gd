@@ -35,6 +35,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if focused == null or (focused != self and not is_ancestor_of(focused)): return
 	if event.is_action_pressed("ui_cancel"):
 		get_viewport().set_input_as_handled()
+		get_node("/root/MenuAudioService").play_ui(&"cancel")
 		back_requested.emit()
 	elif has_focus():
 		super._unhandled_input(event)

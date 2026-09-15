@@ -25,6 +25,8 @@ extends Resource
 @export var state_names: PackedStringArray = []
 ## 供关卡时间线使用的动作标记，例如 attack: {release_sec: 0.24}。
 @export var action_markers: Dictionary = {}
+## BOSS 语义动作映射；素材设置一次，关卡对象与绑定可覆盖。
+@export var boss_actions: Dictionary = {}
 ## 仅这些参数向策划开放；键为名称，值声明 node_path、property、默认值与范围。
 @export var exposed_parameters: Dictionary = {}
 ## 清单在素材库中的名称和缩略图，不改变资产的稳定 ID。

@@ -64,6 +64,7 @@ func deactivate() -> void:
 func _start_test() -> void:
 	_commit_fields()
 	MenuAudioService.stop_preview()
+	MenuAudioService.set_calibrating(true)
 	_session.begin(_input_offset.value)
 	_audio_offset_at_start = _audio_offset.value / 1000.0
 	_output_device_at_start = AudioServer.output_device
@@ -114,6 +115,7 @@ func _input(event: InputEvent) -> void:
 	get_viewport().set_input_as_handled()
 
 func _finish_test() -> void:
+	MenuAudioService.set_calibrating(false)
 	Input.use_accumulated_input = _previous_accumulated_input
 	_running = false; _reference.stop()
 	_set_controls_running(false)
@@ -132,6 +134,7 @@ func _finish_test() -> void:
 		_progress.text = "测量完成。应用建议后，可再次跟拍核对；最后点击保存。"
 
 func _cancel_test() -> void:
+	MenuAudioService.set_calibrating(false)
 	if _running: Input.use_accumulated_input = _previous_accumulated_input
 	_running = false; _reference.stop()
 	_result.clear()
@@ -167,7 +170,9 @@ func _update_device() -> void:
 	_device.text = "当前输出：%s · %s" % [AudioServer.output_device, AudioServer.get_driver_name()]
 
 func _exit_tree() -> void:
-	if _running: Input.use_accumulated_input = _previous_accumulated_input
+	if _running:
+		Input.use_accumulated_input = _previous_accumulated_input
+		MenuAudioService.set_calibrating(false)
 	_reference.stop()
 
 func _notification(what: int) -> void:

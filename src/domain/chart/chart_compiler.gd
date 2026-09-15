@@ -55,6 +55,9 @@ static func rules_hash(rules: GameplayRuleSet) -> String:
 		var property_name: String = String(property["name"])
 		if property_name == "resource_path" or property_name == "resource_name" or property_name == "script":
 			continue
+		# Ghost 预告只决定视觉预测取样，不影响成绩；避免美术提前量使旧 Replay 失效。
+		if property_name == "ghost_preview_extra_sec":
+			continue
 		names.append(property_name)
 		values[property_name] = rules.get(property_name)
 	names.sort()

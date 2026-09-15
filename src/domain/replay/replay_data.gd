@@ -28,6 +28,8 @@ var build_id: String = ""
 var inputs: Array[SemanticInputSample] = []
 ## 可选的预期结果哈希；空值只运行不验证，非空时必须与实际 digest 相同。
 var expected_result_digest: String = ""
+## 可选战斗演出配置；不进入原判定摘要，旧 Replay 保持可读取。
+var boss_battles: Array = []
 
 
 static func compute_song_timing_hash(song_id: String, first_beat_offset_sec: float, chart_hash: String) -> String:
@@ -56,6 +58,7 @@ func to_dictionary() -> Dictionary:
 		"build_id": build_id,
 		"inputs": serialized_inputs,
 		"expected_result_digest": expected_result_digest,
+		"boss_battles": boss_battles.duplicate(true),
 	}
 
 
@@ -70,6 +73,7 @@ static func from_dictionary(data: Dictionary) -> ReplayData:
 	replay.loadout_hash = String(data.get("loadout_hash", ""))
 	replay.build_id = String(data.get("build_id", ""))
 	replay.expected_result_digest = String(data.get("expected_result_digest", ""))
+	replay.boss_battles = data.get("boss_battles", []).duplicate(true)
 	for sample_data in data.get("inputs", []):
 		replay.inputs.append(SemanticInputSample.from_dictionary(sample_data))
 	return replay

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="GhostNoteStyle" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://src/content/resources/ghost_note_style.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/image/note/ghost/closed.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/image/note/ghost/open.png" id="3"]
+[ext_resource type="Texture2D" path="res://assets/image/note/ghost/closed_glow.png" id="4"]
+[ext_resource type="Texture2D" path="res://assets/image/note/ghost/open_glow.png" id="5"]
+
+[resource]
+script = ExtResource("1")
+closed_texture = ExtResource("2")
+open_texture = ExtResource("3")
+closed_glow = ExtResource("4")
+open_glow = ExtResource("5")

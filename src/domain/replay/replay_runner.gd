@@ -40,6 +40,7 @@ static func run_with_frame_steps(
 		frame_steps_us = PackedInt64Array([16_667])
 	var simulation := GameplaySimulation.new()
 	simulation.configure(compiled, rules, false, pet)
+	if not replay.boss_battles.is_empty():simulation.boss_battle.configure(replay.boss_battles,compiled,rules)
 	var samples: Array[SemanticInputSample] = []
 	for source_sample in replay.sorted_inputs():
 		samples.append(SemanticInputSample.create(
@@ -95,6 +96,7 @@ static func run_with_frame_steps(
 		"simulation": simulation,
 		"judgments": simulation.judgments,
 		"strays": simulation.strays,
+		"boss_states": simulation.boss_battle.states.duplicate(true),
 	}
 
 

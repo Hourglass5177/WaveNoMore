@@ -39,6 +39,14 @@ extends Resource
 @export var walk_period_sec: float = 1.6
 @export var walk_mix_sec: float = 0.18
 @export var walk_stop_speed_px_sec: float = 0.5
+## 各自世界内的构图调整，死侧随槽位中心对称；不移动玩法波源。
+@export var actor_shift_px: float = 36.0
+@export var bell_inset_px: float = 24.0
+@export var pet_shift_px: float = -60.0
+@export var pet_scale_multiplier: float = 0.85
+## 编钟的设计像素浮动幅度与整体光强，具体反馈节奏由 BellVisual 统一。
+@export var bell_float_height_px: float = 4.0
+@export var bell_glow_strength: float = 1.0
 ## 生角色使用的编钟场景。
 @export var life_bell_scene: PackedScene
 ## 死角色使用的编钟场景。

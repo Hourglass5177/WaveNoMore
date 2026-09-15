@@ -1,4 +1,4 @@
-extends Control
+extends "res://src/app/ui/art_screen.gd"
 
 ## 关卡异步加载页。先异步加载 StageDefinition，再为歌曲、谱面、演出、主题、奖励和规则
 ## 发起后台加载请求，并逐帧查询进度。
@@ -27,32 +27,12 @@ var _dependency_requests: Array[Dictionary] = []
 
 
 func _ready() -> void:
+	super._ready()
 	MingheUiStyle.add_backdrop(self)
-	var center := CenterContainer.new()
-	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	add_child(center)
-	var panel := PanelContainer.new()
-	panel.custom_minimum_size = Vector2(720, 340)
-	panel.add_theme_stylebox_override("panel", MingheUiStyle.panel_style())
-	center.add_child(panel)
-	var column := VBoxContainer.new()
-	column.alignment = BoxContainer.ALIGNMENT_CENTER
-	column.add_theme_constant_override("separation", 28)
-	panel.add_child(column)
-	_status = Label.new()
-	_status.text = "沿冥河而下……"
-	MingheUiStyle.style_title(_status, 35)
-	column.add_child(_status)
-	_progress = ProgressBar.new()
-	_progress.custom_minimum_size = Vector2(600, 24)
-	_progress.show_percentage = false
-	column.add_child(_progress)
-	var cancel := Button.new()
-	cancel.text = "取消"
-	MingheUiStyle.style_button(cancel)
-	cancel.pressed.connect(_cancel)
-	column.add_child(cancel)
-	cancel.grab_focus.call_deferred()
+	_progress = %Progress
+	_status = %Status
+	%Cancel.pressed.connect(_cancel)
+	%Cancel.grab_focus.call_deferred()
 	set_process(false)
 
 
@@ -117,7 +97,6 @@ func _begin_dependency_requests() -> void:
 			_fail("关卡没有提供完整组件或资源路径。")
 		return
 	_phase = &"dependencies"
-	_status.text = "正在唤醒歌曲、谱面与演出……"
 
 
 func _poll_dependencies() -> void:
@@ -154,13 +133,17 @@ func _complete() -> void:
 	_phase = &"done"
 	_progress.value = 100.0
 	set_process(false)
+	await fade_out()
 	stage_ready.emit(_stage)
 
 
 func _cancel() -> void:
+	if closing:
+		return
 	_request_active = false
 	_phase = &"cancelled"
 	set_process(false)
+	await fade_out()
 	load_cancelled.emit()
 
 

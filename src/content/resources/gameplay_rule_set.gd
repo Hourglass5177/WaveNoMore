@@ -112,6 +112,8 @@ extends Resource
 @export_group("Presentation Timing")
 ## 普通音符从生成点到判定点的飞行秒数；越大，音符出现越早、移动越慢。
 @export_range(0.1, 10.0, 0.01) var approach_duration_sec: float = 2.25
+## Ghost 在普通接近时间之前额外预告的秒数；只影响预测取样和显示，不提前结算。
+@export_range(0.0, 2.0, 0.05) var ghost_preview_extra_sec: float = 0.45
 ## 正式歌曲时间零点前的预备秒数；越大，玩家获得的开场准备越久。
 @export_range(0.0, 5.0, 0.01) var preroll_sec: float = 2.0
 ## 失败后仍让在途表现收尾的秒数；越大，进入结算越晚。

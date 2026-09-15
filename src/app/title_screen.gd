@@ -7,9 +7,13 @@ signal credits_requested
 signal quit_requested
 signal menu_revealed
 
-enum Phase { WAITING, REVEALING, MENU, LEAVING, SPLASH }
+enum Phase { WAITING, REVEALING, MENU, LEAVING, SPLASH, ENTERING }
 @export var show_boot_splash := false
 @export var skip_prompt := false
+@export_group("主界面显现")
+@export_range(0.3, 3.0, 0.05) var arrival_duration_sec := 1.35
+@export_range(0.0, 1.0, 0.01) var prompt_delay_sec := 0.08
+@export_range(0.1, 1.0, 0.01) var prompt_fade_sec := 0.35
 @export_group("标题静息")
 @export_range(1.0, 10.0, 0.1) var title_period := 4.8
 @export_range(0.0, 8.0, 0.1) var title_float_px := 2.0
@@ -28,6 +32,7 @@ var _wake_event: InputEvent
 @onready var _prompt: TextureRect = %Prompt
 @onready var _title: Control = %TitleArt
 @onready var _glow: ColorRect = %TitleGlow
+@onready var _arrival: ColorRect = %Arrival
 @onready var _buttons: Array[Button] = [%Start, %Credits, %Settings, %Quit]
 
 func _ready() -> void:
@@ -49,24 +54,50 @@ func _ready() -> void:
 		button.pressed.connect(_activate.bind(i))
 		button.disabled = true
 	if skip_prompt:
+		get_node("/root/MenuAudioService").start_menu_ambient()
 		_prompt.hide()
 		_menu_ready()
 	else:
-		_prompt.show()
+		_prompt.visible = not show_boot_splash
 		_title.modulate.a = 0.0
 		for button in _buttons: button.modulate.a = 0.0
-		_breath = create_tween().set_loops().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-		_breath.tween_property(_prompt,"modulate:a",0.8,1.5)
-		_breath.tween_property(_prompt,"modulate:a",1.0,1.5)
+		if not show_boot_splash:
+			get_node("/root/MenuAudioService").start_menu_ambient()
+			_start_prompt_breath()
 
 	if show_boot_splash and not skip_prompt:
 		phase = Phase.SPLASH
 		var splash := preload("res://scenes/screens/boot_splash.tscn").instantiate()
 		splash.finished.connect(func():
-			phase = Phase.WAITING
+			_begin_arrival()
 			splash.queue_free()
 		)
 		add_child(splash)
+
+func _begin_arrival() -> void:
+	# 开屏结束、主界面开始显现时播放，早于点击提示出现。
+	get_node("/root/MenuAudioService").start_menu_ambient()
+	phase = Phase.ENTERING
+	_arrival.show()
+	_sample_arrival(0.0)
+	_prompt.modulate.a = 0.0
+	_transition = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_transition.tween_method(_sample_arrival, 0.0, 1.0, arrival_duration_sec)
+	_transition.tween_callback(_arrival.hide)
+	_transition.tween_interval(prompt_delay_sec)
+	_transition.tween_callback(_prompt.show)
+	_transition.tween_property(_prompt, "modulate:a", 1.0, prompt_fade_sec)
+	_transition.tween_callback(func():
+		phase = Phase.WAITING
+		_start_prompt_breath())
+
+func _sample_arrival(value: float) -> void:
+	_arrival.material.set_shader_parameter("progress", value)
+
+func _start_prompt_breath() -> void:
+	_breath = create_tween().set_loops().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_breath.tween_property(_prompt,"modulate:a",0.8,1.5)
+	_breath.tween_property(_prompt,"modulate:a",1.0,1.5)
 
 func _process(delta: float) -> void:
 	if Engine.is_editor_hint() or phase != Phase.MENU or not is_visible_in_tree(): return
@@ -78,7 +109,7 @@ func _process(delta: float) -> void:
 func _input(event: InputEvent) -> void:
 	if Engine.is_editor_hint(): return
 	get_node("/root/UiInputHints").observe(event)
-	if phase in [Phase.LEAVING, Phase.SPLASH]:
+	if phase in [Phase.LEAVING, Phase.SPLASH, Phase.ENTERING]:
 		get_viewport().set_input_as_handled()
 		return
 	if _wake_event != null and _same_wake_button(event):
@@ -115,6 +146,7 @@ func _same_wake_button(event: InputEvent) -> bool:
 
 func _reveal() -> void:
 	phase = Phase.REVEALING
+	get_node("/root/MenuAudioService").unlock_menu()
 	_breath.kill()
 	_title.position = _title_origin + Vector2(0,8)
 	_transition = create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)

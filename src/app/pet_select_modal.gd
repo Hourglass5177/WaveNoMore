@@ -17,6 +17,9 @@ func _ready() -> void:
 		for state in ["normal","hover","pressed","disabled"]: button.add_theme_stylebox_override(state,StyleBoxEmpty.new())
 	%Left.pressed.connect(step.bind(-1))
 	%Right.pressed.connect(step.bind(1))
+	# 箭头由实际换页播放选择音，不再同时叠加确认音。
+	%Left.set_meta("ui_sound", &"none")
+	%Right.set_meta("ui_sound", &"none")
 	%Preview.pressed.connect(play_skill)
 	%Equip.pressed.connect(_equip)
 	%Back.pressed.connect(func(): close_requested.emit())
@@ -32,6 +35,7 @@ func _ready() -> void:
 	_show_pet()
 	%Preview.grab_focus.call_deferred()
 func step(direction: int) -> void:
+	get_node("/root/MenuAudioService").play_ui(&"focus")
 	_index = posmod(_index+direction,entries.size())
 	_show_pet(direction)
 	# 切到未获得随从时装备按钮会禁用，把焦点移回可操作的预览。
@@ -102,6 +106,7 @@ func _grant(advanced: bool) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
 		get_viewport().set_input_as_handled()
+		get_node("/root/MenuAudioService").play_ui(&"cancel")
 		close_requested.emit()
 
 func _input(event: InputEvent) -> void:

@@ -17,12 +17,18 @@ config/custom_user_dir_name="WaveNoMore-UIReview"
 '@
     [IO.File]::WriteAllText($overridePath,$configuration)
     $jobs = @(
+        @{name='judgment-art';script='res://tests/visual/run_judgment_art_review.gd';args=' -- --chart-editor --planning-values=res://builds/ui-review/default-planning.json'},
+        @{name='launch-guides';script='res://tools/ui/capture_launch_guides.gd';args=' -- --chart-editor --planning-values=res://builds/ui-review/default-planning.json'},
+        @{name='pet-rules';script='res://tests/integration/pets/run_pet_tests.gd';args=' -- --planning-values=res://builds/ui-review/default-planning.json'},
+        @{name='save';script='res://tests/integration/save/run_save_tests.gd';args=' -- --planning-values=res://builds/ui-review/default-planning.json'},
+        @{name='result';script='res://tests/ui/run_result_ui_tests.gd';args=' -- --planning-values=res://builds/ui-review/default-planning.json'},
+        @{name='clear-mark';script='res://tests/visual/capture_clear_mark_glow.gd';args=' -- --planning-values=res://builds/ui-review/default-planning.json'},
         @{name='stick-ingame';script='res://tests/visual/capture_stick_ingame.gd';args=' -- --planning-values=res://builds/ui-review/default-planning.json'},
         @{name='stick-motion';script='res://tests/visual/capture_stick_gesture.gd';args=' -- --chart-editor --planning-values=res://builds/ui-review/default-planning.json'},
         @{name='title-video';script='res://tests/visual/capture_title_transition.gd';args=' --write-movie builds/title-review/title-transition.avi --fixed-fps 60 --resolution 1280x720'},
         @{name='controller';script='res://tests/ui/run_controller_ui_tests.gd';args=' -- --planning-values=res://builds/ui-review/default-planning.json'},
         @{name='app-flow';script='res://tests/integration/app_flow/run_app_flow_smoke.gd';args=' -- --planning-values=res://builds/ui-review/default-planning.json'},
-        @{name='title';script='res://tests/ui/run_title_ui_tests.gd';args=''},
+        @{name='title';script='res://tests/ui/run_title_ui_tests.gd';args=' -- --planning-values=res://builds/ui-review/default-planning.json'},
         @{name='art';script='res://tests/ui/run_art_ui_tests.gd';args=' -- --chart-editor --planning-values=res://builds/ui-review/default-planning.json'},
         @{name='carousel';script='res://tests/visual/run_level_carousel_tests.gd';args=''},
         @{name='navigation';script='res://tests/integration/pets/run_menu_navigation_tests.gd';args=''},

@@ -22,6 +22,7 @@ var _note_side := "全部侧"
 var _note_scope := "全部绑定"
 var _note_from := 0.0
 var _note_to := 0.0
+var _preview_role := ""
 
 func edit_document() -> LevelDocument: return workspace.document
 
@@ -65,7 +66,8 @@ func _ready() -> void:
 	_slider.value_changed.connect(func(_value): _sample_action())
 	var stepping:=HBoxContainer.new();_content.add_child(stepping)
 	LevelUI.button(stepping,"上一素材帧",func():_step_material_frame(-1));LevelUI.button(stepping,"下一素材帧",func():_step_material_frame(1))
-	LevelUI.button(_content,"将当前动作帧设为出手帧",func(): _change("release_sec",_slider.value); _rebuild_form())
+	LevelUI.button(_content,"将当前动作帧设为出手帧",func():
+		workspace.document.begin_edit();_change("action",LevelBossActions.resolve(workspace.assets(),workspace.document.find("objects",object_id),data).action);_change("action_mode","custom");_change("release_sec",_slider.value);workspace.document.end_edit();_rebuild_form())
 	_content.add_child(_release_label); _release_label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 	_content.add_child(_form)
 	_create=LevelUI.button(_content,"创建绑定",_apply)
@@ -93,7 +95,7 @@ func _defaults() -> Dictionary:
 	return {"id":LevelFormat.id("binding"),"object_id":object_id,"difficulty":workspace.difficulty(),"note_ids":[],"action":action,"release_sec":workspace.assets().release_time(str(object_data.get("asset","")),action),"return_us":600000,"action_duration_us":maxi(10000,roundi(duration*1000000)),"rate":1.0,"life_anchor":"life","death_anchor":"death","sound":"","effect":"","hit_effect":"","miss_effect":""}
 
 func open(id: String, binding := "") -> void:
-	object_id=id; binding_id=binding
+	object_id=id; binding_id=binding; _preview_role=""
 	data=workspace.document.find("bindings",binding).duplicate(true) if not binding.is_empty() else _defaults()
 	if data.is_empty(): binding_id=""; data=_defaults()
 	_binding_select.clear(); _binding_select.add_item("新建攻击绑定"); _binding_select.set_item_metadata(0,"")
@@ -149,30 +151,69 @@ func _change(key: String, value: Variant) -> void:
 
 func _rebuild_form() -> void:
 	LevelUI.clear(_form)
+	var panel=load("res://scenes/tools/level_studio/boss_options.tscn").instantiate();_form.add_child(panel)
+	var form: VBoxContainer=panel.get_node("Actions")
 	var object_data: Dictionary=workspace.document.find("objects",object_id)
 	if object_data.is_empty(): return
 	var actions: PackedStringArray=workspace.assets().actions(str(object_data.asset))
+	LevelUI.label(form,"动作识别",16)
+	LevelUI.choice(form,"攻击控制",["自动识别","手动覆盖"],"手动覆盖" if data.get("action_mode","auto")=="custom" else "自动识别",func(value):_change("action_mode","custom" if value=="手动覆盖" else "auto");_rebuild_form())
+	var spec := LevelBossActions.resolve(workspace.assets(),object_data,data)
+	LevelUI.label(form,"自动识别："+(str(spec.attack_start)+" → "+str(spec.attack_loop)+" → "+str(spec.attack_end) if spec.segmented else str(spec.attack)),12)
+	if str(spec.action).is_empty(): LevelUI.label(form,"未找到攻击动作，请配置映射或显式覆盖。",12)
 	if not actions.is_empty():
-		LevelUI.choice(_form,"素材动作",Array(actions),str(data.action),func(value):
-			workspace.document.begin_edit(); _change("action",value); _change("release_sec",workspace.assets().release_time(object_data.asset,value))
+		LevelUI.choice(form,"素材动作",Array(actions),str(data.action),func(value):
+			workspace.document.begin_edit(); _change("action_mode","custom"); _change("action",value); _change("release_sec",workspace.assets().release_time(object_data.asset,value))
 			if str(object_data.asset).ends_with(LevelSpineAsset.SUFFIX):_change("action_duration_us",roundi(workspace.assets().action_duration(object_data.asset,value)/float(data.rate)*1000000))
 			workspace.document.end_edit(); _rebuild_form())
-	else: LevelUI.label(_form,"素材未声明动作，请在素材库替换 BOSS 素材。",12)
-	LevelUI.number(_form,"出手帧 秒",float(data.release_sec),func(value):_change("release_sec",value),0.001,0,120)
-	LevelUI.number(_form,"动作长度 秒",float(data.action_duration_us)/1000000,func(value):_change("action_duration_us",roundi(value*1000000)),0.01,0.01,120)
-	LevelUI.number(_form,"动作速率",float(data.rate),func(value):_change("rate",value),0.05,0.05,8)
-	LevelUI.number(_form,"弹射回转 秒",float(data.return_us)/1000000,func(value):_change("return_us",roundi(value*1000000)),0.01,0.01,5)
+	else: LevelUI.label(form,"素材未声明动作，请在素材库替换 BOSS 素材。",12)
+	if data.get("action_mode","auto")=="auto":
+		LevelUI.label(form,"自动出手 %.3f 秒%s"%[float(spec.release),"（未声明标记，采用动作中点）" if not spec.segmented and not workspace.assets().has_release_marker(object_data.asset,spec.action) else ""],12)
+	else:LevelUI.number(form,"出手帧 秒",float(data.release_sec),func(value):_change("release_sec",value),0.001,0,120)
+	LevelUI.number(form,"动作长度 秒",float(data.action_duration_us)/1000000,func(value):_change("action_duration_us",roundi(value*1000000)),0.01,0.01,120)
+	LevelUI.number(form,"动作速率",float(data.rate),func(value):_change("rate",value),0.05,0.05,8)
+	form=panel.get_node("Paths")
+	LevelUI.label(form,"发射路径",16)
+	LevelUI.choice(form,"路径模式",["分侧自然散射","原自定义路径"],"原自定义路径" if data.get("path_mode","auto")=="custom" else "分侧自然散射",func(value):_change("path_mode","custom" if value=="原自定义路径" else "auto");_rebuild_form())
+	LevelUI.number(form,"巡航速度 像素/秒",float(data.get("flight_speed",object_data.get("boss",{}).get("flight_speed",600))),func(value):_change("flight_speed",value),10,100,3000)
+	LevelUI.number(form,"散射角度 ±度",float(data.get("spread_deg",object_data.get("boss",{}).get("spread_deg",30))),func(value):_change("spread_deg",value),1,0,60)
+	LevelUI.number(form,"自定义飞行时间 秒",float(data.return_us)/1000000,func(value):_change("return_us",roundi(value*1000000)),0.01,0.01,5)
+	form=panel.get_node("Battle")
+	LevelUI.label(form,"战斗与阶段（对象设置）",16)
+	var previews:=HFlowContainer.new();form.add_child(previews)
+	for pair in [["攻击","attack_start"],["受击","hurt"],["半血转阶段","phase_break"],["破防攻击","attack_loop"],["死亡","death"]]:
+		var button:=LevelUI.button(previews,"预览"+pair[0],func():
+			_preview_role=pair[1]
+			_slider.max_value=7.0 if pair[1]=="death" else 3.0
+			_slider.value=0;_sample_action())
+		button.disabled=str(spec.get(pair[1],"")).is_empty() and str(spec.get("attack","")).is_empty()
+	LevelUI.number(form,"血量 / 理论伤害",float(object_data.get("boss",{}).get("health_ratio",0.8)),func(value):_object_setting("health_ratio",value),0.05,0.05,2)
+	var profiles := {"沿用导入素材":"","蝙蝠完整表现":"bat","蛇完整表现":"snake","羊头双阶段完整表现":"goat","羊头真眼完整表现":"goat_eye"}
+	LevelUI.choice(form,"完整表现素材",profiles.keys(),profiles.find_key(str(object_data.get("boss",{}).get("visual",""))),func(value):_object_setting("visual",profiles[value]))
+	LevelUI.choice(form,"整关战斗预览",["全 Perfect 模拟","未击败模拟"],"未击败模拟" if workspace.surface.player.boss_preview_mode=="miss" else "全 Perfect 模拟",func(value):
+		workspace.surface.player.boss_preview_mode="miss" if value=="未击败模拟" else "perfect"
+		workspace.surface.player.refresh_visuals(workspace.section,workspace.time_us))
+	LevelUI.label(form,"空值沿用导入素材；goat 包含揭眼与真眼最终死亡。零血先破防，最后一波结算后死亡。",12)
+	form=panel.get_node("Advanced/Content")
+	for role in ["idle","attack","attack_start","attack_loop","attack_end","hurt","phase_break","death"]:
+		var choices: Array=[""]; choices.append_array(Array(actions))
+		LevelUI.choice(form,role+" 映射",choices,str(object_data.get("boss",{}).get("actions",{}).get(role,"")),func(value):
+			var mapping: Dictionary=workspace.document.find("objects",object_id).get("boss",{}).get("actions",{}).duplicate()
+			if str(value).is_empty():mapping.erase(role)
+			else:mapping[role]=value
+			_object_setting("actions",mapping))
+	form=panel.get_node("Paths")
 	var anchors: Array=[]
 	if workspace.assets().entries.has(object_data.asset): anchors=workspace.assets().entries[object_data.asset].anchors.keys()
 	for pair in [["生发射锚点","life_anchor"],["死发射锚点","death_anchor"]]:
-		if not anchors.is_empty(): LevelUI.choice(_form,pair[0],anchors,str(data.get(pair[1],"")),func(value):_change(pair[1],value))
-		else: LevelUI.label(_form,pair[0]+"：素材未声明锚点",12)
+		if not anchors.is_empty(): LevelUI.choice(form,pair[0],anchors,str(data.get(pair[1],"")),func(value):_change(pair[1],value))
+		else: LevelUI.label(form,pair[0]+"：素材未声明锚点",12)
 	for pair in [["发射音效","sound","audio"],["发射特效","effect","effect"],["命中特效","hit_effect","effect"],["失误特效","miss_effect","effect"]]:
-		workspace.resource_field(_form,pair[0],str(data.get(pair[1],"")),pair[2],func(value):_change(pair[1],value))
+		workspace.resource_field(form,pair[0],str(data.get(pair[1],"")),pair[2],func(value):_change(pair[1],value))
 	for pair in [["生弹射手柄","life_handle",Vector2(1700,-100)],["死弹射手柄","death_handle",Vector2(-1700,100)]]:
-		LevelUI.vector(_form,pair[0],LevelFormat.vec(data.get(pair[1],[]),pair[2]),func(value):_change(pair[1],value),1,func(axis,value):
+		LevelUI.vector(form,pair[0],LevelFormat.vec(data.get(pair[1],[]),pair[2]),func(value):_change(pair[1],value),1,func(axis,value):
 			var next:=LevelFormat.vec(data.get(pair[1],[]),pair[2]);next[axis]=value;_change(pair[1],[next.x,next.y]))
-	LevelUI.label(_form,"手柄相对发射点；入轨端切线自动衔接普通路径。",11)
+	LevelUI.label(form,"手柄相对发射点；入轨端切线自动衔接普通路径。",11)
 	_slider.max_value=maxf(float(data.action_duration_us)/1000000*float(data.rate),float(data.release_sec)); _update_times(); _sample_action()
 
 func _sample_action() -> void:
@@ -180,12 +221,15 @@ func _sample_action() -> void:
 	if object_data.is_empty(): return
 	object_data.fields.position=[320,180]; object_data.fields.scale=[1,1]; object_data.fields.rotation=0; object_data.parent_id=""; object_data.layer="world"
 	var track:=LevelFormat.track(object_id,"action","song","action")
-	var clip:=LevelFormat.clip(0,"",maxi(1,roundi(_slider.max_value*1000000))); clip.action=data.action; clip.rate=1.0; track.clips=[clip]
+	var spec:=LevelBossActions.resolve(workspace.assets(),object_data,data)
+	var clip:=LevelFormat.clip(0,"",maxi(1,roundi(_slider.max_value*1000000))); clip.action=spec.get(_preview_role,spec.action) if not _preview_role.is_empty() else spec.action; clip.rate=1.0; track.clips=[clip]
 	var show:={"objects":[object_data],"tracks":[track],"bindings":[]}
-	var signature: String = str(object_data.id)+"|"+str(object_data.asset)+workspace.document.directory+JSON.stringify(workspace.document.data.packs)
+	var signature: String = str(object_data.id)+"|"+str(object_data.asset)+workspace.document.directory+JSON.stringify(workspace.document.data.packs)+JSON.stringify(object_data.get("boss",{}))
 	if signature!=_preview_signature: _preview.configure(show,workspace.document.directory,workspace.document.data.packs,workspace.difficulty()); _preview_signature=signature
 	else: _preview.show=show
 	_preview.seek("song",roundi(_slider.value*1000000)); _viewport.render_target_update_mode=SubViewport.UPDATE_ONCE
+	var content: Node=_preview.objects[object_id].get_node_or_null("Content")
+	if content != null and content.has_method("preview_role"):content.preview_role(_preview_role if not _preview_role.is_empty() else "attack_start",_slider.value)
 
 func _update_times() -> void:
 	if _create==null: return
@@ -201,9 +245,14 @@ func _update_times() -> void:
 		if note==null:lines.append("失效关联 · "+id);continue
 		var hit:=float(workspace.song_document.tempo_map().tick_to_us(note.tick))/1000000
 		var release:=hit-approach-float(data.return_us)/1000000
-		var start:=release-float(data.release_sec)/float(data.rate)
+		var entry:=hit-approach
+		var resolved:=LevelBossActions.resolve(workspace.assets(),workspace.document.find("objects",object_id),data)
+		if data.get("path_mode","auto")!="custom" and workspace.surface.emissions.has(id):
+			var path: Dictionary=workspace.surface.emissions[id]
+			release=float(path.release_us)/1000000;entry=float(path.entry_us)/1000000
+		var start:=release-float(resolved.release)/float(data.rate)
 		first=minf(first,start);last=maxf(last,hit)
-		lines.append("%s：%.3f / %.3f / %.3f / %.3f s"%[id,start,release,hit-approach,hit])
+		lines.append("%s：%.3f / %.3f / %.3f / %.3f s"%[id,start,release,entry,hit])
 	if first!=INF:lines.insert(1,"覆盖 %.3f → %.3f s"%[first,last])
 	_release_label.text="\n".join(lines)
 
@@ -227,3 +276,10 @@ func _apply() -> void:
 	if data.note_ids.is_empty(): return
 	workspace.document.replace("创建 BOSS 绑定","bindings",[],[data.duplicate(true)])
 	if workspace.document.last_error.is_empty():open(object_id,str(data.id))
+
+func _object_setting(key: String, value: Variant) -> void:
+	var before: Dictionary=workspace.document.find("objects",object_id).duplicate(true)
+	var after := before.duplicate(true)
+	if not after.has("boss"): after.boss={}
+	after.boss[key]=value
+	workspace.document.replace("修改 BOSS 设置","objects",[before],[after])

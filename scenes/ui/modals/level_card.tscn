@@ -1,5 +1,7 @@
 [gd_scene format=3 uid="uid://cc57uhbep3ki8"]
 
+[ext_resource type="Script" path="res://src/app/ui/score_label.gd" id="score_script"]
+[ext_resource type="Script" path="res://src/app/ui/clear_mark_visual.gd" id="clear_mark"]
 [ext_resource type="Script" uid="uid://w7s0lbvhk5lh" path="res://src/app/level_card.gd" id="1"]
 [ext_resource type="Shader" uid="uid://651uk81lrd0e" path="res://shaders/materials/monster_icon.gdshader" id="2_euxft"]
 [ext_resource type="Shader" uid="uid://b8u7fxj7h4hso" path="res://shaders/materials/level_card.gdshader" id="2_whbbo"]
@@ -91,22 +93,24 @@ mouse_filter = 2
 
 [node name="Score" type="Label" parent="." unique_id=1896376124]
 layout_mode = 0
-offset_left = 16.0
+offset_left = 24.0
 offset_top = -95.0
-offset_right = 328.0
+offset_right = 336.0
 offset_bottom = -21.0
+script = ExtResource("score_script")
 text = "000000"
 material = ExtResource("score_gradient")
 label_settings = SubResource("LabelSettings_s3cit")
 horizontal_alignment = 1
 
-[node name="Rating" type="Label" parent="." unique_id=1398757528]
+[node name="Rating" type="Control" parent="."]
 layout_mode = 0
-offset_left = 24.0
-offset_top = 83.0
-offset_right = 336.0
-offset_bottom = 113.0
-horizontal_alignment = 1
+offset_left = 126.0
+offset_top = -12.0
+offset_right = 234.0
+offset_bottom = 44.0
+script = ExtResource("clear_mark")
+mouse_filter = 2
 
 [node name="Description" type="Label" parent="." unique_id=1380135218]
 layout_mode = 0

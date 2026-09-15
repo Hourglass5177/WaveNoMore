@@ -115,6 +115,7 @@ func _on_run_started(run_id: int) -> void:
 	]
 	_active_replay.chart_hash = _session.compiled_chart.content_hash
 	_active_replay.rules_hash = ChartCompiler.rules_hash(_session.rule_set)
+	_active_replay.boss_battles = _session.gameplay_coordinator.simulation.boss_battle.definitions.duplicate(true)
 	_active_replay.song_timing_hash = _song_timing_hash()
 	# 输入单例的时间戳已经位于补偿后的判定轴，再设置 ReplayData 偏移会重复校准。
 	_active_replay.captured_input_offset_us = 0
