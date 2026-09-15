@@ -178,7 +178,7 @@ func _build_ui() -> void:
 	var toolbar: HFlowContainer = %Toolbar
 	_add_menu(toolbar,"文件",[["新建",_new],["打开",_open],["保存",save],["另存为",_save_as],["导入歌曲",import_song],["导出关卡包",export_package],["最近工程",_recent_projects],["查看恢复稿",_show_recoveries]])
 	_add_menu(toolbar,"编辑",[["撤销",func():document.undo()],["重做",func():document.undo(true)],["复制",_copy_selection],["粘贴",_paste_selection],["删除",delete_selection],["粘贴到选中对象",func():timeline.paste_selected(selection[0] if selection.size()==1 else "@invalid")]])
-	_add_menu(toolbar,"素材",[["导入素材",import_asset],["导入动画",import_animation],["导入素材包",import_pack],["应用待更新素材包",_apply_pending_packs],["重新定位缺失素材",_relocate_asset],["清理未使用素材",clean_unused_assets]])
+	_add_menu(toolbar,"素材",[["导入素材",import_asset],["导入帧动画",import_animation],["导入骨骼动画",import_spine],["导入素材包",import_pack],["应用待更新素材包",_apply_pending_packs],["重新定位缺失素材",_relocate_asset],["清理未使用素材",clean_unused_assets]])
 	LevelUI.button(toolbar,"保存",save,"保存当前字段及工程（Ctrl+S）")
 	_trial_button=LevelUI.button(toolbar,"在游戏中试玩",playtest)
 	_add_menu(toolbar,"帮助",[["操作说明",_help],["显示起步引导",func():_guide.show()]])
@@ -206,7 +206,7 @@ func _build_ui() -> void:
 	var assets_panel := VBoxContainer.new(); assets_panel.name = "素材"; _left_panel.add_child(assets_panel)
 	_asset_search.placeholder_text = "搜索素材名称或路径"; assets_panel.add_child(_asset_search); _asset_search.text_changed.connect(func(_value): _refresh_assets())
 	for caption in ["全部","场景 / BOSS","图片","音频","字体","环境场景","动画"]: _asset_category.add_item(caption)
-	_add_menu(assets_panel,"＋ 导入",[["普通素材",import_asset],["动画",import_animation],["素材包",import_pack]])
+	_add_menu(assets_panel,"＋ 导入",[["普通素材",import_asset],["帧动画",import_animation],["骨骼动画",import_spine],["素材包",import_pack]])
 	LevelUI.toggle(assets_panel,"显示内部依赖",false,func(value):_show_dependencies=value;_refresh_assets())
 	assets_panel.add_child(_asset_category); _asset_category.item_selected.connect(func(_index): _refresh_assets())
 	_asset_list.get_v_scroll_bar().value_changed.connect(func(_value):_refresh_visible_thumbnails.call_deferred())
@@ -425,12 +425,12 @@ func _refresh_assets() -> void:
 	for path in _assets.list_files():
 		if document.directory.path_join(path) in internal:continue
 		var kind:=_assets.kind(path)
-		var category_id: int={"image":2,"audio":3,"font":4,"animation":6}.get(kind,-1)
+		var category_id: int={"image":2,"audio":3,"font":4,"animation":6,"scene":6}.get(kind,-1)
 		if category_id<0 or (category!=0 and category!=category_id):continue
 		if not search.is_empty() and not search in (_asset_caption(path)+path).to_lower():continue
 		var placeholder:=_editor_icon("asset")
 		_asset_list.add_item(_asset_caption(path),placeholder);_asset_list.set_item_metadata(_asset_list.item_count-1,path)
-		_asset_list.set_item_tooltip(_asset_list.item_count-1,"来源：工程文件\n类型："+str({"image":"图片","animation":"动画","audio":"声音","font":"字体"}.get(kind,kind))+"\n引用：%d 处\n%s"%[int(usage.get(path,0)),path])
+		_asset_list.set_item_tooltip(_asset_list.item_count-1,"来源：工程文件\n类型："+str({"image":"图片","animation":"帧动画","scene":"骨骼动画","audio":"声音","font":"字体"}.get(kind,kind))+"\n引用：%d 处\n%s"%[int(usage.get(path,0)),path])
 	_refresh_visible_thumbnails.call_deferred()
 
 func _refresh_visible_thumbnails() -> void:
@@ -781,14 +781,22 @@ func add_asset_object(asset:String,at:=Vector2(960,540)) -> bool:
 		set_property("font",asset);return document.last_error.is_empty()
 	var kind:="actor" if resource is PackedScene else ("audio" if resource is AudioStream else ("animated_sprite" if resource is SpriteFrames else "sprite"))
 	var object_data:=LevelFormat.object(kind,asset);object_data.fields.position=[at.x,at.y]
-	if kind == "animated_sprite": object_data.animation = _assets.default_animation(asset)
+	var skeletal:=asset.ends_with(LevelSpineAsset.SUFFIX)
+	if kind == "animated_sprite" or skeletal: object_data.animation = _assets.default_animation(asset)
 	object_data.name=_asset_caption(asset)
 	if object_data.name.is_empty():object_data.name=asset
 	var changes: Array=[{"kind":"objects","before":[],"after":[object_data]}]
-	if kind in ["animated_sprite","audio"]:
-		var track:=LevelFormat.track(object_data.id,"action" if kind=="animated_sprite" else "audio",section,"action" if kind=="animated_sprite" else "audio");track.difficulties=[difficulty()] if difficulty_only and not difficulty().is_empty() else []
+	if kind in ["animated_sprite","audio"] or skeletal:
+		var track_kind:="audio" if kind=="audio" else "action"
+		var track:=LevelFormat.track(object_data.id,track_kind,section,track_kind);track.difficulties=[difficulty()] if difficulty_only and not difficulty().is_empty() else []
 		var remaining:=_section_duration_us()-time_us
-		var duration:=remaining if remaining>0 else roundi(maxf(2.0,(LevelAnimationAsset.duration(resource,object_data.animation) if resource is SpriteFrames else resource.get_length()))*1000000)
+		var cycle:=2.0
+		if resource is SpriteFrames:cycle=LevelAnimationAsset.duration(resource,object_data.animation)
+		elif resource is AudioStream:cycle=resource.get_length()
+		elif skeletal:
+			for action in LevelProjectIO.read_json(document.directory.path_join(asset)).get("actions",[]):
+				if action.name==object_data.animation:cycle=float(action.duration)
+		var duration:=remaining if remaining>0 else roundi(maxf(2.0,cycle)*1000000)
 		var clip:=LevelFormat.clip(time_us,"",duration);clip.name=object_data.name;clip.action=object_data.animation;clip.loop=resource.get_animation_loop(clip.action) if resource is SpriteFrames else false
 		if kind=="audio":clip.asset=asset;clip.duration_us=roundi(resource.get_length()*1000000)
 		track.clips=[clip];changes.append({"kind":"tracks","before":[],"after":[track]})
@@ -1059,6 +1067,13 @@ func _section_duration_us() -> int:
 	if section!="song":return int(document.data.get(section+"_us",0))
 	return roundi(timeline.waveform_duration*1000000)
 
+func import_spine(source_path := "") -> void:
+	_ensure_directory(func():
+		var dialog=load("res://scenes/tools/level_studio/spine_import.tscn").instantiate();dialog.directory=document.directory;add_child(dialog)
+		dialog.imported.connect(func(_path):_asset_signature="";_show_signature="";_update_show();_status.text="已导入骨骼动画；拖入画布创建动作片段，选中对象可进入 BOSS 绑定。")
+		_popup(dialog,Vector2i(900,680))
+		if not source_path.is_empty():dialog.load_source(source_path))
+
 func import_animation(replace_asset := "", source_path := "") -> void:
 	_ensure_directory(func():
 		var dialog=load("res://scenes/tools/level_studio/animation_import.tscn").instantiate();dialog.directory=document.directory
@@ -1078,6 +1093,8 @@ func import_asset() -> void:
 	_ensure_directory(func():_file_dialog("导入图片、声音或字体",FileDialog.FILE_MODE_OPEN_FILE,["*.png,*.jpg,*.jpeg,*.webp,*.svg ; 图片","*.wav,*.ogg,*.mp3 ; 音频","*.ttf,*.otf ; 字体"],_import_asset_path))
 
 func _import_asset_path(path:String) -> void:
+	if path.get_extension().to_lower() in ["spine-json","skel"] or (path.get_extension().to_lower()=="json" and LevelProjectIO.read_json(path).has("bones")):
+		import_spine(path);return
 	# SpriteFrames 不能只复制 .tres/.res：从来源工程读取图片，再写入独立动画依赖。
 	if path.get_extension().to_lower() in ["tres","res"]:
 		import_animation("",path);return
@@ -1471,7 +1488,7 @@ func resource_field(parent: Node, caption: String, current: String, category: St
 func _asset_caption(id: String) -> String:
 	if id.is_empty(): return "选择素材…"
 	if _assets.entries.has(id):return str(_assets.entries[id].display_name)
-	if id.ends_with(LevelAnimationAsset.SUFFIX):return str(LevelProjectIO.read_json(document.directory.path_join(id)).get("name",id.get_file()))
+	if id.ends_with(LevelAnimationAsset.SUFFIX) or id.ends_with(LevelSpineAsset.SUFFIX):return str(LevelProjectIO.read_json(document.directory.path_join(id)).get("name",id.get_file()))
 	return id.get_file()
 
 func _choose_resource(category: String, current: String, commit: Callable) -> void:

@@ -163,3 +163,10 @@ func level_advance(delta: float, silent: bool) -> void:
 `LevelShowPlayer.refresh_visuals` 重采样外观时保留现有声音；`seek` 是明确时间跳转，会清理旧音。`update_show` 只重建更换类型／素材的对象。一次采样内部复用已求值对象状态，任意时间的锚点查询仍独立求值；没有改变时间函数或插值语义。
 
 后台复制和 ZIP 压缩由 `level_package_job.gd` 协调，文件块间检查取消，工作线程不访问 UI。临时 ZIP 仅在完整关闭后发布，取消不发布半成品。另存未完成时保留原工程为当前工程，已复制的独立资源可留在目标目录中。
+# 独立 Spine 骨骼素材（2026-09-15）
+
+工程内 `assets/spine_*/asset.skeleton.json` 是可选素材描述，包含 `format: minghe-spine`、名称、相对骨骼文件、图集、图片页、动作名称与时长、默认动作、显示比例及逐动作出手标记（素材秒）。依赖由 `LevelSpineAsset.dependencies` 接入原有统一枚举，不改变关卡格式版本。
+
+运行时读取原始图片、SpineSkeletonFileResource 和 SpineAtlasResource，构建 PackedScene；对象沿用 `actor`，动作沿用现有 action 轨道。`LevelAnimationDriver` 使用手动骨骼更新，固定 60 Hz 推进；回拖、换动作和改变循环设置重新定位，避免沿用上一动作状态。对象中心取导出骨骼范围中心，显示比例属于素材内部变换。
+
+此入口接受当前运行库兼容的 Spine 4.3 JSON / SKEL，不转换旧版骨骼，不把美术审看工具中的脚本特效自动打包为骨骼动作。

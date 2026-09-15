@@ -414,8 +414,7 @@ func clear() -> void:
 ## 只替换背景配置的显示宿主，真实角色和音符注册项一直保留。
 func set_environment(sequence: StageEnvironmentSequence) -> void:
 	environment = sequence
-	for object in _configured_objects:
-		if is_instance_valid(object): object.visible = sequence == null
+	_set_base_background_visible(sequence == null)
 	if sequence == null:
 		clear_environment(); return
 	var alive := {}
@@ -435,10 +434,20 @@ func set_environment(sequence: StageEnvironmentSequence) -> void:
 		if not alive.has(key):
 			var root: Node = environment_views[key].root; root.get_parent().remove_child(root); root.queue_free(); environment_views.erase(key)
 
+## 切换背景宿主，不改素材本身的显隐，也不影响外部角色和音符。
+func _set_base_background_visible(value: bool) -> void:
+	for object in _configured_objects:
+		if is_instance_valid(object):
+			var record: Registration = _objects.get(object.get_instance_id())
+			if record != null: record.view.visible = value
+	# 随机装饰的配置项是 null 占位，所有动态副本都在独立宿主下。
+	for record: Dictionary in _horizontal_views: record.view.visible = value
+
 func clear_environment() -> void:
 	for view in environment_views.values():
 		view.root.get_parent().remove_child(view.root); view.root.queue_free()
 	environment_views.clear(); environment = null
+	_set_base_background_visible(true)
 
 func sample_environment(time_us: int, render_camera := Vector2(INF, INF), song_time_sec := NAN) -> void:
 	if environment == null: return
