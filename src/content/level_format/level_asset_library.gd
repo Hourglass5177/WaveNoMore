@@ -16,11 +16,13 @@ func configure(root: String, packs: Array) -> void:
 	directory = root; entries.clear(); cache.clear(); issues.clear()
 	for pack_data: Dictionary in packs:
 		var path := root.path_join(str(pack_data.path))
-		if not mounted.has(path):
-			if not ProjectSettings.load_resource_pack(path, false):
+		var newly_mounted:=not mounted.has(path)
+		if newly_mounted:
+			if not ProjectSettings.load_resource_pack(path, true):
 				issues.append({"message": "无法加载素材包：" + str(pack_data.path), "severity": "error", "pack_path":str(pack_data.path)}); continue
 			mounted[path] = true
-		var manifest := load(str(pack_data.manifest)) as VisualAssetManifest
+		# 重启后新包还须覆盖启动阶段缓存的同路径内置资源，否则看起来更新无效。
+		var manifest := ResourceLoader.load(str(pack_data.manifest),"",ResourceLoader.CACHE_MODE_REPLACE_DEEP if newly_mounted else ResourceLoader.CACHE_MODE_REUSE) as VisualAssetManifest
 		if manifest == null:
 			issues.append({"message": "找不到素材清单：" + str(pack_data.manifest), "severity": "error", "pack_path":str(pack_data.path)}); continue
 		for entry: VisualAssetEntry in manifest.entries:

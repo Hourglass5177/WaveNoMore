@@ -1111,19 +1111,27 @@ func _import_asset_path(path:String) -> void:
 	_assets.cache.erase(imported.path);_show_signature="";_asset_signature="";_update_show();_status.text="已导入 "+str(imported.path)+" · 双击或拖入预览"
 
 func import_pack() -> void:
-	_ensure_directory(func():_file_dialog("导入 Godot 素材包描述",FileDialog.FILE_MODE_OPEN_FILE,["*.assetpack.json ; 素材包描述"],func(path):
-		var descriptor:=LevelProjectIO.read_json(path)
-		if descriptor.get("format","")!="minghe-assets":message("请选择与 PCK 一起导出的 .assetpack.json。");return
-		var imported:=LevelProjectIO.import_file(path.get_base_dir().path_join(str(descriptor.pack)),document.directory,"packs/"+LevelFormat.id("revision"))
-		if not imported.error.is_empty():message(imported.error);return
-		var packs:Array=document.data.packs.duplicate(true)
-		var entry:={"path":imported.path,"manifest":descriptor.manifest,"name":descriptor.get("name","")}
-		var existing:=-1
-		for index in packs.size():
-			if packs[index].manifest==descriptor.manifest:existing=index;break
-		if existing>=0:
-			packs[existing]=entry;_pending_packs=packs;_apply_pending_packs()
-		else:packs.append(entry);document.fields("导入素材包",{"packs":packs});_show_signature="";_update_show()))
+	_ensure_directory(func():_file_dialog("导入 Godot 素材包描述",FileDialog.FILE_MODE_OPEN_FILE,["*.assetpack.json ; 素材包描述"],_import_pack_path))
+
+func _import_pack_path(path: String) -> void:
+	var descriptor:=LevelProjectIO.read_json(path)
+	if descriptor.get("format","")!="minghe-assets":message("请选择与 PCK 一起导出的 .assetpack.json。");return
+	var source:=path.get_base_dir().path_join(str(descriptor.pack))
+	var packs:Array=document.data.packs.duplicate(true)
+	var existing:=-1
+	for index in packs.size():
+		if packs[index].manifest==descriptor.manifest:existing=index;break
+	# 比较实际包内容，不能把每次导入产生的新目录名当成新版本。
+	if existing>=0 and FileAccess.file_exists(source):
+		var current:=document.directory.path_join(str(packs[existing].path))
+		if FileAccess.file_exists(current) and FileAccess.get_sha256(source)==FileAccess.get_sha256(current):
+			_pending_packs=[];_status.text="该素材包已是当前版本，无需重启。";return
+	var imported:=LevelProjectIO.import_file(source,document.directory,"packs/"+LevelFormat.id("revision"))
+	if not imported.error.is_empty():message(imported.error);return
+	var entry:={"path":imported.path,"manifest":descriptor.manifest,"name":descriptor.get("name","")}
+	if existing>=0:
+		packs[existing]=entry;_pending_packs=packs;_apply_pending_packs()
+	else:packs.append(entry);document.fields("导入素材包",{"packs":packs});_show_signature="";_update_show()
 
 func export_package() -> void:
 	_prepare_command()
@@ -2224,7 +2232,8 @@ func _show_trial_log() -> void:
 
 ## Godot 已挂载的资源包不能卸载；用一次重启恢复会话切换版本。
 func _apply_pending_packs() -> void:
-	if _pending_packs.is_empty():_status.text="没有待应用的素材包版本。";return
+	if _pending_packs.is_empty() or _pending_packs==document.data.packs:
+		_pending_packs=[];_status.text="没有待应用的素材包版本。";return
 	_prepare_command()
 	var candidate:=_history_document()
 	candidate.fields("更新素材包",{"packs":_pending_packs.duplicate(true)})
@@ -2248,7 +2257,7 @@ func _offer_pack_restart(candidate: LevelDocument, caption: String) -> void:
 	var names:=PackedStringArray()
 	for entry: Dictionary in document.entries("objects"):
 		if _assets.entries.has(entry.asset):names.append(str(entry.name))
-	dialog.dialog_text="新版本已准备。切换已挂载的素材包需要重启编辑器。\n未保存文档、撤销历史和布局将恢复，正式工程不会被覆盖。\n使用素材包的对象：\n"+("无" if names.is_empty() else "、".join(names))
+	dialog.dialog_text="新版本已准备。切换已挂载的素材包需要重启编辑器。\n未保存文档、撤销历史和布局将恢复，正式工程不会被覆盖。\n受影响的演出对象（环境场景不在此列表）：\n"+("无" if names.is_empty() else "、".join(names))
 	add_child(dialog);dialog.confirmed.connect(func():
 		var state:=_workspace_snapshot();state.pending_packs=[]
 		var snapshot:={"level":candidate.data,"directory":candidate.directory,"history":candidate.history,"cursor":candidate.cursor,"saved_cursor":candidate.saved_cursor,"workspace":state,"selection":_selection_snapshot(),"clipboard":document.clipboard,"timeline_clipboard":timeline._clipboard}
@@ -2267,7 +2276,8 @@ func _offer_pack_restart(candidate: LevelDocument, caption: String) -> void:
 func _resume_pack_session(path: String) -> void:
 	var session:=LevelProjectIO.read_json(path)
 	if session.is_empty():message("无法恢复重启会话："+path);return
-	workspace_state=session.workspace;document.reset(session.level,session.directory)
+	workspace_state=session.workspace.duplicate(true);workspace_state.pending_packs=[]
+	document.reset(session.level,session.directory)
 	document.history.assign(session.history);document.cursor=int(session.cursor);document.saved_cursor=int(session.saved_cursor);document.dirty=document.cursor!=document.saved_cursor
 	document.clipboard=session.get("clipboard",{});timeline._clipboard=session.get("timeline_clipboard",[])
 	_read_song();_apply_workspace(workspace_state);_restore_history_selection(session.get("selection",{}));_document_changed("project")
