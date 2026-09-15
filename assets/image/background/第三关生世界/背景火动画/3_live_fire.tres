@@ -1,0 +1,34 @@
+[gd_resource type="SpriteFrames" format=3 uid="uid://dvrr3msuiggns"]
+
+[ext_resource type="Texture2D" uid="uid://b1gs1hpoa6mj2" path="res://assets/image/background/第三关生世界/背景火动画/未命名作品-1 (1).png" id="1_mdt5p"]
+[ext_resource type="Texture2D" uid="uid://bfnwokk6old0b" path="res://assets/image/background/第三关生世界/背景火动画/未命名作品-2 (1).png" id="2_wiht1"]
+[ext_resource type="Texture2D" uid="uid://dhlwigw2urf51" path="res://assets/image/background/第三关生世界/背景火动画/未命名作品-3 (1).png" id="3_tog27"]
+[ext_resource type="Texture2D" uid="uid://d26nsybp2de3j" path="res://assets/image/background/第三关生世界/背景火动画/未命名作品-4 (1).png" id="4_b15vx"]
+[ext_resource type="Texture2D" uid="uid://l08sa2xbnhwl" path="res://assets/image/background/第三关生世界/背景火动画/未命名作品-5 (1).png" id="5_4wnnm"]
+[ext_resource type="Texture2D" uid="uid://d0ih6u1ac8agn" path="res://assets/image/background/第三关生世界/背景火动画/未命名作品-6 (1).png" id="6_eymfq"]
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_mdt5p")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_wiht1")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_tog27")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_b15vx")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_4wnnm")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_eymfq")
+}],
+"loop": 1,
+"name": &"default",
+"speed": 12.0
+}]

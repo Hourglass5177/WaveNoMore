@@ -2,421 +2,484 @@
 
 [ext_resource type="Script" uid="uid://cmdrk3aa03hw6" path="res://src/content/resources/stage_background_definition.gd" id="1_background"]
 [ext_resource type="Script" uid="uid://b14wt0k1s37p" path="res://src/content/resources/stage_background_entry.gd" id="2_entry"]
+[ext_resource type="Texture2D" uid="uid://c063b5dp7pfew" path="res://assets/image/background/第三关生世界/背景.png" id="5_ljwvv"]
+[ext_resource type="Texture2D" uid="uid://ca4j06ug354v" path="res://assets/image/background/第三关死世界/背景.png" id="7_47gb5"]
 [ext_resource type="Shader" uid="uid://4f34djssu6nd" path="res://shaders/materials/screen_half_material_split_death.gdshader" id="7_pxfxu"]
-[ext_resource type="Texture2D" uid="uid://dg8e4307vs18k" path="res://assets/image/background/background-grave-0-death.png" id="7_rju76"]
-[ext_resource type="Texture2D" uid="uid://cd8bhg07jm8cn" path="res://assets/image/background/background-grave-0-live.png" id="8_f5ud5"]
-[ext_resource type="Texture2D" uid="uid://btod1xicq4e3v" path="res://assets/image/background/background-there-2-live.png" id="8_ikawn"]
 [ext_resource type="Shader" uid="uid://dca4ddyalfe3" path="res://shaders/materials/screen_half_material_split_live.gdshader" id="8_screen_split"]
-[ext_resource type="Texture2D" uid="uid://dxg3b78hxi2g3" path="res://assets/image/background/background-there-2-death.png" id="9_jix0n"]
 [ext_resource type="Shader" uid="uid://bj8tilovgk8ay" path="res://shaders/materials/dust_particles.gdshader" id="10_fyfw2"]
 [ext_resource type="Texture2D" uid="uid://cydev6v3nk5tl" path="res://assets/image/particles/particles.png" id="10_hwrvv"]
-[ext_resource type="Texture2D" uid="uid://ca3hsojh2kcnw" path="res://assets/image/background/edge.png" id="11_pxfxu"]
-[ext_resource type="Texture2D" uid="uid://x2gggxseqa73" path="res://assets/image/background/background-there-1-live.png" id="12_ikawn"]
-[ext_resource type="Texture2D" uid="uid://7cq06subbsy5" path="res://assets/image/background/background-there-1-death.png" id="13_jix0n"]
-[ext_resource type="Texture2D" uid="uid://bnmyeqf1yoisu" path="res://assets/image/background/background-there-3-live.png" id="14_ikawn"]
-[ext_resource type="Texture2D" uid="uid://dpfuaei5b62b4" path="res://assets/image/background/background-there-3-death.png" id="15_jix0n"]
+[ext_resource type="Texture2D" uid="uid://bvm1262kx547k" path="res://assets/image/background/第三关生世界/前景烟.png" id="10_u1exl"]
+[ext_resource type="Texture2D" uid="uid://b3xleold88m6l" path="res://assets/image/background/第三关生世界/最前.png" id="12_1yoge"]
+[ext_resource type="Texture2D" uid="uid://ptalwta6u2tj" path="res://assets/image/background/第三关死世界/最前景.png" id="13_fmswg"]
+[ext_resource type="Texture2D" uid="uid://c78wajx6a23ih" path="res://assets/image/background/第三关生世界/前景祭台.png" id="14_fmswg"]
+[ext_resource type="Texture2D" uid="uid://df2f4qt568pqk" path="res://assets/image/background/第三关死世界/前景祭坛.png" id="15_rncxg"]
+[ext_resource type="Texture2D" uid="uid://bqhyw11shp6k0" path="res://assets/image/background/第三关死世界/前景烟.png" id="17_mu708"]
 [ext_resource type="Texture2D" uid="uid://umwcbdmruags" path="res://assets/image/particles/particles_far.png" id="17_poo7a"]
-[ext_resource type="Texture2D" uid="uid://cdkpnb66eyo7l" path="res://assets/image/background/background-there-front-live.png" id="18_ikawn"]
-[ext_resource type="Texture2D" uid="uid://bhiy72lga7hpf" path="res://assets/image/background/background-there-front-death.png" id="19_jix0n"]
+[ext_resource type="Texture2D" uid="uid://h8xwrtwjqlrd" path="res://assets/image/background/第三关生世界/中景陪葬品.png" id="18_ikawn"]
+[ext_resource type="Texture2D" uid="uid://vrnpo5sdh5eq" path="res://assets/image/background/第三关死世界/中景祭品.png" id="19_jix0n"]
+[ext_resource type="SpriteFrames" uid="uid://dvrr3msuiggns" path="res://assets/image/background/第三关生世界/背景火动画/3_live_fire.tres" id="20_jix0n"]
+[ext_resource type="SpriteFrames" uid="uid://d1ba2r8kog1ck" path="res://assets/image/background/第三关死世界/背景火/3_death_fire.tres" id="21_lb3c7"]
+[ext_resource type="Texture2D" uid="uid://bt02x6c2h2ygn" path="res://assets/image/background/第三关生世界/远景棋子（火后）.png" id="22_886ms"]
+[ext_resource type="Texture2D" uid="uid://drd14f8i48bg3" path="res://assets/image/background/第三关死世界/背景旗（火后）.png" id="23_oc2e1"]
+[ext_resource type="PackedScene" path="res://scenes/presentation/boundary_waves.tscn" id="90_boundary"]
 [ext_resource type="Script" uid="uid://c4h0bmjpxthu7" path="res://src/content/resources/stage_background_layer.gd" id="layer_schema"]
 [ext_resource type="Script" uid="uid://kmwupvuwcgil" path="res://src/content/resources/stage_background_sublayer.gd" id="sublayer_schema"]
-
-[ext_resource type="PackedScene" path="res://scenes/presentation/boundary_waves.tscn" id="90_boundary"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_1dpc0"]
 shader = ExtResource("8_screen_split")
 
-[sub_resource type="Resource" id="Resource_ikawn"]
+[sub_resource type="Resource" id="Resource_oc2e1"]
 script = ExtResource("2_entry")
-texture = ExtResource("8_f5ud5")
+texture = ExtResource("5_ljwvv")
 material = SubResource("ShaderMaterial_1dpc0")
 infinite = true
-position = Vector2(-742.6837, -76.64212)
-uniform_scale = 1.74580807320869
+position = Vector2(-750.49884, -49.029053)
+uniform_scale = 0.8215105857270294
 
-[sub_resource type="Resource" id="Resource_jix0n"]
+[sub_resource type="Resource" id="Resource_g4e04"]
 script = ExtResource("sublayer_schema")
 display_name = "live"
 velocity = Vector2(-500, 0)
-entries = Array[ExtResource("2_entry")]([SubResource("Resource_ikawn")])
+entries = Array[ExtResource("2_entry")]([SubResource("Resource_oc2e1")])
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_poo7a"]
 shader = ExtResource("7_pxfxu")
 
-[sub_resource type="Resource" id="Resource_lb3c7"]
+[sub_resource type="Resource" id="Resource_ms3qb"]
 script = ExtResource("2_entry")
-texture = ExtResource("7_rju76")
+texture = ExtResource("7_47gb5")
 material = SubResource("ShaderMaterial_poo7a")
 infinite = true
-position = Vector2(-664.8276, -91.48206)
-uniform_scale = 1.7022749340559469
+position = Vector2(-706.07117, -78.34863)
+uniform_scale = 0.8429410686251095
 
-[sub_resource type="Resource" id="Resource_886ms"]
+[sub_resource type="Resource" id="Resource_v3ikj"]
 script = ExtResource("sublayer_schema")
 sublayer_id = "sublayer_55"
 display_name = "death"
 velocity = Vector2(500, 0)
-entries = Array[ExtResource("2_entry")]([SubResource("Resource_lb3c7")])
-
-[sub_resource type="Resource" id="Resource_oc2e1"]
-script = ExtResource("layer_schema")
-depth = 50
-sublayers = Array[ExtResource("sublayer_schema")]([SubResource("Resource_jix0n"), SubResource("Resource_886ms")])
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_fyfw2"]
-shader = ExtResource("8_screen_split")
-
-[sub_resource type="Resource" id="Resource_g4e04"]
-script = ExtResource("2_entry")
-texture = ExtResource("8_ikawn")
-material = SubResource("ShaderMaterial_fyfw2")
-infinite = true
-position = Vector2(-266.13184, -83.229126)
-uniform_scale = 0.8983484084464903
-
-[sub_resource type="Resource" id="Resource_ms3qb"]
-script = ExtResource("sublayer_schema")
-display_name = "live"
-velocity = Vector2(-500, 0)
-entries = Array[ExtResource("2_entry")]([SubResource("Resource_g4e04")])
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_wv2ar"]
-shader = ExtResource("7_pxfxu")
-
-[sub_resource type="Resource" id="Resource_v3ikj"]
-script = ExtResource("2_entry")
-texture = ExtResource("9_jix0n")
-material = SubResource("ShaderMaterial_wv2ar")
-infinite = true
-position = Vector2(-289.5736, -201.39093)
-uniform_scale = 0.9221243989582028
+entries = Array[ExtResource("2_entry")]([SubResource("Resource_ms3qb")])
 
 [sub_resource type="Resource" id="Resource_y8k7y"]
-script = ExtResource("sublayer_schema")
-sublayer_id = "sublayer_11"
-display_name = "death"
-velocity = Vector2(500, 0)
-entries = Array[ExtResource("2_entry")]([SubResource("Resource_v3ikj")])
-
-[sub_resource type="Resource" id="Resource_y61e6"]
 script = ExtResource("layer_schema")
-depth = 3
-sublayers = Array[ExtResource("sublayer_schema")]([SubResource("Resource_ms3qb"), SubResource("Resource_y8k7y")])
+depth = 50
+sublayers = Array[ExtResource("sublayer_schema")]([SubResource("Resource_g4e04"), SubResource("Resource_v3ikj")])
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_xu5h3"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_y61e6"]
 shader = ExtResource("10_fyfw2")
-shader_parameter/dust_color = Color(1, 1, 1, 1)
+shader_parameter/dust_color = Color(0.7216263, 0.71081907, 1, 1)
 shader_parameter/alpha_strength = 0.3999999910592
 shader_parameter/twinkle_amount = 0.999999977648
 shader_parameter/frequency_min_hz = 0.16
 shader_parameter/frequency_max_hz = 0.48
 shader_parameter/halo_radius_px = 5.0
 shader_parameter/halo_strength = 0.55
-shader_parameter/halo_color = Color(1, 1, 1, 1)
+shader_parameter/halo_color = Color(0.7216263, 0.71081907, 1, 1)
 shader_parameter/dust_texture = ExtResource("10_hwrvv")
 shader_parameter/random_grid = Vector2(80, 45)
 shader_parameter/is_live = false
+shader_parameter/environment_time = -1.0
 
-[sub_resource type="Resource" id="Resource_y1s72"]
+[sub_resource type="Resource" id="Resource_y61e6"]
 script = ExtResource("2_entry")
 texture = ExtResource("10_hwrvv")
-material = SubResource("ShaderMaterial_xu5h3")
+material = SubResource("ShaderMaterial_y61e6")
 infinite = true
 random_flip = true
 position = Vector2(-589.60034, -329.56433)
 uniform_scale = 1.231761109580623
 
-[sub_resource type="Resource" id="Resource_u620k"]
+[sub_resource type="Resource" id="Resource_y1s72"]
 script = ExtResource("sublayer_schema")
 sublayer_id = "sublayer_21"
 display_name = "death particles1"
-velocity = Vector2(-500, 0)
-entries = Array[ExtResource("2_entry")]([SubResource("Resource_y1s72")])
+velocity = Vector2(1500, 0)
+entries = Array[ExtResource("2_entry")]([SubResource("Resource_y61e6")])
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_x7vhg"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_wcwuj"]
 shader = ExtResource("10_fyfw2")
-shader_parameter/dust_color = Color(1, 1, 1, 1)
+shader_parameter/dust_color = Color(1.685791, 1.1422487, 0, 0.9882353)
 shader_parameter/alpha_strength = 0.3999999910592
 shader_parameter/twinkle_amount = 0.999999977648
 shader_parameter/frequency_min_hz = 0.16
 shader_parameter/frequency_max_hz = 0.48
 shader_parameter/halo_radius_px = 5.0
 shader_parameter/halo_strength = 0.55
-shader_parameter/halo_color = Color(1, 1, 1, 1)
+shader_parameter/halo_color = Color(1.685791, 1.1422487, 0, 0.9882353)
 shader_parameter/dust_texture = ExtResource("10_hwrvv")
 shader_parameter/random_grid = Vector2(80, 45)
 shader_parameter/is_live = true
+shader_parameter/environment_time = -1.0
 
-[sub_resource type="Resource" id="Resource_wcwuj"]
+[sub_resource type="Resource" id="Resource_u620k"]
 script = ExtResource("2_entry")
 texture = ExtResource("10_hwrvv")
-material = SubResource("ShaderMaterial_x7vhg")
+material = SubResource("ShaderMaterial_wcwuj")
 infinite = true
 random_flip = true
 position = Vector2(-589.60034, -329.56433)
 uniform_scale = 1.231761109580623
 
-[sub_resource type="Resource" id="Resource_ytujj"]
+[sub_resource type="Resource" id="Resource_wcwuj"]
 script = ExtResource("sublayer_schema")
 sublayer_id = "sublayer_26"
 display_name = "live particles1"
-velocity = Vector2(500, 0)
-entries = Array[ExtResource("2_entry")]([SubResource("Resource_wcwuj")])
+velocity = Vector2(-1500, 0)
+entries = Array[ExtResource("2_entry")]([SubResource("Resource_u620k")])
 
-[sub_resource type="Resource" id="Resource_7p8pw"]
+[sub_resource type="Resource" id="Resource_ytujj"]
 script = ExtResource("layer_schema")
 depth = 2
-sublayers = Array[ExtResource("sublayer_schema")]([SubResource("Resource_u620k"), SubResource("Resource_ytujj")])
+sublayers = Array[ExtResource("sublayer_schema")]([SubResource("Resource_y1s72"), SubResource("Resource_wcwuj")])
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_wusf3"]
-shader = ExtResource("8_screen_split")
+[sub_resource type="Resource" id="Resource_7p8pw"]
+script = ExtResource("2_entry")
+scene = ExtResource("90_boundary")
+position = Vector2(-49.9, 0)
+uniform_scale = 0.7616555803103707
 
 [sub_resource type="Resource" id="Resource_ephjl"]
-script = ExtResource("2_entry")
-texture = ExtResource("12_ikawn")
-material = SubResource("ShaderMaterial_wusf3")
-infinite = true
-position = Vector2(-153.70996, -44.05725)
-uniform_scale = 0.806491319404354
+script = ExtResource("sublayer_schema")
+entries = Array[ExtResource("2_entry")]([SubResource("Resource_7p8pw")])
 
 [sub_resource type="Resource" id="Resource_fqtrm"]
-script = ExtResource("sublayer_schema")
-display_name = "live"
-velocity = Vector2(-500, 0)
-entries = Array[ExtResource("2_entry")]([SubResource("Resource_ephjl")])
+script = ExtResource("layer_schema")
+depth = 0
+sublayers = Array[ExtResource("sublayer_schema")]([SubResource("Resource_ephjl")])
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_i2ugf"]
-shader = ExtResource("7_pxfxu")
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_4rgt0"]
+shader = ExtResource("10_fyfw2")
+shader_parameter/dust_color = Color(0.7216263, 0.71081907, 1, 1)
+shader_parameter/alpha_strength = 0.1999999955296
+shader_parameter/twinkle_amount = 0.999999977648
+shader_parameter/frequency_min_hz = 0.16
+shader_parameter/frequency_max_hz = 0.48
+shader_parameter/halo_radius_px = 2.5
+shader_parameter/halo_strength = 0.55
+shader_parameter/halo_color = Color(0.7216263, 0.71081907, 1, 1)
+shader_parameter/dust_texture = ExtResource("10_hwrvv")
+shader_parameter/random_grid = Vector2(80, 45)
+shader_parameter/is_live = false
+shader_parameter/environment_time = -1.0
 
 [sub_resource type="Resource" id="Resource_xto0w"]
 script = ExtResource("2_entry")
-texture = ExtResource("13_jix0n")
-material = SubResource("ShaderMaterial_i2ugf")
+texture = ExtResource("10_hwrvv")
+material = SubResource("ShaderMaterial_4rgt0")
 infinite = true
-position = Vector2(-159.6322, -49.315796)
-uniform_scale = 0.8230337650864316
+random_flip = true
+uniform_scale = 0.7631043957984558
 
 [sub_resource type="Resource" id="Resource_4rgt0"]
 script = ExtResource("sublayer_schema")
-sublayer_id = "sublayer_50"
-display_name = "death"
-velocity = Vector2(500, 0)
+display_name = "death particle2"
+velocity = Vector2(1500, 0)
 entries = Array[ExtResource("2_entry")]([SubResource("Resource_xto0w")])
 
-[sub_resource type="Resource" id="Resource_30i4x"]
-script = ExtResource("layer_schema")
-depth = 5
-sublayers = Array[ExtResource("sublayer_schema")]([SubResource("Resource_fqtrm"), SubResource("Resource_4rgt0")])
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_4iaid"]
-shader = ExtResource("8_screen_split")
-
-[sub_resource type="Resource" id="Resource_2w73s"]
-script = ExtResource("2_entry")
-texture = ExtResource("14_ikawn")
-material = SubResource("ShaderMaterial_4iaid")
-infinite = true
-position = Vector2(-98.64075, 13.368317)
-uniform_scale = 0.7741264913650653
-
-[sub_resource type="Resource" id="Resource_frml1"]
-script = ExtResource("sublayer_schema")
-display_name = "live"
-velocity = Vector2(-500, 0)
-entries = Array[ExtResource("2_entry")]([SubResource("Resource_2w73s")])
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_l1l4p"]
-shader = ExtResource("7_pxfxu")
-
-[sub_resource type="Resource" id="Resource_xiwvh"]
-script = ExtResource("2_entry")
-texture = ExtResource("15_jix0n")
-material = SubResource("ShaderMaterial_l1l4p")
-infinite = true
-position = Vector2(-94.41748, -65.068726)
-uniform_scale = 0.7943014486359798
-
-[sub_resource type="Resource" id="Resource_6m6we"]
-script = ExtResource("sublayer_schema")
-sublayer_id = "sublayer_53"
-display_name = "death"
-velocity = Vector2(500, 0)
-entries = Array[ExtResource("2_entry")]([SubResource("Resource_xiwvh")])
-
-[sub_resource type="Resource" id="Resource_v0x1h"]
-script = ExtResource("layer_schema")
-depth = 30
-sublayers = Array[ExtResource("sublayer_schema")]([SubResource("Resource_frml1"), SubResource("Resource_6m6we")])
-
-[sub_resource type="Resource" id="Resource_ub8rh"]
-script = ExtResource("2_entry")
-scene = ExtResource("90_boundary")
-position = Vector2(-49.9, -10.3)
-uniform_scale = 0.7616555803103707
-
-[sub_resource type="Resource" id="Resource_s6k1c"]
-script = ExtResource("sublayer_schema")
-entries = Array[ExtResource("2_entry")]([SubResource("Resource_ub8rh")])
-
-[sub_resource type="Resource" id="Resource_u4iel"]
-script = ExtResource("layer_schema")
-depth = 0
-sublayers = Array[ExtResource("sublayer_schema")]([SubResource("Resource_s6k1c")])
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_r4llb"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_frml1"]
 shader = ExtResource("10_fyfw2")
-shader_parameter/dust_color = Color(1, 1, 1, 1)
+shader_parameter/dust_color = Color(1.685791, 1.1422487, 0, 0.9882353)
 shader_parameter/alpha_strength = 0.1999999955296
 shader_parameter/twinkle_amount = 0.999999977648
 shader_parameter/frequency_min_hz = 0.16
 shader_parameter/frequency_max_hz = 0.48
 shader_parameter/halo_radius_px = 2.5
 shader_parameter/halo_strength = 0.55
-shader_parameter/halo_color = Color(1, 1, 1, 1)
-shader_parameter/dust_texture = ExtResource("10_hwrvv")
-shader_parameter/random_grid = Vector2(80, 45)
-shader_parameter/is_live = false
-
-[sub_resource type="Resource" id="Resource_my5jj"]
-script = ExtResource("2_entry")
-texture = ExtResource("10_hwrvv")
-material = SubResource("ShaderMaterial_r4llb")
-infinite = true
-random_flip = true
-uniform_scale = 0.7631043957984558
-
-[sub_resource type="Resource" id="Resource_cetxt"]
-script = ExtResource("sublayer_schema")
-display_name = "death particle2"
-velocity = Vector2(-500, 0)
-entries = Array[ExtResource("2_entry")]([SubResource("Resource_my5jj")])
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_tb80m"]
-shader = ExtResource("10_fyfw2")
-shader_parameter/dust_color = Color(1, 1, 1, 1)
-shader_parameter/alpha_strength = 0.1999999955296
-shader_parameter/twinkle_amount = 0.999999977648
-shader_parameter/frequency_min_hz = 0.16
-shader_parameter/frequency_max_hz = 0.48
-shader_parameter/halo_radius_px = 2.5
-shader_parameter/halo_strength = 0.55
-shader_parameter/halo_color = Color(1, 1, 1, 1)
+shader_parameter/halo_color = Color(1.685791, 1.1422487, 0, 0.9882353)
 shader_parameter/dust_texture = ExtResource("10_hwrvv")
 shader_parameter/random_grid = Vector2(80, 45)
 shader_parameter/is_live = true
+shader_parameter/environment_time = -1.0
 
-[sub_resource type="Resource" id="Resource_yswj4"]
+[sub_resource type="Resource" id="Resource_30i4x"]
 script = ExtResource("2_entry")
 texture = ExtResource("10_hwrvv")
-material = SubResource("ShaderMaterial_tb80m")
+material = SubResource("ShaderMaterial_frml1")
 infinite = true
 random_flip = true
 uniform_scale = 0.7631043957984558
 
-[sub_resource type="Resource" id="Resource_oy06y"]
+[sub_resource type="Resource" id="Resource_2w73s"]
 script = ExtResource("sublayer_schema")
 sublayer_id = "sublayer_262"
 display_name = "live particles2"
-velocity = Vector2(500, 0)
-entries = Array[ExtResource("2_entry")]([SubResource("Resource_yswj4")])
+velocity = Vector2(-1500, 0)
+entries = Array[ExtResource("2_entry")]([SubResource("Resource_30i4x")])
 
-[sub_resource type="Resource" id="Resource_q47rf"]
+[sub_resource type="Resource" id="Resource_frml1"]
 script = ExtResource("layer_schema")
-depth = 4
-sublayers = Array[ExtResource("sublayer_schema")]([SubResource("Resource_cetxt"), SubResource("Resource_oy06y")])
+depth = 7
+sublayers = Array[ExtResource("sublayer_schema")]([SubResource("Resource_4rgt0"), SubResource("Resource_2w73s")])
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_i36ux"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_v0x1h"]
 shader = ExtResource("10_fyfw2")
-shader_parameter/dust_color = Color(1, 1, 1, 1)
+shader_parameter/dust_color = Color(0.7216263, 0.71081907, 1, 1)
 shader_parameter/alpha_strength = 0.05999999865888
 shader_parameter/twinkle_amount = 1.0
 shader_parameter/frequency_min_hz = 0.16
 shader_parameter/frequency_max_hz = 0.48
 shader_parameter/halo_radius_px = 1.0
 shader_parameter/halo_strength = 0.55
-shader_parameter/halo_color = Color(1, 1, 1, 1)
+shader_parameter/halo_color = Color(0.7216263, 0.71081907, 1, 1)
 shader_parameter/dust_texture = ExtResource("17_poo7a")
 shader_parameter/random_grid = Vector2(80, 45)
 shader_parameter/is_live = false
+shader_parameter/environment_time = -1.0
 
-[sub_resource type="Resource" id="Resource_fnmwu"]
+[sub_resource type="Resource" id="Resource_xiwvh"]
 script = ExtResource("2_entry")
 texture = ExtResource("10_hwrvv")
-material = SubResource("ShaderMaterial_i36ux")
+material = SubResource("ShaderMaterial_v0x1h")
 infinite = true
 random_flip = true
 uniform_scale = 1.026194169869533
 
-[sub_resource type="Resource" id="Resource_6lg6g"]
+[sub_resource type="Resource" id="Resource_6m6we"]
 script = ExtResource("sublayer_schema")
 display_name = "death particles3"
-velocity = Vector2(-500, 0)
-entries = Array[ExtResource("2_entry")]([SubResource("Resource_fnmwu")])
+velocity = Vector2(1500, 0)
+entries = Array[ExtResource("2_entry")]([SubResource("Resource_xiwvh")])
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_27xw2"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_u4iel"]
 shader = ExtResource("10_fyfw2")
-shader_parameter/dust_color = Color(1, 1, 1, 1)
+shader_parameter/dust_color = Color(1.685791, 1.1422487, 0, 0.9882353)
 shader_parameter/alpha_strength = 0.05999999865888
 shader_parameter/twinkle_amount = 1.0
 shader_parameter/frequency_min_hz = 0.16
 shader_parameter/frequency_max_hz = 0.48
 shader_parameter/halo_radius_px = 1.0
 shader_parameter/halo_strength = 0.55
-shader_parameter/halo_color = Color(1, 1, 1, 1)
+shader_parameter/halo_color = Color(1.685791, 1.1422487, 0, 0.9882353)
 shader_parameter/dust_texture = ExtResource("17_poo7a")
 shader_parameter/random_grid = Vector2(80, 45)
 shader_parameter/is_live = true
+shader_parameter/environment_time = -1.0
 
-[sub_resource type="Resource" id="Resource_unx0b"]
+[sub_resource type="Resource" id="Resource_v0x1h"]
 script = ExtResource("2_entry")
 texture = ExtResource("10_hwrvv")
-material = SubResource("ShaderMaterial_27xw2")
+material = SubResource("ShaderMaterial_u4iel")
 infinite = true
 random_flip = true
 uniform_scale = 1.026194169869533
 
-[sub_resource type="Resource" id="Resource_u2mjv"]
+[sub_resource type="Resource" id="Resource_ub8rh"]
 script = ExtResource("sublayer_schema")
 sublayer_id = "sublayer_292"
 display_name = "live particles3"
-velocity = Vector2(500, 0)
-entries = Array[ExtResource("2_entry")]([SubResource("Resource_unx0b")])
+velocity = Vector2(-1500, 0)
+entries = Array[ExtResource("2_entry")]([SubResource("Resource_v0x1h")])
 
-[sub_resource type="Resource" id="Resource_5wksf"]
+[sub_resource type="Resource" id="Resource_s6k1c"]
 script = ExtResource("layer_schema")
 depth = 17
-sublayers = Array[ExtResource("sublayer_schema")]([SubResource("Resource_6lg6g"), SubResource("Resource_u2mjv")])
+sublayers = Array[ExtResource("sublayer_schema")]([SubResource("Resource_6m6we"), SubResource("Resource_ub8rh")])
 
-[sub_resource type="Resource" id="Resource_eicbu"]
+[sub_resource type="Resource" id="Resource_u4iel"]
 script = ExtResource("2_entry")
-texture = ExtResource("18_ikawn")
+texture = ExtResource("12_1yoge")
 infinite = true
-position = Vector2(-49.99347, -54.33252)
-uniform_scale = 0.7865063604369826
+position = Vector2(-54.92163, -37.967896)
+uniform_scale = 0.7765335493026375
 
-[sub_resource type="Resource" id="Resource_0a7xn"]
+[sub_resource type="Resource" id="Resource_my5jj"]
 script = ExtResource("sublayer_schema")
 display_name = "live"
 velocity = Vector2(-500, 0)
-entries = Array[ExtResource("2_entry")]([SubResource("Resource_eicbu")])
+entries = Array[ExtResource("2_entry")]([SubResource("Resource_u4iel")])
+
+[sub_resource type="Resource" id="Resource_cetxt"]
+script = ExtResource("2_entry")
+texture = ExtResource("13_fmswg")
+infinite = true
+position = Vector2(-58.696777, -1.428833)
+uniform_scale = 0.7783459976215072
+
+[sub_resource type="Resource" id="Resource_yswj4"]
+script = ExtResource("sublayer_schema")
+sublayer_id = "sublayer_78"
+display_name = "death"
+velocity = Vector2(500, 0)
+entries = Array[ExtResource("2_entry")]([SubResource("Resource_cetxt")])
+repeat_gap_max = 4.0
+
+[sub_resource type="Resource" id="Resource_oy06y"]
+script = ExtResource("layer_schema")
+sublayers = Array[ExtResource("sublayer_schema")]([SubResource("Resource_my5jj"), SubResource("Resource_yswj4")])
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ub8rh"]
+shader = ExtResource("8_screen_split")
+
+[sub_resource type="Resource" id="Resource_q47rf"]
+script = ExtResource("2_entry")
+texture = ExtResource("14_fmswg")
+material = SubResource("ShaderMaterial_ub8rh")
+infinite = true
+uniform_scale = 0.7713226591641772
+
+[sub_resource type="Resource" id="Resource_fnmwu"]
+script = ExtResource("sublayer_schema")
+display_name = "live"
+velocity = Vector2(-500, 0)
+entries = Array[ExtResource("2_entry")]([SubResource("Resource_q47rf")])
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_my5jj"]
+shader = ExtResource("7_pxfxu")
+
+[sub_resource type="Resource" id="Resource_6lg6g"]
+script = ExtResource("2_entry")
+texture = ExtResource("15_rncxg")
+material = SubResource("ShaderMaterial_my5jj")
+infinite = true
+position = Vector2(-49.079346, -31.319092)
+uniform_scale = 0.7746554103005822
+
+[sub_resource type="Resource" id="Resource_unx0b"]
+script = ExtResource("sublayer_schema")
+sublayer_id = "sublayer_83"
+display_name = "death"
+velocity = Vector2(500, 0)
+entries = Array[ExtResource("2_entry")]([SubResource("Resource_6lg6g")])
+
+[sub_resource type="Resource" id="Resource_u2mjv"]
+script = ExtResource("layer_schema")
+depth = 5
+sublayers = Array[ExtResource("sublayer_schema")]([SubResource("Resource_fnmwu"), SubResource("Resource_unx0b")])
+
+[sub_resource type="Resource" id="Resource_5wksf"]
+script = ExtResource("2_entry")
+texture = ExtResource("10_u1exl")
+infinite = true
+position = Vector2(-358.65674, 0)
+uniform_scale = 0.7516559034386094
+
+[sub_resource type="Resource" id="Resource_eicbu"]
+script = ExtResource("sublayer_schema")
+display_name = "live"
+velocity = Vector2(-500, 0)
+entries = Array[ExtResource("2_entry")]([SubResource("Resource_5wksf")])
+
+[sub_resource type="Resource" id="Resource_0a7xn"]
+script = ExtResource("2_entry")
+texture = ExtResource("17_mu708")
+infinite = true
+position = Vector2(-358.65674, 0)
+uniform_scale = 0.7516559034386094
 
 [sub_resource type="Resource" id="Resource_yi155"]
+script = ExtResource("sublayer_schema")
+sublayer_id = "sublayer_87"
+display_name = "death"
+velocity = Vector2(500, 0)
+entries = Array[ExtResource("2_entry")]([SubResource("Resource_0a7xn")])
+
+[sub_resource type="Resource" id="Resource_ycne6"]
+script = ExtResource("layer_schema")
+depth = 9
+sublayers = Array[ExtResource("sublayer_schema")]([SubResource("Resource_eicbu"), SubResource("Resource_yi155")])
+
+[sub_resource type="Resource" id="Resource_1t81y"]
+script = ExtResource("2_entry")
+texture = ExtResource("18_ikawn")
+infinite = true
+position = Vector2(-54.921753, 0)
+uniform_scale = 0.7760408013840708
+
+[sub_resource type="Resource" id="Resource_2ptk6"]
+script = ExtResource("sublayer_schema")
+display_name = "live"
+velocity = Vector2(-500, 0)
+entries = Array[ExtResource("2_entry")]([SubResource("Resource_1t81y")])
+
+[sub_resource type="Resource" id="Resource_2elr2"]
 script = ExtResource("2_entry")
 texture = ExtResource("19_jix0n")
 infinite = true
-position = Vector2(-69.71936, -40.738037)
-uniform_scale = 0.7959469222504008
+position = Vector2(-56.441284, -39.018433)
+uniform_scale = 0.7765855170007172
 
-[sub_resource type="Resource" id="Resource_ycne6"]
+[sub_resource type="Resource" id="Resource_kvqs8"]
 script = ExtResource("sublayer_schema")
-sublayer_id = "sublayer_192"
+sublayer_id = "sublayer_91"
 display_name = "death"
-entries = Array[ExtResource("2_entry")]([SubResource("Resource_yi155")])
+velocity = Vector2(500, 0)
+entries = Array[ExtResource("2_entry")]([SubResource("Resource_2elr2")])
 
-[sub_resource type="Resource" id="Resource_1t81y"]
+[sub_resource type="Resource" id="Resource_e8skq"]
 script = ExtResource("layer_schema")
-sublayers = Array[ExtResource("sublayer_schema")]([SubResource("Resource_0a7xn"), SubResource("Resource_ycne6")])
+depth = 13
+sublayers = Array[ExtResource("sublayer_schema")]([SubResource("Resource_2ptk6"), SubResource("Resource_kvqs8")])
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_kvqs8"]
+shader = ExtResource("8_screen_split")
+
+[sub_resource type="Resource" id="Resource_3xuay"]
+script = ExtResource("2_entry")
+sprite_frames = ExtResource("20_jix0n")
+material = SubResource("ShaderMaterial_kvqs8")
+infinite = true
+position = Vector2(1.125, -13.220459)
+uniform_scale = 0.4628664768048088
+
+[sub_resource type="Resource" id="Resource_nv1hm"]
+script = ExtResource("sublayer_schema")
+display_name = "live"
+velocity = Vector2(-500, 0)
+entries = Array[ExtResource("2_entry")]([SubResource("Resource_3xuay")])
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_nv1hm"]
+shader = ExtResource("7_pxfxu")
+
+[sub_resource type="Resource" id="Resource_vwnxh"]
+script = ExtResource("2_entry")
+sprite_frames = ExtResource("21_lb3c7")
+material = SubResource("ShaderMaterial_nv1hm")
+infinite = true
+uniform_scale = 0.4631744472621844
+
+[sub_resource type="Resource" id="Resource_j7ber"]
+script = ExtResource("sublayer_schema")
+sublayer_id = "sublayer_319"
+display_name = "death"
+velocity = Vector2(500, 0)
+entries = Array[ExtResource("2_entry")]([SubResource("Resource_vwnxh")])
+
+[sub_resource type="Resource" id="Resource_26wwf"]
+script = ExtResource("layer_schema")
+depth = 20
+sublayers = Array[ExtResource("sublayer_schema")]([SubResource("Resource_nv1hm"), SubResource("Resource_j7ber")])
+
+[sub_resource type="Resource" id="Resource_2ywng"]
+script = ExtResource("2_entry")
+texture = ExtResource("22_886ms")
+infinite = true
+position = Vector2(0, 53.24414)
+uniform_scale = 0.7178002301446936
+
+[sub_resource type="Resource" id="Resource_isf0x"]
+script = ExtResource("sublayer_schema")
+display_name = "live"
+velocity = Vector2(-500, 0)
+entries = Array[ExtResource("2_entry")]([SubResource("Resource_2ywng")])
+
+[sub_resource type="Resource" id="Resource_18wov"]
+script = ExtResource("2_entry")
+texture = ExtResource("23_oc2e1")
+infinite = true
+uniform_scale = 0.7203376204298324
+
+[sub_resource type="Resource" id="Resource_f7paj"]
+script = ExtResource("sublayer_schema")
+sublayer_id = "sublayer_363"
+display_name = "death"
+velocity = Vector2(500, 0)
+entries = Array[ExtResource("2_entry")]([SubResource("Resource_18wov")])
+
+[sub_resource type="Resource" id="Resource_r1u83"]
+script = ExtResource("layer_schema")
+depth = 30
+sublayers = Array[ExtResource("sublayer_schema")]([SubResource("Resource_isf0x"), SubResource("Resource_f7paj")])
 
 [resource]
 script = ExtResource("1_background")
-layers = Array[ExtResource("layer_schema")]([SubResource("Resource_oc2e1"), SubResource("Resource_y61e6"), SubResource("Resource_7p8pw"), SubResource("Resource_30i4x"), SubResource("Resource_v0x1h"), SubResource("Resource_u4iel"), SubResource("Resource_q47rf"), SubResource("Resource_5wksf"), SubResource("Resource_1t81y")])
+layers = Array[ExtResource("layer_schema")]([SubResource("Resource_y8k7y"), SubResource("Resource_ytujj"), SubResource("Resource_fqtrm"), SubResource("Resource_frml1"), SubResource("Resource_s6k1c"), SubResource("Resource_oy06y"), SubResource("Resource_u2mjv"), SubResource("Resource_ycne6"), SubResource("Resource_e8skq"), SubResource("Resource_26wwf"), SubResource("Resource_r1u83")])

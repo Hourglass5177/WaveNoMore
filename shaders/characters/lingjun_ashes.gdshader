@@ -6,9 +6,18 @@ uniform float age = 0.0;
 uniform float duration = 0.65;
 uniform float spread_px = 95.0;
 uniform vec4 ash_color : source_color = vec4(0.78, 0.75, 0.69, 1.0);
+
+// 一下的 uniform 变量用于控制颜色混合，和 lingjun.gdshader 中的变量保持一致。
+uniform float stength = 0.0;
+uniform vec4 target_color : source_color;
+
 varying float kind;
 varying float seed;
 varying vec2 source_uv;
+
+vec4 mix_color(vec4 texel) {
+    return vec4(mix(texel.rgb, target_color.rgb, stength), texel.a);
+}
 
 void vertex() {
 	// 沿用音符碎片网格中的中心、编号与类型编码；运动沿角色自己的上方轻轻飘散。
@@ -28,20 +37,22 @@ void vertex() {
 
 void fragment() {
 	float progress = clamp(age / duration, 0.0, 1.0);
+    vec4 tempCOLOR;
 	if (kind > 0.75) {
 		float coverage = texture(TEXTURE, source_uv).a;
 		float radius = length(UV * 2.0 - 1.0);
 		float fade = smoothstep(0.0, 0.12, age) * (1.0 - smoothstep(0.22, duration, age));
-		COLOR = vec4(ash_color.rgb, coverage * exp(-radius * radius * 3.8) * fade * 0.65);
+		tempCOLOR = vec4(ash_color.rgb, coverage * exp(-radius * radius * 3.8) * fade * 0.65);
 	} else {
 		vec4 texel = texture(TEXTURE, UV);
 		float fade = 1.0 - smoothstep(0.13 + seed * 0.10, duration - 0.06 + seed * 0.06, age);
 		if (kind > 0.25) {
 			float edge = smoothstep(0.0, 0.06, age) * (1.0 - smoothstep(0.08, 0.23, age));
-			COLOR = vec4(ash_color.rgb, texel.a * edge * 0.25);
+			tempCOLOR = vec4(ash_color.rgb, texel.a * edge * 0.25);
 		} else {
 			vec3 color = mix(texel.rgb, ash_color.rgb * dot(texel.rgb, vec3(0.25, 0.55, 0.20)), progress * 0.35);
-			COLOR = vec4(color, texel.a * fade);
+			tempCOLOR = vec4(color, texel.a * fade);
 		}
 	}
+    COLOR = mix_color(tempCOLOR);
 }

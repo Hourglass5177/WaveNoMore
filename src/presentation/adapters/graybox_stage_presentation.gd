@@ -200,6 +200,8 @@ func configure(stage: StageDefinition) -> void:
 		_instance_if_present(visual_theme.life_bell_scene, _life_actor_slot)
 		_death_actor = _instance_if_present(visual_theme.death_actor_scene, _death_actor_slot)
 		_instance_if_present(visual_theme.death_bell_scene, _death_actor_slot)
+		_apply_lingjun_tint(_life_actor, visual_theme.life_lingjun_target_color, visual_theme.life_lingjun_color_strength)
+		_apply_lingjun_tint(_death_actor, visual_theme.death_lingjun_target_color, visual_theme.death_lingjun_color_strength)
 		_instance_if_present(visual_theme.boundary_scene, _boundary_slot)
 	_reset_preview_actors()
 
@@ -698,6 +700,8 @@ func update_preview_palette(visual_theme: StageVisualTheme) -> void:
 	_apply_palette(visual_theme)
 
 func _apply_palette(visual_theme: StageVisualTheme) -> void:
+	if visual_theme == null:
+		return
 	# 波与音符共享全局阵营色；世界背景继续使用场景自身的对照配色。
 	var note_style: NoteEffectStyle = GrayboxNoteVisual.EFFECT_STYLE
 	_backdrop.life_color = visual_theme.life_color
@@ -726,7 +730,42 @@ func _apply_palette(visual_theme: StageVisualTheme) -> void:
 		visual_theme.su_color,
 		visual_theme.ink_color
 	)
+	_apply_lingjun_tint(_life_actor, visual_theme.life_lingjun_target_color, visual_theme.life_lingjun_color_strength)
+	_apply_lingjun_tint(_death_actor, visual_theme.death_lingjun_target_color, visual_theme.death_lingjun_color_strength)
 	_backdrop.queue_redraw()
+
+
+## 将主题色偏同步到角色本体和其独立的灰烬材质；不触碰灰烬生命周期参数。
+func _apply_lingjun_tint(actor: Node, target_color: Color, strength: float) -> void:
+	if not is_instance_valid(actor):
+		return
+	# SpineSprite 的骨架绘制走 normal_material；普通 CanvasItem 才使用 material。
+	# 优先处理 Spine 通道，否则设置到根节点 material 不会影响实际骨架绘制。
+	var is_spine_actor := actor.is_class("SpineSprite")
+	var body_material := actor.get("normal_material") as ShaderMaterial if is_spine_actor else actor.get("material") as ShaderMaterial
+	var body_material_property: StringName = &"normal_material" if is_spine_actor else &"material"
+	# 旧角色场景可能把材质写在根 material；迁移到 Spine 的实际绘制通道。
+	if is_spine_actor and body_material == null:
+		body_material = actor.get("material") as ShaderMaterial
+	if body_material != null and body_material.shader != null:
+		if not actor.has_meta("_lingjun_tint_materialized"):
+			body_material = body_material.duplicate(false) as ShaderMaterial
+			actor.set(body_material_property, body_material)
+			actor.set_meta("_lingjun_tint_materialized", true)
+		body_material.set_shader_parameter(&"stength", clampf(strength, 0.0, 1.0))
+		body_material.set_shader_parameter(&"target_color", target_color)
+	var ashes := actor.get_node_or_null("Ashes") as MeshInstance2D
+	if ashes == null:
+		return
+	var ashes_material := ashes.material as ShaderMaterial
+	if ashes_material == null or ashes_material.shader == null:
+		return
+	if not ashes.has_meta("_lingjun_tint_materialized"):
+		ashes_material = ashes_material.duplicate(false) as ShaderMaterial
+		ashes.material = ashes_material
+		ashes.set_meta("_lingjun_tint_materialized", true)
+	ashes_material.set_shader_parameter(&"stength", clampf(strength, 0.0, 1.0))
+	ashes_material.set_shader_parameter(&"target_color", target_color)
 
 
 func _instance_if_present(scene: PackedScene, target: Node2D) -> Node:

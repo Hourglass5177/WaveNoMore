@@ -18,6 +18,8 @@ extends Resource
 @export var infinite: bool = false
 ## 无限拼接时让每个重复单元稳定随机水平/垂直翻转。
 @export var random_flip: bool = false
+## 从其他场景切入时，直接整层交叉淡化，不等待旧素材循环接缝。
+@export var direct_transition: bool = false
 ## 素材左上角的设计画布位置。
 @export var position: Vector2 = Vector2.ZERO
 ## 素材自身的等比缩放倍率；与视差深度无关，不允许翻转。

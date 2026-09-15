@@ -235,7 +235,7 @@ func signature() -> Array:
 		result.append([record.get("layer_name",""),record.id, record.depth, record.resource.sublayer_id, record.resource.display_name, record.resource.velocity, record.resource.continuity_id, record.resource.cycle_direction, record.resource.cycle_start, record.resource.cycle_end, record.resource.horizontal_random_repeat, record.resource.repeat_gap_min, record.resource.repeat_gap_max, record.resource.repeat_seed])
 	for item in items:
 		var value: StageBackgroundEntry = item.entry
-		result.append([item.sublayer, value.texture, value.sprite_frames, value.scene, value.animation, value.infinite, value.random_flip, value.position, value.uniform_scale, value.material])
+		result.append([item.sublayer, value.texture, value.sprite_frames, value.scene, value.animation, value.infinite, value.random_flip, value.direct_transition, value.position, value.uniform_scale, value.material])
 	return result
 
 
@@ -352,6 +352,9 @@ func validation_error() -> String:
 		if identities.has(identity):return "对应层标识重复："+identity
 		identities[identity]=true
 		if not value.velocity.is_finite(): return "子层速度必须为有限数值。"
+		if value.horizontal_random_repeat:
+			var repeat_issue := ParallaxController.horizontal_repeat_issue(value)
+			if not repeat_issue.is_empty(): return "%s：%s" % [value.display_name, repeat_issue]
 		names[key] = true
 	for index in items.size():
 		if sublayer_record(items[index].sublayer).is_empty(): return "素材必须属于子层。"
