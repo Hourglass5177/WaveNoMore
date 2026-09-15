@@ -93,12 +93,19 @@ func build(initial: StageBackgroundDefinition, cues: Array, resolve: Callable, d
 				var outgoing := layer.cycle(reference.depth, base_velocity)
 				var origin: float = outgoing.start + axis.dot(source.offset)
 				# 选择连渐变前沿也尚未入画的最近接缝，屏内已有的循环格不换图。
-				seam = bounds.x - width * 0.5 - position if active.is_empty() else origin + floorf((bounds.x - width * 0.5 - position - origin) / outgoing.length) * outgoing.length
+				if active.is_empty():
+					seam = bounds.x - width * 0.5 - position
+				elif outgoing.horizontal_random_repeat:
+					var random_layout := HorizontalRepeatLayout.new(); random_layout.configure(layer)
+					var source_projection := axis.dot(source.offset)
+					seam = random_layout.boundary_before(bounds.x - width * 0.5 - position - source_projection) + source_projection
+				else:
+					seam = origin + floorf((bounds.x - width * 0.5 - position - origin) / outgoing.length) * outgoing.length
 				enter = _arrival(lane, bounds.x - width * 0.5 - seam, ready)
 				finish = _arrival(lane, bounds.y + width * 0.5 - seam, enter)
 				if not next.is_empty():
 					var incoming: Dictionary = next.resource.cycle(next.depth, base_velocity)
-					offset = axis * (seam - float(incoming.end))
+					offset = axis * (seam - float(incoming.start if incoming.horizontal_random_repeat else incoming.end))
 			var transition := {"cue_id": str(cue.id), "layer_id": key, "name": lane.name, "section": str(cue.get("section", "song")), "request_us": requested, "ready_us": ready, "enter_us": enter, "finish_us": finish, "seam": seam, "width": width, "static": stationary or direct_transition, "direction": axis}
 			transitions.append(transition); lane.transitions.append(transition)
 			source["outgoing"] = transition
@@ -133,6 +140,8 @@ static func _same(a: Dictionary, b: Dictionary) -> bool:
 	var left: StageBackgroundSubLayer = a.resource
 	var right: StageBackgroundSubLayer = b.resource
 	if left == right: return true
+	for property in ["horizontal_random_repeat", "repeat_gap_min", "repeat_gap_max", "repeat_seed"]:
+		if left.get(property) != right.get(property): return false
 	if left.cycle_start!=right.cycle_start or left.cycle_end!=right.cycle_end or left.cycle_direction!=right.cycle_direction:return false
 	if left.velocity != right.velocity or left.entries.size() != right.entries.size(): return false
 	for index in left.entries.size():
@@ -145,7 +154,7 @@ static func _same(a: Dictionary, b: Dictionary) -> bool:
 static func _layer_values(record:Dictionary) -> Array:
 	if record.is_empty():return []
 	var layer:StageBackgroundSubLayer=record.resource
-	var values:Array=[record.depth,layer.display_name,layer.velocity,layer.cycle_start,layer.cycle_end,layer.cycle_direction]
+	var values:Array=[record.depth,layer.display_name,layer.velocity,layer.cycle_start,layer.cycle_end,layer.cycle_direction,layer.horizontal_random_repeat,layer.repeat_gap_min,layer.repeat_gap_max,layer.repeat_seed]
 	for entry in layer.entries:
 		values.append([entry.texture,entry.sprite_frames,entry.scene,entry.animation,entry.material,entry.infinite,entry.random_flip,entry.direct_transition,entry.position,entry.uniform_scale])
 	return values

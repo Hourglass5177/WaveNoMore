@@ -31,7 +31,7 @@ func continuity_key(depth: int) -> String:
 
 func cycle(depth: int, camera_velocity := Vector2.ZERO) -> Dictionary:
 	var velocity_actual := (velocity - camera_velocity) / float(depth) if depth != 0 else Vector2.ZERO
-	var direction := cycle_direction.normalized() if not cycle_direction.is_zero_approx() else velocity_actual.normalized()
+	var direction := Vector2.RIGHT if horizontal_random_repeat else (cycle_direction.normalized() if not cycle_direction.is_zero_approx() else velocity_actual.normalized())
 	if direction.is_zero_approx(): direction = Vector2.RIGHT
 	var lower := INF
 	var upper := -INF

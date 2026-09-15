@@ -90,6 +90,11 @@ enum SemanticInputKind {
 	DEATH_A_RELEASED = 5,
 	DEATH_B_PRESSED = 6,
 	DEATH_B_RELEASED = 7,
+	## 兼容未区分设备通道的旧语义名称；运行时会按实际来源发出 A/B 事件。
+	LIFE_PRESSED = LIFE_A_PRESSED,
+	LIFE_RELEASED = LIFE_A_RELEASED,
+	DEATH_PRESSED = DEATH_A_PRESSED,
+	DEATH_RELEASED = DEATH_A_RELEASED,
 	## 摇杆旋转、触屏或鼠标拖动产生的相对调频位移。X=生钟，Y=死钟。
 	TUNING_DISPLACED = 8,
 	FOCUS_CANCELLED = 9,

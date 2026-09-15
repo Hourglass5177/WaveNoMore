@@ -3,6 +3,7 @@ class_name StageEnvironmentSlice
 extends Node
 ## 一个来源子层的可见片段。原材质先照常绘制，再在合成时施加接缝权重。
 const Repeat = preload("res://src/presentation/parallax/parallax_repeat.gd")
+const HorizontalView = preload("res://src/presentation/parallax/horizontal_repeat_view.gd")
 var direct_container: Node2D
 var direct_mode := false
 var source_layer: StageBackgroundSubLayer
@@ -20,6 +21,11 @@ func configure(layer: StageBackgroundSubLayer, motion: BoundaryMotion = null) ->
 	viewport.size_2d_override=Vector2i(1920,1080);viewport.size_2d_override_stretch=true
 	viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS; add_child(viewport)
 	texture = viewport.get_texture()
+	if layer.horizontal_random_repeat:
+		var horizontal := HorizontalView.new(); viewport.add_child(horizontal)
+		horizontal.configure(layer, Vector2.ZERO, 1, true, 0, motion)
+		views.append(horizontal)
+		return
 	for entry in layer.entries:
 		var object: Node2D
 		if entry.texture != null:
@@ -45,11 +51,15 @@ func configure(layer: StageBackgroundSubLayer, motion: BoundaryMotion = null) ->
 
 func sample(state: Dictionary, axis: Vector2, canvas: Transform2D) -> void:
 	if not direct_mode:viewport.render_target_update_mode=SubViewport.UPDATE_ONCE
-	for view in views: view.update_camera(-state.shift)
+	for view in views:
+		view.update_camera(-state.shift)
+		if view.has_method("set_song_time"): view.set_song_time(state.local_sec)
 	for sprite in animations: ParallaxController.sample_animation(sprite, state.local_sec)
 	for shader in timed_materials: shader.set_shader_parameter("environment_time", state.local_sec)
 
 func sample_boundary(seconds: float, beat: float) -> void:
+	for view in views:
+		if view.has_method("sample_boundary"): view.sample_boundary(seconds, beat)
 	for shader in boundary_materials: BoundaryMotion.sample(shader, seconds, beat)
 	for object in background_scenes:
 		if object.has_method("sample_background"): object.sample_background(seconds)

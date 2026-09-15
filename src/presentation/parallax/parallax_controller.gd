@@ -4,6 +4,7 @@ class_name ParallaxController
 extends Node2D
 
 const RepeatView = preload("res://src/presentation/parallax/parallax_repeat.gd")
+const HorizontalView = preload("res://src/presentation/parallax/horizontal_repeat_view.gd")
 
 class DepthLayer extends Node2D:
 	var depth: int
@@ -31,6 +32,7 @@ var _layers: Dictionary[int, DepthLayer] = {}
 var _objects: Dictionary[int, Registration] = {}
 var _configured_objects: Array[Node2D] = []
 var _animations: Array[AnimatedSprite2D] = []
+var _horizontal_views: Array[Dictionary] = []
 var boundary_motion := BoundaryMotion.new()
 var _boundary_materials: Array[Dictionary] = []
 var _background_scenes: Array[Node2D] = []
@@ -184,6 +186,8 @@ func set_camera_position(position: Vector2) -> void:
 	_sync_canvas_transform()
 	for record: Registration in _objects.values():
 		record.view.update_camera(position - record.sublayer.velocity * _song_time)
+	for record: Dictionary in _horizontal_views:
+		record.view.update_camera(position - record.sublayer.velocity * _song_time)
 
 
 ## 设置子层 X/Y 速度（设计像素/秒）。按当前绝对歌曲时间重新采样，不写回资源。
@@ -214,14 +218,29 @@ func get_camera_position() -> Vector2:
 
 ## 按 layers → sublayers → entries 的遍历索引获取真实精灵，供编辑器选框使用。
 func get_configured_object(index: int) -> Node2D:
-	if index < 0 or index >= _configured_objects.size():
-		return null
+	var objects: Array[Node2D] = get_configured_objects(index)
+	return objects[0] if not objects.is_empty() else null
+
+## 返回素材在随机横向链中的全部当前可见实例，普通素材只返回原节点。
+func get_configured_objects(index: int) -> Array[Node2D]:
+	var result: Array[Node2D] = []
+	for record: Dictionary in _horizontal_views:
+		if index >= record.start and index < record.start + record.count:
+			return record.view.objects_for_entry(index)
+	if index < 0 or index >= _configured_objects.size(): return result
 	var object := _configured_objects[index]
-	return object if is_instance_valid(object) else null
+	if is_instance_valid(object): result.append(object)
+	return result
+
+func set_configured_visible(index: int, visible: bool) -> void:
+	for record: Dictionary in _horizontal_views:
+		if index >= record.start and index < record.start + record.count:
+			record.view.set_entry_visible(index, visible); return
+	for object in get_configured_objects(index): object.visible = visible
 
 
 ## 装配本关素材。配置错误返回原因；运行实例不写回共享资源。
-func configure(definition: StageBackgroundDefinition, apply_materials: bool = true) -> String:
+func configure(definition: StageBackgroundDefinition, apply_materials: bool = true, apply_horizontal_repeat: bool = true) -> String:
 	clear()
 	if definition == null:
 		return ""
@@ -239,12 +258,43 @@ func configure(definition: StageBackgroundDefinition, apply_materials: bool = tr
 				return "背景子层为空、标识重复或速度无效。"
 			ids[sublayer.sublayer_id] = true
 			_get_sublayer(layer.depth, sublayer.sublayer_id).velocity = sublayer.velocity
-			for entry in sublayer.entries:
-				var issue := _configure_entry(entry, layer.depth, sublayer.sublayer_id, apply_materials)
-				if not issue.is_empty():
-					clear()
-					return issue
+			if sublayer.horizontal_random_repeat and apply_horizontal_repeat:
+				var issue := _configure_horizontal_sublayer(sublayer, layer.depth, apply_materials)
+				if not issue.is_empty(): clear(); return issue
+			else:
+				for entry in sublayer.entries:
+					var issue := _configure_entry(entry, layer.depth, sublayer.sublayer_id, apply_materials)
+					if not issue.is_empty(): clear(); return issue
 	set_song_time(0.0)
+	return ""
+
+func _configure_horizontal_sublayer(sublayer: StageBackgroundSubLayer, depth: int, apply_materials: bool) -> String:
+	if sublayer.entries.is_empty(): return ""
+	var issue := horizontal_repeat_issue(sublayer)
+	if not issue.is_empty(): return issue
+	var start := _configured_objects.size()
+	for entry in sublayer.entries: _configured_objects.append(null)
+	var parent := _get_sublayer(depth, sublayer.sublayer_id)
+	var view := HorizontalView.new(); parent.add_child(view)
+	view.configure(sublayer, _camera_position - parent.velocity * _song_time, depth, apply_materials, start, boundary_motion)
+	_horizontal_views.append({"view": view, "sublayer": parent, "start": start, "count": sublayer.entries.size()})
+	return ""
+
+static func horizontal_repeat_issue(sublayer: StageBackgroundSubLayer) -> String:
+	if sublayer.entries.is_empty(): return ""
+	if not is_finite(sublayer.repeat_gap_min) or not is_finite(sublayer.repeat_gap_max) or sublayer.repeat_gap_min > sublayer.repeat_gap_max:
+		return "横向随机拼接的最小间隙必须小于等于最大间隙。"
+	var minimum_width := INF
+	for entry: StageBackgroundEntry in sublayer.entries:
+		if entry == null or entry.source_count() != 1 or entry.scene != null: return "横向随机拼接只支持静态纹理和 SpriteFrames。"
+		var size := HorizontalRepeatLayout.entry_size(entry)
+		if size.x <= 0.0 or size.y <= 0.0: return "横向随机拼接素材的画布尺寸无效。"
+		if entry.sprite_frames != null:
+			for frame in entry.sprite_frames.get_frame_count(entry.animation):
+				var texture := entry.sprite_frames.get_frame_texture(entry.animation, frame)
+				if texture == null or texture.get_size() != size: return "横向随机拼接动画的所有帧画布必须一致。"
+		minimum_width = minf(minimum_width, size.x * entry.uniform_scale)
+	if minimum_width + sublayer.repeat_gap_min < 1.0: return "横向随机拼接的最窄素材加最小间隙必须至少前进 1 像素。"
 	return ""
 
 
@@ -307,6 +357,7 @@ func set_song_time(song_time: float, apply_motion: bool = true) -> void:
 		if not is_instance_valid(sprite):
 			continue
 		sample_animation(sprite, song_time)
+	for record: Dictionary in _horizontal_views: record.view.set_song_time(song_time)
 
 ## 一局只装载一次策划值；共享贴图与材质资源不被回写。
 func configure_boundary(chart: SongChart, first_beat_offset: float, planning: Dictionary) -> void:
@@ -351,6 +402,7 @@ func clear() -> void:
 			object.queue_free()
 	_configured_objects.clear()
 	_animations.clear()
+	_horizontal_views.clear()
 	_boundary_materials.clear()
 	_background_scenes.clear()
 	_camera_position = Vector2.ZERO
@@ -442,6 +494,8 @@ func _process(_delta: float) -> void:
 	for record: Registration in _objects.values():
 		if record.infinite:
 			record.view.update_camera(_camera_position - record.sublayer.velocity * _song_time)
+	for record: Dictionary in _horizontal_views:
+		record.view.update_camera(_camera_position - record.sublayer.velocity * _song_time)
 
 
 func _sync_canvas_transform() -> void:

@@ -589,7 +589,9 @@ func _sublayer_property_changed(value: float, key: String) -> void:
 
 func _change_sublayer(key: String, value: Variant) -> void:
 	var record := document.sublayer_record(document.selected_sublayer_id)
-	if not record.is_empty(): document.change_sublayer(record.id, key, value)
+	if record.is_empty(): return
+	if not document.change_sublayer(record.id, key, value):
+		_status.text = "最小间隙不能大于最大间隙。"
 
 
 func _change_entry(key: String, value: Variant) -> void:

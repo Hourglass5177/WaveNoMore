@@ -128,13 +128,12 @@ func refresh() -> void:
 	message = document.validation_error()
 	controller.clear()
 	_images.clear()
-	if message.is_empty(): message = controller.configure(document.definition(), preview)
+	if message.is_empty(): message = controller.configure(document.definition(), preview, preview)
 	controller.set_song_time(song_time, preview)
 	controller.set_camera_position(camera)
 	var ids := document.configured_ids()
 	for index in ids.size():
-		var object := controller.get_configured_object(index)
-		if object != null: object.visible = not document.hidden.has(ids[index])
+		controller.set_configured_visible(index, not document.hidden.has(ids[index]))
 	if preview and environment_target!=null:
 		var sequence:=StageEnvironmentSequence.new()
 		sequence.build(document.definition(),[{"id":"preview","asset":"next","time_us":1000000,"effect":cycle_effect}],func(_id):return environment_target,"",Vector3i(0,120000000,0))
@@ -167,19 +166,17 @@ func set_preview(value: bool) -> void:
 func hit(point: Vector2) -> int:
 	for id in document.front_ids():
 		if document.hidden.has(id) or document.locked.has(id): continue
-		var object := controller.get_configured_object(document.configured_index(id))
-		if object == null: continue
-		var local := object.get_global_transform_with_canvas().affine_inverse() * point
-		var extent := entry_size(id)
-		if document.entry(id).infinite:
-			local = Vector2(fposmod(local.x, extent.x), fposmod(local.y, extent.y))
-		if not Rect2(Vector2.ZERO, extent).has_point(local): continue
-		if not object is Sprite2D and not object is AnimatedSprite2D: return id
-		var image_texture: Texture2D = object.texture if object is Sprite2D else object.sprite_frames.get_frame_texture(object.animation, object.frame)
-		if not _images.has(image_texture): _images[image_texture] = image_texture.get_image()
-		var image: Image = _images[image_texture]
-		if image == null or image.is_empty() or image.get_pixel(clampi(int(local.x), 0, image.get_width() - 1), clampi(int(local.y), 0, image.get_height() - 1)).a > 0.05:
-			return id
+		for object in controller.get_configured_objects(document.configured_index(id)):
+			var local := object.get_global_transform_with_canvas().affine_inverse() * point
+			var extent := entry_size(id)
+			if document.entry(id).infinite and not document.sublayer_record(document.sublayer_of(id)).resource.horizontal_random_repeat:
+				local = Vector2(fposmod(local.x, extent.x), fposmod(local.y, extent.y))
+			if not Rect2(Vector2.ZERO, extent).has_point(local): continue
+			if not object is Sprite2D and not object is AnimatedSprite2D: return id
+			var image_texture: Texture2D = object.texture if object is Sprite2D else object.sprite_frames.get_frame_texture(object.animation, object.frame)
+			if not _images.has(image_texture): _images[image_texture] = image_texture.get_image()
+			var image: Image = _images[image_texture]
+			if image == null or image.is_empty() or image.get_pixel(clampi(int(local.x), 0, image.get_width() - 1), clampi(int(local.y), 0, image.get_height() - 1)).a > 0.05: return id
 	return -1
 
 
