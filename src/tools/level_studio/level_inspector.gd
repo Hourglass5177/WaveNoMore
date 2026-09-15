@@ -180,6 +180,7 @@ func _level() -> void:
 	var scene_ids:=[];var scene_names:=[]
 	for stage in ChartSceneLibrary.shared().all_stages():scene_ids.append(stage.stage_id);scene_names.append(stage.display_name)
 	LevelUI.choice(self,"基础主题",scene_ids,str(level.scene_id),func(value):workspace.document.fields("切换基础主题",{"scene_id":value}),scene_names)
+	LevelEnvironmentPanel.initial_controls(self,workspace)
 	LevelUI.text_field(self,"关卡 ID",str(level.level_id),func(value):workspace.document.fields("关卡标识",{"level_id":value}))
 	for pair in [["标题","title"],["作者","author"],["说明","description"],["封面素材","cover"],["下一关 ID","next_stage_id"]]:
 		LevelUI.text_field(self,pair[0],str(level.get(pair[1],"")),func(value): workspace.document.fields("修改关卡设置",{pair[1]:value}))
@@ -266,6 +267,7 @@ func _batch_values(value: Variant, field := "value", axis := -1) -> void:
 
 func sync_fields() -> void:
 	if workspace==null:return
+	LevelEnvironmentPanel.update_initial(self,workspace)
 	if workspace.inspector_mode=="level":_sync_level_fields();return
 	if workspace.inspector_mode!="properties" or workspace.selected_track=="@environment":return
 	var doc: LevelDocument=workspace.document

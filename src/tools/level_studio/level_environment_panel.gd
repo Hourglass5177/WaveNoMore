@@ -4,10 +4,7 @@ extends RefCounted
 static func build(panel: VBoxContainer, workspace) -> void:
 	var doc: LevelDocument = workspace.document
 	LevelUI.label(panel,"环境场景",18)
-	var initial:=str(doc.data.get("initial_background",""))
-	LevelUI.label(panel,"初始环境 · "+workspace.environment_name(initial if not initial.is_empty() else "stage:"+str(doc.data.scene_id)),12)
-	LevelUI.button(panel,"选择初始环境",func():workspace.choose_environment(func(asset):doc.fields("选择初始环境",{"initial_background":asset})))
-	if not initial.is_empty():LevelUI.button(panel,"恢复沿用基础场景背景",func():doc.fields("恢复初始环境",{"initial_background":""}))
+	initial_controls(panel,workspace)
 	LevelUI.button(panel,"在游标处添加换景",func():workspace.choose_environment(func(asset):workspace.add_environment_cue(asset,workspace.time_us)))
 	var cues:Array=doc.entries("scene_cues").filter(func(cue):return cue.id in workspace.selected_items)
 	if cues.is_empty():
@@ -66,6 +63,21 @@ static func build(panel: VBoxContainer, workspace) -> void:
 			if not values.has(layer_id):values[layer_id]={}
 			values[layer_id][key]=value;workspace.set_environment_field("layers",values))
 	update_times(panel,workspace)
+
+static func initial_controls(panel: Control, workspace) -> void:
+	var caption:=LevelUI.label(panel,"",12);caption.set_meta("initial_environment_caption",true)
+	LevelUI.button(panel,"选择初始环境",func():
+		var current: String=workspace.document.data.get("initial_background","")
+		workspace.choose_environment(func(asset):workspace.document.fields("选择初始环境",{"initial_background":asset}),current if not current.is_empty() else "stage:"+str(workspace.document.data.scene_id)))
+	var reset:=LevelUI.button(panel,"恢复沿用基础场景背景",func():workspace.document.fields("恢复初始环境",{"initial_background":""}));reset.set_meta("initial_environment_reset",true)
+	update_initial(panel,workspace)
+
+static func update_initial(panel: Control, workspace) -> void:
+	# 名称和沿用按钮随选择、撤销同步，不重建正在操作的属性控件。
+	var initial: String=workspace.document.data.get("initial_background","")
+	for control in panel.get_children():
+		if control.has_meta("initial_environment_caption"):control.text="初始环境 · "+workspace.environment_name(initial if not initial.is_empty() else "stage:"+str(workspace.document.data.scene_id))
+		elif control.has_meta("initial_environment_reset"):control.visible=not initial.is_empty()
 
 ## 派生时间单独更新，数值拖动时保留正在输入的控件和焦点。
 static func update_times(panel:Control,workspace) -> void:
