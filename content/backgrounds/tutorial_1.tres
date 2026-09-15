@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="VisualAssetManifest" format=3 uid="uid://e8pk6nl7nk5i"]
+
+[ext_resource type="Script" uid="uid://1ripw1fv282p" path="res://src/content/resources/visual_asset_entry.gd" id="1_wtyur"]
+[ext_resource type="Script" uid="uid://dw4idp43p5kbu" path="res://src/content/resources/visual_asset_manifest.gd" id="2_ofnhh"]
+[ext_resource type="Resource" uid="uid://drd6lklng6py4" path="res://content/backgrounds/s00_grave_background.tres" id="2_sse5e"]
+
+[sub_resource type="Resource" id="Resource_sse5e"]
+script = ExtResource("1_wtyur")
+asset_id = "tutorial_1_background_1"
+category = &"environment"
+background = ExtResource("2_sse5e")
+state_names = PackedStringArray()
+required_anchors = PackedStringArray()
+required_states = PackedStringArray()
+metadata/_custom_type_script = "uid://1ripw1fv282p"
+
+[resource]
+script = ExtResource("2_ofnhh")
+entries = Array[ExtResource("1_wtyur")]([SubResource("Resource_sse5e")])
+metadata/_custom_type_script = "uid://dw4idp43p5kbu"

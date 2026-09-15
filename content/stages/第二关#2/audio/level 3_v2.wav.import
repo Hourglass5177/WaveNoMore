@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://cr55n5snq5skd"
+path="res://.godot/imported/level 3_v2.wav-07cd2f9cdb6d9391a86bcdf394cb3ee4.sample"
+
+[deps]
+
+source_file="res://content/stages/第二关#2/audio/level 3_v2.wav"
+dest_files=["res://.godot/imported/level 3_v2.wav-07cd2f9cdb6d9391a86bcdf394cb3ee4.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2
