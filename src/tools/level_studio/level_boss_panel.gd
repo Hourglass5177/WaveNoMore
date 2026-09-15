@@ -23,6 +23,9 @@ var _note_scope := "全部绑定"
 var _note_from := 0.0
 var _note_to := 0.0
 var _preview_role := ""
+var _summary := Label.new()
+var _local_playing := false
+var _play_button: Button
 
 func edit_document() -> LevelDocument: return workspace.document
 
@@ -31,19 +34,24 @@ func _ready() -> void:
 	var scroll := ScrollContainer.new(); scroll.size_flags_vertical=Control.SIZE_EXPAND_FILL; scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED; add_child(scroll)
 	scroll.add_child(_content); _content.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	LevelUI.label(_content,"BOSS 攻击编排",18)
+	_summary.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;_content.add_child(_summary)
 	var navigation:=HFlowContainer.new();_content.add_child(navigation)
 	for pair in [["动作设置","Actions"],["战斗与阶段","Battle"],["发射路径","Paths"]]:
 		LevelUI.button(navigation,pair[0],func():
 			if _form.get_child_count()>0:scroll.ensure_control_visible(_form.get_child(0).get_node(pair[1])))
 	_content.add_child(_binding_select); _binding_select.item_selected.connect(_select_binding)
 	LevelUI.button(_content,"复制动作配置并重新选音符",_copy_settings)
-	var search := LineEdit.new(); search.placeholder_text="搜索音符时间或 ID"; _content.add_child(search)
+	var filters:=VBoxContainer.new();filters.visible=false
+	var filter_button:=LevelUI.button(_content,"展开音符筛选",func():filters.visible=not filters.visible)
+	filter_button.tooltip_text="按类型、生死侧、绑定及时间筛选；不改变已选音符"
+	_content.add_child(filters)
+	var search := LineEdit.new(); search.placeholder_text="搜索音符时间或 ID"; filters.add_child(search)
 	search.text_changed.connect(func(value): _search=value;_populate_notes())
-	LevelUI.choice(_content,"类型",["全部类型","Tap","Hold","调频幽灵"],"全部类型",func(value):_note_type=value;_populate_notes())
-	LevelUI.choice(_content,"生死侧",["全部侧","生","死","双侧幽灵"],"全部侧",func(value):_note_side=value;_populate_notes())
-	LevelUI.choice(_content,"绑定",["全部绑定","未绑定","当前绑定","其他绑定"],"全部绑定",func(value):_note_scope=value;_populate_notes())
-	LevelUI.number(_content,"段落起点 秒",0,func(value):_note_from=value;_populate_notes(),0.1,0,100000)
-	LevelUI.number(_content,"段落终点（0=全曲）",0,func(value):_note_to=value;_populate_notes(),0.1,0,100000)
+	LevelUI.choice(filters,"类型",["全部类型","Tap","Hold","调频幽灵"],"全部类型",func(value):_note_type=value;_populate_notes())
+	LevelUI.choice(filters,"生死侧",["全部侧","生","死","双侧幽灵"],"全部侧",func(value):_note_side=value;_populate_notes())
+	LevelUI.choice(filters,"绑定",["全部绑定","未绑定","当前绑定","其他绑定"],"全部绑定",func(value):_note_scope=value;_populate_notes())
+	LevelUI.number(filters,"段落起点 秒",0,func(value):_note_from=value;_populate_notes(),0.1,0,100000)
+	LevelUI.number(filters,"段落终点（0=全曲）",0,func(value):_note_to=value;_populate_notes(),0.1,0,100000)
 	LevelUI.label(_content,"只读谱面 · 选择 BOSS 音符",12)
 	_notes.custom_minimum_size.y=130; _notes.select_mode=ItemList.SELECT_MULTI; _content.add_child(_notes)
 	_notes.multi_selected.connect(func(_index,_selected):
@@ -69,6 +77,7 @@ func _ready() -> void:
 	_slider.min_value=0; _slider.max_value=3; _slider.step=0.001; _content.add_child(_slider)
 	_slider.value_changed.connect(func(_value): _sample_action())
 	var stepping:=HBoxContainer.new();_content.add_child(stepping)
+	_play_button=LevelUI.button(stepping,"播放动作",func():_local_playing=not _local_playing;_play_button.text="暂停动作" if _local_playing else "播放动作")
 	LevelUI.button(stepping,"上一素材帧",func():_step_material_frame(-1));LevelUI.button(stepping,"下一素材帧",func():_step_material_frame(1))
 	LevelUI.button(_content,"将当前动作帧设为出手帧",func():
 		workspace.document.begin_edit();_change("action",LevelBossActions.resolve(workspace.assets(),workspace.document.find("objects",object_id),data).action);_change("action_mode","custom");_change("release_sec",_slider.value);workspace.document.end_edit();_rebuild_form())
@@ -89,6 +98,14 @@ func _ready() -> void:
 			if not current.is_empty(): data=current.duplicate(true); _update_times()
 			if visible and not workspace._field_focused(): _rebuild_form(); _populate_notes())
 
+
+## 局部播放只推进素材时钟，不启动歌曲或改变主时间线。
+func _process(delta: float) -> void:
+	if not _local_playing:return
+	if not is_visible_in_tree():
+		_local_playing=false;_play_button.text="播放动作";return
+	_slider.value=fposmod(_slider.value+delta,maxf(0.001,_slider.max_value))
+
 func _defaults() -> Dictionary:
 	var object_data: Dictionary=workspace.document.find("objects",object_id)
 	var actions: PackedStringArray=workspace.assets().actions(str(object_data.get("asset","")))
@@ -99,10 +116,16 @@ func _defaults() -> Dictionary:
 	return {"id":LevelFormat.id("binding"),"object_id":object_id,"difficulty":workspace.difficulty(),"note_ids":[],"action":action,"release_sec":workspace.assets().release_time(str(object_data.get("asset","")),action),"return_us":600000,"action_duration_us":maxi(10000,roundi(duration*1000000)),"rate":1.0,"life_anchor":"life","death_anchor":"death","sound":"","effect":"","hit_effect":"","miss_effect":""}
 
 func open(id: String, binding := "") -> void:
-	object_id=id; binding_id=binding; _preview_role=""
+	object_id=id; binding_id=binding; _preview_role="";_local_playing=false
+	if _play_button!=null:_play_button.text="播放动作"
 	data=workspace.document.find("bindings",binding).duplicate(true) if not binding.is_empty() else _defaults()
 	if data.is_empty(): binding_id=""; data=_defaults()
-	_binding_select.clear(); _binding_select.add_item("新建攻击绑定"); _binding_select.set_item_metadata(0,"")
+	# 派生绑定在打开时作为可编辑草稿呈现，创建后成为显式覆盖；打开本身不写盘。
+	var effective:=LevelBossCompiler.effective_bindings(workspace.song_document.chart(),workspace.document.data.show,workspace.difficulty())
+	for entry: Dictionary in effective:
+		if entry.get("automatic",false) and entry.object_id==object_id and (binding.is_empty() or entry.id==binding):
+			data.merge(entry,true);data.id=LevelFormat.id("binding");binding_id=""
+	_binding_select.clear(); _binding_select.add_item("自动关联（保存为显式绑定）" if data.get("automatic",false) else "新建攻击绑定"); _binding_select.set_item_metadata(0,"")
 	for entry: Dictionary in workspace.document.entries("bindings"):
 		if entry.object_id!=object_id or entry.difficulty!=workspace.difficulty(): continue
 		_binding_select.add_item(str(entry.action)+" · %d 个音符"%entry.note_ids.size()); _binding_select.set_item_metadata(_binding_select.item_count-1,entry.id)
@@ -128,7 +151,7 @@ func _populate_notes() -> void:
 		var kind:= "调频幽灵" if note is GhostEvent else ("Tap" if note.kind==GameplayTypes.NoteKind.TAP else "Hold")
 		var side: String="双侧幽灵" if note is GhostEvent else ("生" if note.affinity==GameplayTypes.Affinity.ZHU else "死")
 		if _note_side!="全部侧" and side!=_note_side:continue
-		var owners: Array=workspace.document.entries("bindings").filter(func(binding):return binding.difficulty==workspace.difficulty() and note.event_id in binding.note_ids)
+		var owners: Array=LevelBossCompiler.effective_bindings(workspace.song_document.chart(),workspace.document.data.show,workspace.difficulty()).filter(func(binding):return binding.difficulty==workspace.difficulty() and note.event_id in binding.note_ids)
 		if _note_type!="全部类型" and kind!=_note_type:continue
 		if seconds<_note_from or (_note_to>0 and seconds>_note_to):continue
 		if _note_scope=="未绑定" and not owners.is_empty():continue
@@ -163,6 +186,8 @@ func _rebuild_form() -> void:
 	LevelUI.label(form,"动作识别",16)
 	LevelUI.choice(form,"攻击控制",["自动识别","手动覆盖"],"手动覆盖" if data.get("action_mode","auto")=="custom" else "自动识别",func(value):_change("action_mode","custom" if value=="手动覆盖" else "auto");_rebuild_form())
 	var spec := LevelBossActions.resolve(workspace.assets(),object_data,data)
+	_summary.text="静息循环：%s\n%s\n攻击：%s"%[str(spec.idle),"自动关联 %d 个音符（当前难度）"%data.note_ids.size() if data.get("automatic",false) else ("已绑定 %d 个音符"%data.note_ids.size() if not binding_id.is_empty() else "新建草稿：尚未创建音符绑定")," → ".join([spec.attack_start,spec.attack_loop,spec.attack_end]) if spec.segmented else (spec.action if not str(spec.action).is_empty() else "未识别，请配置动作映射")]
+
 	LevelUI.label(form,"自动识别："+(str(spec.attack_start)+" → "+str(spec.attack_loop)+" → "+str(spec.attack_end) if spec.segmented else str(spec.attack)),12)
 	if str(spec.action).is_empty(): LevelUI.label(form,"未找到攻击动作，请配置映射或显式覆盖。",12)
 	if not actions.is_empty():
@@ -185,7 +210,7 @@ func _rebuild_form() -> void:
 	form=panel.get_node("Battle")
 	LevelUI.label(form,"战斗与阶段（对象设置）",16)
 	var previews:=HFlowContainer.new();form.add_child(previews)
-	for pair in [["攻击","attack_start"],["受击","hurt"],["半血转阶段","phase_break"],["破防攻击","attack_loop"],["死亡","death"]]:
+	for pair in [["静息","idle"],["攻击","attack_start"],["受击","hurt"],["半血转阶段","phase_break"],["破防攻击","attack_loop"],["死亡","death"]]:
 		var button:=LevelUI.button(previews,"预览"+pair[0],func():
 			_preview_role=pair[1]
 			_slider.max_value=7.0 if pair[1]=="death" else 3.0
@@ -226,7 +251,7 @@ func _sample_action() -> void:
 	object_data.fields.position=[320,180]; object_data.fields.scale=[1,1]; object_data.fields.rotation=0; object_data.parent_id=""; object_data.layer="world"
 	var track:=LevelFormat.track(object_id,"action","song","action")
 	var spec:=LevelBossActions.resolve(workspace.assets(),object_data,data)
-	var clip:=LevelFormat.clip(0,"",maxi(1,roundi(_slider.max_value*1000000))); clip.action=spec.get(_preview_role,spec.action) if not _preview_role.is_empty() else spec.action; clip.rate=1.0
+	var clip:=LevelFormat.clip(0,"",maxi(1,roundi(_slider.max_value*1000000))); clip.action=spec.get(_preview_role,spec.action) if not _preview_role.is_empty() else spec.action; clip.rate=1.0;clip.boss_control=true
 	if str(clip.action).is_empty() and _preview_role in ["attack_start","attack_loop"]:clip.action=spec.attack
 	track.clips=[clip]
 	var show:={"objects":[object_data],"tracks":[track],"bindings":[]}
@@ -239,6 +264,7 @@ func _sample_action() -> void:
 
 func _update_times() -> void:
 	if _create==null: return
+	_create.text="保存为显式绑定" if data.get("automatic",false) else "创建绑定"
 	_create.visible=binding_id.is_empty(); _create.disabled=data.get("note_ids",[]).is_empty()
 	_create.tooltip_text="先选择至少一个 BOSS 音符" if _create.disabled else "创建绑定（可撤销）"
 	if data.get("note_ids",[]).is_empty(): _release_label.text="选择音符后，主时间线显示攻击时序。"; return
@@ -280,6 +306,7 @@ func _step_material_frame(direction: int) -> void:
 
 func _apply() -> void:
 	if data.note_ids.is_empty(): return
+	data.erase("automatic")
 	workspace.document.replace("创建 BOSS 绑定","bindings",[],[data.duplicate(true)])
 	if workspace.document.last_error.is_empty():open(object_id,str(data.id))
 

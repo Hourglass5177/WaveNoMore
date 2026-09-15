@@ -7,10 +7,11 @@ static func compile(stage: StageDefinition, tempo: TempoMap, player: LevelShowPl
 	var source: SongChart = stage.get_meta("level_source_chart", stage.chart)
 	for note in source.note_events: notes[note.event_id] = note
 	for note in source.ghost_events: notes[note.event_id] = note
+	var bindings := effective_bindings(source,player.show,stage.chart.difficulty_id)
 	var approach_us := roundi(stage.rule_set.approach_duration_sec * 1000000.0)
 	# 公共演出以音频起点为零；谱面时间以首拍为零，只在接口处换算。
 	var offset_us := roundi(stage.song.first_beat_offset_sec * 1000000.0)
-	for binding: Dictionary in player.show.get("bindings", []):
+	for binding: Dictionary in bindings:
 		if str(binding.get("difficulty", "")) != stage.chart.difficulty_id: continue
 		var object_id := str(binding.get("object_id", ""))
 		var object_data := LevelFormat.find(player.show.get("objects", []), object_id)
@@ -92,13 +93,29 @@ static func compile(stage: StageDefinition, tempo: TempoMap, player: LevelShowPl
 				clip.transient = true
 				track.clips = [clip]; tracks.append(track)
 	tracks.append_array(LevelBossActions.tracks(events, player.assets, offset_us))
-	return {"emissions": emissions, "tracks": tracks, "issues": issues, "battles": battle_configs(player)}
+	return {"emissions": emissions, "tracks": tracks, "issues": issues, "battles": battle_configs(player,bindings), "bindings":bindings}
 
-static func battle_configs(player: LevelShowPlayer) -> Array:
+## 单一已配置 BOSS 接收未分配的 BOSS 音符；显式绑定优先，多对象不猜归属。
+static func effective_bindings(chart: SongChart, show: Dictionary, difficulty: String) -> Array:
+	var bindings: Array=show.get("bindings",[]).duplicate(true)
+	var candidates: Array=show.get("objects",[]).filter(func(object):return object.get("type","") in ["actor","animated_sprite"] and (not object.get("boss",{}).is_empty() or bindings.any(func(binding):return binding.get("object_id","")==object.id)))
+	if candidates.size()!=1:return bindings
+	var assigned: Array=[]
+	for binding: Dictionary in bindings:
+		if binding.get("difficulty","")==difficulty:assigned.append_array(binding.get("note_ids",[]))
+	var ids: Array=[]
+	for note in Array(chart.note_events)+Array(chart.ghost_events):
+		if note.boss and note.event_id not in assigned:ids.append(note.event_id)
+	if not ids.is_empty():
+		bindings.append({"id":"auto_boss_"+str(candidates[0].id)+"_"+difficulty,"object_id":candidates[0].id,"difficulty":difficulty,"note_ids":ids,"action_mode":"auto","action":"","rate":1.0,"automatic":true})
+	return bindings
+
+static func battle_configs(player: LevelShowPlayer, bindings: Array=[]) -> Array:
 	var result: Array = []
+	if bindings.is_empty():bindings=player.show.get("bindings",[])
 	for object: Dictionary in player.show.get("objects", []):
 		var ids: Array = []
-		for binding: Dictionary in player.show.get("bindings", []):
+		for binding: Dictionary in bindings:
 			if binding.object_id != object.id or binding.difficulty != player.difficulty: continue
 			for id in binding.note_ids:
 				if id not in ids: ids.append(id)

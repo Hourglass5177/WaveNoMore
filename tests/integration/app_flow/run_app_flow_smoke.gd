@@ -53,19 +53,18 @@ func _run() -> void:
 		if app._current_screen.phase == app._current_screen.Phase.WAITING: break
 	_send_joy_button(JOY_BUTTON_A, false)
 	await process_frame
-	# 首次确认只展开主菜单，必须释放后再次确认才能进入选关。
+	# 首次唤醒进入 PV，再次确认跳过后才进入选关。
 	_send_joy_button(JOY_BUTTON_A, true)
 	await process_frame
 	_send_joy_button(JOY_BUTTON_A, false)
 	await create_timer(0.8).timeout
-	_expect_equal(router.current_route, &"title", "wake input only reveals Title menu")
-	var title_start := app.get_node("ScreenHost/TitleScreen").get_node("%Start") as Button
-	_expect(title_start != null and title_start.has_focus(), "title gives controller focus to Start")
-	_send_joy_button(JOY_BUTTON_A, true)
-	await process_frame
-	_send_joy_button(JOY_BUTTON_A, false)
-	await create_timer(0.2).timeout
-	_expect_equal(router.current_route, &"stage_select", "gamepad A confirms the focused menu button")
+	if ResourceLoader.exists("res://assets/pv.ogv"):
+		_expect_equal(router.current_route, &"intro_video", "wake enters PV")
+		_send_joy_button(JOY_BUTTON_A, true)
+		await process_frame
+		_send_joy_button(JOY_BUTTON_A, false)
+		await create_timer(0.8).timeout
+	_expect_equal(router.current_route, &"stage_select", "PV ends at first stage selection")
 	_send_joy_button(JOY_BUTTON_B, true)
 	await process_frame
 	_send_joy_button(JOY_BUTTON_B, false)

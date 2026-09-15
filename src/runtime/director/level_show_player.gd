@@ -173,6 +173,11 @@ func _sample(section: String, time_us: int, silent: bool, preserve_audio := fals
 		if not automatic.is_empty():
 			automatic.sort_custom(func(a,b):return int(a.start_us)<int(b.start_us))
 			object_clips=[automatic.back()]
+		# 静息属于 BOSS 的常态，不依赖是否已配置可结算音符。
+		var boss_settings: Dictionary=object_data.get("boss",{})
+		if automatic.is_empty() and not boss_settings.is_empty():
+			var idle:=str(boss_settings.get("actions",{}).get("idle",assets.default_animation(object_data.asset)))
+			if not idle.is_empty():object_clips=[{"id":"boss_idle","action":idle,"local_us":maxi(0,time_us),"loop":true,"weight":1.0}]
 		if boss_battle != null and boss_battle.states.has(object_data.id):
 			var battle: Dictionary = boss_battle.states[object_data.id]
 			var at := time_us - boss_offset_us if section == "song" else boss_song_us

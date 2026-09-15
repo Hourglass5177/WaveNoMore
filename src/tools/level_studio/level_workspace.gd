@@ -558,7 +558,7 @@ func _update_show() -> void:
 	_assets=player.assets;surface.player=player
 	if is_instance_valid(preview.stage_root):
 		var bound:={}
-		for binding: Dictionary in show.bindings:
+		for binding: Dictionary in LevelBossCompiler.effective_bindings(song_document.chart(),show,difficulty()):
 			var id: String=binding.object_id
 			while not id.is_empty() and not bound.has(id):bound[id]=true;id=str(LevelFormat.find(show.objects,id).get("parent_id",""))
 		var relevant: Array=show.objects.filter(func(item):return bound.has(item.id) or item.type=="camera")

@@ -15,3 +15,7 @@ __pycache__/
 
 # 策划表工具的临时检查输出
 *.xlsx.inspect.ndjson
+
+# 本地宣传视频及其导入配置
+/assets/pv.ogv
+/assets/pv.ogv.import

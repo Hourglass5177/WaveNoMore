@@ -46,6 +46,8 @@ func _run() -> void:
 	root.add_child(app)
 	await create_timer(0.25).timeout
 	var page = app._current_screen
+	# 本套专测标题菜单的美术与输入；首次唤醒 PV 由 run_intro_video_tests 覆盖。
+	page.play_intro = false
 	check(page.phase == page.Phase.SPLASH, "首次启动先播放工作室开屏")
 	await key(KEY_ENTER, true)
 	await key(KEY_ENTER, false)

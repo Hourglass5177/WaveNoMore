@@ -1,0 +1,267 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/app/credits_modal.gd" id="1"]
+[ext_resource type="Theme" path="res://content/ui/game_theme.tres" id="2"]
+[ext_resource type="Texture2D" path="res://assets/ui/art/设置页面/底图.png" id="3"]
+[ext_resource type="Script" path="res://src/app/ui/fire_frame.gd" id="4"]
+[ext_resource type="Script" path="res://src/app/ui/art_button.gd" id="5"]
+[ext_resource type="Script" path="res://src/app/ui/shortcut_glyph.gd" id="6"]
+
+[node name="Credits" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("2")
+script = ExtResource("1")
+
+[node name="Dim" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.015, 0.012, 0.020, 0.78)
+
+[node name="Design" type="Control" parent="."]
+offset_right = 1920.0
+offset_bottom = 1080.0
+mouse_filter = 2
+
+[node name="Panel" type="TextureRect" parent="Design"]
+offset_left = 300.0
+offset_top = 125.0
+offset_right = 1720.0
+offset_bottom = 955.0
+texture = ExtResource("3")
+expand_mode = 1
+mouse_filter = 2
+
+[node name="Fire" type="Control" parent="Design"]
+mouse_filter = 2
+script = ExtResource("4")
+
+[node name="Title" type="Label" parent="Design"]
+offset_left = 410.0
+offset_top = 175.0
+offset_right = 1510.0
+offset_bottom = 250.0
+theme_override_font_sizes/font_size = 52
+theme_override_colors/font_color = Color(0.93, 0.88, 0.76, 1)
+text = "著作信息"
+horizontal_alignment = 1
+vertical_alignment = 1
+mouse_filter = 2
+
+[node name="Studio" type="Label" parent="Design"]
+unique_name_in_owner = true
+offset_left = 360.0
+offset_top = 263.0
+offset_right = 1560.0
+offset_bottom = 314.0
+theme_override_font_sizes/font_size = 36
+theme_override_colors/font_color = Color(0.91, 0.86, 0.77, 1)
+text = "华中科技大学 Memo工作室 出品"
+horizontal_alignment = 1
+vertical_alignment = 1
+mouse_filter = 2
+
+[node name="Rule" type="ColorRect" parent="Design"]
+offset_left = 450.0
+offset_top = 337.0
+offset_right = 1470.0
+offset_bottom = 338.0
+color = Color(0.72, 0.65, 0.52, 0.35)
+mouse_filter = 2
+
+[node name="CreditsGrid" type="GridContainer" parent="Design"]
+unique_name_in_owner = true
+offset_left = 560.0
+offset_top = 357.0
+offset_right = 1424.0
+offset_bottom = 807.0
+columns = 2
+theme_override_constants/h_separation = 36
+theme_override_constants/v_separation = 6
+mouse_filter = 2
+
+[node name="LeadRole" type="Label" parent="Design/CreditsGrid"]
+layout_mode = 2
+custom_minimum_size = Vector2(188, 46)
+theme_override_font_sizes/font_size = 30
+theme_override_colors/font_color = Color(0.73, 0.69, 0.66, 1)
+text = "主设计师："
+horizontal_alignment = 2
+vertical_alignment = 0
+mouse_filter = 2
+
+[node name="LeadNames" type="Label" parent="Design/CreditsGrid"]
+layout_mode = 2
+custom_minimum_size = Vector2(640, 46)
+theme_override_font_sizes/font_size = 34
+theme_override_constants/line_spacing = 2
+theme_override_colors/font_color = Color(0.94, 0.90, 0.83, 1)
+text = "山羊電燈"
+mouse_filter = 2
+
+[node name="DesignRole" type="Label" parent="Design/CreditsGrid"]
+layout_mode = 2
+custom_minimum_size = Vector2(188, 46)
+theme_override_font_sizes/font_size = 30
+theme_override_colors/font_color = Color(0.73, 0.69, 0.66, 1)
+text = "玩法策划："
+horizontal_alignment = 2
+vertical_alignment = 0
+mouse_filter = 2
+
+[node name="DesignNames" type="Label" parent="Design/CreditsGrid"]
+layout_mode = 2
+custom_minimum_size = Vector2(640, 46)
+theme_override_font_sizes/font_size = 34
+theme_override_constants/line_spacing = 2
+theme_override_colors/font_color = Color(0.94, 0.90, 0.83, 1)
+text = "沙漏"
+mouse_filter = 2
+
+[node name="CodeRole" type="Label" parent="Design/CreditsGrid"]
+layout_mode = 2
+custom_minimum_size = Vector2(188, 46)
+theme_override_font_sizes/font_size = 30
+theme_override_colors/font_color = Color(0.73, 0.69, 0.66, 1)
+text = "程序开发："
+horizontal_alignment = 2
+vertical_alignment = 0
+mouse_filter = 2
+
+[node name="CodeNames" type="Label" parent="Design/CreditsGrid"]
+layout_mode = 2
+custom_minimum_size = Vector2(640, 46)
+theme_override_font_sizes/font_size = 34
+theme_override_constants/line_spacing = 2
+theme_override_colors/font_color = Color(0.94, 0.90, 0.83, 1)
+text = "沙漏、且听风吟"
+mouse_filter = 2
+
+[node name="ArtRole" type="Label" parent="Design/CreditsGrid"]
+layout_mode = 2
+custom_minimum_size = Vector2(188, 46)
+theme_override_font_sizes/font_size = 30
+theme_override_colors/font_color = Color(0.73, 0.69, 0.66, 1)
+text = "美术："
+horizontal_alignment = 2
+vertical_alignment = 0
+mouse_filter = 2
+
+[node name="ArtNames" type="Label" parent="Design/CreditsGrid"]
+layout_mode = 2
+custom_minimum_size = Vector2(640, 86)
+theme_override_font_sizes/font_size = 34
+theme_override_constants/line_spacing = 2
+theme_override_colors/font_color = Color(0.94, 0.90, 0.83, 1)
+text = "山羊電燈、Chickenoil、阎王仙人、\nFisher小鱼、彭河"
+mouse_filter = 2
+
+[node name="MusicRole" type="Label" parent="Design/CreditsGrid"]
+layout_mode = 2
+custom_minimum_size = Vector2(188, 46)
+theme_override_font_sizes/font_size = 30
+theme_override_colors/font_color = Color(0.73, 0.69, 0.66, 1)
+text = "配乐："
+horizontal_alignment = 2
+vertical_alignment = 0
+mouse_filter = 2
+
+[node name="MusicNames" type="Label" parent="Design/CreditsGrid"]
+layout_mode = 2
+custom_minimum_size = Vector2(640, 46)
+theme_override_font_sizes/font_size = 34
+theme_override_constants/line_spacing = 2
+theme_override_colors/font_color = Color(0.94, 0.90, 0.83, 1)
+text = "Julia"
+mouse_filter = 2
+
+[node name="ChartRole" type="Label" parent="Design/CreditsGrid"]
+layout_mode = 2
+custom_minimum_size = Vector2(188, 46)
+theme_override_font_sizes/font_size = 30
+theme_override_colors/font_color = Color(0.73, 0.69, 0.66, 1)
+text = "谱师："
+horizontal_alignment = 2
+vertical_alignment = 0
+mouse_filter = 2
+
+[node name="ChartNames" type="Label" parent="Design/CreditsGrid"]
+layout_mode = 2
+custom_minimum_size = Vector2(640, 46)
+theme_override_font_sizes/font_size = 34
+theme_override_constants/line_spacing = 2
+theme_override_colors/font_color = Color(0.94, 0.90, 0.83, 1)
+text = "hinako1804"
+mouse_filter = 2
+
+[node name="AudioRole" type="Label" parent="Design/CreditsGrid"]
+layout_mode = 2
+custom_minimum_size = Vector2(188, 46)
+theme_override_font_sizes/font_size = 30
+theme_override_colors/font_color = Color(0.73, 0.69, 0.66, 1)
+text = "音频："
+horizontal_alignment = 2
+vertical_alignment = 0
+mouse_filter = 2
+
+[node name="AudioNames" type="Label" parent="Design/CreditsGrid"]
+layout_mode = 2
+custom_minimum_size = Vector2(640, 46)
+theme_override_font_sizes/font_size = 34
+theme_override_constants/line_spacing = 2
+theme_override_colors/font_color = Color(0.94, 0.90, 0.83, 1)
+text = "岚"
+mouse_filter = 2
+
+[node name="VoiceRole" type="Label" parent="Design/CreditsGrid"]
+layout_mode = 2
+custom_minimum_size = Vector2(188, 46)
+theme_override_font_sizes/font_size = 30
+theme_override_colors/font_color = Color(0.73, 0.69, 0.66, 1)
+text = "配音："
+horizontal_alignment = 2
+vertical_alignment = 0
+mouse_filter = 2
+
+[node name="VoiceNames" type="Label" parent="Design/CreditsGrid"]
+layout_mode = 2
+custom_minimum_size = Vector2(640, 46)
+theme_override_font_sizes/font_size = 34
+theme_override_constants/line_spacing = 2
+theme_override_colors/font_color = Color(0.94, 0.90, 0.83, 1)
+text = "神秘人士"
+mouse_filter = 2
+
+[node name="Back" type="Button" parent="Design"]
+unique_name_in_owner = true
+offset_left = 820.0
+offset_top = 831.0
+offset_right = 1100.0
+offset_bottom = 891.0
+text = "返回"
+theme_override_font_sizes/font_size = 32
+focus_neighbor_left = NodePath(".")
+focus_neighbor_top = NodePath(".")
+focus_neighbor_right = NodePath(".")
+focus_neighbor_bottom = NodePath(".")
+focus_next = NodePath(".")
+focus_previous = NodePath(".")
+script = ExtResource("5")
+
+[node name="BackGlyph" type="Control" parent="Design"]
+offset_left = 1116.0
+offset_top = 844.0
+offset_right = 1152.0
+offset_bottom = 880.0
+modulate = Color(1, 1, 1, 0.72)
+mouse_filter = 2
+script = ExtResource("6")
+action = &"ui_cancel"

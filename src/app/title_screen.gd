@@ -6,10 +6,13 @@ signal settings_requested
 signal credits_requested
 signal quit_requested
 signal menu_revealed
+signal intro_requested(wake_event: InputEvent)
 
 enum Phase { WAITING, REVEALING, MENU, LEAVING, SPLASH, ENTERING }
 @export var show_boot_splash := false
 @export var skip_prompt := false
+## 正式应用首次唤醒进入 PV；单独审看标题页仍可展开菜单。
+var play_intro := false
 @export_group("主界面显现")
 @export_range(0.3, 3.0, 0.05) var arrival_duration_sec := 1.35
 @export_range(0.0, 1.0, 0.01) var prompt_delay_sec := 0.08
@@ -145,6 +148,12 @@ func _same_wake_button(event: InputEvent) -> bool:
 	return event.device == _wake_event.device and event.button_index == _wake_event.button_index
 
 func _reveal() -> void:
+	if play_intro:
+		phase = Phase.LEAVING
+		_breath.kill()
+		await fade_out()
+		intro_requested.emit(_wake_event)
+		return
 	phase = Phase.REVEALING
 	get_node("/root/MenuAudioService").unlock_menu()
 	_breath.kill()

@@ -17,6 +17,7 @@ config/custom_user_dir_name="WaveNoMore-UIReview"
 '@
     [IO.File]::WriteAllText($overridePath,$configuration)
     $jobs = @(
+        @{name='credits';script='res://tests/ui/run_credits_ui_tests.gd';args=' -- --planning-values=res://builds/ui-review/default-planning.json'},
         @{name='judgment-art';script='res://tests/visual/run_judgment_art_review.gd';args=' -- --chart-editor --planning-values=res://builds/ui-review/default-planning.json'},
         @{name='launch-guides';script='res://tools/ui/capture_launch_guides.gd';args=' -- --chart-editor --planning-values=res://builds/ui-review/default-planning.json'},
         @{name='pet-rules';script='res://tests/integration/pets/run_pet_tests.gd';args=' -- --planning-values=res://builds/ui-review/default-planning.json'},

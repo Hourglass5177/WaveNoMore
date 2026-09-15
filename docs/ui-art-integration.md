@@ -1,5 +1,11 @@
 # 主界面、暂停、设置与随从 UI
 
+### 著作信息
+
+主菜单“著作信息”打开 `scenes/ui/modals/credits_modal.tscn`，复用设置页纹样底板、火框、游戏 Theme、赭红按钮及 `art_screen.gd` 的 0.18 秒渐入／0.14 秒渐出。标题 52 px、出品信息 36 px、职责 30 px、姓名 34 px，均为设计画布字号。名单直接保存在场景 Label 中，便于修改；美术署名分两行，其余一行，内容按用户提供原文保留。
+
+AppMain 统一隔离底层导航并在关闭后恢复“著作信息”按钮焦点；返回按钮、Esc 和手柄返回均可关闭。页面使用 1920×1080 等比适配。检查入口 `tools/ui/run_ui_review.ps1 -Suites credits`：33 项通过，包含正式入口、署名、焦点恢复、重复关闭及 720p／1080p／2K／4K／1600×1000，截图位于 `builds/credits-review/`。
+
 游戏图标使用 Ghost 原画的下缘白光版本，窗口 PNG 与 Windows ICO 统一配置；素材路径、导出接入及生成记录见 [Ghost 游戏图标](ghost-icon-prompts.md)。
 
 ### 魂火与 BOSS 血条（2026-09-15）

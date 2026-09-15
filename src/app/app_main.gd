@@ -23,6 +23,8 @@ const LOADING_SCENE := preload("res://scenes/screens/stage_loading_screen.tscn")
 const RESULT_SCENE := preload("res://scenes/screens/result_screen.tscn")
 ## 设置弹窗模板；弹窗覆盖当前页面，不进入页面路由历史。
 const SETTINGS_MODAL := preload("res://scenes/ui/modals/settings_modal.tscn")
+## 制作名单弹窗，与设置共用模态输入和焦点恢复流程。
+const CREDITS_MODAL := preload("res://scenes/ui/modals/credits_modal.tscn")
 ## 音画与输入校准弹窗模板。
 const CALIBRATION_MODAL := preload("res://scenes/ui/modals/calibration_modal.tscn")
 ## 随从查看和装备弹窗模板。
@@ -86,6 +88,8 @@ func _on_route_requested(route: StringName, context: Dictionary) -> void:
 	# 其余路由都代表完整页面切换，同一时间只保留一个 ScreenHost 子节点。
 	_clear_screen()
 	match route:
+		&"intro_video":
+			_show_intro_video(context.get("wake_event"))
 		&"local_charts":
 			_show_local_charts()
 		&"external_loading":
@@ -93,7 +97,7 @@ func _on_route_requested(route: StringName, context: Dictionary) -> void:
 		AppRouter.ROUTE_TITLE:
 			_show_title()
 		AppRouter.ROUTE_STAGE_SELECT:
-			_show_stage_select()
+			_show_stage_select(bool(context.get("fade_in", false)))
 		AppRouter.ROUTE_LOADING:
 			_show_loading(str(context.get("stage_id", "")))
 		AppRouter.ROUTE_STAGE:
@@ -108,21 +112,41 @@ func _on_route_requested(route: StringName, context: Dictionary) -> void:
 func _show_title() -> void:
 	var screen := TITLE_SCENE.instantiate()
 	screen.skip_prompt = _title_revealed
+	screen.play_intro = not _title_revealed
 	screen.show_boot_splash = not _boot_splash_shown and not _title_revealed
 	_boot_splash_shown = true
 	screen.menu_revealed.connect(func() -> void: _title_revealed = true)
+	screen.intro_requested.connect(func(wake_event: InputEvent):
+		_title_revealed = true
+		AppRouter.navigate(&"intro_video", {"wake_event": wake_event}, false))
 	_mount_screen(screen)
 	screen.start_requested.connect(func() -> void: AppRouter.navigate(AppRouter.ROUTE_STAGE_SELECT))
 	screen.settings_requested.connect(func() -> void: _show_modal(SETTINGS_MODAL))
+	screen.credits_requested.connect(func() -> void: _show_modal(CREDITS_MODAL))
 	screen.quit_requested.connect(func() -> void: get_tree().quit())
 
 
-func _show_stage_select() -> void:
+func _show_intro_video(wake_event: InputEvent) -> void:
+	var screen := preload("res://src/app/intro_video_screen.gd").new()
+	screen.wake_event = wake_event
+	screen.finished.connect(func():
+		_selected_stage_id = ""
+		AppRouter.clear_history()
+		AppRouter.navigate(AppRouter.ROUTE_STAGE_SELECT, {"fade_in": true}, false))
+	_mount_screen(screen)
+
+
+func _show_stage_select(fade_in := false) -> void:
 	_run_pet_ready = false
 	MenuAudioService.stop_preview()
 	var screen := STAGE_SELECT_SCENE.instantiate()
 	screen.selected_stage_id = _selected_stage_id
+	if fade_in:
+		screen.modulate.a = 0.0
 	_mount_screen(screen)
+	if fade_in:
+		var transition := screen.create_tween().set_trans(Tween.TRANS_SINE)
+		transition.tween_property(screen, "modulate:a", 1.0, 0.4)
 	screen.selection_changed.connect(func(_index: int, _id: String):
 		_selected_stage_id = str(screen.current_level().get("stage_id", "")))
 	screen.stage_selected.connect(func(stage_id: String) -> void:
