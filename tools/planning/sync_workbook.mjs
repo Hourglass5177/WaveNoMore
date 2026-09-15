@@ -5,7 +5,8 @@ import { FileBlob, SpreadsheetFile } from '@oai/artifact-tool';
 // 以对象/字段定位已有行：只更新说明与基线，保留策划当前值、页签和原有计算。
 const root=process.argv[2]||process.cwd();
 const file=process.argv[3]||path.join(root,'outputs/planning/策划参数.xlsx');
-const catalog=JSON.parse(await fs.readFile(path.join(root,'content/rules/planning_parameters.json'),'utf8'));
+const onlyTarget=process.argv.find(a=>a.startsWith('--target='))?.slice(9);
+const catalog=JSON.parse(await fs.readFile(path.join(root,'content/rules/planning_parameters.json'),'utf8')).filter(r=>!onlyTarget||r.target===onlyTarget);
 const wb=await SpreadsheetFile.importXlsx(await FileBlob.load(file));
 // 仅显式点名的字段采用新默认作为当前值，其余人工调整继续保留。
 const adoptDefaults=new Set(process.argv.filter(a=>a.startsWith('--adopt-default=')).map(a=>a.slice('--adopt-default='.length)));
@@ -19,6 +20,8 @@ const locations=new Map(), previous=new Map(), refs={}, occupied=new Map();
 const groups=[...new Set(catalog.map(r=>r.section))];
 const names=new Set((await wb.inspect({kind:'sheet',include:'id,name'})).ndjson.split('\n').filter(Boolean).map(line=>JSON.parse(line).name));
 const retiredNames={'boundary/period_sec':'缓流周期','boundary/stream_amplitude_px':'水带起伏','boundary/curl_amplitude_px':'大浪回卷','boundary/beat_enabled':'节拍回应','boundary/beat_amplitude_px':'节拍舒张幅度'};
+Object.assign(retiredNames,{'boundary/wave_height_px':'大浪高度','boundary/advance_px':'浪身推进','boundary/curl_travel_px':'翻卷行程','boundary/foam_strength':'拍落白沫强度'});
+Object.assign(retiredNames,{'boundary/bar_interval':'卷流接替间隔','boundary/vortex_outer_radius_px':'漩涡外半径','boundary/vortex_sweep_degrees':'卷入角度'});
 for(const name of groups){
   if(!names.has(name)){
     const sheet=wb.worksheets.add(name);
@@ -40,7 +43,7 @@ for(const name of groups){
       const old=String(v[0]).slice(4);sheet.getRange(`A${i+6}`).values=[['已停用：'+(retiredNames[old]||old)]];
       sheet.getRange(`B${i+6}`).format.fill='#E7E8EA';
     }
-    if(v[7]==='rules'||v[7]==='boundary'||v[7]==='actors'||String(v[7]||'').startsWith('pet:')){
+    if(v[7]==='rules'||v[7]==='boundary'||v[7]==='actors'||v[7]==='boss'||String(v[7]||'').startsWith('pet:')){
       const key=v[7]+'/'+v[8]; locations.set(key,{sheet,row:i+6}); previous.set(key,v[1]);
     }
   });
@@ -68,6 +71,8 @@ for(const entry of catalog){
   }
   const {sheet,row}=location;
   const baseline=entry.type==='string'?entry.default:Number(entry.default);
+  // 分界线重编排会扩大厚度范围，已有输入格也需要同步其允许范围。
+  if(entry.target==='boundary') sheet.getRange(`B${row}`).dataValidation={rule:{type:entry.type==='float'?'decimal':'whole',operator:'between',formula1:entry.minimum,formula2:entry.maximum}};
   sheet.getRange(`A${row}:J${row}`).values=[[entry.name,previous.has(key)&&!adoptDefaults.has(key)?previous.get(key):baseline,baseline,entry.unit,entry.suggested,entry.step,entry.meaning,entry.target,entry.key,entry.source]];
   sheet.getRange(`B${row}:C${row}`).setNumberFormat(entry.type==='string'?'@':entry.unit==='比例'?'0.0%':entry.type==='float'?'0.0000':'0');
   sheet.getRange(`F${row}`).setNumberFormat(entry.unit==='比例'?'0.0%':Number.isInteger(entry.step)?'0':'0.0000');
@@ -81,6 +86,7 @@ for(const [key,{sheet,row}] of locations){
     sheet.getRange(`H${row}:I${row}`).values=[['','']];
   }
 }
+if(!onlyTarget){
 const intro=wb.worksheets.getItem('使用与量级');
 // 连续性标识是文本，留足宽度，不能套用数值列的窄格式。
 const actors=wb.worksheets.getItem('08 角色移动');
@@ -101,6 +107,8 @@ intro.getRange('B27:B29').formulas=[
 intro.getRange('A27:B29').format={font:{name:'Microsoft YaHei',size:11,color:'#27363A'},rowHeight:30};
 intro.getRange('A31').values=[['参数增删或含义变化时同步目录和本表；同步工具按字段保留黄色当前值。']];
 intro.getRange('A31').format.font={name:'Microsoft YaHei',size:11,color:'#27363A'};
+}
+if(onlyTarget==='boss')wb.worksheets.getItem('09 BOSS 表现').getRange('A3').values=[['修改黄色当前值，重新打开 BOSS 审看场景后生效。']];
 wb.recalculate();
 for(const entry of catalog){
   const key=entry.target+'/'+entry.key;
@@ -110,8 +118,8 @@ for(const entry of catalog){
   }
 }
 console.log((await wb.inspect({kind:'match',searchTerm:'#REF!|#DIV/0!|#VALUE!|#NAME\\?|#NUM!',options:{useRegex:true,maxResults:10}})).ndjson);
-for(const name of ['02 魂火与惩罚','03 调频','07 分界线表现','08 角色移动','使用与量级']){
-  const preview=await wb.render({sheetName:name,range:name==='使用与量级'?'A1:B32':name==='03 调频'?'A5:G19':name==='07 分界线表现'?'A1:G22':'A1:G14',scale:1,format:'png'});
+for(const name of onlyTarget?groups:['02 魂火与惩罚','03 调频','07 分界线表现','08 角色移动','使用与量级']){
+  const preview=await wb.render({sheetName:name,range:name==='使用与量级'?'A1:B32':name==='03 调频'?'A5:G19':name==='07 分界线表现'?'A1:G28':'A1:G14',scale:1,format:'png'});
   await fs.writeFile(path.join(root,`builds/planning/${name}-updated.png`),new Uint8Array(await preview.arrayBuffer()));
 }
 await (await SpreadsheetFile.exportXlsx(wb)).save(file);

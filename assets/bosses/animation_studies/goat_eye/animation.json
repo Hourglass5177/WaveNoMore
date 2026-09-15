@@ -1,0 +1,141 @@
+{
+  "id": "goat_eye",
+  "unit": 0.30138962143310766,
+  "center": [
+    -47.81499999999994,
+    -134.49
+  ],
+  "idle": "animation",
+  "idle_duration": 4.0,
+  "source": "Assets\\BOSS\\goat(real_style_eyeball)\\skeleton\\skeleton.json",
+  "start": 0.6,
+  "loop": 1.6,
+  "end": 0.5,
+  "hurt": 0.42,
+  "death": 7.0,
+  "burst": 4.8,
+  "break": 2.1,
+  "phase_break": 3.0,
+  "eyes": [
+    {
+      "slot": "拆羊_2_0003_从选区",
+      "bindings": [
+        {
+          "bone": "bone4",
+          "point": [
+            238.87,
+            82.67
+          ],
+          "weight": 0.43467232435253467
+        },
+        {
+          "bone": "bone4",
+          "point": [
+            -85.01,
+            -153.92
+          ],
+          "weight": 0.47908488451669573
+        },
+        {
+          "bone": "bone4",
+          "point": [
+            -131.28,
+            97.06
+          ],
+          "weight": 0.08624279113076956
+        }
+      ],
+      "reference": [
+        500,
+        347
+      ]
+    },
+    {
+      "slot": "拆羊_2_0004_已插入图像",
+      "bindings": [
+        {
+          "bone": "bone2",
+          "point": [
+            73.08,
+            -86.82
+          ],
+          "weight": 0.24469694397547634
+        },
+        {
+          "bone": "bone2",
+          "point": [
+            -31.92,
+            -54.3
+          ],
+          "weight": 0.24756861407752137
+        },
+        {
+          "bone": "bone2",
+          "point": [
+            60.06,
+            70.92
+          ],
+          "weight": 0.507734441947003
+        }
+      ],
+      "reference": [
+        432,
+        394
+      ]
+    },
+    {
+      "slot": "拆羊_2_0005_从选区",
+      "bindings": [
+        {
+          "bone": "bone3",
+          "point": [
+            63.06,
+            87.16
+          ],
+          "weight": 0.04310269371519989
+        },
+        {
+          "bone": "bone3",
+          "point": [
+            55.96,
+            -74.58
+          ],
+          "weight": 0.528335267753842
+        },
+        {
+          "bone": "bone3",
+          "point": [
+            0.69,
+            80.38
+          ],
+          "weight": 0.42856203853095814
+        }
+      ],
+      "reference": [
+        564,
+        394
+      ]
+    }
+  ],
+  "seal_slots": [
+    "seal_0",
+    "seal_1",
+    "seal_2",
+    "seal_3",
+    "seal_4",
+    "seal_5"
+  ],
+  "texture_pages": [
+    "goat_skeleton.png",
+    "goat_eye_core_2.png",
+    "goat_eye_core_1.png",
+    "goat_eye_core_0.png",
+    "goat_eye_skeleton.png",
+    "goat_eye_eye_core_2.png",
+    "goat_eye_eye_core_1.png",
+    "goat_eye_eye_core_0.png",
+    "seal_crack.png",
+    "eye_awaken_1.png",
+    "eye_awaken_2.png"
+  ]
+}

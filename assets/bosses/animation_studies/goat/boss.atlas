@@ -1,0 +1,370 @@
+
+goat_skeleton.png
+size: 2032,1924
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+goat/拆羊_2_0000_从选区
+  rotate: true
+  xy: 1741, 227
+  size: 323, 269
+  orig: 323, 269
+  offset: 0, 0
+  index: -1
+goat/拆羊_2_0000s_0000_从选区
+  rotate: true
+  xy: 2, 61
+  size: 92, 127
+  orig: 92, 127
+  offset: 0, 0
+  index: -1
+goat/拆羊_2_0000s_0001_图层-2
+  rotate: false
+  xy: 1074, 862
+  size: 160, 319
+  orig: 160, 319
+  offset: 0, 0
+  index: -1
+goat/拆羊_2_0000s_0002_从选区
+  rotate: true
+  xy: 1741, 552
+  size: 298, 289
+  orig: 298, 289
+  offset: 0, 0
+  index: -1
+goat/拆羊_2_0000s_0003_从选区
+  rotate: true
+  xy: 410, 13
+  size: 182, 243
+  orig: 183, 243
+  offset: 1, 0
+  index: -1
+goat/拆羊_2_0001_从选区
+  rotate: true
+  xy: 764, 141
+  size: 356, 295
+  orig: 356, 295
+  offset: 0, 0
+  index: -1
+goat/拆羊_2_0001s_0000_从选区
+  rotate: false
+  xy: 655, 8
+  size: 103, 187
+  orig: 103, 187
+  offset: 0, 0
+  index: -1
+goat/拆羊_2_0001s_0001_图层-4
+  rotate: false
+  xy: 1365, 2
+  size: 247, 401
+  orig: 247, 401
+  offset: 0, 0
+  index: -1
+goat/拆羊_2_0001s_0002_从选区
+  rotate: true
+  xy: 2, 155
+  size: 342, 406
+  orig: 342, 406
+  offset: 0, 0
+  index: -1
+goat/拆羊_2_0001s_0003_从选区
+  rotate: false
+  xy: 1061, 112
+  size: 302, 291
+  orig: 302, 291
+  offset: 0, 0
+  index: -1
+goat/拆羊_2_0002_从选区
+  rotate: true
+  xy: 2, 1183
+  size: 739, 1282
+  orig: 1012, 1294
+  offset: 8, 0
+  index: -1
+goat/拆羊_2_0003_从选区
+  rotate: false
+  xy: 410, 197
+  size: 352, 300
+  orig: 352, 300
+  offset: 0, 0
+  index: -1
+goat/拆羊_2_0004_已插入图像
+  rotate: true
+  xy: 1614, 59
+  size: 166, 177
+  orig: 166, 177
+  offset: 0, 0
+  index: -1
+goat/拆羊_2_0005_从选区
+  rotate: true
+  xy: 1793, 59
+  size: 166, 177
+  orig: 166, 177
+  offset: 0, 0
+  index: -1
+goat/拆羊_2_0006_图层-1
+  rotate: false
+  xy: 1074, 405
+  size: 665, 445
+  orig: 665, 445
+  offset: 0, 0
+  index: -1
+goat/拆羊_2_0007_从选区
+  rotate: true
+  xy: 2, 499
+  size: 682, 1070
+  orig: 682, 1195
+  offset: 0, 4
+  index: -1
+goat/拆羊_2_0008_从选区
+  rotate: false
+  xy: 1286, 852
+  size: 686, 1070
+  orig: 686, 1140
+  offset: 0, 6
+  index: -1
+
+goat_eye_core_2.png
+size: 166,177
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+goat/eye_core_2
+  rotate: false
+  xy: 0, 0
+  size: 166,177
+  orig: 166,177
+  offset: 0,0
+  index: -1
+
+goat_eye_core_1.png
+size: 166,177
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+goat/eye_core_1
+  rotate: false
+  xy: 0, 0
+  size: 166,177
+  orig: 166,177
+  offset: 0,0
+  index: -1
+
+goat_eye_core_0.png
+size: 352,300
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+goat/eye_core_0
+  rotate: false
+  xy: 0, 0
+  size: 352,300
+  orig: 352,300
+  offset: 0,0
+  index: -1
+
+
+goat_eye_skeleton.png
+size: 2004,1970
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+goat_eye/拆羊_2_0000_从选区
+  rotate: false
+  xy: 743, 692
+  size: 323, 269
+  orig: 323, 269
+  offset: 0, 0
+  index: -1
+goat_eye/拆羊_2_0000s_0000_从选区
+  rotate: true
+  xy: 1327, 1188
+  size: 92, 127
+  orig: 92, 127
+  offset: 0, 0
+  index: -1
+goat_eye/拆羊_2_0000s_0001_图层-2
+  rotate: false
+  xy: 1815, 963
+  size: 160, 319
+  orig: 160, 319
+  offset: 0, 0
+  index: -1
+goat_eye/拆羊_2_0000s_0002_从选区
+  rotate: true
+  xy: 1036, 982
+  size: 298, 289
+  orig: 298, 289
+  offset: 0, 0
+  index: -1
+goat_eye/拆羊_2_0000s_0003_从选区
+  rotate: false
+  xy: 1815, 1620
+  size: 182, 243
+  orig: 183, 243
+  offset: 1, 0
+  index: -1
+goat_eye/拆羊_2_0001_从选区
+  rotate: true
+  xy: 1521, 106
+  size: 356, 295
+  orig: 356, 295
+  offset: 0, 0
+  index: -1
+goat_eye/拆羊_2_0001s_0000_从选区
+  rotate: true
+  xy: 1815, 1865
+  size: 103, 187
+  orig: 103, 187
+  offset: 0, 0
+  index: -1
+goat_eye/拆羊_2_0001s_0001_图层-4
+  rotate: true
+  xy: 1068, 714
+  size: 247, 401
+  orig: 247, 401
+  offset: 0, 0
+  index: -1
+goat_eye/拆羊_2_0001s_0002_从选区
+  rotate: false
+  xy: 1471, 874
+  size: 342, 406
+  orig: 342, 406
+  offset: 0, 0
+  index: -1
+goat_eye/拆羊_2_0001s_0003_从选区
+  rotate: true
+  xy: 743, 978
+  size: 302, 291
+  orig: 302, 291
+  offset: 0, 0
+  index: -1
+goat_eye/拆羊_2_0002_从选区
+  rotate: false
+  xy: 2, 686
+  size: 739, 1282
+  orig: 1012, 1294
+  offset: 8, 0
+  index: -1
+goat_eye/拆羊_2_0003_从选区
+  rotate: false
+  xy: 1521, 464
+  size: 408, 408
+  orig: 408, 408
+  offset: 0, 0
+  index: -1
+goat_eye/拆羊_2_0004_已插入图像
+  rotate: true
+  xy: 1815, 1452
+  size: 166, 177
+  orig: 166, 177
+  offset: 0, 0
+  index: -1
+goat_eye/拆羊_2_0005_从选区
+  rotate: true
+  xy: 1815, 1284
+  size: 166, 177
+  orig: 166, 177
+  offset: 0, 0
+  index: -1
+goat_eye/拆羊_2_0006_图层-1
+  rotate: true
+  xy: 1074, 47
+  size: 665, 445
+  orig: 665, 445
+  offset: 0, 0
+  index: -1
+goat_eye/拆羊_2_0007_从选区
+  rotate: true
+  xy: 2, 2
+  size: 682, 1070
+  orig: 682, 1195
+  offset: 0, 4
+  index: -1
+goat_eye/拆羊_2_0008_从选区
+  rotate: true
+  xy: 743, 1282
+  size: 686, 1070
+  orig: 686, 1140
+  offset: 0, 6
+  index: -1
+
+goat_eye_eye_core_2.png
+size: 166,177
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+goat_eye/eye_core_2
+  rotate: false
+  xy: 0, 0
+  size: 166,177
+  orig: 166,177
+  offset: 0,0
+  index: -1
+
+goat_eye_eye_core_1.png
+size: 166,177
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+goat_eye/eye_core_1
+  rotate: false
+  xy: 0, 0
+  size: 166,177
+  orig: 166,177
+  offset: 0,0
+  index: -1
+
+goat_eye_eye_core_0.png
+size: 408,408
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+goat_eye/eye_core_0
+  rotate: false
+  xy: 0, 0
+  size: 408,408
+  orig: 408,408
+  offset: 0,0
+  index: -1
+
+
+seal_crack.png
+size: 352,300
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+seal_crack
+  rotate: false
+  xy: 0, 0
+  size: 352,300
+  orig: 352,300
+  offset: 0,0
+  index: -1
+
+
+eye_awaken_1.png
+size: 166,177
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+eye_awaken_1
+  rotate: false
+  xy: 0, 0
+  size: 166,177
+  orig: 166,177
+  offset: 0,0
+  index: -1
+
+eye_awaken_2.png
+size: 166,177
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+eye_awaken_2
+  rotate: false
+  xy: 0, 0
+  size: 166,177
+  orig: 166,177
+  offset: 0,0
+  index: -1

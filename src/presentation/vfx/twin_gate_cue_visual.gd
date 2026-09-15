@@ -16,10 +16,10 @@ var _move_targets := Vector2.ZERO
 ## 生死两路音符共用的中心视觉锚点。类名沿用旧版以兼容场景与主题资源；
 ## 判定、计分及波与音符的接触仍由玩法逻辑层负责。
 
-# 生钟操作提示：手柄 R1、鼠标右键或 J。
-const LIFE_INPUT_LABEL: String = "R1 / 右键 / J"
-# 死钟操作提示：手柄 L1、鼠标左键或 F。
-const DEATH_INPUT_LABEL: String = "L1 / 左键 / F"
+# 图标纹理由全局提示服务预热；设备切换时才更换引用。
+var _input_hints: Node
+var _life_input_texture: Texture2D
+var _death_input_texture: Texture2D
 
 @export_group("Scene Wiring")
 ## 生侧中心锚点 Marker2D 的路径；默认与死侧锚点完全重合。
@@ -100,6 +100,9 @@ var _path_profile_keys: Dictionary[int, Array] = {}
 
 
 func _ready() -> void:
+	_input_hints = get_node("/root/UiInputHints")
+	_input_hints.changed.connect(_refresh_input_glyphs)
+	_refresh_input_glyphs()
 	_center_circle = Sprite2D.new()
 	_center_circle.name = "CenterCircle"
 	_center_circle.texture = CENTER_CIRCLE
@@ -220,8 +223,8 @@ func debug_snapshot() -> Dictionary:
 		"life_gate": life_gate,
 		"death_gate": death_gate,
 		"shared_gate": (life_gate + death_gate) * 0.5,
-		"life_input_label": LIFE_INPUT_LABEL,
-		"death_input_label": DEATH_INPUT_LABEL,
+		"life_input_glyph": _input_hints.glyph_name(&"bell_life"),
+		"death_input_glyph": _input_hints.glyph_name(&"bell_death"),
 		"launch_count": _launch_events.size(),
 		"contact_count": _contact_events.size(),
 		"grade_count": _grade_events.size(),
@@ -328,26 +331,21 @@ func _draw_route_scaffold() -> void:
 	_draw_incoming_chevrons(death_profile, death_color)
 
 
+func _refresh_input_glyphs() -> void:
+	_life_input_texture = _input_hints.texture_for(&"bell_life")
+	_death_input_texture = _input_hints.texture_for(&"bell_death")
+	queue_redraw()
+
+
 func _draw_shared_gate(center: Vector2) -> void:
-	# 中央圈由独立 Sprite2D 绘制，参数形变不影响按键文字与瞬时反馈。
-	draw_string(
-		MingheUiStyle.ui_font(),
-		center + Vector2(82.0, -68.0),
-		LIFE_INPUT_LABEL,
-		HORIZONTAL_ALIGNMENT_CENTER,
-		84.0,
-		15,
-		Color(life_color.lightened(0.32), 0.92)
-	)
-	draw_string(
-		MingheUiStyle.ui_font(),
-		center + Vector2(-166.0, 82.0),
-		DEATH_INPUT_LABEL,
-		HORIZONTAL_ALIGNMENT_CENTER,
-		88.0,
-		15,
-		Color(bone_color, 0.90)
-	)
+	# 图标沿用原有生侧右上、死侧左下位置，独立于中央圈的形变。
+	_draw_input_glyph(_life_input_texture, center + Vector2(116.0, -72.0))
+	_draw_input_glyph(_death_input_texture, center + Vector2(-116.0, 72.0))
+
+
+func _draw_input_glyph(texture: Texture2D, center: Vector2) -> void:
+	var extent := texture.get_size() * (36.0 / texture.get_height())
+	draw_texture_rect(texture, Rect2(center - extent * 0.5, extent), false, Color(1.0, 1.0, 1.0, 0.65))
 
 
 func _draw_curve_scaffold(profile: Dictionary, color: Color) -> void:

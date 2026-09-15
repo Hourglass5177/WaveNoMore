@@ -1,7 +1,10 @@
 extends SceneTree
 
+## 设备采集已迁入 InputEventBuffer；独立测试实例必须显式加载脚本。
+const INPUT_BUFFER_SCRIPT: GDScript = preload("res://src/runtime/input/input_event_buffer.gd")
+
 ## 双钟旋钮调频的设备映射与 Replay v3 合同测试。
-## 这里只验证“物理输入 → 语义样本”，不测试滑条判定或画面。
+## 验证物理缓冲、A/B 转换与 Replay；物理层不再直接发出语义位移。
 
 var _failures: PackedStringArray = []
 var _checks: int = 0
@@ -71,7 +74,8 @@ func _test_replay_v3_roundtrip_and_legacy_rejection() -> void:
 	_expect_equal(restored.sorted_inputs()[0].sequence, 0, "Replay v3 keeps stable timestamp/sequence ordering")
 	_expect_equal(restored.canonical_input_hash(), replay.canonical_input_hash(), "Replay v3 canonical hash survives serialization")
 
-	var driver := ReplayInputDriver.new()
+	# StageSession 依赖 Autoload，等 SceneTree 初始化完成后再加载回放桥。
+	var driver: Node = load("res://src/runtime/replay/replay_input_driver.gd").new()
 	root.add_child(driver)
 	_expect(driver.load_replay(restored), "runtime driver accepts Replay v3")
 	var rate_replay := ReplayData.new()
@@ -153,9 +157,9 @@ func _test_perfect_replay_keeps_adjacent_slider_hold() -> void:
 	var release_count: int = 0
 	var release_time_us: int = -1
 	for sample: SemanticInputSample in replay.inputs:
-		if sample.kind == GameplayTypes.SemanticInputKind.LIFE_PRESSED:
+		if sample.kind == GameplayTypes.SemanticInputKind.LIFE_A_PRESSED:
 			press_count += 1
-		elif sample.kind == GameplayTypes.SemanticInputKind.LIFE_RELEASED:
+		elif sample.kind == GameplayTypes.SemanticInputKind.LIFE_A_RELEASED:
 			release_count += 1
 			release_time_us = sample.timestamp_us
 	_expect_equal(press_count, 1, "adjacent same-side sliders share one continuous press")
@@ -164,21 +168,21 @@ func _test_perfect_replay_keeps_adjacent_slider_hold() -> void:
 
 
 func _test_input_map_contract() -> void:
-	_expect(_joy_button(JOY_BUTTON_LEFT_SHOULDER, true).is_action_pressed(InputRouter.ACTION_DEATH), "L1 holds the death bell")
-	_expect(_joy_button(JOY_BUTTON_RIGHT_SHOULDER, true).is_action_pressed(InputRouter.ACTION_LIFE), "R1 holds the life bell")
-	_expect(_joy_button(JOY_BUTTON_LEFT_STICK, true).is_action_pressed(InputRouter.ACTION_DEATH), "L3 is an alternate left/death bell key")
-	_expect(_joy_button(JOY_BUTTON_RIGHT_STICK, true).is_action_pressed(InputRouter.ACTION_LIFE), "R3 is an alternate right/life bell key")
-	_expect(InputMap.has_action(InputRouter.ACTION_DEATH_TUNE_LEFT), "left-stick death-low action exists")
-	_expect(InputMap.has_action(InputRouter.ACTION_DEATH_TUNE_RIGHT), "left-stick death-high action exists")
-	_expect(InputMap.has_action(InputRouter.ACTION_LIFE_TUNE_LEFT), "right-stick life-low action exists")
-	_expect(InputMap.has_action(InputRouter.ACTION_LIFE_TUNE_RIGHT), "right-stick life-high action exists")
+	_expect(_joy_button(JOY_BUTTON_LEFT_SHOULDER, true).is_action_pressed(INPUT_BUFFER_SCRIPT.ACTION_DEATH), "L1 holds the death bell")
+	_expect(_joy_button(JOY_BUTTON_RIGHT_SHOULDER, true).is_action_pressed(INPUT_BUFFER_SCRIPT.ACTION_LIFE), "R1 holds the life bell")
+	_expect(_joy_button(JOY_BUTTON_LEFT_STICK, true).is_action_pressed(INPUT_BUFFER_SCRIPT.ACTION_DEATH), "L3 is an alternate left/death bell key")
+	_expect(_joy_button(JOY_BUTTON_RIGHT_STICK, true).is_action_pressed(INPUT_BUFFER_SCRIPT.ACTION_LIFE), "R3 is an alternate right/life bell key")
+	_expect(InputMap.has_action(INPUT_BUFFER_SCRIPT.ACTION_DEATH_TUNE_LEFT), "left-stick death-low action exists")
+	_expect(InputMap.has_action(INPUT_BUFFER_SCRIPT.ACTION_DEATH_TUNE_RIGHT), "left-stick death-high action exists")
+	_expect(InputMap.has_action(INPUT_BUFFER_SCRIPT.ACTION_LIFE_TUNE_LEFT), "right-stick life-low action exists")
+	_expect(InputMap.has_action(INPUT_BUFFER_SCRIPT.ACTION_LIFE_TUNE_RIGHT), "right-stick life-high action exists")
 	_expect(_joy_button(JOY_BUTTON_A, true).is_action_pressed(&"ui_accept"), "gamepad A remains menu confirm")
 	_expect(_joy_button(JOY_BUTTON_B, true).is_action_pressed(&"ui_cancel"), "gamepad B remains menu cancel")
-	_expect(_joy_button(JOY_BUTTON_START, true).is_action_pressed(InputRouter.ACTION_PAUSE), "gamepad Start remains pause")
+	_expect(_joy_button(JOY_BUTTON_START, true).is_action_pressed(INPUT_BUFFER_SCRIPT.ACTION_PAUSE), "gamepad Start remains pause")
 
 
 func _test_rule_driven_tuning_parameters() -> void:
-	var router := InputRouter.new()
+	var router: Node = INPUT_BUFFER_SCRIPT.new()
 	root.add_child(router)
 	var rules := GameplayRuleSet.new()
 	rules.tuning_min_frequency_hz = 2.0
@@ -186,21 +190,9 @@ func _test_rule_driven_tuning_parameters() -> void:
 	rules.tuning_pixels_per_hz = 120.0
 	rules.tuning_hz_per_revolution = 3.0
 	router.configure_from_rules(rules)
-
-	_expect_near(router.pointer_displacement_per_pixel, 1.0 / 720.0, 0.000001, "pointer scale is derived from the authored frequency-axis length")
-	_expect_near(router.rotary_displacement_per_radian, 3.0 / (TAU * 6.0), 0.000001, "one full revolution changes exactly the authored Hz amount")
-
-	var samples: Array[SemanticInputSample] = []
-	router.semantic_input_emitted.connect(func(sample: SemanticInputSample) -> void: samples.append(sample))
-	router.set_tuning_capture_active(true)
-	router.call("_handle_bell_event", _mouse_button(MOUSE_BUTTON_LEFT, true))
-	var move := InputEventMouseMotion.new()
-	move.relative = Vector2(72.0, 0.0)
-	router.call("_handle_tune_event", move)
-	_expect_near(samples[-1].tune_vector.y, 0.1, 0.0001, "72 px over a 720 px axis produces exactly one tenth normalized displacement")
-
-	router.cancel_all(InputRouter.CancelReason.SESSION_END, false)
-	router.queue_free()
+	_expect_near(router.pointer_displacement_per_pixel,1.0/720.0,0.000001,"规则频率范围决定指针尺度")
+	_expect_near(router.rotary_displacement_per_radian,3.0/(TAU*6.0),0.000001,"规则决定旋钮尺度")
+	router.free()
 
 
 func _test_rotary_tracker_contract() -> void:
@@ -287,69 +279,43 @@ func _test_rotary_tracker_contract() -> void:
 
 
 func _test_mouse_displacement_routing() -> void:
-	var router := InputRouter.new()
+	var router: Node = INPUT_BUFFER_SCRIPT.new()
 	root.add_child(router)
-	var samples: Array[SemanticInputSample] = []
-	router.semantic_input_emitted.connect(func(sample: SemanticInputSample) -> void: samples.append(sample))
-
-	var left_down := _mouse_button(MOUSE_BUTTON_LEFT, true)
-	router.call("_handle_bell_event", left_down)
-	_expect(router.death_held and not router.life_held, "left mouse holds death even outside a tuning field")
+	var events: Array[PhysicalInputEvent] = []
+	router.physical_input_emitted.connect(func(event: PhysicalInputEvent): events.append(event))
+	router._handle_bell_event(_mouse_button(MOUSE_BUTTON_LEFT,true))
+	_expect(router.death_held and not router.life_held,"左键保持死钟")
+	_expect_equal(events[-1].kind,GameplayTypes.PhysicalInputKind.MOUSE_LEFT_PRESSED,"缓冲保留精确物理键")
+	var mapped := InputSemanticConverter.to_gameplay(events[-1])
+	_expect_equal(mapped.event.kind,InputSemanticConverter.GameplayEvent.DEATH_A_PRESSED,"左键转换为死钟 A 通道")
 	var move := InputEventMouseMotion.new()
-	move.relative = Vector2(100.0, 50.0)
-	_expect(not bool(router.call("_handle_tune_event", move)), "mouse motion cannot tune outside an authored field")
-
+	move.relative = Vector2(72,20)
+	_expect(not router._handle_tune_event(move),"调频场外不接收鼠标位移")
 	router.set_tuning_capture_active(true)
-	router.set_tuning_gesture_windows([{
-		"event_id": "preview_death",
-		"affinity": GameplayTypes.Affinity.XUAN,
-		"start_value": 0.333333,
-		"end_value": 0.0,
-		"interaction_open": false,
-	}])
-	var before_preview_move: int = samples.size()
-	router.call("_handle_tune_event", move)
-	_expect_equal(samples.size(), before_preview_move, "the shrinking preview ring cannot be pre-filled by pointer movement")
-	router.set_tuning_gesture_windows([{
-		"event_id": "preview_death",
-		"affinity": GameplayTypes.Affinity.XUAN,
-		"start_value": 0.333333,
-		"end_value": 0.0,
-		"interaction_open": true,
-		"current_traversal_index": 0,
-	}])
-	router.call("_handle_tune_event", move)
-	var death_move: SemanticInputSample = samples[-1]
-	_expect_equal(death_move.kind, GameplayTypes.SemanticInputKind.TUNING_DISPLACED, "mouse drag emits displacement semantics")
-	_expect_near(death_move.tune_vector.x, 0.0, 0.000001, "left mouse does not move life tuning")
-	_expect_near(death_move.tune_vector.y, 100.0 * router.pointer_displacement_per_pixel, 0.0001, "left mouse moves death tuning immediately")
-
-	router.call("_handle_bell_event", _mouse_button(MOUSE_BUTTON_RIGHT, true))
-	router.call("_handle_tune_event", move)
-	var dual_move: SemanticInputSample = samples[-1]
-	_expect_near(dual_move.tune_vector.x, dual_move.tune_vector.y, 0.000001, "dual mouse hold applies the same temporary delta to both bells")
-	router.call("_handle_bell_event", _mouse_button(MOUSE_BUTTON_LEFT, false))
-	router.call("_handle_tune_event", move)
-	var life_move: SemanticInputSample = samples[-1]
-	_expect(life_move.tune_vector.x > 0.0 and is_zero_approx(life_move.tune_vector.y), "releasing left mouse leaves right-mouse life tuning independent")
-	router.cancel_all(InputRouter.CancelReason.FOCUS_LOST)
-	_expect(not router.life_held and not router.death_held, "focus cancellation clears all mouse-held bells")
-	_expect_equal(samples[-1].kind, GameplayTypes.SemanticInputKind.FOCUS_CANCELLED, "focus cancellation is replayable semantic input")
-	router.queue_free()
+	_expect(router._handle_tune_event(move),"场内接收鼠标位移")
+	_expect_equal(events[-1].relative,Vector2(72,20),"物理层保留原始位移，留给会话转换")
+	router.begin_frame(events[-1].timestamp_us)
+	var first: Dictionary = router.query(GameplayTypes.PhysicalInputKind.MOUSE_MOVED)
+	_expect(first.event == router.query(GameplayTypes.PhysicalInputKind.MOUSE_MOVED).event,"同帧查询复用最早事件")
+	router.end_frame()
+	_expect(not router.has_input(GameplayTypes.PhysicalInputKind.MOUSE_MOVED),"帧末消费已查询事件")
+	router._handle_bell_event(_mouse_button(MOUSE_BUTTON_LEFT,false))
+	_expect(not router.death_held,"松开左键释放死钟")
+	router.free()
 
 
 func _test_pause_menu_mouse_passthrough() -> void:
 	var original_mouse_mode: Input.MouseMode = Input.mouse_mode
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-	var router := InputRouter.new()
+	var router: Node = INPUT_BUFFER_SCRIPT.new()
 	root.add_child(router)
-	var samples: Array[SemanticInputSample] = []
-	router.semantic_input_emitted.connect(func(sample: SemanticInputSample) -> void: samples.append(sample))
-	router.set_mode(InputRouter.InputMode.GAMEPLAY)
+	var samples: Array[PhysicalInputEvent] = []
+	router.physical_input_emitted.connect(func(sample: PhysicalInputEvent) -> void: samples.append(sample))
+	router.set_mode(INPUT_BUFFER_SCRIPT.InputMode.GAMEPLAY)
 	router.set_tuning_capture_active(true)
 	_expect(bool(router.get("_mouse_captured_by_router")), "active tuning owns mouse capture during gameplay")
 
-	router.set_mode(InputRouter.InputMode.RESUME_REARM)
+	router.set_mode(INPUT_BUFFER_SCRIPT.InputMode.RESUME_REARM)
 	_expect(not bool(router.get("_mouse_captured_by_router")), "opening the pause menu releases gameplay mouse ownership")
 	_expect_equal(Input.mouse_mode, Input.MOUSE_MODE_VISIBLE, "opening the pause menu restores a visible mouse cursor")
 	var before_click: int = samples.size()
@@ -357,149 +323,34 @@ func _test_pause_menu_mouse_passthrough() -> void:
 	_expect_equal(samples.size(), before_click, "pause-menu click is not consumed as a bell strike before Button receives it")
 	_expect(not router.death_held and not router.life_held, "pause-menu click does not alter gameplay hold state")
 
-	router.set_mode(InputRouter.InputMode.GAMEPLAY)
+	router.set_mode(INPUT_BUFFER_SCRIPT.InputMode.GAMEPLAY)
 	_expect(bool(router.get("_mouse_captured_by_router")), "resuming inside the tuning field restores gameplay mouse ownership")
-	router.set_mode(InputRouter.InputMode.DISABLED)
+	router.set_mode(INPUT_BUFFER_SCRIPT.InputMode.DISABLED)
 	_expect_equal(Input.mouse_mode, Input.MOUSE_MODE_VISIBLE, "leaving gameplay restores the original mouse mode")
 	router.queue_free()
 	Input.mouse_mode = original_mouse_mode
 
 
 func _test_gamepad_rotary_routing() -> void:
-	var router := InputRouter.new()
+	var router: Node = INPUT_BUFFER_SCRIPT.new()
 	root.add_child(router)
-	var samples: Array[SemanticInputSample] = []
-	router.semantic_input_emitted.connect(func(sample: SemanticInputSample) -> void: samples.append(sample))
-	router.set_tuning_capture_active(true)
-	router.set_tuning_gesture_windows([
-		{
-			"event_id": "life_window",
-			"affinity": GameplayTypes.Affinity.ZHU,
-			"start_value": 0.333333,
-			"end_value": 0.666667,
-		},
-		{
-			"event_id": "death_window",
-			"affinity": GameplayTypes.Affinity.XUAN,
-			"start_value": 0.333333,
-			"end_value": 0.0,
-		},
-	])
-
-	var l1 := _joy_button(JOY_BUTTON_LEFT_SHOULDER, true)
-	l1.device = 0
-	router.call("_handle_bell_event", l1)
-	var r1 := _joy_button(JOY_BUTTON_RIGHT_SHOULDER, true)
-	r1.device = 0
-	router.call("_handle_bell_event", r1)
-	var gesture_windows: Dictionary = router.tuning_gesture_window_snapshot()
-	var life_window: Dictionary = gesture_windows["life"]
-	var death_window: Dictionary = gesture_windows["death"]
-	var life_angles: Vector2 = TuningArcGeometry.symmetric_directed_angles(
-		GameplayTypes.Affinity.ZHU,
-		int(life_window["rotation_sign"]),
-		float(life_window["arc_sweep_rad"])
-	)
-	var death_angles: Vector2 = TuningArcGeometry.symmetric_directed_angles(
-		GameplayTypes.Affinity.XUAN,
-		int(death_window["rotation_sign"]),
-		float(death_window["arc_sweep_rad"])
-	)
-
-	# 起点窗只负责首次捕获。相反半屏和圆弧中央都不能跳过起点直接建立手势。
-	var before_wrong_hemisphere: int = samples.size()
-	router.call("_process_rotary_sticks", 0, Vector2.DOWN, 0, Vector2.UP)
-	_expect_equal(samples.size(), before_wrong_hemisphere, "wrong visual hemispheres cannot establish a rotary gesture")
-	router.call("_process_rotary_sticks", 0, Vector2.UP, 0, Vector2.DOWN)
-	_expect_equal(samples.size(), before_wrong_hemisphere, "the middle of each arc cannot bypass its authored start")
-
-	# 生升频弧从左上到右上，死降频弧从右下到左下；在 Godot 的 Y 向下坐标中
-	# 二者都是正角度（视觉顺时针），而频率轴位移应一正一负。
-	var life_upper_left := Vector2.from_angle(life_angles.x)
-	var life_upper_right := Vector2.from_angle(life_angles.y)
-	var death_lower_right := Vector2.from_angle(death_angles.x)
-	var death_lower_left := Vector2.from_angle(death_angles.y)
-	var before_rotation_count: int = samples.size()
-	router.call("_process_rotary_sticks", 0, life_upper_left, 0, death_lower_right)
-	_expect_equal(samples.size(), before_rotation_count, "anchoring both sticks emits no tuning displacement")
-	router.call("_process_rotary_sticks", 0, life_upper_right, 0, death_lower_left)
-	var clockwise: SemanticInputSample = samples[-1]
-	_expect_equal(clockwise.kind, GameplayTypes.SemanticInputKind.TUNING_DISPLACED, "gamepad rotation emits displacement semantics")
-	_expect(clockwise.tune_vector.x > 0.0 and clockwise.tune_vector.y < 0.0, "upper-left to upper-right and lower-right to lower-left are both clockwise gestures")
-	_expect_near(clockwise.tune_vector.x, -clockwise.tune_vector.y, 0.000001, "mirrored equal rotations preserve equal magnitudes on both channels")
-	# 往返折返点只改变当前所需旋向；事件 ID、固定弧和摇杆接合都必须保留。
-	router.set_tuning_gesture_windows([
-		{
-			"event_id": "life_window",
-			"affinity": GameplayTypes.Affinity.ZHU,
-			"start_value": 0.333333,
-			"end_value": 0.666667,
-			"raw_player_progress": 1.0,
-			"required_rotation_sign": -1,
-		},
-		{
-			"event_id": "death_window",
-			"affinity": GameplayTypes.Affinity.XUAN,
-			"start_value": 0.333333,
-			"end_value": 0.0,
-			"raw_player_progress": 1.0,
-			"required_rotation_sign": -1,
-		},
-	])
-
-	# 某些驱动会重复上报仍处于按下状态的肩键；重复事件不能清掉已经建立的角度锚点。
-	router.call("_handle_bell_event", l1)
-	router.call("_handle_bell_event", r1)
-	var before_duplicate_rotation: int = samples.size()
-	router.call("_process_rotary_sticks", 0, Vector2.UP, 0, Vector2.DOWN)
-	_expect_equal(samples.size(), before_duplicate_rotation + 1, "duplicate shoulder presses do not reset active rotary trackers")
-	_expect(samples[-1].tune_vector.x < 0.0 and samples[-1].tune_vector.y > 0.0, "mirrored reverse rotation continues immediately after duplicate shoulder events")
-
-	var fixed_count: int = samples.size()
-	router.call("_process_rotary_sticks", 0, Vector2.UP, 0, Vector2.DOWN)
-	_expect_equal(samples.size(), fixed_count, "holding both sticks still produces no further movement")
-	router.call("_process_rotary_sticks", 0, life_upper_right, 0, death_lower_left)
-	var counter_clockwise: SemanticInputSample = samples[-1]
-	_expect(counter_clockwise.tune_vector.x > 0.0 and counter_clockwise.tune_vector.y < 0.0, "returning toward both arc endpoints restores clockwise progression")
-
-	var r1_up := _joy_button(JOY_BUTTON_RIGHT_SHOULDER, false)
-	r1_up.device = 0
-	router.call("_handle_bell_event", r1_up)
-	# 释放 R1 只停生钟。死钟先沿下弧退回起点，再从右下推向左下，仍应
-	# 按同一固定圆弧产生降频，而不是因为另一侧释放而重置。
-	router.call("_process_rotary_sticks", -1, Vector2.ZERO, 0, death_lower_right)
-	var after_release_count: int = samples.size()
-	router.call("_process_rotary_sticks", -1, Vector2.ZERO, 0, death_lower_left)
-	_expect_equal(samples.size(), after_release_count + 1, "releasing R1 leaves L1 rotation active")
-	_expect(is_zero_approx(samples[-1].tune_vector.x) and samples[-1].tune_vector.y < 0.0, "lower-right to lower-left is the Death slider's clockwise lowering gesture")
-	_expect_equal(router.last_tuning_displacement, samples[-1].tune_vector, "router exposes the most recent displacement for diagnostics")
-
-	# 某个手柄断开时，只撤销这个设备。这里用一根触指继续按住生钟，确认断连
-	# 不会清空无关来源，也不会向领域层发送会取消全部 Hold 的 FOCUS_CANCELLED。
-	router.call("_set_bell_source", true, "touch:99", true)
-	var before_disconnect_count: int = samples.size()
-	router.call("_on_joy_connection_changed", 0, false)
-	_expect(router.life_held, "disconnecting a gamepad preserves an unrelated touch hold")
-	_expect(not router.death_held, "disconnecting the sole L1 owner releases only the death bell")
-	_expect_equal(samples.size(), before_disconnect_count + 1, "selective disconnect emits only the changed bell release")
-	_expect_equal(samples[-1].kind, GameplayTypes.SemanticInputKind.DEATH_RELEASED, "selective disconnect never emits a global focus cancellation")
-	router.call("_set_bell_source", true, "touch:99", false)
-
-	# 设备断连需要清空粘住的肩键，却不能把谱面仍然开放的调频场一起关掉。
-	# 否则玩家改用键鼠后也要等到下一段才能继续调频。
-	router.cancel_all(InputRouter.CancelReason.DEVICE_DISCONNECTED, false, false)
-	_expect(bool(router.get("_tuning_capture_requested")), "device disconnect preserves the authored tuning-field gate")
-	router.call("_handle_bell_event", _mouse_button(MOUSE_BUTTON_LEFT, true))
-	var fallback_move := InputEventMouseMotion.new()
-	fallback_move.relative = Vector2(24.0, 0.0)
-	var fallback_count: int = samples.size()
-	router.call("_handle_tune_event", fallback_move)
-	_expect_equal(samples.size(), fallback_count + 1, "mouse can continue the same tuning field after a gamepad disconnect")
-	_expect(samples[-1].tune_vector.y > 0.0, "post-disconnect fallback still controls the death channel")
-	router.cancel_all(InputRouter.CancelReason.SESSION_END, false)
-	_expect(not bool(router.get("_tuning_capture_requested")), "session cleanup closes the tuning-field gate")
-	_expect(router.last_tuning_displacement.is_zero_approx(), "reset clears the diagnostic displacement")
-	router.queue_free()
+	var events: Array[PhysicalInputEvent] = []
+	router.physical_input_emitted.connect(func(event: PhysicalInputEvent): events.append(event))
+	for pair in [[JOY_BUTTON_LEFT_SHOULDER,InputSemanticConverter.GameplayEvent.DEATH_A_PRESSED],
+		[JOY_BUTTON_LEFT_STICK,InputSemanticConverter.GameplayEvent.DEATH_B_PRESSED],
+		[JOY_BUTTON_RIGHT_SHOULDER,InputSemanticConverter.GameplayEvent.LIFE_A_PRESSED],
+		[JOY_BUTTON_RIGHT_STICK,InputSemanticConverter.GameplayEvent.LIFE_B_PRESSED]]:
+		router._handle_bell_event(_joy_button(pair[0],true))
+		_expect_equal(InputSemanticConverter.to_gameplay(events[-1]).event.kind,pair[1],"手柄肩键/摇杆按键区分 A/B")
+		router._handle_bell_event(_joy_button(pair[0],false))
+	var left: PhysicalInputEvent = router._emit_joystick_event(GameplayTypes.PhysicalInputKind.GAMEPAD_LEFT_STICK_MOVED,2,Vector2(0.8,0.6))
+	var right: PhysicalInputEvent = router._emit_joystick_event(GameplayTypes.PhysicalInputKind.GAMEPAD_RIGHT_STICK_MOVED,3,Vector2(-0.6,0.8))
+	_expect_equal(left.device_id,2,"左摇杆保留设备 ID")
+	_expect_equal(right.axis_value,Vector2(-0.6,0.8),"右摇杆保留完整 X/Y 向量")
+	_expect_equal(InputSemanticConverter.to_tuning_control(left).stick_side,InputSemanticConverter.StickSide.LEFT,"左杆映射独立控制侧")
+	_expect_equal(InputSemanticConverter.to_tuning_control(right).stick_side,InputSemanticConverter.StickSide.RIGHT,"右杆映射独立控制侧")
+	_expect_near(InputSemanticConverter.to_tuning_control(left).control_vector.length(),1.0,0.00001,"满幅二维输入保留完整幅度")
+	router.free()
 
 
 func _test_virtual_clutch_directions_and_sweeps() -> void:
@@ -607,12 +458,12 @@ func _test_virtual_clutch_reengagement_and_event_boundaries() -> void:
 	_expect_near(tracker.update_finite_arc(Vector2.from_angle(start_angle + deg_to_rad(14.5))), 0.0, 0.000001, "the symmetric fifteen-degree start sector accepts its inner edge")
 	_expect(tracker.is_tracking(), "the new event establishes its own gesture session")
 
-	# InputRouter 只把当前可交互条交给 Tracker。未来预览既不能提前填充，也
+	# 物理缓冲只把当前可交互条交给 Tracker。未来预览既不能提前填充，也
 	# 不能因为排在数组前面而抢走当前事件。
-	var router := InputRouter.new()
+	var router: Node = INPUT_BUFFER_SCRIPT.new()
 	root.add_child(router)
-	var samples: Array[SemanticInputSample] = []
-	router.semantic_input_emitted.connect(func(sample: SemanticInputSample) -> void: samples.append(sample))
+	var samples: Array[PhysicalInputEvent] = []
+	router.physical_input_emitted.connect(func(sample: PhysicalInputEvent) -> void: samples.append(sample))
 	router.configure_from_rules(GameplayRuleSet.new())
 	router.set_tuning_capture_active(true)
 	var r1 := _joy_button(JOY_BUTTON_RIGHT_SHOULDER, true)
@@ -656,7 +507,7 @@ func _test_virtual_clutch_reengagement_and_event_boundaries() -> void:
 	router.call("_process_rotary_sticks", 0, Vector2.from_angle(current_angles.x), -1, Vector2.ZERO)
 	var before_active_move: int = samples.size()
 	router.call("_process_rotary_sticks", 0, Vector2.from_angle(current_angles.x + deg_to_rad(10.0)), -1, Vector2.ZERO)
-	_expect_equal(samples.size(), before_active_move + 1, "only the current event receives gamepad displacement")
+	_expect_equal(samples.size(), before_active_move, "历史旋钮追踪不重复发送已经采集的物理事件")
 	router.queue_free()
 
 
@@ -675,31 +526,26 @@ func _elliptical_stick_at_angle(physical_angle: float, radius_scale: float) -> V
 
 
 func _test_multitouch_routing() -> void:
-	var router := InputRouter.new()
+	var router: Node = INPUT_BUFFER_SCRIPT.new()
 	root.add_child(router)
-	var samples: Array[SemanticInputSample] = []
-	router.semantic_input_emitted.connect(func(sample: SemanticInputSample) -> void: samples.append(sample))
+	var events: Array[PhysicalInputEvent] = []
+	router.physical_input_emitted.connect(func(event: PhysicalInputEvent): events.append(event))
 	router.set_tuning_capture_active(true)
-
-	var upper := _touch(1, Vector2(200.0, 100.0), true)
-	var lower := _touch(2, Vector2(200.0, 900.0), true)
-	router.call("_handle_touch_event", upper)
-	router.call("_handle_touch_event", lower)
-	_expect(router.life_held and router.death_held, "two fingers independently hold upper-life and lower-death bells")
-
-	var upper_drag := _drag(1, Vector2(80.0, 20.0))
-	router.call("_handle_touch_event", upper_drag)
-	_expect(samples[-1].tune_vector.x > 0.0 and is_zero_approx(samples[-1].tune_vector.y), "upper finger moves only life tuning")
-	var lower_drag := _drag(2, Vector2(-60.0, 20.0))
-	router.call("_handle_touch_event", lower_drag)
-	_expect(samples[-1].tune_vector.y < 0.0 and is_zero_approx(samples[-1].tune_vector.x), "lower finger moves only death tuning")
-
-	router.call("_handle_touch_event", _touch(1, upper.position, false))
-	_expect(not router.life_held and router.death_held, "lifting upper finger leaves lower bell held")
-	router.call("_handle_touch_event", _touch(2, lower.position, false))
-	_expect(not router.life_held and not router.death_held, "lifting both fingers releases both bells")
-	router.cancel_all(InputRouter.CancelReason.SESSION_END, false)
-	router.queue_free()
+	var upper := _touch(1,Vector2(200,100),true)
+	var lower := _touch(2,Vector2(200,900),true)
+	router._handle_touch_event(upper)
+	router._handle_touch_event(lower)
+	_expect(router.life_held and router.death_held,"两根手指分别保持两侧")
+	router._handle_touch_event(_drag(1,Vector2(80,20)))
+	_expect_equal(events[-1].touch_id,1,"触屏位移保留手指 ID")
+	_expect_equal(events[-1].relative,Vector2(80,20),"触屏位移不提前转成另一套判定输入")
+	router._handle_touch_event(_drag(2,Vector2(-60,20)))
+	_expect_equal(events[-1].touch_id,2,"另一手指独立采样")
+	router._handle_touch_event(_touch(1,upper.position,false))
+	_expect(not router.life_held and router.death_held,"抬起上侧手指不释放下侧")
+	router._handle_touch_event(_touch(2,lower.position,false))
+	_expect(not router.life_held and not router.death_held,"两侧均可释放")
+	router.free()
 
 
 func _mouse_button(button: MouseButton, pressed: bool) -> InputEventMouseButton:

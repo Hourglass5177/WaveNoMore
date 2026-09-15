@@ -7,6 +7,7 @@ var _sliders := {}
 var _pages: Array[Control]
 var _tabs: Array[Button]
 var _page_motion: Tween
+var _tab_index := 0
 func _ready() -> void:
 	super._ready()
 	if Engine.is_editor_hint(): return
@@ -42,6 +43,7 @@ func _ready() -> void:
 func _show_value(label: Label, value: float, db: bool) -> void:
 	label.text = "%+.1f dB" % value if db else "%d%%" % roundi(value*100.0)
 func select_tab(index: int) -> void:
+	_tab_index = index
 	%CalibrationPage.deactivate()
 	for i in 3:
 		_pages[i].visible = index == i
@@ -76,3 +78,16 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
 		get_viewport().set_input_as_handled()
 		_close()
+
+func _input(event: InputEvent) -> void:
+	super._input(event)
+	if closing or not is_visible_in_tree(): return
+	# 文本框中的 E 仍可输入科学计数法；肩键随时可切分类。
+	if event is InputEventKey and get_viewport().gui_get_focus_owner() is LineEdit: return
+	for action: StringName in [&"menu_previous", &"menu_next"]:
+		if not event.is_action(action): continue
+		get_viewport().set_input_as_handled()
+		if event.is_action_pressed(action):
+			select_tab(posmod(_tab_index + (-1 if action == &"menu_previous" else 1), _pages.size()))
+			_tabs[_tab_index].grab_focus()
+		return

@@ -27,11 +27,15 @@ shader_parameter/shadow_texture = ExtResource("5_sjihi")
 
 [sub_resource type="LabelSettings" id="LabelSettings_s3cit"]
 font = ExtResource("7_s3cit")
-font_size = 48
+font_size = 60
+
+[sub_resource type="FontVariation" id="FontVariation_description"]
+base_font = ExtResource("7_s3cit")
+variation_transform = Transform2D(1, 0.2, 0, 1, 0, 0)
 
 [sub_resource type="LabelSettings" id="LabelSettings_vpojg"]
-line_spacing = 7.0
-font = ExtResource("7_s3cit")
+line_spacing = 3.5
+font = SubResource("FontVariation_description")
 font_size = 20
 
 [node name="LevelCard" type="Panel" unique_id=1675962168]
@@ -79,10 +83,10 @@ mouse_filter = 2
 
 [node name="Score" type="Label" parent="." unique_id=1896376124]
 layout_mode = 0
-offset_left = 24.0
-offset_top = -89.0
-offset_right = 336.0
-offset_bottom = -27.0
+offset_left = 16.0
+offset_top = -95.0
+offset_right = 328.0
+offset_bottom = -21.0
 text = "000000"
 material = ExtResource("score_gradient")
 label_settings = SubResource("LabelSettings_s3cit")
@@ -104,5 +108,6 @@ offset_right = 336.0
 offset_bottom = 425.0
 text = "文字测试"
 label_settings = SubResource("LabelSettings_vpojg")
+horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 2

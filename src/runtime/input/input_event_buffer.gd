@@ -482,6 +482,8 @@ func cancel_all(
 	cancelled.emit(int(reason))
 
 func _input(event: InputEvent) -> void:
+	# 玩法事件会被消费，先让提示服务看到设备来源；不修改采样或转换结果。
+	get_node("/root/UiInputHints").observe(event)
 	if not _input_enabled or mode == InputMode.DISABLED or mode == InputMode.REPLAY:
 		return
 

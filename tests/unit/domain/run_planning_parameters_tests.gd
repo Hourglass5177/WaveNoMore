@@ -22,14 +22,21 @@ func run() -> void:
 	var flow_changed:=snapshot.duplicate(true)
 	flow_changed.values["boundary/flow_speed_px_sec"]=72.0
 	flow_changed.values["boundary/flow_strength"]=.8
+	flow_changed.values["boundary/vortex_width_px"]=128.0
+	flow_changed.values["boundary/vortex_flow_speed_px_sec"]=110.0
+	flow_changed.values["boundary/vortex_beat_push_px"]=0.0
 	check(ChartCompiler.rules_hash(configured)==ChartCompiler.rules_hash(PlanningParameters.rules_copy(base,flow_changed)),"水流表现参数不进入 Replay 规则摘要")
 	var flow_style:=BoundaryMotionStyle.new();PlanningParameters.apply_values(flow_style,"boundary",flow_changed)
 	check(flow_style.flow_speed_px_sec==72.0 and is_equal_approx(flow_style.flow_strength,.8),"工作簿水流参数装入表现副本")
+	check(flow_style.vortex_width_px==128.0 and flow_style.vortex_flow_speed_px_sec==110.0 and flow_style.vortex_beat_push_px==0.0,"卷流几何、流速和拍点开关装入表现副本")
 	for entry: Dictionary in JSON.parse_string(FileAccess.get_file_as_string(PlanningParameters.SCHEMA_PATH)):
 		var actual: Variant
 		if entry.target == "rules": actual = base.get(entry.key)
 		elif entry.target == "boundary": actual = load("res://content/presentation/boundary_motion_style.tres").get(entry.key)
 		elif entry.target == "actors": actual = StageVisualTheme.new().get(entry.key)
+		elif entry.target == "boss":
+			# 审看资源直接读取脚本默认，不创建尚未装配的表现节点。
+			actual=load("res://"+entry.source).get_property_default_value(entry.key)
 		else:
 			var parts: PackedStringArray = entry.target.split(":")
 			var pet := load("res://content/pets/pet_%s.tres" % parts[1]) as PetDefinition

@@ -1,5 +1,6 @@
 [gd_scene format=3]
 
+[ext_resource type="Script" path="res://src/app/ui/shortcut_glyph.gd" id="shortcut"]
 [ext_resource type="Script" path="res://src/app/pet_select_modal.gd" id="1"]
 [ext_resource type="Theme" path="res://content/ui/game_theme.tres" id="2"]
 [ext_resource type="Texture2D" path="res://assets/image/ui/选关/background.png" id="3"]
@@ -21,6 +22,7 @@
 [sub_resource type="ShaderMaterial" id="shadow"]
 resource_local_to_scene = true
 shader = ExtResource("shadow")
+
 
 [node name="Screen" type="Control"]
 layout_mode = 3
@@ -315,3 +317,15 @@ text = "结束测试"
 script = ExtResource("16")
 layout_mode = 2
 size_flags_horizontal = 3
+
+
+
+[node name="Shortcut" type="Control" parent="Design/Back"]
+layout_mode = 0
+offset_left = 18.0
+offset_top = 8.0
+offset_right = 76.0
+offset_bottom = 52.0
+mouse_filter = 2
+script = ExtResource("shortcut")
+action = &"ui_cancel"

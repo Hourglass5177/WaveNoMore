@@ -10,7 +10,7 @@ func run() -> void:
 	var wave: BoundaryWaveScene=load("res://scenes/presentation/boundary_waves.tscn").instantiate()
 	vp.add_child(wave);wave.position=Vector2(-49.9,-10.3);wave.scale=Vector2.ONE*BoundaryWaveScene.DESIGN_SCALE
 	var line:=Line2D.new();line.width=2;line.default_color=Color("e5dfbd")
-	for i in 129:line.add_point(Vector2(960,540)+Vector2.from_angle(i*TAU/128.0)*56)
+	for i in 129:line.add_point(Vector2(960,540)+Vector2.from_angle(i*TAU/128.0)*66)
 	vp.add_child(line)
 	var folder:="res://build/boundary-animation/v2/"
 	var start:=0;var count:=240;var fps:=30.0;var bpm:=120.0

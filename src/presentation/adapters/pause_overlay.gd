@@ -55,6 +55,7 @@ func _ready() -> void:
 	_chrome.assign([_root.get_node("Dim"), _root.get_node("Design/Panel"),
 		_root.get_node("Design/Fire"), _continue_button, _retry_button, _exit_button, %AddLocal])
 	_root.visible = false
+	_update_focus_order()
 
 
 func bind(session: StageSession) -> void:
@@ -101,6 +102,7 @@ func _on_resume_countdown_changed(seconds_remaining: float) -> void:
 		_title.text = ""
 		return
 	if not _transitioning: _begin_eye_transition()
+	# 默认三秒依次显示 3、2、1，每个数字占满一秒，再恢复玩法。
 	_title.text = "%d" % ceili(seconds_remaining)
 	# 用会话剩余时间收尾，不延长恢复时刻，也不让淡出覆盖已经开始的玩法。
 	if seconds_remaining < 0.14:
@@ -150,3 +152,22 @@ func configure_external(temporary: bool) -> void:
 	_exit_button.text = "结束试玩" if temporary else "返回本地谱面"
 	%ExitArt.hide()
 	%AddLocal.visible = temporary
+	_update_focus_order()
+
+func _update_focus_order() -> void:
+	# 暂停主操作只在这一行循环；试玩附加按钮参与 Tab，方向下移可抵达。
+	var row: Array[Button] = [_retry_button, _continue_button, _exit_button]
+	for i in row.size():
+		row[i].focus_neighbor_left = row[i].get_path_to(row[posmod(i - 1, row.size())])
+		row[i].focus_neighbor_right = row[i].get_path_to(row[(i + 1) % row.size()])
+		row[i].focus_neighbor_top = row[i].get_path()
+		row[i].focus_neighbor_bottom = row[i].get_path_to(%AddLocal) if %AddLocal.visible else row[i].get_path()
+	var order := row.duplicate()
+	if %AddLocal.visible: order.append(%AddLocal)
+	for i in order.size():
+		order[i].focus_next = order[i].get_path_to(order[(i + 1) % order.size()])
+		order[i].focus_previous = order[i].get_path_to(order[posmod(i - 1, order.size())])
+	%AddLocal.focus_neighbor_top = %AddLocal.get_path_to(_continue_button)
+
+func _input(event: InputEvent) -> void:
+	if _root.visible: get_node("/root/UiInputHints").observe(event)

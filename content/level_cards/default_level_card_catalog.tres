@@ -22,7 +22,7 @@ script = ExtResource("2")
 title = "教程2"
 stage_id = "tutorial2"
 image = ExtResource("2_7ogen")
-monster_scale = 1.4
+monster_scale = 2.00
 eye_icon_selected = ExtResource("3_4asjf")
 eye_icon_unselected = ExtResource("4_nx3ka")
 background = ExtResource("6_heading")
@@ -31,7 +31,7 @@ heading_texture = ExtResource("2_fkwas")
 background_effect_frames = ExtResource("2_dwpdq")
 background_effect_scale = 2.0
 background_effect_offset = Vector2(0, -25)
-description = "〔蝙蝠描述〕"
+description = "〔你坚信生命依然\n在棺椁中流动。〕"
 
 [sub_resource type="Resource" id="Entry2"]
 script = ExtResource("2")
@@ -46,8 +46,7 @@ heading_texture = ExtResource("5_dwpdq")
 background_effect_frames = ExtResource("2_dwpdq")
 background_effect_scale = 2.0
 background_effect_offset = Vector2(0, -25)
-description = "    〔别着香草的美人，
-               烧光了整片沼泽。〕"
+description = "〔别着香草的美人，\n烧光了整片沼泽。〕"
 
 [sub_resource type="Resource" id="Resource_s6mt0"]
 script = ExtResource("2")
@@ -62,7 +61,7 @@ heading_texture = ExtResource("7_2s8gp")
 background_effect_frames = ExtResource("2_dwpdq")
 background_effect_scale = 2.0
 background_effect_offset = Vector2(0, -25)
-description = "〔羊头描述〕"
+description = "〔成礼兮会鼓，传芭兮代舞，\n姱女倡兮容与。〕"
 metadata/_custom_type_script = "uid://hdbtdjofj14n"
 
 [resource]

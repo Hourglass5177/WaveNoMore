@@ -56,10 +56,10 @@ mouse_filter = 2
 
 [node name="Panel" type="TextureRect" parent="Root/Design"]
 layout_mode = 0
-offset_left = 380.0
-offset_top = 305.0
-offset_right = 1540.0
-offset_bottom = 835.0
+offset_left = 472.8
+offset_top = 398.88
+offset_right = 1447.2
+offset_bottom = 844.08
 texture = ExtResource("4")
 expand_mode = 1
 mouse_filter = 2
@@ -67,10 +67,10 @@ mouse_filter = 2
 
 [node name="Fire" type="TextureRect" parent="Root/Design"]
 layout_mode = 0
-offset_left = 174.0
-offset_top = 160.0
-offset_right = 1754.0
-offset_bottom = 1040.0
+offset_left = 299.76
+offset_top = 277.08
+offset_right = 1626.96
+offset_bottom = 1016.28
 script = ExtResource("5")
 expand_mode = 1
 mouse_filter = 2
@@ -79,10 +79,10 @@ mouse_filter = 2
 [node name="ClosedEye" type="TextureRect" parent="Root/Design"]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 855.0
-offset_top = 419.0
-offset_right = 1065.0
-offset_bottom = 527.0
+offset_left = 871.8
+offset_top = 494.64
+offset_right = 1048.2
+offset_bottom = 585.36
 texture = ExtResource("6")
 expand_mode = 1
 stretch_mode = 5
@@ -92,10 +92,10 @@ mouse_filter = 2
 [node name="OpenEye" type="TextureRect" parent="Root/Design"]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 800.0
-offset_top = 383.0
-offset_right = 1120.0
-offset_bottom = 551.0
+offset_left = 746.14
+offset_top = 453.53
+offset_right = 1173.86
+offset_bottom = 677.62
 texture = ExtResource("7")
 expand_mode = 1
 stretch_mode = 5
@@ -105,10 +105,10 @@ mouse_filter = 2
 [node name="Countdown" type="Label" parent="Root/Design"]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 898.0
-offset_top = 397.0
-offset_right = 1022.0
-offset_bottom = 512.0
+offset_left = 898
+offset_top = 482.5
+offset_right = 1022
+offset_bottom = 597.5
 text = ""
 theme_override_font_sizes/font_size = 76
 horizontal_alignment = 1
@@ -119,10 +119,10 @@ mouse_filter = 2
 [node name="Continue" type="Button" parent="Root/Design"]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 814.0
-offset_top = 645.0
-offset_right = 1106.0
-offset_bottom = 738.0
+offset_left = 837.36
+offset_top = 684.48
+offset_right = 1082.64
+offset_bottom = 762.6
 text = ""
 script = ExtResource("8")
 
@@ -143,10 +143,10 @@ mouse_filter = 2
 [node name="Retry" type="Button" parent="Root/Design"]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 474.0
-offset_top = 645.0
-offset_right = 766.0
-offset_bottom = 738.0
+offset_left = 551.76
+offset_top = 684.48
+offset_right = 797.04
+offset_bottom = 762.6
 text = ""
 script = ExtResource("10")
 
@@ -167,10 +167,10 @@ mouse_filter = 2
 [node name="Exit" type="Button" parent="Root/Design"]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 1154.0
-offset_top = 645.0
-offset_right = 1446.0
-offset_bottom = 738.0
+offset_left = 1122.96
+offset_top = 684.48
+offset_right = 1368.24
+offset_bottom = 762.6
 text = ""
 script = ExtResource("12")
 
@@ -191,10 +191,10 @@ mouse_filter = 2
 [node name="AddLocal" type="Button" parent="Root/Design"]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 765.0
-offset_top = 766.0
-offset_right = 1155.0
-offset_bottom = 822.0
+offset_left = 796.2
+offset_top = 786.12
+offset_right = 1123.8
+offset_bottom = 833.16
 text = "加入本地谱面"
 script = ExtResource("14")
 visible = false

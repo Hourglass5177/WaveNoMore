@@ -1,9 +1,11 @@
 [gd_scene format=3]
 
+[ext_resource type="Script" path="res://src/app/ui/shortcut_glyph.gd" id="shortcut"]
 [ext_resource type="PackedScene" path="res://scenes/ui/modals/level_choosing.tscn" id="1"]
 [ext_resource type="Script" path="res://src/app/stage_select_screen.gd" id="2"]
 [ext_resource type="Theme" path="res://content/ui/game_theme.tres" id="3"]
 [ext_resource type="Script" path="res://src/app/ui/art_button.gd" id="4"]
+
 
 [node name="StageSelectScreen" instance=ExtResource("1")]
 script = ExtResource("2")
@@ -79,3 +81,33 @@ focus_next = NodePath("../../..")
 focus_previous = NodePath("../Pets")
 text = "设置"
 script = ExtResource("4")
+
+[node name="Shortcut" type="Control" parent="Design/Actions/Pets"]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 10.0
+offset_right = 54.0
+offset_bottom = 54.0
+mouse_filter = 2
+script = ExtResource("shortcut")
+action = &"menu_pets"
+
+[node name="Shortcut" type="Control" parent="Design/Actions/Settings"]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 10.0
+offset_right = 54.0
+offset_bottom = 54.0
+mouse_filter = 2
+script = ExtResource("shortcut")
+action = &"menu_settings"
+
+[node name="Shortcut" type="Control" parent="Design/Actions/Back"]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 10.0
+offset_right = 54.0
+offset_bottom = 54.0
+mouse_filter = 2
+script = ExtResource("shortcut")
+action = &"ui_cancel"

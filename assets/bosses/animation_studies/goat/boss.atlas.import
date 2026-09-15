@@ -1,0 +1,16 @@
+[remap]
+
+importer="spine.atlas"
+type="SpineAtlasResource"
+uid="uid://cwpvjcidyuafk"
+path="res://.godot/imported/boss.atlas-0ce258dd7169cd449abd6d71d90273cc.spatlas"
+
+[deps]
+
+source_file="res://assets/bosses/animation_studies/goat/boss.atlas"
+dest_files=["res://.godot/imported/boss.atlas-0ce258dd7169cd449abd6d71d90273cc.spatlas"]
+
+[params]
+
+normal_map_prefix="n"
+specular_map_prefix="s"

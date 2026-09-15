@@ -68,11 +68,11 @@ for pet, name, key, values, unit, recommended, step, limits, meaning in [
 
 for key,name,value,unit,suggested,step,low,high,meaning in [
     ('enabled','波浪动画',True,'开关','开启',1,0,1,'关闭后原画静止；只影响背景表现。'),
-    ('bar_interval','大浪间隔',1,'小节','1',1,1,4,'每隔此数小节首拍拍落一对大浪；每道浪持续两小节。'),
-    ('wave_height_px','大浪高度',165.0,'设计 px','150～170',1,100,190,'最高伸顶姿势的高度；修改后检查判定圈周围留白。'),
-    ('advance_px','浪身推进',190.0,'设计 px','160～200',1,100,240,'从低水脊到触水的前进距离；水沫随后再前滑约 120 px。'),
-    ('curl_travel_px','翻卷行程',90.0,'设计 px','70～110',1,70,110,'控制浪唇横向舒展与翻送尺度，浪高独立配置。'),
-    ('foam_strength','白沫强度',0.9,'比例','60%～100%',0.05,0,1,'只控制拍落后白沫和细水线的不透明度。'),
+    ('vortex_inner_radius_px','漩涡内半径',88.0,'设计 px','88～100',1,80,110,'中央留白的基准尺度；整体弧面向外调整，不裁切水体。'),
+    ('vortex_width_px','浪身宽度',112.0,'设计 px','100～130',2,80,150,'向浪身外缘增加厚度；入口下缘保持平顺上行。'),
+    ('vortex_foam_strength','细沫强度',0.65,'比例','50%～75%',0.05,0,1,'沿卷流前进的骨白细水纹混合强度。'),
+    ('vortex_flow_speed_px_sec','卷流速度',96.0,'设计 px/s','80～120',4,0,180,'水纹沿厚浪弧线连续前进的速度；浪缘略快，抵达尖端逐渐消散。'),
+    ('vortex_beat_push_px','每拍推进',1.25,'设计 px/拍','0～2',0.05,0,3,'每拍前 0.4 拍柔和增加的路程；0 关闭提速，基础卷流继续。'),
     ('flow_enabled','基底水流',True,'开关','开启',1,0,1,'关闭后基底原纹固定，活动浪头继续播放；总动画关闭时仍恢复完整原画。'),
     ('flow_speed_px_sec','基底流速',60.0,'设计 px/s','48～72',2,0,100,'内部色带的基准流速；局部随水带宽窄变化，不随 BPM 加速。'),
     ('flow_strength','原纹流动强度',0.80,'比例','65%～90%',0.05,0,1,'内部流动颜色的混合比例；不改变透明轮廓和水带厚度。'),
@@ -85,7 +85,7 @@ for key,name,value,unit,suggested,step,low,high,meaning in [
 out=ROOT/'content/rules/planning_parameters.json'
 # 角色移动的表现目录单独维护，重建玩法基线时保留这些字段。
 if out.exists():
-    rows.extend(r for r in json.loads(out.read_text(encoding='utf-8')) if r['target']=='actors')
+    rows.extend(r for r in json.loads(out.read_text(encoding='utf-8')) if r['target'] in ['actors','boss'])
 out.write_text(json.dumps(rows,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
 print(f'{len(rows)} 个可编辑参数')
 
@@ -96,7 +96,7 @@ def display(value, unit):
 directory=ROOT/'docs/planning'
 directory.mkdir(parents=True,exist_ok=True)
 for pet_page, filename, title in [(False,'01-全局数值.md','全局手感与数值'),(True,'02-随从数值.md','随从技能数值')]:
-    selected=[r for r in rows if r['target'] not in ['boundary','actors'] and r['target'].startswith('pet:')==pet_page]
+    selected=[r for r in rows if r['target'] not in ['boundary','actors','boss'] and r['target'].startswith('pet:')==pet_page]
     lines=[f'# {title}', '', '基线：2026-09-14。表格 B 列可直接修改；下列区间是试调建议，允许输入范围另列。实际值以工作簿当前值为准。', '']
     if pet_page:
         lines+=['随从中性配置的所有加成默认均为 0。下表是三只正式随从的两阶资源覆盖；只有已装备的形态生效，进阶不与基础叠加。技能描述原文未改动。', '',

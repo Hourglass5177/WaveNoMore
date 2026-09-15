@@ -1,7 +1,7 @@
 @tool
 class_name BoundaryWaveScene
 extends Node2D
-## 所有动作按外部绝对歌曲时钟采样。常驻四个 Spine 实例，不逐拍分配场景。
+## 两股常驻厚浪中心对称放置，水纹共用绝对路程，小浪沿原节拍编排。
 const ART := "res://assets/image/background/boundary_waves/"
 const DESIGN_SCALE := 0.7616555803103707
 const CENTER := Vector2(1325,720)
@@ -21,7 +21,7 @@ func _ready() -> void:
 	originals = Sprite2D.new(); originals.centered=false
 	originals.texture=load("res://assets/image/background/edge.png"); add_child(originals)
 	animated=Node2D.new(); add_child(animated)
-	band=Sprite2D.new(); band.centered=false; band.texture=load(ART+"water_band.png"); animated.add_child(band)
+	band=Sprite2D.new(); band.centered=false; band.texture=load("res://assets/image/background/boundary_vortex/water_band_split.png"); animated.add_child(band)
 	flow_material=ShaderMaterial.new(); flow_material.shader=WATER_FLOW
 	flow_material.set_shader_parameter("flow_control",load(ART+"flow_control.png"))
 	flow_material.set_shader_parameter("flow_streaks",load(ART+"flow_streaks.png"))
@@ -29,14 +29,10 @@ func _ready() -> void:
 	for side in 2:
 		var world := Node2D.new(); world.position=CENTER; world.rotation=side*PI
 		world.scale=Vector2.ONE/DESIGN_SCALE; animated.add_child(world)
-		for index in 2:
-			var spine := SpineSprite.new(); spine.skeleton_data_res=load(ART+"wave.tres")
-			world.add_child(spine); spine.set_update_mode(SpineConstant.UpdateMode_Manual)
-			var material := ShaderMaterial.new(); material.shader=CLIP
-			spine.normal_material=material
-			# 骨骼连续采样，附件留在首帧；着色器负责相邻轮廓补间。
-			var track=spine.get_animation_state().set_animation("flow",false,0)
-			big.append({"sprite":spine,"track":track,"material":material})
+		var arm := BoundaryVortexArm.new()
+		world.add_child(arm)
+		arm.material_instance.set_shader_parameter("world_sign",1.0 if side==0 else -1.0)
+		big.append({"sprite":arm,"material":arm.material_instance})
 		for index in 3:
 			var sprite := AnimatedSprite2D.new(); sprite.sprite_frames=load(ART+"small_frames.tres")
 			sprite.animation=&"wave"; sprite.centered=false; sprite.offset=-Vector2(280,232)
@@ -60,24 +56,9 @@ func sample_background(seconds: float) -> void:
 	for field in [&"flow_enabled",&"flow_speed_px_sec",&"flow_strength",&"streak_strength"]:
 		flow_material.set_shader_parameter(field,driver.style.get(field))
 	last_state=schedule.sample(seconds)
+	var travel:=driver.vortex_distance_at(seconds)
 	for side in 2:
-		for index in 2:
-			var item := big[side*2+index]
-			var sprite: SpineSprite=item.sprite
-			sprite.visible=index < last_state.large.size()
-			if not sprite.visible: continue
-			var phase: float=last_state.large[index].phase
-			# 独立的前进路径跨过水带；收尾继续向前摊开，不退回起点。
-			var travel := smoothstep(0.0,.78,phase)
-			sprite.position=Vector2(-155.0+driver.style.advance_px*travel+120.0*smoothstep(.75,1.0,phase),0)
-			var crest_scale := driver.style.wave_height_px/200.0
-			sprite.scale=Vector2(.76*driver.style.curl_travel_px/90.0,crest_scale)
-			var opacity := smoothstep(0.0,.10,phase)*(1.0-smoothstep(.87,1.0,phase))
-			if phase>.75: opacity*=lerpf(1.0,driver.style.foam_strength,smoothstep(.75,.82,phase))
-			sprite.modulate.a=clampf(opacity,0.0,1.0)
-			_sample_material(item.material,phase)
-			item.track.set_track_time(phase)
-			sprite.update_skeleton(0.0)
+		big[side].sprite.sample(travel,driver.style)
 		for index in 3:
 			var sprite := little[side*3+index]
 			sprite.visible=index < last_state.small.size()

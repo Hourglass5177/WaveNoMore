@@ -62,7 +62,7 @@ signal debug_snapshot_ready(snapshot: Dictionary)
 
 @export_group("Lifecycle")
 ## 从暂停返回玩法前的保护倒计时，单位为秒。数值越大，玩家重新就位的时间越充裕。
-@export_range(0.0, 5.0, 0.05) var resume_countdown_sec: float = 1.25
+@export_range(0.0, 5.0, 0.05) var resume_countdown_sec: float = 3.0
 ## 乐曲与玩法结束后等待物理视觉收尾的最短时间，单位为秒。
 @export_range(0.0, 3.0, 0.05) var finish_settle_sec: float = 0.35
 ## 角色死亡及末姿停留所需的表现时间；不进入判定规则和 Replay 哈希。

@@ -1,0 +1,27 @@
+{
+  "canvas": [
+    384,
+    256
+  ],
+  "design_canvas": [
+    576,
+    384
+  ],
+  "anchor": [
+    288,
+    192
+  ],
+  "key_times": [
+    0.0,
+    0.15,
+    0.27,
+    0.38,
+    0.48,
+    0.58,
+    0.7,
+    1.0
+  ],
+  "frames": 128,
+  "style": "单股细纹卷臂，运行时中心对称配对",
+  "source": "source/rising-profile-green.png"
+}

@@ -39,3 +39,6 @@ extends Resource
 ## 相对于本阵营默认安全锚点的画面偏移，单位为设计像素。
 ## 它只用于给连续滑条编排构图，不参与频率、判定或 Replay。
 @export var visual_offset_px: Vector2 = Vector2.ZERO
+
+## 角度路径拆段时仅首段保留起手提示；表现标记随资源复制保留，不进入 JSON 或 Replay。
+@export_storage var show_rotation_cue: bool = true
