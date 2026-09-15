@@ -320,7 +320,7 @@ func _popup(dialog: Window, minimum: Vector2i) -> void:
 		dialog.move_to_center()
 
 func _file_dialog(title: String, mode: FileDialog.FileMode, filters: PackedStringArray, action: Callable) -> void:
-	var dialog:=FileDialog.new();dialog.title=title;dialog.access=FileDialog.ACCESS_FILESYSTEM;dialog.file_mode=mode;dialog.filters=filters
+	var dialog:=FileDialog.new();dialog.access=FileDialog.ACCESS_FILESYSTEM;dialog.file_mode=mode;dialog.filters=filters;dialog.title=title
 	add_child(dialog)
 	if not document.directory.is_empty(): dialog.current_dir=ProjectSettings.globalize_path(document.directory)
 	if mode==FileDialog.FILE_MODE_OPEN_DIR: dialog.dir_selected.connect(func(path): action.call(path);dialog.queue_free())
@@ -768,17 +768,17 @@ func _preview_loading(active: bool) -> void:
 func add_object(kind:String) -> void:
 	var id:=document.add_object(kind);select_objects(PackedStringArray([id]));_left_panel.current_tab=1
 
-func add_asset_object(asset:String,at:=Vector2(960,540)) -> void:
+func add_asset_object(asset:String,at:=Vector2(960,540)) -> bool:
 	if asset in _asset_list.get_meta("background_ids", PackedStringArray()):
-		add_environment_cue(asset,time_us);return
+		add_environment_cue(asset,time_us);return document.last_error.is_empty()
 	var resource:=_assets.resolve(asset)
 	if resource==null:
-		message("无法读取素材，请重新导入或修复缺失引用：\n"+asset);return
+		message("无法读取素材，请重新导入或修复缺失引用：\n"+asset);return false
 	if resource is SpriteFrames and _assets.default_animation(asset).is_empty():
-		message("此动画没有可显示的帧，请在动画导入窗口添加图片后重新导入。");return
+		message("此动画没有可显示的帧，请在动画导入窗口添加图片后重新导入。");return false
 	if resource is Font:
-		if selection.is_empty() or not Array(selection).all(func(id):return document.find("objects",id).type=="text"):_status.text="先选择文字对象，再拖入字体。";return
-		set_property("font",asset);return
+		if selection.is_empty() or not Array(selection).all(func(id):return document.find("objects",id).type=="text"):_status.text="先选择文字对象，再拖入字体。";return false
+		set_property("font",asset);return document.last_error.is_empty()
 	var kind:="actor" if resource is PackedScene else ("audio" if resource is AudioStream else ("animated_sprite" if resource is SpriteFrames else "sprite"))
 	var object_data:=LevelFormat.object(kind,asset);object_data.fields.position=[at.x,at.y]
 	if kind == "animated_sprite": object_data.animation = _assets.default_animation(asset)
@@ -792,7 +792,9 @@ func add_asset_object(asset:String,at:=Vector2(960,540)) -> void:
 		var clip:=LevelFormat.clip(time_us,"",duration);clip.name=object_data.name;clip.action=object_data.animation;clip.loop=resource.get_animation_loop(clip.action) if resource is SpriteFrames else false
 		if kind=="audio":clip.asset=asset;clip.duration_us=roundi(resource.get_length()*1000000)
 		track.clips=[clip];changes.append({"kind":"tracks","before":[],"after":[track]})
-	document.commit("从素材库添加对象与动画",changes);select_objects(PackedStringArray([object_data.id]))
+	document.commit("从素材库添加对象与动画",changes)
+	if not document.last_error.is_empty():return false
+	select_objects(PackedStringArray([object_data.id]));return true
 
 
 func set_object_field(field:String,value:Variant) -> void:
@@ -1003,7 +1005,7 @@ func _open() -> void:
 
 func _open_path(path:String) -> void:
 	end_full_review()
-	_prepare_command(); _autosave.stop()
+	_prepare_command()
 	if path.get_extension().to_lower()=="zip":
 		_file_dialog("解压关卡包到制作目录",FileDialog.FILE_MODE_OPEN_DIR,[],func(folder):
 			var error:=LevelProjectIO.unpack(path,folder)
@@ -1017,6 +1019,7 @@ func _open_path(path:String) -> void:
 		if FileAccess.file_exists(level_path): path = level_path
 	var opened:=LevelProjectIO.open_project(path)
 	if not opened.error.is_empty():message(opened.error);return
+	_autosave.stop()
 	end_environment_preview()
 	audio.set_playing(false);preview.clear_preview();song_document=StudioDocument.new()
 	workspace_state=opened.workspace;document.reset(opened.level,opened.directory);selection.clear();selected_track="";selected_item=""
@@ -1113,7 +1116,7 @@ func export_package() -> void:
 
 func _export_with_progress(path: String) -> void:
 	var job=preload("res://scenes/tools/level_studio/package_progress.tscn").instantiate();add_child(job);_popup(job,Vector2i(540,180))
-	var error: String=await job.run_export(document.data.duplicate(true),document.directory,path);job.queue_free()
+	var error: String=await job.run_export(document.data.duplicate(true),document.directory,path);job.hide();job.queue_free()
 	if not error.is_empty():_status.text=error;return
 	_status.text="已导出关卡包："+path
 	var done:=AcceptDialog.new();done.title="导出完成";done.dialog_text=path;add_child(done)
@@ -1126,7 +1129,7 @@ func _save_as_progress(path: String) -> void:
 		var files:=LevelProjectIO.dependencies(document.data,document.directory)
 		var protected: Array=[];_collect_asset_paths(document.history,protected);files.append_array(LevelProjectIO.expand_dependencies(PackedStringArray(protected),document.directory))
 		var job=preload("res://scenes/tools/level_studio/package_progress.tscn").instantiate();add_child(job);_popup(job,Vector2i(540,180))
-		var error: String=await job.run_copy(files,document.directory,path);job.queue_free()
+		var error: String=await job.run_copy(files,document.directory,path);job.hide();job.queue_free()
 		if not error.is_empty():_status.text=error;return
 	if _save_to(path):_show_signature="";_read_song();_update_show()
 
@@ -1137,7 +1140,7 @@ func _discard_or(action:Callable) -> void:
 	add_child(dialog);dialog.add_button("不保存",false,"discard")
 	dialog.confirmed.connect(func():dialog.queue_free();_ensure_directory(func():
 		if _save_to(document.directory):action.call()))
-	dialog.custom_action.connect(func(_name):_discard_recovery(document.directory);dialog.queue_free();action.call())
+	dialog.custom_action.connect(func(_name):dialog.hide();_discard_recovery(document.directory);dialog.queue_free();action.call())
 	dialog.canceled.connect(dialog.queue_free);_popup(dialog,Vector2i(520,180))
 
 func _workspace_snapshot() -> Dictionary:
@@ -1176,6 +1179,7 @@ func _offer_recovery() -> void:
 	dialog.canceled.connect(dialog.queue_free);_popup(dialog,Vector2i(560,180))
 
 func _load_preferences() -> void:
+	DirAccess.make_dir_recursive_absolute("user://level_studio/recoveries")
 	var settings:=ConfigFile.new();settings.load("user://level_studio/settings.cfg")
 	_recent=settings.get_value("files","recent",[]);_trial_executable=str(settings.get_value("trial","executable",""))
 	_ui_scale=float(settings.get_value("ui","scale",0))
@@ -1947,18 +1951,21 @@ func _apply_layout_preset(index: int) -> void:
 
 func _recent_projects() -> void:
 	var dialog:=ConfirmationDialog.new();dialog.title="最近工程";dialog.ok_button_text="打开"
+	dialog.dialog_hide_on_ok=false;dialog.get_ok_button().disabled=true
 	var list:=ItemList.new();list.custom_minimum_size=Vector2(600,260);dialog.add_child(list)
 	for path in _recent:list.add_item(str(path))
+	list.item_selected.connect(func(_index):dialog.get_ok_button().disabled=false)
 	add_child(dialog);dialog.confirmed.connect(func():
 		if list.get_selected_items().is_empty():return
-		var path: String=_recent[list.get_selected_items()[0]];dialog.queue_free();_discard_or(func():_open_path(path)))
+		var path: String=_recent[list.get_selected_items()[0]];dialog.hide();dialog.queue_free();_discard_or(func():_open_path(path)))
 	dialog.canceled.connect(dialog.queue_free);_popup(dialog,Vector2i(680,360))
 
 func _drop_timeline_asset(asset: String, at_us: int) -> void:
 	_prepare_command();seek(at_us)
 	var kind:=_assets.kind(asset)
 	if kind=="font":add_asset_object(asset);return
-	document.begin_edit();add_asset_object(asset)
+	document.begin_edit()
+	if not add_asset_object(asset):document.end_edit(true);return
 	if kind=="image" and not selection.is_empty():add_clip("visibility")
 	document.end_edit()
 	_status.text="已在当前区段 %.3f 秒插入 %s；一次撤销恢复。"%[float(at_us)/1000000,_asset_caption(asset)]
@@ -2116,14 +2123,16 @@ func _show_recoveries() -> void:
 		if file.ends_with(".json"):choices.append("user://level_studio/recoveries/"+file)
 	if FileAccess.file_exists(recovery_path):choices.append(recovery_path)
 	var dialog:=ConfirmationDialog.new();dialog.title="恢复工程草稿";dialog.ok_button_text="恢复为未保存工程"
+	dialog.dialog_hide_on_ok=false;dialog.get_ok_button().disabled=true
 	var list:=ItemList.new();list.custom_minimum_size=Vector2(640,300);dialog.add_child(list)
 	for path: String in choices:
 		var draft:=LevelProjectIO.read_json(path)
 		if not draft.has("level"):continue
 		list.add_item("%s · %s · %d 对象 / %d 轨道\n%s"%[draft.level.get("title","未命名"),draft.get("updated",""),draft.level.show.objects.size(),draft.level.show.tracks.size(),draft.get("directory","")]);list.set_item_metadata(list.item_count-1,path)
+	list.item_selected.connect(func(_index):dialog.get_ok_button().disabled=false)
 	add_child(dialog);dialog.confirmed.connect(func():
 		if list.get_selected_items().is_empty():return
-		var draft:=LevelProjectIO.read_json(str(list.get_item_metadata(list.get_selected_items()[0])));dialog.queue_free()
+		var draft:=LevelProjectIO.read_json(str(list.get_item_metadata(list.get_selected_items()[0])));dialog.hide();dialog.queue_free()
 		if document.dirty:_preserve_before_restore()
 		end_full_review();end_environment_preview();audio.set_playing(false);preview.clear_preview();song_document=StudioDocument.new()
 		workspace_state=draft.get("workspace",{});document.reset(draft.level,draft.get("directory",""));document.saved_cursor=-1;document.dirty=true
