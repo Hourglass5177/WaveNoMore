@@ -5,6 +5,8 @@ extends Resource
 @export var title: String = "未命名关卡"
 @export var stage_id: String = ""
 @export var image: Texture2D
+## 怪物立绘独立缩放，允许超出卡片；不改变轮播卡位和按钮热区。
+@export_range(0.5,2.0,0.01) var monster_scale: float = 1.0
 ## 眼睛图标的选中状态纹理。
 @export var eye_icon_selected: Texture2D
 ## 眼睛图标的未选中状态纹理。

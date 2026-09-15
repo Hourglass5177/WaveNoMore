@@ -4,6 +4,8 @@ extends Control
 var _run_pet: PetDefinition
 var _run_pet_advanced := false
 var _run_pet_ready := false
+## 返回选关时恢复刚浏览的卡片。
+var _selected_stage_id := ""
 
 ## 应用层总入口。负责页面与弹窗的装卸，并把关卡结果送往存档和结算页。
 
@@ -112,8 +114,12 @@ func _show_stage_select() -> void:
 	_run_pet_ready = false
 	MenuAudioService.stop_preview()
 	var screen := STAGE_SELECT_SCENE.instantiate()
+	screen.selected_stage_id = _selected_stage_id
 	_mount_screen(screen)
+	screen.selection_changed.connect(func(_index: int, _id: String):
+		_selected_stage_id = str(screen.current_level().get("stage_id", "")))
 	screen.stage_selected.connect(func(stage_id: String) -> void:
+		_selected_stage_id = stage_id
 		AppRouter.navigate(AppRouter.ROUTE_LOADING, {"stage_id": stage_id})
 	)
 	screen.back_requested.connect(func() -> void: AppRouter.navigate(AppRouter.ROUTE_TITLE))

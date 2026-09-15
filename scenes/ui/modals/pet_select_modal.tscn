@@ -159,7 +159,7 @@ offset_right = 1270.0
 offset_bottom = 663.0
 text = ""
 script = ExtResource("10")
-tooltip_text = "播放技能动画"
+underline_enabled = false
 
 
 [node name="GroundGlow" type="ColorRect" parent="Design"]
@@ -240,9 +240,9 @@ horizontal_alignment = 1
 [node name="Status" type="Label" parent="Design"]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 560.0
+offset_left = 645.0
 offset_top = 678.0
-offset_right = 1360.0
+offset_right = 1415.0
 offset_bottom = 721.0
 text = ""
 theme_override_font_sizes/font_size = 25

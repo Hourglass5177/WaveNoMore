@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="StageShow" format=3]
+
+[ext_resource type="Script" path="res://src/content/resources/show_cue.gd" id="1_68ao3"]
+[ext_resource type="Script" path="res://src/content/resources/stage_show.gd" id="2_sgp1c"]
+
+[resource]
+script = ExtResource("2_sgp1c")

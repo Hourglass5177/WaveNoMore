@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="StageDefinition" format=3]
+
+[ext_resource type="Resource" path="res://content/stages/tutorial2/source_chart.tres" id="1_uyewy"]
+[ext_resource type="Script" path="res://src/content/resources/stage_definition.gd" id="2_8sntc"]
+
+[resource]
+script = ExtResource("2_8sntc")
+stage_id = "tutorial2"
+display_name = "教程2"
+order_index = 1
+song_title = "教程2"
+song_artist = "1"
+unlocked_by_default = true
+song_resource_path = "res://content/stages/tutorial2/song.tres"
+chart_resource_path = "res://content/stages/tutorial2/chart.tres"
+stage_show_resource_path = "res://content/stages/tutorial2/stage_show.tres"
+visual_theme_resource_path = "res://content/stages/tutorial2/visual_theme.tres"
+background_resource_path = "res://content/stages/tutorial2/background.tres"
+reward_resource_path = "res://content/stages/tutorial2/reward.tres"
+rule_set_resource_path = "res://content/rules/default_gameplay_rules.tres"
+metadata/planning_source_chart = ExtResource("1_uyewy")

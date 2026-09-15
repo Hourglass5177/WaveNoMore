@@ -8,6 +8,8 @@
 [ext_resource type="Shader" uid="uid://dn1t6cg4kqe03" path="res://shaders/materials/level_card_effect.gdshader" id="6_effect"]
 [ext_resource type="FontFile" path="res://assets/fonts/huiwen.otf" id="7_s3cit"]
 
+[ext_resource type="Material" path="res://content/ui/score_gradient.tres" id="score_gradient"]
+
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_whbbo"]
 shader = ExtResource("2_whbbo")
 shader_parameter/k = 1.0
@@ -25,7 +27,7 @@ shader_parameter/shadow_texture = ExtResource("5_sjihi")
 
 [sub_resource type="LabelSettings" id="LabelSettings_s3cit"]
 font = ExtResource("7_s3cit")
-font_size = 30
+font_size = 48
 
 [sub_resource type="LabelSettings" id="LabelSettings_vpojg"]
 line_spacing = 7.0
@@ -63,6 +65,7 @@ offset_right = 380.0
 offset_bottom = 548.0
 expand_mode = 1
 stretch_mode = 5
+mouse_filter = 2
 
 [node name="EyeIcon" type="TextureRect" parent="." unique_id=148945664]
 layout_mode = 0
@@ -72,14 +75,16 @@ offset_right = 324.0
 offset_bottom = 567.0
 expand_mode = 1
 stretch_mode = 5
+mouse_filter = 2
 
 [node name="Score" type="Label" parent="." unique_id=1896376124]
 layout_mode = 0
 offset_left = 24.0
 offset_top = -89.0
 offset_right = 336.0
-offset_bottom = -58.0
-text = "999999"
+offset_bottom = -27.0
+text = "000000"
+material = ExtResource("score_gradient")
 label_settings = SubResource("LabelSettings_s3cit")
 horizontal_alignment = 1
 

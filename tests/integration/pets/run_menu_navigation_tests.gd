@@ -1,5 +1,5 @@
 extends SceneTree
-## 用真实手柄事件检查长目录和覆盖式弹窗，不依赖鼠标移动焦点。
+## 用真实手柄事件检查正式轮播、加载闭环和弹窗焦点。
 var failures := 0
 var checks := 0
 
@@ -29,15 +29,6 @@ func _run() -> void:
 	var saves = root.get_node("SaveService")
 	var old_catalog: ContentCatalogData = catalog.data
 	var old_save: Dictionary = saves.data
-	# 长目录只在内存中装配，测试期间不写玩家进度。
-	catalog.data = old_catalog.duplicate() as ContentCatalogData
-	catalog.data.stages = old_catalog.stages.duplicate()
-	for i in 14:
-		var entry := old_catalog.stages[0].duplicate() as StageDefinition
-		entry.stage_id = "navigation_%d" % i
-		entry.display_name = "目录滚动测试 %d" % i
-		catalog.data.stages.append(entry)
-	catalog._rebuild_indices()
 	saves.data = saves.default_data()
 	var app = load("res://scenes/app/app_main.tscn").instantiate()
 	root.add_child(app)
@@ -45,19 +36,21 @@ func _run() -> void:
 	root.get_node("AppRouter").navigate(&"stage_select")
 	await frames()
 	var page = app._current_screen
-	var buttons: Array[Node] = page._stage_list.find_children("*", "Button", true, false)
-	var scroll: ScrollContainer = page._stage_list.get_parent()
-	buttons[0].grab_focus()
-	for i in 8:
-		await joy(JOY_BUTTON_DPAD_DOWN)
-		check(root.gui_get_focus_owner() == buttons[i + 1], "方向键连续向下选择歌曲 %d" % i)
-	check(scroll.scroll_vertical > 0, "手柄下切带动目录滚动")
-	var focused: Control = root.gui_get_focus_owner()
-	check(scroll.get_global_rect().encloses(focused.get_global_rect()), "当前歌曲按钮保持完整可见")
-	await screenshot("menu-scroll")
-	for i in 8:
-		await joy(JOY_BUTTON_DPAD_UP)
-	check(root.gui_get_focus_owner() == buttons[0] and scroll.scroll_vertical == 0, "向上选择回到目录顶部")
+	check(page.get_node_or_null("Design/Cards") != null, "正式入口挂载美术选关页")
+	check(page._levels.map(func(v): return v.stage_id) == ["tutorial2","s07","s08"], "教程2及最后两张测试关映射正确")
+	check(root.gui_get_focus_owner() == page, "进入选关聚焦卡片区")
+	await joy(JOY_BUTTON_DPAD_RIGHT)
+	await create_timer(0.5).timeout
+	check(page.current_index() == 1, "手柄右切蛇卡")
+	check(page._cards[1].scale.is_equal_approx(Vector2.ONE), "当前卡片移动到完整可见的前景")
+	await joy(JOY_BUTTON_DPAD_LEFT)
+	await create_timer(0.5).timeout
+	check(page.current_index() == 0, "手柄左切返回蝙蝠")
+	await screenshot("menu-carousel")
+	await joy(JOY_BUTTON_DPAD_DOWN)
+	check(root.gui_get_focus_owner() == page.get_node("Design/Actions/Back"), "向下进入功能栏")
+	await joy(JOY_BUTTON_DPAD_UP)
+	check(root.gui_get_focus_owner() == page, "功能栏向上回到卡片区")
 	var opener: Button
 	for node in page.find_children("*", "Button", true, false):
 		if node.text == "随从": opener = node
@@ -86,9 +79,29 @@ func _run() -> void:
 	await frames()
 	check(app._current_screen == page, "取消弹窗不会同时触发底层返回")
 	check(root.gui_get_focus_owner() == opener, "关闭后回到打开弹窗的按钮")
-	buttons[0].grab_focus()
-	await joy(JOY_BUTTON_DPAD_DOWN)
-	check(root.gui_get_focus_owner() == buttons[1], "关闭弹窗后恢复目录导航")
+	page.grab_focus()
+	await joy(JOY_BUTTON_DPAD_RIGHT)
+	check(page.current_index() == 1, "关闭弹窗后恢复轮播导航")
+	await joy(JOY_BUTTON_DPAD_LEFT)
+	await create_timer(0.5).timeout
+	await joy(JOY_BUTTON_A)
+	for i in 600:
+		await process_frame
+		if app._current_stage != null: break
+	check(app._current_stage != null and app._current_stage.stage_id == "tutorial2", "确认蝙蝠经过正式加载页进入教程2")
+	if app._current_stage != null:
+		check(app._current_stage.song.audio_stream.get_length() > 100.0, "教程音乐已载入")
+		check(is_equal_approx(app._current_stage.song.first_beat_offset_sec,14.4493657848589), "首拍偏移保持原谱精度")
+		check(app._current_screen.stage_session.compiled_chart != null, "正式会话完成谱面编译")
+		await create_timer(0.4).timeout
+		await screenshot("tutorial2-game")
+	app._on_stage_exit_requested()
+	await frames()
+	check(app._current_screen.get_node_or_null("Design/Cards") != null, "退出关卡回到美术选关")
+	for id: String in ["s07","s08"]:
+		var stage: StageDefinition = catalog.get_stage(id)
+		check(stage.resolve_dependencies_sync(), "保留测试关可完整加载："+id)
+
 	var expected := [
 		["Perfect获得的分数额外增加2%", "Perfect获得的分数额外增加3%"],
 		["受到的伤害-10%", "受到的伤害-20%"],
@@ -107,4 +120,5 @@ func _run() -> void:
 func screenshot(name: String) -> void:
 	if DisplayServer.get_name() == "headless": return
 	await RenderingServer.frame_post_draw
+	DirAccess.make_dir_recursive_absolute("res://builds/pet-review")
 	root.get_texture().get_image().save_png("res://builds/pet-review/%s.png" % name)

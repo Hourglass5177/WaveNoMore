@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="StageVisualTheme" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/presentation/actors/lingjun_actor.tscn" id="1_ulrwi"]
+[ext_resource type="Script" path="res://src/content/resources/stage_visual_theme.gd" id="2_yrywt"]
+[ext_resource type="Texture2D" path="res://assets/image/note/hold_note.png" id="3_kdt7k"]
+[ext_resource type="Material" path="res://shaders/materials/tap_eye.tres" id="4_0xmon"]
+[ext_resource type="Texture2D" path="res://assets/image/note/tap_base.png" id="5_12uti"]
+
+[resource]
+script = ExtResource("2_yrywt")
+theme_id = "s08_combined_lab_theme"
+life_actor_scene = ExtResource("1_ulrwi")
+death_actor_scene = ExtResource("1_ulrwi")
+actors_in_parallax = true
+zhu_tap_texture = ExtResource("5_12uti")
+zhu_tap_material = ExtResource("4_0xmon")
+xuan_tap_texture = ExtResource("5_12uti")
+xuan_tap_material = ExtResource("4_0xmon")
+zhu_hold_head_texture = ExtResource("3_kdt7k")
+xuan_hold_head_texture = ExtResource("3_kdt7k")
+life_color = Color(0.8, 0.1, 0.085, 1)
+death_color = Color(0.04, 0.052, 0.12, 1)
+su_color = Color(1, 0.95, 0.82, 1)
+ink_color = Color(0.01, 0.016, 0.032, 1)
+paper_color = Color(0.31, 0.33, 0.4, 1)

@@ -1,0 +1,480 @@
+[gd_resource type="Resource" script_class="StageBackgroundDefinition" format=3]
+
+[ext_resource type="Script" path="res://src/content/resources/stage_background_layer.gd" id="1_7efgb"]
+[ext_resource type="Script" path="res://src/content/resources/stage_background_sublayer.gd" id="2_gnask"]
+[ext_resource type="Script" path="res://src/content/resources/stage_background_entry.gd" id="3_epksk"]
+[ext_resource type="Shader" path="res://shaders/materials/screen_half_material_split_live.gdshader" id="4_52nig"]
+[ext_resource type="Texture2D" path="res://assets/image/background/background-grave-0-live.png" id="5_cbd4a"]
+[ext_resource type="Shader" path="res://shaders/materials/screen_half_material_split_death.gdshader" id="6_sxeuq"]
+[ext_resource type="Texture2D" path="res://assets/image/background/background-grave-0-death.png" id="7_u665k"]
+[ext_resource type="Texture2D" path="res://assets/image/background/background-grave-1-a-live.png" id="8_mvxqh"]
+[ext_resource type="Texture2D" path="res://assets/image/background/background-grave-1-a-death.png" id="9_or0ri"]
+[ext_resource type="Shader" path="res://shaders/materials/dust_particles.gdshader" id="10_djbe4"]
+[ext_resource type="Texture2D" path="res://assets/image/particles/particles.png" id="11_5hs0c"]
+[ext_resource type="Texture2D" path="res://assets/image/background/background-grave-1-b-live.png" id="12_m3tm1"]
+[ext_resource type="Texture2D" path="res://assets/image/background/background-grave-1-b-death.png" id="13_o5r4u"]
+[ext_resource type="Texture2D" path="res://assets/image/background/background-grave-1-c-live.png" id="14_whmot"]
+[ext_resource type="Texture2D" path="res://assets/image/background/background-greve-1-c-death.png" id="15_gfwlx"]
+[ext_resource type="PackedScene" path="res://scenes/presentation/boundary_waves.tscn" id="16_fcvso"]
+[ext_resource type="Texture2D" path="res://assets/image/particles/particles_far.png" id="17_g65f2"]
+[ext_resource type="Texture2D" path="res://assets/image/background/background-grave-snack.png" id="18_u3bkg"]
+[ext_resource type="Texture2D" path="res://assets/image/background/陪葬品组/陪葬品前1.png" id="19_j0sph"]
+[ext_resource type="Texture2D" path="res://assets/image/background/陪葬品组/陪葬品前3.png" id="20_3o4mm"]
+[ext_resource type="Texture2D" path="res://assets/image/background/陪葬品组/陪葬品前2.png" id="21_g364j"]
+[ext_resource type="Texture2D" path="res://assets/image/background/陪葬品组/陪葬品后.png" id="22_eq3a4"]
+[ext_resource type="Script" path="res://src/content/resources/stage_background_definition.gd" id="23_w2t5x"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_py2ka"]
+shader = ExtResource("4_52nig")
+
+[sub_resource type="Resource" id="Resource_67vfr"]
+script = ExtResource("3_epksk")
+texture = ExtResource("5_cbd4a")
+material = SubResource("ShaderMaterial_py2ka")
+infinite = true
+position = Vector2(-742.6837, -76.64212)
+uniform_scale = 1.74580807320869
+
+[sub_resource type="Resource" id="Resource_rn037"]
+script = ExtResource("2_gnask")
+display_name = "live"
+velocity = Vector2(-500, 0)
+entries = Array[ExtResource("3_epksk")]([SubResource("Resource_67vfr")])
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ymjht"]
+shader = ExtResource("6_sxeuq")
+
+[sub_resource type="Resource" id="Resource_0n3um"]
+script = ExtResource("3_epksk")
+texture = ExtResource("7_u665k")
+material = SubResource("ShaderMaterial_ymjht")
+infinite = true
+position = Vector2(-664.8276, -91.48206)
+uniform_scale = 1.7022749340559469
+
+[sub_resource type="Resource" id="Resource_a5uhr"]
+script = ExtResource("2_gnask")
+sublayer_id = "sublayer_55"
+display_name = "death"
+velocity = Vector2(500, 0)
+entries = Array[ExtResource("3_epksk")]([SubResource("Resource_0n3um")])
+
+[sub_resource type="Resource" id="Resource_yd2et"]
+script = ExtResource("1_7efgb")
+depth = 50
+sublayers = Array[ExtResource("2_gnask")]([SubResource("Resource_rn037"), SubResource("Resource_a5uhr")])
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_qoqsa"]
+shader = ExtResource("4_52nig")
+
+[sub_resource type="Resource" id="Resource_7qhpi"]
+script = ExtResource("3_epksk")
+texture = ExtResource("8_mvxqh")
+material = SubResource("ShaderMaterial_qoqsa")
+infinite = true
+position = Vector2(-163.21338, -83.229126)
+uniform_scale = 0.8490932887455217
+
+[sub_resource type="Resource" id="Resource_8a5o6"]
+script = ExtResource("2_gnask")
+display_name = "live"
+velocity = Vector2(-500, 0)
+entries = Array[ExtResource("3_epksk")]([SubResource("Resource_7qhpi")])
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_u8pls"]
+shader = ExtResource("6_sxeuq")
+
+[sub_resource type="Resource" id="Resource_5todl"]
+script = ExtResource("3_epksk")
+texture = ExtResource("9_or0ri")
+material = SubResource("ShaderMaterial_u8pls")
+infinite = true
+position = Vector2(-231.80054, -129.0802)
+uniform_scale = 0.8996802561221884
+
+[sub_resource type="Resource" id="Resource_3hgqo"]
+script = ExtResource("2_gnask")
+sublayer_id = "sublayer_11"
+display_name = "death"
+velocity = Vector2(500, 0)
+entries = Array[ExtResource("3_epksk")]([SubResource("Resource_5todl")])
+
+[sub_resource type="Resource" id="Resource_u8dgp"]
+script = ExtResource("1_7efgb")
+depth = 3
+sublayers = Array[ExtResource("2_gnask")]([SubResource("Resource_8a5o6"), SubResource("Resource_3hgqo")])
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_l05a0"]
+shader = ExtResource("10_djbe4")
+shader_parameter/dust_color = Color(1, 1, 1, 1)
+shader_parameter/alpha_strength = 0.3999999910592
+shader_parameter/twinkle_amount = 0.999999977648
+shader_parameter/frequency_min_hz = 0.16
+shader_parameter/frequency_max_hz = 0.48
+shader_parameter/halo_radius_px = 5.0
+shader_parameter/halo_strength = 0.55
+shader_parameter/halo_color = Color(1, 1, 1, 1)
+shader_parameter/dust_texture = ExtResource("11_5hs0c")
+shader_parameter/random_grid = Vector2(80, 45)
+shader_parameter/is_live = false
+shader_parameter/environment_time = -1.0
+
+[sub_resource type="Resource" id="Resource_kus4b"]
+script = ExtResource("3_epksk")
+texture = ExtResource("11_5hs0c")
+material = SubResource("ShaderMaterial_l05a0")
+infinite = true
+random_flip = true
+position = Vector2(-589.60034, -329.56433)
+uniform_scale = 1.231761109580623
+
+[sub_resource type="Resource" id="Resource_yrgbt"]
+script = ExtResource("2_gnask")
+sublayer_id = "sublayer_21"
+display_name = "death particles1"
+velocity = Vector2(-500, 0)
+entries = Array[ExtResource("3_epksk")]([SubResource("Resource_kus4b")])
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_mmgrp"]
+shader = ExtResource("10_djbe4")
+shader_parameter/dust_color = Color(1, 1, 1, 1)
+shader_parameter/alpha_strength = 0.3999999910592
+shader_parameter/twinkle_amount = 0.999999977648
+shader_parameter/frequency_min_hz = 0.16
+shader_parameter/frequency_max_hz = 0.48
+shader_parameter/halo_radius_px = 5.0
+shader_parameter/halo_strength = 0.55
+shader_parameter/halo_color = Color(1, 1, 1, 1)
+shader_parameter/dust_texture = ExtResource("11_5hs0c")
+shader_parameter/random_grid = Vector2(80, 45)
+shader_parameter/is_live = true
+shader_parameter/environment_time = -1.0
+
+[sub_resource type="Resource" id="Resource_v30yq"]
+script = ExtResource("3_epksk")
+texture = ExtResource("11_5hs0c")
+material = SubResource("ShaderMaterial_mmgrp")
+infinite = true
+random_flip = true
+position = Vector2(-589.60034, -329.56433)
+uniform_scale = 1.231761109580623
+
+[sub_resource type="Resource" id="Resource_d5ohd"]
+script = ExtResource("2_gnask")
+sublayer_id = "sublayer_26"
+display_name = "live particles1"
+velocity = Vector2(500, 0)
+entries = Array[ExtResource("3_epksk")]([SubResource("Resource_v30yq")])
+
+[sub_resource type="Resource" id="Resource_4snja"]
+script = ExtResource("1_7efgb")
+depth = 2
+sublayers = Array[ExtResource("2_gnask")]([SubResource("Resource_yrgbt"), SubResource("Resource_d5ohd")])
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_aikey"]
+shader = ExtResource("4_52nig")
+
+[sub_resource type="Resource" id="Resource_j37l3"]
+script = ExtResource("3_epksk")
+texture = ExtResource("12_m3tm1")
+material = SubResource("ShaderMaterial_aikey")
+infinite = true
+position = Vector2(-27.105051, 1.4649806)
+uniform_scale = 0.7459003309110498
+
+[sub_resource type="Resource" id="Resource_kh3k2"]
+script = ExtResource("2_gnask")
+display_name = "live"
+velocity = Vector2(-500, 0)
+entries = Array[ExtResource("3_epksk")]([SubResource("Resource_j37l3")])
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_i1dn6"]
+shader = ExtResource("6_sxeuq")
+
+[sub_resource type="Resource" id="Resource_h2psv"]
+script = ExtResource("3_epksk")
+texture = ExtResource("13_o5r4u")
+material = SubResource("ShaderMaterial_i1dn6")
+infinite = true
+uniform_scale = 0.746636442498509
+
+[sub_resource type="Resource" id="Resource_27xe3"]
+script = ExtResource("2_gnask")
+sublayer_id = "sublayer_50"
+display_name = "death"
+velocity = Vector2(500, 0)
+entries = Array[ExtResource("3_epksk")]([SubResource("Resource_h2psv")])
+
+[sub_resource type="Resource" id="Resource_8jvkl"]
+script = ExtResource("1_7efgb")
+depth = 5
+sublayers = Array[ExtResource("2_gnask")]([SubResource("Resource_kh3k2"), SubResource("Resource_27xe3")])
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_o26j2"]
+shader = ExtResource("4_52nig")
+
+[sub_resource type="Resource" id="Resource_aenqa"]
+script = ExtResource("3_epksk")
+texture = ExtResource("14_whmot")
+material = SubResource("ShaderMaterial_o26j2")
+infinite = true
+position = Vector2(-19.95945, 13.368315)
+uniform_scale = 0.7364709600817934
+
+[sub_resource type="Resource" id="Resource_qypio"]
+script = ExtResource("2_gnask")
+display_name = "live"
+velocity = Vector2(-500, 0)
+entries = Array[ExtResource("3_epksk")]([SubResource("Resource_aenqa")])
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_fks0v"]
+shader = ExtResource("6_sxeuq")
+
+[sub_resource type="Resource" id="Resource_37s3q"]
+script = ExtResource("3_epksk")
+texture = ExtResource("15_gfwlx")
+material = SubResource("ShaderMaterial_fks0v")
+infinite = true
+uniform_scale = 0.749114806100355
+
+[sub_resource type="Resource" id="Resource_y2ym0"]
+script = ExtResource("2_gnask")
+sublayer_id = "sublayer_53"
+display_name = "death"
+velocity = Vector2(500, 0)
+entries = Array[ExtResource("3_epksk")]([SubResource("Resource_37s3q")])
+
+[sub_resource type="Resource" id="Resource_tca0e"]
+script = ExtResource("1_7efgb")
+depth = 30
+sublayers = Array[ExtResource("2_gnask")]([SubResource("Resource_qypio"), SubResource("Resource_y2ym0")])
+
+[sub_resource type="Resource" id="Resource_w35k1"]
+script = ExtResource("3_epksk")
+scene = ExtResource("16_fcvso")
+position = Vector2(-49.9, -10.3)
+uniform_scale = 0.7616555803103707
+
+[sub_resource type="Resource" id="Resource_xtw7k"]
+script = ExtResource("2_gnask")
+entries = Array[ExtResource("3_epksk")]([SubResource("Resource_w35k1")])
+
+[sub_resource type="Resource" id="Resource_0tseb"]
+script = ExtResource("1_7efgb")
+depth = 0
+sublayers = Array[ExtResource("2_gnask")]([SubResource("Resource_xtw7k")])
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_3wac7"]
+shader = ExtResource("10_djbe4")
+shader_parameter/dust_color = Color(1, 1, 1, 1)
+shader_parameter/alpha_strength = 0.1999999955296
+shader_parameter/twinkle_amount = 0.999999977648
+shader_parameter/frequency_min_hz = 0.16
+shader_parameter/frequency_max_hz = 0.48
+shader_parameter/halo_radius_px = 2.5
+shader_parameter/halo_strength = 0.55
+shader_parameter/halo_color = Color(1, 1, 1, 1)
+shader_parameter/dust_texture = ExtResource("11_5hs0c")
+shader_parameter/random_grid = Vector2(80, 45)
+shader_parameter/is_live = false
+shader_parameter/environment_time = -1.0
+
+[sub_resource type="Resource" id="Resource_bq0v4"]
+script = ExtResource("3_epksk")
+texture = ExtResource("11_5hs0c")
+material = SubResource("ShaderMaterial_3wac7")
+infinite = true
+random_flip = true
+uniform_scale = 0.7631043957984558
+
+[sub_resource type="Resource" id="Resource_2q6jg"]
+script = ExtResource("2_gnask")
+display_name = "death particle2"
+velocity = Vector2(-500, 0)
+entries = Array[ExtResource("3_epksk")]([SubResource("Resource_bq0v4")])
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_6ils5"]
+shader = ExtResource("10_djbe4")
+shader_parameter/dust_color = Color(1, 1, 1, 1)
+shader_parameter/alpha_strength = 0.1999999955296
+shader_parameter/twinkle_amount = 0.999999977648
+shader_parameter/frequency_min_hz = 0.16
+shader_parameter/frequency_max_hz = 0.48
+shader_parameter/halo_radius_px = 2.5
+shader_parameter/halo_strength = 0.55
+shader_parameter/halo_color = Color(1, 1, 1, 1)
+shader_parameter/dust_texture = ExtResource("11_5hs0c")
+shader_parameter/random_grid = Vector2(80, 45)
+shader_parameter/is_live = true
+shader_parameter/environment_time = -1.0
+
+[sub_resource type="Resource" id="Resource_lsain"]
+script = ExtResource("3_epksk")
+texture = ExtResource("11_5hs0c")
+material = SubResource("ShaderMaterial_6ils5")
+infinite = true
+random_flip = true
+uniform_scale = 0.7631043957984558
+
+[sub_resource type="Resource" id="Resource_jge7p"]
+script = ExtResource("2_gnask")
+sublayer_id = "sublayer_262"
+display_name = "live particles2"
+velocity = Vector2(500, 0)
+entries = Array[ExtResource("3_epksk")]([SubResource("Resource_lsain")])
+
+[sub_resource type="Resource" id="Resource_b773r"]
+script = ExtResource("1_7efgb")
+depth = 4
+sublayers = Array[ExtResource("2_gnask")]([SubResource("Resource_2q6jg"), SubResource("Resource_jge7p")])
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_nn08h"]
+shader = ExtResource("10_djbe4")
+shader_parameter/dust_color = Color(1, 1, 1, 1)
+shader_parameter/alpha_strength = 0.05999999865888
+shader_parameter/twinkle_amount = 1.0
+shader_parameter/frequency_min_hz = 0.16
+shader_parameter/frequency_max_hz = 0.48
+shader_parameter/halo_radius_px = 1.0
+shader_parameter/halo_strength = 0.55
+shader_parameter/halo_color = Color(1, 1, 1, 1)
+shader_parameter/dust_texture = ExtResource("17_g65f2")
+shader_parameter/random_grid = Vector2(80, 45)
+shader_parameter/is_live = false
+shader_parameter/environment_time = -1.0
+
+[sub_resource type="Resource" id="Resource_6m1oh"]
+script = ExtResource("3_epksk")
+texture = ExtResource("11_5hs0c")
+material = SubResource("ShaderMaterial_nn08h")
+infinite = true
+random_flip = true
+uniform_scale = 1.026194169869533
+
+[sub_resource type="Resource" id="Resource_m8wm7"]
+script = ExtResource("2_gnask")
+display_name = "death particles3"
+velocity = Vector2(-500, 0)
+entries = Array[ExtResource("3_epksk")]([SubResource("Resource_6m1oh")])
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_tnlhl"]
+shader = ExtResource("10_djbe4")
+shader_parameter/dust_color = Color(1, 1, 1, 1)
+shader_parameter/alpha_strength = 0.05999999865888
+shader_parameter/twinkle_amount = 1.0
+shader_parameter/frequency_min_hz = 0.16
+shader_parameter/frequency_max_hz = 0.48
+shader_parameter/halo_radius_px = 1.0
+shader_parameter/halo_strength = 0.55
+shader_parameter/halo_color = Color(1, 1, 1, 1)
+shader_parameter/dust_texture = ExtResource("17_g65f2")
+shader_parameter/random_grid = Vector2(80, 45)
+shader_parameter/is_live = true
+shader_parameter/environment_time = -1.0
+
+[sub_resource type="Resource" id="Resource_pys4l"]
+script = ExtResource("3_epksk")
+texture = ExtResource("11_5hs0c")
+material = SubResource("ShaderMaterial_tnlhl")
+infinite = true
+random_flip = true
+uniform_scale = 1.026194169869533
+
+[sub_resource type="Resource" id="Resource_o0hn4"]
+script = ExtResource("2_gnask")
+sublayer_id = "sublayer_292"
+display_name = "live particles3"
+velocity = Vector2(500, 0)
+entries = Array[ExtResource("3_epksk")]([SubResource("Resource_pys4l")])
+
+[sub_resource type="Resource" id="Resource_o1hw1"]
+script = ExtResource("1_7efgb")
+depth = 17
+sublayers = Array[ExtResource("2_gnask")]([SubResource("Resource_m8wm7"), SubResource("Resource_o0hn4")])
+
+[sub_resource type="Resource" id="Resource_d075l"]
+script = ExtResource("3_epksk")
+texture = ExtResource("18_u3bkg")
+infinite = true
+position = Vector2(-49.99347, -54.33252)
+uniform_scale = 0.7865063604369826
+
+[sub_resource type="Resource" id="Resource_sqabo"]
+script = ExtResource("2_gnask")
+display_name = "live"
+velocity = Vector2(-500, 0)
+entries = Array[ExtResource("3_epksk")]([SubResource("Resource_d075l")])
+
+[sub_resource type="Resource" id="Resource_bhhv0"]
+script = ExtResource("1_7efgb")
+depth = 8
+sublayers = Array[ExtResource("2_gnask")]([SubResource("Resource_sqabo")])
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_470wi"]
+shader = ExtResource("4_52nig")
+
+[sub_resource type="Resource" id="Resource_aoawy"]
+script = ExtResource("3_epksk")
+texture = ExtResource("19_j0sph")
+material = SubResource("ShaderMaterial_470wi")
+infinite = true
+uniform_scale = 0.7543603302514265
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_nx5a4"]
+shader = ExtResource("4_52nig")
+
+[sub_resource type="Resource" id="Resource_hb36f"]
+script = ExtResource("3_epksk")
+texture = ExtResource("20_3o4mm")
+material = SubResource("ShaderMaterial_nx5a4")
+infinite = true
+uniform_scale = 0.7543603302514265
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_48omy"]
+shader = ExtResource("4_52nig")
+
+[sub_resource type="Resource" id="Resource_nfm67"]
+script = ExtResource("3_epksk")
+texture = ExtResource("21_g364j")
+material = SubResource("ShaderMaterial_48omy")
+infinite = true
+uniform_scale = 0.7543603302514265
+
+[sub_resource type="Resource" id="Resource_q7ges"]
+script = ExtResource("2_gnask")
+display_name = "live"
+velocity = Vector2(-500, 0)
+entries = Array[ExtResource("3_epksk")]([SubResource("Resource_aoawy"), SubResource("Resource_hb36f"), SubResource("Resource_nfm67")])
+horizontal_random_repeat = true
+repeat_gap_min = -300.0
+repeat_gap_max = 700.0
+
+[sub_resource type="Resource" id="Resource_n0jt1"]
+script = ExtResource("1_7efgb")
+sublayers = Array[ExtResource("2_gnask")]([SubResource("Resource_q7ges")])
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_5aecr"]
+shader = ExtResource("4_52nig")
+
+[sub_resource type="Resource" id="Resource_ohwuj"]
+script = ExtResource("3_epksk")
+texture = ExtResource("22_eq3a4")
+material = SubResource("ShaderMaterial_5aecr")
+infinite = true
+position = Vector2(-27.105051, 1.4649806)
+uniform_scale = 0.7459003309110498
+
+[sub_resource type="Resource" id="Resource_wov45"]
+script = ExtResource("2_gnask")
+display_name = "live"
+velocity = Vector2(-500, 0)
+entries = Array[ExtResource("3_epksk")]([SubResource("Resource_ohwuj")])
+
+[sub_resource type="Resource" id="Resource_5cs5y"]
+script = ExtResource("1_7efgb")
+depth = 7
+sublayers = Array[ExtResource("2_gnask")]([SubResource("Resource_wov45")])
+
+[resource]
+script = ExtResource("23_w2t5x")
+layers = Array[ExtResource("1_7efgb")]([SubResource("Resource_yd2et"), SubResource("Resource_u8dgp"), SubResource("Resource_4snja"), SubResource("Resource_8jvkl"), SubResource("Resource_tca0e"), SubResource("Resource_0tseb"), SubResource("Resource_b773r"), SubResource("Resource_o1hw1"), SubResource("Resource_bhhv0"), SubResource("Resource_n0jt1"), SubResource("Resource_5cs5y")])

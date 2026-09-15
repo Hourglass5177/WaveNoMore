@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="SongDefinition" format=3]
+
+[ext_resource type="AudioStream" path="res://content/stages/tutorial2/source/audio/level 2-v3.wav" id="1_030ob"]
+[ext_resource type="Script" path="res://src/content/resources/song_definition.gd" id="2_efbyq"]
+
+[resource]
+script = ExtResource("2_efbyq")
+song_id = "song_4e55520034a3c4f4"
+title = "教程2"
+artist = "1"
+audio_stream = ExtResource("1_030ob")
+first_beat_offset_sec = 14.4493657848589
+metadata/json_source = {
+"artist": "1",
+"audio": "audio/level 2-v3.wav",
+"charts": [{
+"chart_id": "chart_e96bcaa47af11c55",
+"difficulty_id": "normal",
+"path": "charts/normal.json"
+}],
+"format": "minghe-song",
+"format_version": 1.0,
+"song_id": "song_4e55520034a3c4f4",
+"title": "教程2"
+}

@@ -163,6 +163,11 @@ func _run() -> void:
 	ui = mount("res://scenes/ui/modals/pet_select_modal.tscn")
 	await frames()
 	var catalog = root.get_node("ContentCatalog")
+	check(not ui.get_node("%Preview").has_node("Interaction"),"随从本体不画选中下划线")
+	check(ui.get_node("%Preview").tooltip_text.is_empty(),"随从悬浮无冗余提示")
+	var question: Label = ui.get_node("%Base")
+	var status: Label = ui.get_node("%Status")
+	check(absf(question.get_global_rect().get_center().x-status.get_global_rect().get_center().x)<1.0,"问号与获得状态竖向对齐")
 	for i in 3:
 		ui._index = i
 		ui._show_pet()
