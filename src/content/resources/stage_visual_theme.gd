@@ -22,6 +22,14 @@ extends Resource
 @export var life_actor_scene: PackedScene
 ## 位于右下死界的死角色场景。
 @export var death_actor_scene: PackedScene
+## 生灵君本体与灰烬的目标色；强度为 0 时保持素材原色。
+@export_color_no_alpha var life_lingjun_target_color: Color = Color.WHITE
+## 死灵君本体与灰烬的目标色；强度为 0 时保持素材原色。
+@export_color_no_alpha var death_lingjun_target_color: Color = Color.WHITE
+## 生灵君色偏混合强度，范围为 0～1。
+@export_range(0.0, 1.0, 0.01) var life_lingjun_color_strength: float = 0.0
+## 死灵君色偏混合强度，范围为 0～1。
+@export_range(0.0, 1.0, 0.01) var death_lingjun_color_strength: float = 0.0
 ## 将生死角色放入背景深度 0 的 actors 子层，便于由背景子层顺序安排遮挡。
 @export var actors_in_parallax: bool = false
 ## 指定主地景的连续性标识，避免粒子和飘雾触发角色移动。

@@ -1,10 +1,23 @@
 [gd_scene format=3 uid="uid://b31upogsnbgg"]
 
-[ext_resource type="SpineSkeletonDataResource" path="res://assets/character/lingjun/lingjun_gameplay.tres" id="1_skeleton"]
+[ext_resource type="SpineSkeletonDataResource" uid="uid://c8jfawtuasw04" path="res://assets/character/lingjun/lingjun_gameplay.tres" id="1_skeleton"]
+[ext_resource type="Shader" uid="uid://drem6vne4bjte" path="res://shaders/materials/lingjun.gdshader" id="2_7cjwj"]
 [ext_resource type="PackedScene" path="res://assets/character/lingjun/lingjun_ashes.tscn" id="2_ashes"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_qfdje"]
+shader = ExtResource("2_7cjwj")
+shader_parameter/stength = 0.0
+shader_parameter/target_color = Color(0, 0, 0, 1)
 
 [node name="LingjunActor" type="SpineSprite" unique_id=990813055]
 skeleton_data_res = ExtResource("1_skeleton")
+preview_skin = "Default"
+preview_animation = "-- Empty --"
+preview_frame = false
+preview_time = 0.0
+material = SubResource("ShaderMaterial_qfdje")
+position = Vector2(0, 280.645)
+scale = Vector2(0.405, 0.405)
 metadata/attack_segments = 2
 metadata/attack_loop = "attack_loop"
 metadata/attack_start_sec = 0.46
@@ -13,11 +26,6 @@ metadata/idle = "idle"
 metadata/walk = "walk"
 metadata/hurt = "hurt"
 metadata/death = "death"
-preview_skin = "Default"
-preview_animation = "-- Empty --"
-preview_frame = false
-preview_time = 0.0
-position = Vector2(0, 280.645)
-scale = Vector2(0.405, 0.405)
 
-[node name="Ashes" parent="." instance=ExtResource("2_ashes")]
+[node name="Ashes" parent="." unique_id=702919063 instance=ExtResource("2_ashes")]
+show_behind_parent = true

@@ -1,16 +1,16 @@
-[gd_resource type="ShaderMaterial" format=3]
+[gd_resource type="ShaderMaterial" format=3 uid="uid://c8u256prkluoi"]
 
-[ext_resource type="Shader" path="res://shaders/ui/score_gradient.gdshader" id="shader"]
+[ext_resource type="Shader" uid="uid://dyklm6wneuj2f" path="res://shaders/ui/score_gradient.gdshader" id="shader"]
 
 [sub_resource type="Gradient" id="ramp"]
-offsets = PackedFloat32Array(0,0.087,0.209,0.383,0.557,0.655,0.784,0.906,1)
-colors = PackedColorArray(0.564706,0.505882,0.462745,1, 0.686275,0.65098,0.607843,1, 0.768627,0.760784,0.721569,1, 0.819608,0.819608,0.780392,1, 0.827451,0.831373,0.792157,1, 0.827451,0.831373,0.792157,1, 0.768627,0.752941,0.698039,1, 0.713726,0.678431,0.611765,1, 0.670588,0.619608,0.545098,1)
+offsets = PackedFloat32Array(0, 0.087, 0.209, 0.383, 0.557, 0.655, 0.784, 0.906, 1)
+colors = PackedColorArray(0.564706, 0.505882, 0.462745, 1, 0.686275, 0.65098, 0.607843, 1, 0.768627, 0.760784, 0.721569, 1, 0.819608, 0.819608, 0.780392, 1, 0.827451, 0.831373, 0.792157, 1, 0.827451, 0.831373, 0.792157, 1, 0.768627, 0.752941, 0.698039, 1, 0.713726, 0.678431, 0.611765, 1, 0.670588, 0.619608, 0.545098, 1)
 
 [sub_resource type="GradientTexture1D" id="texture"]
 gradient = SubResource("ramp")
-width = 256
 
 [resource]
 resource_local_to_scene = true
 shader = ExtResource("shader")
 shader_parameter/color_ramp = SubResource("texture")
+shader_parameter/text_extent = Vector2(0, 312)
