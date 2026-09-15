@@ -87,7 +87,12 @@ func _apply(changes: Array, reverse: bool) -> void:
 	for change: Dictionary in changes:
 		var before = change.after if reverse else change.before
 		var after = change.before if reverse else change.after
-		if change.kind == "metadata": data.merge(after.duplicate(true), true); continue
+		if change.kind == "metadata":
+			data.merge(after.duplicate(true),true)
+			# 可选字段原先不存在时，撤销应恢复缺省状态，不能留下 null 环境引用。
+			for key in after:
+				if after[key]==null:data.erase(key)
+			continue
 		var collection: Array = entries(change.kind)
 		var removed := {}
 		for entry: Dictionary in before: removed[entry.id] = true

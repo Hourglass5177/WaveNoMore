@@ -1519,6 +1519,10 @@ func _update_environment(player: LevelShowPlayer) -> void:
 			_standalone_environment=ParallaxController.new();viewport.add_child(_standalone_environment)
 		controller=_standalone_environment
 		initial=_assets.background("stage:"+str(document.data.scene_id))
+		# 尚未载入歌曲时也保留基础背景宿主，撤销独立环境后可恢复沿用。
+		var initial_id:=initial.get_instance_id() if initial!=null else 0
+		if controller.get_meta("initial_background_id",-1)!=initial_id:
+			controller.configure(initial);controller.set_meta("initial_background_id",initial_id)
 		controller.configure_boundary(song_document.chart() if not song_document.charts.is_empty() else null,
 			song_document.offset_sec() if not song_document.charts.is_empty() else 0.0, PlanningParameters.read())
 	var duration:=roundi(timeline.waveform_duration*1000000.0)
@@ -1532,23 +1536,31 @@ func open_environment_settings() -> void:
 	end_full_review()
 	_timeline_selection(PackedStringArray(),"@environment",PackedStringArray())
 
-func choose_environment(callback: Callable) -> void:
+func choose_environment(callback: Callable, current := "") -> void:
+	_prepare_command()
 	var dialog:=ConfirmationDialog.new();dialog.title="选择环境场景";dialog.ok_button_text="使用此场景"
+	dialog.cancel_button_text="取消"
+	dialog.dialog_hide_on_ok=false
 	var box:=VBoxContainer.new();dialog.add_child(box)
 	var search:=LineEdit.new();search.placeholder_text="搜索环境场景";box.add_child(search)
 	var list:=ItemList.new();list.custom_minimum_size=Vector2(480,280);box.add_child(list)
+	var hint:=LevelUI.label(box,"",12)
 	var choices:=_assets.backgrounds()
 	var refresh:=func(query:String):
-		list.clear()
+		list.clear();dialog.get_ok_button().disabled=true
 		for item in choices:
 			if query.is_empty() or query.to_lower() in str(item.name).to_lower():
 				list.add_item(str(item.name),item.thumbnail);list.set_item_metadata(list.item_count-1,item.id)
+				if item.id==current:list.select(list.item_count-1);dialog.get_ok_button().disabled=false
+		hint.text="没有可用环境，请先从素材菜单导入环境素材包。" if choices.is_empty() else ("没有匹配的环境，请调整搜索。" if list.item_count==0 else "选择环境后点击“使用此场景”，也可双击确认。")
 	search.text_changed.connect(refresh);refresh.call("")
+	list.item_selected.connect(func(_index):dialog.get_ok_button().disabled=false)
 	var accept:=func():
 		if list.get_selected_items().is_empty():return
-		var asset:=str(list.get_item_metadata(list.get_selected_items()[0]));dialog.hide();callback.call(asset);dialog.queue_free()
+		var asset:=str(list.get_item_metadata(list.get_selected_items()[0]));dialog.hide();callback.call(asset);_status.text="已选择环境："+environment_name(asset);dialog.queue_free()
 	dialog.confirmed.connect(accept);list.item_activated.connect(func(_index):accept.call())
-	dialog.canceled.connect(dialog.queue_free);_popup(dialog,Vector2i(560,400));search.grab_focus()
+	# Window 必须挂入工作区后才能弹出；三个环境入口共用此选择器。
+	add_child(dialog);dialog.canceled.connect(dialog.queue_free);_popup(dialog,Vector2i(560,440));search.grab_focus()
 
 func environment_name(asset:String) -> String:
 	for entry in _assets.backgrounds():
