@@ -44,15 +44,21 @@ func _populate() -> void:
 		if id==current:%List.select(index)
 	get_ok_button().disabled=%List.get_selected_items().is_empty()
 	if not get_ok_button().disabled:_select(%List.get_selected_items()[0])
+	else:
+		_sound.stop();_playing=false;_resource=null;_frames=null;_actions.clear();_actions.hide()
+		%Preview.texture=null;%Preview.queue_redraw();_view.render_target_update_mode=SubViewport.UPDATE_DISABLED
+		%Info.text="没有匹配的素材，请调整搜索或先导入素材。"
 
 func _select(index: int) -> void:
 	current=str(%List.get_item_metadata(index));_sound.stop();_seconds=0;_playing=false
 	_resource=library.resolve(current);_frames=_resource as SpriteFrames;_actions.clear()
+	%Info.remove_theme_font_override("font")
 	%Preview.texture=null;%Preview.queue_redraw();_view.render_target_update_mode=SubViewport.UPDATE_DISABLED
 	get_ok_button().disabled=_resource==null
 	%Info.text="素材不可用，请重新定位来源并导入。" if _resource==null else str(caption.call(current))
 	for name in library.actions(current):_actions.add_item(name)
-	_action="default" if library.actions(current).has("default") else (_actions.get_item_text(0) if _actions.item_count else "")
+	_action=library.default_animation(current) if _frames!=null else ("default" if library.actions(current).has("default") else (_actions.get_item_text(0) if _actions.item_count else ""))
+	if _frames!=null and _action.is_empty():get_ok_button().disabled=true;%Info.text="素材中的动作都没有帧，请先补齐图片。"
 	for item in _actions.item_count:
 		if _actions.get_item_text(item)==_action:_actions.select(item)
 	_actions.visible=_actions.item_count>0
@@ -68,6 +74,7 @@ func _select(index: int) -> void:
 
 func _sample() -> void:
 	if _frames!=null and _frames.has_animation(_action):
+		%Preview.texture=null
 		var length:=LevelAnimationAsset.duration(_frames,_action)
 		var position: float=(fposmod(_seconds,length) if length>0 and _frames.get_animation_loop(_action) else minf(_seconds,length))*_frames.get_animation_speed(_action)
 		for index in _frames.get_frame_count(_action):
@@ -84,13 +91,23 @@ func _sample() -> void:
 	%Preview.queue_redraw()
 
 func _step(delta: int) -> void:
-	_playing=false
-	var fps:=_frames.get_animation_speed(_action) if _frames!=null else 60.0
-	_seconds=maxf(0,_seconds+delta/fps);_sample()
+	_playing=false;_sound.stop()
+	if _frames!=null and _frames.has_animation(_action):
+		# 图片帧可有不同持续时间，逐帧按钮跳到帧起点，不使用固定 1/fps。
+		var duration:=LevelAnimationAsset.duration(_frames,_action)
+		if duration>0 and _frames.get_animation_loop(_action):_seconds=fposmod(_seconds,duration)
+		var boundaries: Array[float]=[];var at:=0.0
+		for index in _frames.get_frame_count(_action):
+			boundaries.append(at);at+=_frames.get_frame_duration(_action,index)/_frames.get_animation_speed(_action)
+		if delta<0:boundaries.reverse()
+		for boundary in boundaries:
+			if (boundary-_seconds)*delta>0.00001:_seconds=boundary;break
+	else:_seconds=maxf(0,_seconds+delta/60.0)
+	_sample()
 
 func _process(delta: float) -> void:
 	if visible and _playing:_seconds+=delta;_sample()
 
 func _apply() -> void:
 	if get_ok_button().disabled:return
-	commit.call(current);queue_free()
+	hide();commit.call(current);queue_free()

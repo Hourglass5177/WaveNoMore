@@ -21,6 +21,12 @@ static func text_field(parent: Node, caption: String, value: String, commit: Cal
 	var last := [value]
 	edit.set_meta("last_value",last)
 	var submit := func():
+		# 面板销毁也会触发失焦，此时不能把旧控件的文本重新提交给文档。
+		if not edit.is_inside_tree():return
+		var ancestor: Node=edit
+		while ancestor!=null:
+			if ancestor.is_queued_for_deletion():return
+			ancestor=ancestor.get_parent()
 		if edit.get_meta("mixed_value",false) and edit.text.is_empty(): return
 		if edit.text != last[0]: last[0] = edit.text; commit.call(edit.text)
 	edit.text_submitted.connect(func(_text): submit.call()); edit.focus_exited.connect(submit)

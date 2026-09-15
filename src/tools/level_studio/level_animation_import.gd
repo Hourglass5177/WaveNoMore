@@ -65,7 +65,8 @@ func _ready() -> void:
 
 func _file(title_text: String,mode: int,filters: PackedStringArray,callback: Callable) -> void:
 	if _busy:return
-	var dialog:=FileDialog.new();dialog.title=title_text;dialog.access=FileDialog.ACCESS_FILESYSTEM;dialog.file_mode=mode;dialog.filters=filters;add_child(dialog)
+	var dialog:=FileDialog.new();dialog.access=FileDialog.ACCESS_FILESYSTEM;dialog.file_mode=mode;dialog.filters=filters;dialog.title=title_text;add_child(dialog)
+	dialog.transient=true;dialog.exclusive=true
 	if mode==FileDialog.FILE_MODE_OPEN_FILES:dialog.files_selected.connect(func(paths):callback.call(paths);dialog.queue_free())
 	elif mode==FileDialog.FILE_MODE_OPEN_DIR:dialog.dir_selected.connect(func(path):callback.call(path);dialog.queue_free())
 	else:dialog.file_selected.connect(func(path):callback.call(path);dialog.queue_free())
@@ -236,13 +237,15 @@ func _replace_source(callback: Callable) -> void:
 	if _busy:return
 	if frames.get_frame_count(action)==0:callback.call();return
 	var prompt:=ConfirmationDialog.new();prompt.title="替换候选动画";prompt.dialog_text="切换来源会替换当前候选动作和帧；已导入的素材不受影响。";prompt.ok_button_text="选择新来源";add_child(prompt)
-	prompt.confirmed.connect(func():prompt.queue_free();callback.call());prompt.canceled.connect(prompt.queue_free);prompt.popup_centered(Vector2i(480,160))
+	prompt.transient=true;prompt.exclusive=true
+	prompt.confirmed.connect(func():prompt.hide();prompt.queue_free();callback.call());prompt.canceled.connect(prompt.queue_free);prompt.popup_centered(Vector2i(480,160))
 
 func _name_action(copy_frames: bool) -> void:
 	if _busy:return
 	var selected: PackedInt32Array=%Frames.get_selected_items()
 	if copy_frames and selected.is_empty():%Status.text="先选择要复制的帧。";return
 	var dialog:=ConfirmationDialog.new();dialog.title="从所选帧创建动作" if copy_frames else "重命名动作";dialog.dialog_hide_on_ok=false
+	dialog.transient=true;dialog.exclusive=true
 	var edit:=LineEdit.new();edit.text=action+"_copy" if copy_frames else action;dialog.add_child(edit);add_child(dialog)
 	dialog.confirmed.connect(func():
 		var next:=edit.text.strip_edges()
