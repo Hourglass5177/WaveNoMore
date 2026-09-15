@@ -1,6 +1,32 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3]
+[ext_resource type="Script" path="res://src/app/title_screen.gd" id="1"]
+[ext_resource type="Theme" path="res://content/ui/game_theme.tres" id="2"]
+[ext_resource type="Texture2D" path="res://assets/ui/art/主界面/主界面背景.png" id="bg"]
+[ext_resource type="Texture2D" path="res://assets/ui/art/主界面/冥河冥河 标题.png" id="title"]
+[ext_resource type="Texture2D" path="res://assets/ui/art/主界面/点击任意处开始 字样.png" id="prompt"]
+[ext_resource type="Script" path="res://src/app/ui/art_button.gd" id="button"]
+[ext_resource type="Script" path="res://src/app/ui/menu_interaction.gd" id="feedback"]
+[ext_resource type="Shader" path="res://shaders/ui/title_glow.gdshader" id="glow"]
+[ext_resource type="Texture2D" path="res://assets/ui/art/主界面/开始游戏.png" id="art0"]
+[ext_resource type="Texture2D" path="res://assets/ui/art/主界面/著作信息.png" id="art1"]
+[ext_resource type="Texture2D" path="res://assets/ui/art/主界面/操作设置.png" id="art2"]
+[ext_resource type="Texture2D" path="res://assets/ui/art/主界面/退出游戏.png" id="art3"]
 
-[ext_resource type="Script" path="res://src/app/title_screen.gd" id="1_script"]
+[sub_resource type="AtlasTexture" id="Background"]
+atlas = ExtResource("bg")
+region = Rect2(45,0,2560,1440)
+filter_clip = true
+
+[sub_resource type="StyleBoxEmpty" id="Empty"]
+
+[sub_resource type="ShaderMaterial" id="Glow"]
+resource_local_to_scene = true
+shader = ExtResource("glow")
+shader_parameter/title_texture = ExtResource("title")
+shader_parameter/title_size = Vector2(750,200.0507)
+shader_parameter/padding_px = 20.0
+shader_parameter/radius_px = 12.0
+shader_parameter/strength = 0.18
 
 [node name="TitleScreen" type="Control"]
 layout_mode = 3
@@ -9,5 +35,229 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_script")
+script = ExtResource("1")
+theme = ExtResource("2")
 
+[node name="Letterbox" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.022,0.012,0.040,1)
+
+[node name="Design" type="Control" parent="."]
+layout_mode = 0
+offset_right = 1920.0
+offset_bottom = 1080.0
+mouse_filter = 2
+
+[node name="Background" type="TextureRect" parent="Design"]
+layout_mode = 0
+offset_right = 1920.0
+offset_bottom = 1080.0
+mouse_filter = 2
+texture = SubResource("Background")
+expand_mode = 1
+
+[node name="Prompt" type="TextureRect" parent="Design"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 0
+offset_left = 503.25
+offset_top = 963.0
+offset_right = 1416.75
+offset_bottom = 1054.5
+mouse_filter = 2
+texture = ExtResource("prompt")
+expand_mode = 1
+
+[node name="TitleArt" type="Control" parent="Design"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 1070.0
+offset_top = 188.0
+offset_right = 1820.0
+offset_bottom = 388.0507
+mouse_filter = 2
+
+[node name="TitleGlow" type="ColorRect" parent="Design/TitleArt"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 770.0
+offset_bottom = 220.0507
+mouse_filter = 2
+material = SubResource("Glow")
+
+[node name="Image" type="TextureRect" parent="Design/TitleArt"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("title")
+expand_mode = 1
+
+[node name="Actions" type="Control" parent="Design"]
+layout_mode = 0
+offset_right = 1920.0
+offset_bottom = 1080.0
+mouse_filter = 2
+
+[node name="Start" type="Button" parent="Design/Actions"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 110.0
+offset_top = 945.0
+offset_right = 410.0
+offset_bottom = 1020.0
+script = ExtResource("button")
+underline_enabled = false
+mouse_default_cursor_shape = 2
+theme_override_styles/normal = SubResource("Empty")
+theme_override_styles/hover = SubResource("Empty")
+theme_override_styles/pressed = SubResource("Empty")
+theme_override_styles/disabled = SubResource("Empty")
+theme_override_styles/focus = SubResource("Empty")
+accessibility_name = "开始游戏"
+
+[node name="Art" type="TextureRect" parent="Design/Actions/Start"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("art0")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Interaction" type="Control" parent="Design/Actions/Start"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("feedback")
+focus_only = true
+underline_offset = 10.0
+underline_width = 2.4
+underline_strength = 0.95
+
+[node name="Credits" type="Button" parent="Design/Actions"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 565.0
+offset_top = 945.0
+offset_right = 865.0
+offset_bottom = 1020.0
+script = ExtResource("button")
+underline_enabled = false
+mouse_default_cursor_shape = 2
+theme_override_styles/normal = SubResource("Empty")
+theme_override_styles/hover = SubResource("Empty")
+theme_override_styles/pressed = SubResource("Empty")
+theme_override_styles/disabled = SubResource("Empty")
+theme_override_styles/focus = SubResource("Empty")
+accessibility_name = "著作信息"
+
+[node name="Art" type="TextureRect" parent="Design/Actions/Credits"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("art1")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Interaction" type="Control" parent="Design/Actions/Credits"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("feedback")
+focus_only = true
+underline_offset = 10.0
+underline_width = 2.4
+underline_strength = 0.95
+
+[node name="Settings" type="Button" parent="Design/Actions"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 1020.0
+offset_top = 945.0
+offset_right = 1320.0
+offset_bottom = 1020.0
+script = ExtResource("button")
+underline_enabled = false
+mouse_default_cursor_shape = 2
+theme_override_styles/normal = SubResource("Empty")
+theme_override_styles/hover = SubResource("Empty")
+theme_override_styles/pressed = SubResource("Empty")
+theme_override_styles/disabled = SubResource("Empty")
+theme_override_styles/focus = SubResource("Empty")
+accessibility_name = "操作设置"
+
+[node name="Art" type="TextureRect" parent="Design/Actions/Settings"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("art2")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Interaction" type="Control" parent="Design/Actions/Settings"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("feedback")
+focus_only = true
+underline_offset = 10.0
+underline_width = 2.4
+underline_strength = 0.95
+
+[node name="Quit" type="Button" parent="Design/Actions"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 1510.0
+offset_top = 945.0
+offset_right = 1810.0
+offset_bottom = 1020.0
+script = ExtResource("button")
+underline_enabled = false
+mouse_default_cursor_shape = 2
+theme_override_styles/normal = SubResource("Empty")
+theme_override_styles/hover = SubResource("Empty")
+theme_override_styles/pressed = SubResource("Empty")
+theme_override_styles/disabled = SubResource("Empty")
+theme_override_styles/focus = SubResource("Empty")
+accessibility_name = "退出游戏"
+
+[node name="Art" type="TextureRect" parent="Design/Actions/Quit"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("art3")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Interaction" type="Control" parent="Design/Actions/Quit"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("feedback")
+focus_only = true
+underline_offset = 10.0
+underline_width = 2.4
+underline_strength = 0.95

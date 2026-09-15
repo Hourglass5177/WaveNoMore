@@ -33,3 +33,24 @@ func beat_at(seconds: float) -> float:
 static func sample(material: ShaderMaterial, seconds: float, beat: float) -> void:
 	material.set_shader_parameter("boundary_time",seconds)
 	material.set_shader_parameter("boundary_beat",beat)
+
+func continuous_beat_at(seconds: float) -> float:
+	if tempo_map==null: return seconds*2.0
+	var tick:=tempo_map.us_to_tick(roundi(seconds*1000000.0))
+	var previous_tick:=0.0
+	var denominator:=4
+	var total:=0.0
+	# 换拍号只改变此后的拍长；累计拍位不归零，水纹不能倒退或跳动。
+	for meter in meters:
+		if meter.tick>tick: break
+		total+=(meter.tick-previous_tick)*denominator/(tempo_map.ppq*4.0)
+		previous_tick=meter.tick
+		denominator=meter.denominator
+	return total+(tick-previous_tick)*denominator/(tempo_map.ppq*4.0)
+
+func vortex_distance_at(seconds: float) -> float:
+	var beat:=continuous_beat_at(seconds)
+	var x:=clampf(fposmod(beat,1.0)/.4,0.0,1.0)
+	# 拍点柔和加速后回到恒速；位移和速度在拍边界都连续。
+	var pulse:=floorf(beat)+x-sin(TAU*x)/TAU
+	return seconds*style.vortex_flow_speed_px_sec+pulse*style.vortex_beat_push_px

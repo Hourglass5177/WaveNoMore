@@ -1,0 +1,16 @@
+[remap]
+
+importer="spine.atlas"
+type="SpineAtlasResource"
+uid="uid://cn7r0tosdqrmi"
+path="res://.godot/imported/vortex.atlas-afb3b695bcc9c01f8d8eb75beebc4798.spatlas"
+
+[deps]
+
+source_file="res://assets/image/background/boundary_vortex/vortex.atlas"
+dest_files=["res://.godot/imported/vortex.atlas-afb3b695bcc9c01f8d8eb75beebc4798.spatlas"]
+
+[params]
+
+normal_map_prefix="n"
+specular_map_prefix="s"

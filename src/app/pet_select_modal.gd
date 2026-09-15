@@ -8,6 +8,7 @@ var _clock := 0.0
 var _actor: PetVisual
 var _selection_motion: Tween
 var _shadow_motion: Tween
+var _stick_direction := 0
 func _ready() -> void:
 	super._ready()
 	if Engine.is_editor_hint(): return
@@ -33,6 +34,8 @@ func _ready() -> void:
 func step(direction: int) -> void:
 	_index = posmod(_index+direction,entries.size())
 	_show_pet(direction)
+	# 切到未获得随从时装备按钮会禁用，把焦点移回可操作的预览。
+	if get_viewport().gui_get_focus_owner() == null: %Preview.grab_focus()
 func _show_pet(direction: int = 0) -> void:
 	if is_instance_valid(_actor):
 		%Actor.remove_child(_actor)
@@ -106,6 +109,21 @@ func _input(event: InputEvent) -> void:
 	if closing: return
 	# 预览页方向键切换随从，避免被 Button 的默认寻焦先吃掉。
 	if not is_visible_in_tree(): return
+	for action: StringName in [&"menu_previous", &"menu_next"]:
+		if event.is_action(action):
+			get_viewport().set_input_as_handled()
+			if event.is_action_pressed(action): step(-1 if action == &"menu_previous" else 1)
+			return
+	# 一次摇杆偏转只切一只；回中后再触发，避开轴噪声造成的连翻。
+	if event is InputEventJoypadMotion and event.axis == JOY_AXIS_LEFT_X:
+		get_viewport().set_input_as_handled()
+		if absf(event.axis_value) < 0.30: _stick_direction = 0
+		elif absf(event.axis_value) >= 0.55:
+			var direction := int(signf(event.axis_value))
+			if direction != _stick_direction:
+				_stick_direction = direction
+				step(direction)
+		return
 	if event.is_action_pressed("ui_left") or event.is_action_pressed("ui_right"):
 		get_viewport().set_input_as_handled()
 		step(-1 if event.is_action_pressed("ui_left") else 1)

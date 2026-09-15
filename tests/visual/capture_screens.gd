@@ -2,7 +2,7 @@ extends SceneTree
 
 ## 图形驱动下的人工视觉取样；只保存关键界面，不做脆弱的像素断言。
 
-const OUTPUT_DIR := "res://../tmp/godot_visual_qa"
+const OUTPUT_DIR := "res://builds/godot_visual_qa"
 
 
 func _initialize() -> void:
@@ -17,7 +17,17 @@ func _run() -> void:
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(OUTPUT_DIR))
 	var app := (load("res://scenes/app/app_main.tscn") as PackedScene).instantiate()
 	root.add_child(app)
+	await create_timer(2.9).timeout
 	await _wait_frames(5)
+	_capture("title-waiting.png")
+	var wake := InputEventKey.new()
+	wake.keycode = KEY_ENTER
+	wake.pressed = true
+	Input.parse_input_event(wake)
+	wake = wake.duplicate()
+	wake.pressed = false
+	Input.parse_input_event(wake)
+	await create_timer(0.9).timeout
 	_capture("title.png")
 	var router := root.get_node("AppRouter")
 	router.call("navigate", &"settings", {}, false)
@@ -36,8 +46,8 @@ func _run() -> void:
 	if stage_root != null:
 		_capture("stage_free_carrier.png")
 		var now_us: int = roundi(stage_root.stage_session.song_clock.sample().judge_time_sec * 1_000_000.0)
-		stage_root.gameplay_coordinator.accept_input(SemanticInputSample.create(now_us, 901, GameplayTypes.SemanticInputKind.LIFE_PRESSED))
-		stage_root.gameplay_coordinator.accept_input(SemanticInputSample.create(now_us, 902, GameplayTypes.SemanticInputKind.DEATH_PRESSED))
+		stage_root.gameplay_coordinator.accept_input(SemanticInputSample.create(now_us, 901, GameplayTypes.SemanticInputKind.LIFE_A_PRESSED))
+		stage_root.gameplay_coordinator.accept_input(SemanticInputSample.create(now_us, 902, GameplayTypes.SemanticInputKind.DEATH_A_PRESSED))
 		await create_timer(1.2).timeout
 		_capture("stage_dual_carrier.png")
 
@@ -49,8 +59,8 @@ func _run() -> void:
 	if stage_root != null and stage_root.seek_tick(26880):
 		await _wait_frames(2)
 		var chord_us: int = stage_root.stage_session.compiled_chart.tempo_map.tick_to_us(26880)
-		stage_root.gameplay_coordinator.accept_input(SemanticInputSample.create(chord_us, 910, GameplayTypes.SemanticInputKind.LIFE_PRESSED))
-		stage_root.gameplay_coordinator.accept_input(SemanticInputSample.create(chord_us, 911, GameplayTypes.SemanticInputKind.DEATH_PRESSED))
+		stage_root.gameplay_coordinator.accept_input(SemanticInputSample.create(chord_us, 910, GameplayTypes.SemanticInputKind.LIFE_A_PRESSED))
+		stage_root.gameplay_coordinator.accept_input(SemanticInputSample.create(chord_us, 911, GameplayTypes.SemanticInputKind.DEATH_A_PRESSED))
 		await create_timer(0.3).timeout
 		_capture("stage_chord_contact.png")
 
@@ -61,7 +71,7 @@ func _run() -> void:
 		_capture("stage_hold_approach.png")
 	if stage_root != null and stage_root.seek_tick(11520):
 		var hold_us: int = stage_root.stage_session.compiled_chart.tempo_map.tick_to_us(11520)
-		stage_root.gameplay_coordinator.accept_input(SemanticInputSample.create(hold_us, 920, GameplayTypes.SemanticInputKind.LIFE_PRESSED))
+		stage_root.gameplay_coordinator.accept_input(SemanticInputSample.create(hold_us, 920, GameplayTypes.SemanticInputKind.LIFE_A_PRESSED))
 		await create_timer(0.45).timeout
 		_capture("stage_hold_sustain.png")
 
@@ -75,20 +85,20 @@ func _run() -> void:
 		_capture("stage_tuning_preview.png")
 	if stage_root != null and stage_root.seek_tick(7680):
 		var life_tuning_us: int = stage_root.stage_session.compiled_chart.tempo_map.tick_to_us(7680)
-		stage_root.gameplay_coordinator.accept_input(SemanticInputSample.create(life_tuning_us, 930, GameplayTypes.SemanticInputKind.LIFE_PRESSED))
+		stage_root.gameplay_coordinator.accept_input(SemanticInputSample.create(life_tuning_us, 930, GameplayTypes.SemanticInputKind.LIFE_A_PRESSED))
 		stage_root.gameplay_coordinator.accept_input(SemanticInputSample.create(life_tuning_us, 931, GameplayTypes.SemanticInputKind.TUNING_DISPLACED, Vector2(0.2, 0.0)))
 		await create_timer(0.8).timeout
 		_capture("stage_tuning_single_active.png")
 	if stage_root != null and stage_root.seek_tick(38400):
 		var pair_us: int = stage_root.stage_session.compiled_chart.tempo_map.tick_to_us(38400)
-		stage_root.gameplay_coordinator.accept_input(SemanticInputSample.create(pair_us, 940, GameplayTypes.SemanticInputKind.LIFE_PRESSED))
-		stage_root.gameplay_coordinator.accept_input(SemanticInputSample.create(pair_us, 941, GameplayTypes.SemanticInputKind.DEATH_PRESSED))
+		stage_root.gameplay_coordinator.accept_input(SemanticInputSample.create(pair_us, 940, GameplayTypes.SemanticInputKind.LIFE_A_PRESSED))
+		stage_root.gameplay_coordinator.accept_input(SemanticInputSample.create(pair_us, 941, GameplayTypes.SemanticInputKind.DEATH_A_PRESSED))
 		stage_root.gameplay_coordinator.accept_input(SemanticInputSample.create(pair_us, 942, GameplayTypes.SemanticInputKind.TUNING_DISPLACED, Vector2(0.22, -0.22)))
 		await create_timer(1.0).timeout
 		_capture("stage_tuning_dual_active.png")
 	if stage_root != null and stage_root.seek_tick(54720):
 		var chain_us: int = stage_root.stage_session.compiled_chart.tempo_map.tick_to_us(54720)
-		stage_root.gameplay_coordinator.accept_input(SemanticInputSample.create(chain_us, 950, GameplayTypes.SemanticInputKind.DEATH_PRESSED))
+		stage_root.gameplay_coordinator.accept_input(SemanticInputSample.create(chain_us, 950, GameplayTypes.SemanticInputKind.DEATH_A_PRESSED))
 		await create_timer(0.35).timeout
 		_capture("stage_tuning_link_chain.png")
 

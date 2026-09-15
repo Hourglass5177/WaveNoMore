@@ -6,6 +6,9 @@ var _run_pet_advanced := false
 var _run_pet_ready := false
 ## 返回选关时恢复刚浏览的卡片。
 var _selected_stage_id := ""
+## 仅本次进程有效；从选关返回时不重复要求唤醒主菜单。
+var _title_revealed := false
+var _boot_splash_shown := false
 
 ## 应用层总入口。负责页面与弹窗的装卸，并把关卡结果送往存档和结算页。
 
@@ -104,10 +107,14 @@ func _on_route_requested(route: StringName, context: Dictionary) -> void:
 
 func _show_title() -> void:
 	var screen := TITLE_SCENE.instantiate()
+	screen.skip_prompt = _title_revealed
+	screen.show_boot_splash = not _boot_splash_shown and not _title_revealed
+	_boot_splash_shown = true
+	screen.menu_revealed.connect(func() -> void: _title_revealed = true)
 	_mount_screen(screen)
 	screen.start_requested.connect(func() -> void: AppRouter.navigate(AppRouter.ROUTE_STAGE_SELECT))
 	screen.settings_requested.connect(func() -> void: _show_modal(SETTINGS_MODAL))
-	screen.calibration_requested.connect(func() -> void: _show_modal(SETTINGS_MODAL, &"calibration"))
+	screen.quit_requested.connect(func() -> void: get_tree().quit())
 
 
 func _show_stage_select() -> void:

@@ -1,5 +1,6 @@
 [gd_scene format=3]
 
+[ext_resource type="Script" path="res://src/app/ui/shortcut_glyph.gd" id="shortcut"]
 [ext_resource type="Script" path="res://src/app/settings_modal.gd" id="1"]
 [ext_resource type="Theme" path="res://content/ui/game_theme.tres" id="2"]
 [ext_resource type="Texture2D" path="res://assets/ui/art/设置页面/底图.png" id="3"]
@@ -10,6 +11,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/components/calibration_content.tscn" id="8"]
 [ext_resource type="Script" path="res://src/app/ui/art_button.gd" id="9"]
 [ext_resource type="Script" path="res://src/app/ui/art_button.gd" id="10"]
+
 
 [node name="Screen" type="Control"]
 layout_mode = 3
@@ -372,3 +374,23 @@ offset_right = 1480.0
 offset_bottom = 832.0
 text = "取消"
 script = ExtResource("10")
+
+[node name="PreviousHint" type="Control" parent="Design"]
+layout_mode = 0
+offset_left = 443.0
+offset_top = 324.0
+offset_right = 507.0
+offset_bottom = 366.0
+mouse_filter = 2
+script = ExtResource("shortcut")
+action = &"menu_previous"
+
+[node name="NextHint" type="Control" parent="Design"]
+layout_mode = 0
+offset_left = 533.0
+offset_top = 324.0
+offset_right = 597.0
+offset_bottom = 366.0
+mouse_filter = 2
+script = ExtResource("shortcut")
+action = &"menu_next"

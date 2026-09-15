@@ -114,10 +114,16 @@ func _run() -> void:
 	pause._on_state_changed(0,GameplayTypes.StageState.PAUSED,&"test")
 	check(pause.get_node("%Retry").position.x < pause.get_node("%Continue").position.x and pause.get_node("%Continue").position.x < pause.get_node("%Exit").position.x,"重玩、继续、退出的左右顺序")
 	await shot("pause")
-	pause._on_resume_countdown_changed(1.2)
+	pause._on_resume_countdown_changed(3.0)
 	check(pause.get_node("%OpenEye").visible and not pause.get_node("%ClosedEye").visible,"恢复睁眼")
-	check(pause._title.text=="2","沿用会话倒计时向上取整")
+	check(pause._title.text=="3","三秒倒计时从3开始")
 	await shot("pause-countdown")
+	pause._on_resume_countdown_changed(2.0)
+	check(pause._title.text=="2","第二秒显示2")
+	pause._on_resume_countdown_changed(1.0)
+	check(pause._title.text=="1","最后一秒显示1")
+	pause._on_resume_countdown_changed(0.0)
+	check(pause._title.text.is_empty(),"倒计时结束才清除数字")
 	check(is_zero_approx(pause._root.get_node("Design/Panel").modulate.a) and is_zero_approx(pause._root.get_node("Dim").modulate.a),"倒计时仅留眼睛，面板与遮罩退场")
 	pause.configure_external(true)
 	check(pause.get_node("%AddLocal").visible and not pause.get_node("%ExitArt").visible,"试玩附加操作与动态退出文案")
@@ -128,6 +134,7 @@ func _run() -> void:
 	# 真实会话验证恢复和重试，不以手工切换 UI 状态代替玩法流程。
 	var stage = load("res://scenes/stage/stage_root.tscn").instantiate()
 	canvas.add_child(stage)
+	stage.stage_load_failed.connect(func(message: String): printerr("UI 测试关载入失败：",message))
 	var definition := StageDefinition.new()
 	definition.stage_id = "ui_pause_test"
 	definition.song = SongDefinition.new()
@@ -143,7 +150,10 @@ func _run() -> void:
 	var remaining: float = stage.stage_session._resume_countdown_remaining
 	stage.pause_overlay._on_continue_pressed()
 	check(stage.stage_session._resume_countdown_remaining==remaining,"重复继续不重启倒计时")
-	await create_timer(remaining+0.15).timeout
+	check(is_equal_approx(remaining,3.0),"正式会话默认等待三秒")
+	await create_timer(2.5).timeout
+	check(stage.stage_session.state==GameplayTypes.StageState.PAUSED and stage.pause_overlay._title.text=="1","两秒半时仍处于最后一秒保护期")
+	await create_timer(0.65).timeout
 	check(not stage.pause_overlay._root.visible,"倒计时完成收起暂停")
 	stage.stage_session.request_pause(&"ui_review")
 	stage.pause_overlay._on_retry_pressed()

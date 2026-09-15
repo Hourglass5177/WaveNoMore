@@ -131,6 +131,7 @@ static func project(chart: SongChart, rules: GameplayRuleSet) -> SongChart:
 			var a := path.points[i - 1]; var b := path.points[i]
 			var slider := TuningSliderEvent.new()
 			slider.visual_radius_px = path.visual_radius_px
+			slider.show_rotation_cue = i == 1
 			slider.event_id = path.event_id + ":" + a.event_id
 			slider.affinity = path.affinity; slider.tick = path.tick + a.offset_ticks
 			slider.traversal_ticks = b.offset_ticks - a.offset_ticks; slider.traversal_count = 1

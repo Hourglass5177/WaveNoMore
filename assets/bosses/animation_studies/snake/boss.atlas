@@ -1,0 +1,111 @@
+
+skeleton.png
+size: 1944,1271
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+蛇_0000_图层-68
+  rotate: false
+  xy: 1910, 388
+  size: 23, 71
+  orig: 23, 71
+  offset: 0, 0
+  index: -1
+蛇_0000s_0000_From-selection
+  rotate: false
+  xy: 1342, 29
+  size: 140, 50
+  orig: 140, 50
+  offset: 0, 0
+  index: -1
+蛇_0000s_0001_Layer-20
+  rotate: false
+  xy: 1364, 366
+  size: 342, 424
+  orig: 342, 424
+  offset: 0, 0
+  index: -1
+蛇_0000s_0002_Layer-20
+  rotate: true
+  xy: 1764, 968
+  size: 301, 176
+  orig: 301, 176
+  offset: 0, 0
+  index: -1
+蛇_0000s_0003_从选区
+  rotate: true
+  xy: 1784, 118
+  size: 104, 72
+  orig: 104, 72
+  offset: 0, 0
+  index: -1
+蛇_0001_Layer-20
+  rotate: true
+  xy: 1584, 94
+  size: 270, 198
+  orig: 270, 198
+  offset: 0, 0
+  index: -1
+蛇_0001s_0000_图层-69
+  rotate: false
+  xy: 1784, 224
+  size: 79, 140
+  orig: 79, 140
+  offset: 0, 0
+  index: -1
+蛇_0001s_0001_Layer-20
+  rotate: false
+  xy: 1342, 81
+  size: 240, 283
+  orig: 240, 283
+  offset: 0, 0
+  index: -1
+蛇_0001s_0002_从选区
+  rotate: true
+  xy: 1484, 12
+  size: 67, 76
+  orig: 67, 76
+  offset: 0, 0
+  index: -1
+蛇_0001s_0003_从选区
+  rotate: true
+  xy: 1708, 366
+  size: 93, 200
+  orig: 93, 200
+  offset: 0, 0
+  index: -1
+蛇_0002_Layer-20
+  rotate: true
+  xy: 1708, 461
+  size: 270, 234
+  orig: 270, 234
+  offset: 0, 0
+  index: -1
+蛇_0003_Layer-20
+  rotate: true
+  xy: 1764, 733
+  size: 233, 178
+  orig: 233, 178
+  offset: 0, 0
+  index: -1
+蛇_0004_Layer-20
+  rotate: false
+  xy: 2, 2
+  size: 1338, 373
+  orig: 1338, 373
+  offset: 0, 0
+  index: -1
+蛇_0005_Layer-20
+  rotate: false
+  xy: 2, 377
+  size: 1360, 892
+  orig: 1360, 892
+  offset: 0, 0
+  index: -1
+蛇_0006_Layer-19
+  rotate: false
+  xy: 1364, 792
+  size: 398, 477
+  orig: 398, 477
+  offset: 0, 0
+  index: -1

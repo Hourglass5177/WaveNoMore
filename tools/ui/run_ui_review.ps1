@@ -6,6 +6,9 @@ $overridePath = Join-Path $uiRoot 'override.cfg'
 $previousOverride = if (Test-Path -LiteralPath $overridePath) { [IO.File]::ReadAllBytes($overridePath) } else { $null }
 $reviewDir = Join-Path $uiRoot 'builds/ui-review'
 New-Item -ItemType Directory -Force -Path $reviewDir | Out-Null
+New-Item -ItemType Directory -Force -Path (Join-Path $uiRoot 'builds/title-review') | Out-Null
+# UI 会话使用确定的默认规则，不读取队友正在调整的策划表。
+[IO.File]::WriteAllText((Join-Path $reviewDir 'default-planning.json'),'{"values":{}}')
 try {
     $configuration = @'
 [application]
@@ -14,7 +17,14 @@ config/custom_user_dir_name="WaveNoMore-UIReview"
 '@
     [IO.File]::WriteAllText($overridePath,$configuration)
     $jobs = @(
-        @{name='art';script='res://tests/ui/run_art_ui_tests.gd';args=' -- --chart-editor'},
+        @{name='stick-ingame';script='res://tests/visual/capture_stick_ingame.gd';args=' -- --planning-values=res://builds/ui-review/default-planning.json'},
+        @{name='stick-motion';script='res://tests/visual/capture_stick_gesture.gd';args=' -- --chart-editor --planning-values=res://builds/ui-review/default-planning.json'},
+        @{name='title-video';script='res://tests/visual/capture_title_transition.gd';args=' --write-movie builds/title-review/title-transition.avi --fixed-fps 60 --resolution 1280x720'},
+        @{name='controller';script='res://tests/ui/run_controller_ui_tests.gd';args=' -- --planning-values=res://builds/ui-review/default-planning.json'},
+        @{name='app-flow';script='res://tests/integration/app_flow/run_app_flow_smoke.gd';args=' -- --planning-values=res://builds/ui-review/default-planning.json'},
+        @{name='title';script='res://tests/ui/run_title_ui_tests.gd';args=''},
+        @{name='art';script='res://tests/ui/run_art_ui_tests.gd';args=' -- --chart-editor --planning-values=res://builds/ui-review/default-planning.json'},
+        @{name='carousel';script='res://tests/visual/run_level_carousel_tests.gd';args=''},
         @{name='navigation';script='res://tests/integration/pets/run_menu_navigation_tests.gd';args=''},
         @{name='display';script='res://tests/ui/run_display_font_tests.gd';args=''},
         @{name='editor-font';script='res://tests/ui/run_display_font_tests.gd';args=' -- --chart-editor'}

@@ -79,6 +79,12 @@ const CENTER_GUTTER_PX: float = 32.0
 ## 疾振外侧倒计时环的半径。
 @export_range(56.0, 170.0, 1.0) var rapid_time_radius: float = 88.0
 
+# 与菜单共用预热的摇杆底图；圆帽姿态由本条已有进度驱动。
+var _show_rotation_cue: bool = true
+var _stick_glow_texture: Texture2D
+var _stick_base_texture: Texture2D
+var _life_stick_texture: Texture2D
+var _death_stick_texture: Texture2D
 # 当前谱面对象的稳定 ID；用于从 active_tuning_sliders 中找到本条滑条。
 var event_id: String = ""
 # 当前滑条所属调频场 ID；用来确认全局活动场确实包含本滑条。
@@ -146,6 +152,8 @@ var _authoritative_traversal_index: int = 0
 var _turnaround_pending: bool = false
 # 调频区域接近事件起点的收束进度。
 var _approach_progress: float = 0.0
+# 来自宿主的绝对接近时间，预读演示同样随暂停和定位冻结、恢复。
+var _cue_elapsed_sec: float = 0.0
 # Host 按可见分组分配的小序号与预读层级；同组生死滑条共享序号。
 var _preview_order_number: int = 0
 var _preview_phase: int = 1
@@ -185,6 +193,11 @@ func configure_timing_style(style: TimingCueStyle) -> void:
 
 func _ready() -> void:
 	if field_kind != 0: return
+	var hints := get_node("/root/UiInputHints")
+	_stick_base_texture = hints.texture_for(&"stick_base")
+	_stick_glow_texture = hints.texture_for(&"stick_glow")
+	_life_stick_texture = hints.texture_for(&"stick_life")
+	_death_stick_texture = hints.texture_for(&"stick_death")
 	_cue_glow = TimingCueGlow.new()
 	_cue_glow.name = "TimingCueGlow"
 	add_child(_cue_glow)
@@ -227,6 +240,7 @@ func configure_from_rules(rules: GameplayRuleSet) -> void:
 
 
 func prepare(view_model: Dictionary) -> void:
+	_show_rotation_cue = bool(view_model.get("show_rotation_cue", true))
 	event_id = str(view_model.get("event_id", view_model.get("id", view_model.get("unit_id", ""))))
 	field_id = str(view_model.get("field_id", ""))
 	group_id = str(view_model.get("group_id", view_model.get("unit_id", event_id)))
@@ -245,6 +259,7 @@ func prepare(view_model: Dictionary) -> void:
 	_clear_endpoint_state()
 	_alignment_strength = 0.0
 	_approach_progress = 0.0
+	_cue_elapsed_sec = 0.0
 	_preview_order_number = 0
 	_preview_phase = 1
 	_preview_alpha = 0.45
@@ -302,6 +317,7 @@ func set_region_progress(value: float) -> void:
 
 
 func set_approach_timing(time_to_start_sec: float, approach_duration_sec: float) -> void:
+	_cue_elapsed_sec = -time_to_start_sec
 	_approach_progress = clampf(
 		1.0 - time_to_start_sec / maxf(approach_duration_sec, 0.001),
 		0.0,
@@ -435,6 +451,7 @@ func reset_for_pool() -> void:
 	rotation = 0.0
 	scale = Vector2.ONE
 	_approach_progress = 0.0
+	_cue_elapsed_sec = 0.0
 	_has_authoritative_guide_range = false
 	_required_rotation_sign = 0
 	_has_authoritative_rotation_sign = false
@@ -493,6 +510,8 @@ func visual_state_snapshot() -> Dictionary:
 		"current_cursor_point": _point_on_slider(_player_progress),
 		"required_rotation_sign": _effective_rotation_sign(),
 		"rotation_cue_sweep_rad": absf(cue_angles.y - cue_angles.x),
+		"stick_cue_center": _stick_cue_pose()["center"],
+		"stick_cue_direction": _stick_cue_pose()["direction"],
 		"rotation_cue_start_direction": Vector2.from_angle(cue_angles.x),
 		"rotation_cue_end_direction": Vector2.from_angle(cue_angles.y),
 		"endpoint_target_progress": _endpoint_target_progress,
@@ -613,64 +632,80 @@ func _draw_guide_dots() -> void:
 		draw_circle(point, dot_radius, dot_color)
 
 
+func _stick_cue_pose() -> Dictionary:
+	# 始终固定在整条滑条的起点旁；交互开始和折返只改变演示方向。
+	var anchor := _slider_start_point()
+	# 靠画面中心留出间距，避开起点圆帽、填充与缩圈。
+	var inward := (canvas_size * 0.5 - anchor).normalized()
+	var center := anchor + inward * (tuning_rail_width * 0.5 + 40.0)
+	var angles := _rotation_cue_angles()
+	# 这是操作演示，不是玩家摇杆的回显。长单程也反复演示同一旋向。
+	# 时基仍来自宿主；收尾淡出后复位，不能画出反向回程误导玩家。
+	var elapsed := _cue_elapsed_sec
+	if _interaction_open:
+		elapsed = region_progress * _duration_sec - _current_traversal_index() * _traversal_duration_sec
+	var phase := fposmod(elapsed, 1.2) / 1.2
+	var progress := smoothstep(0.08, 0.8, phase)
+	var alpha := smoothstep(0.0, 0.08, phase) * (1.0 - smoothstep(0.85, 1.0, phase))
+	return {"center": center, "direction": Vector2.from_angle(lerpf(angles.x, angles.y, progress)), "demo_alpha": alpha, "demo_progress": progress}
+
+
 func _draw_rotation_cue() -> void:
 	var rotation_sign: int = _effective_rotation_sign()
-	if rotation_sign == 0:
+	if not _show_rotation_cue or rotation_sign == 0 or missed or _preview_phase == 2:
 		return
-	var destination_progress: float = (
-		_endpoint_target_progress
-		if _endpoint_has_state
-		else (1.0 if _current_traversal_index() % 2 == 0 else 0.0)
-	)
-	# 预备阶段先在起点旁直接说明如何起手；正式操作后，提示才移动到当前目的端。
-	var center: Vector2 = (
-		_slider_start_point()
-		if not _interaction_open
-		else _point_on_slider(destination_progress)
-	)
-	var turnaround_pulse: float = _turnaround_pulse()
-	var radius: float = tuning_rail_width * (0.66 + turnaround_pulse * 0.035)
-	var cue_angles: Vector2 = _rotation_cue_angles()
-	var start_angle: float = cue_angles.x
-	var sweep: float = cue_angles.y - cue_angles.x
-	var points := PackedVector2Array()
-	for index: int in range(19):
-		var ratio: float = float(index) / 18.0
-		var angle: float = start_angle + sweep * ratio
-		points.append(center + Vector2(cos(angle), sin(angle)) * radius)
-	# 如果玩家很早便顶住端点且没有退回重进，就用灰色克制地提示“这里尚未卡拍”。
-	# 玩家退离端点后提示恢复骨白，提醒其在窗口内重新进入；不额外弹文字打断视线。
-	var waiting_for_reentry: bool = (
-		_endpoint_has_state
-		and _endpoint_inside
-		and _endpoint_captured
+	var pose := _stick_cue_pose()
+	var center: Vector2 = pose["center"]
+	# 围绕提示中心统一放大，帽面、拨动行程与方向弧保持相同比例。
+	draw_set_transform(center * (1.0 - 1.15), 0.0, Vector2(1.15, 1.15))
+	var cue_angles := _rotation_cue_angles()
+	var cue_color := Color("e6ddc9", 0.75)
+	if not _interaction_open: cue_color.a *= _start_cue_alpha()
+	var waiting_for_reentry := (
+		_endpoint_has_state and _endpoint_inside and _endpoint_captured
 		and _endpoint_grade == GameplayTypes.JudgmentGrade.MISS
 	)
-	var cue_color := (
-		Color("8b8e94", 0.76)
-		if waiting_for_reentry
-		else Color(bone_color, lerpf(0.72, 0.98, _alignment_strength))
-	)
-	if not _interaction_open:
-		cue_color.a *= _start_cue_alpha()
-	draw_polyline(points, cue_color, 7.0, true)
-	# 小圆点标起手端，箭头标落手端；不要求玩家精确瞄准，只传达自然手势方向。
-	draw_circle(points[0], 4.5, cue_color)
-
-	# 箭头沿圆弧切线收尾；正号在 Godot 的屏幕坐标中就是视觉顺时针。
-	var end_angle: float = start_angle + sweep
+	if waiting_for_reentry: cue_color.a *= 0.65
+	var texture := _life_stick_texture if affinity == GameplayTypes.Affinity.ZHU else _death_stick_texture
+	var tint := Color(1, 1, 1, cue_color.a)
+	_draw_stick_soft_glow(center + Vector2(0, 3.75), Vector2(19.5, 9.2), cue_color.a * 0.65)
+	draw_texture_rect(_stick_base_texture, Rect2(center + Vector2(-26, -19), Vector2(52, 43.33)), false, tint)
+	# 帽与底座贴合，轻微相对位移表达拨动；省去杆身和厚侧壁。
+	var cap: Vector2 = center + pose["direction"] * Vector2(12, 9)
+	_draw_stick_soft_glow(cap, Vector2(12.4, 6.75), cue_color.a * float(pose["demo_alpha"]))
+	draw_texture_rect(texture, Rect2(cap - Vector2(18, 12), Vector2(36, 30)), false, Color(1, 1, 1, cue_color.a * float(pose["demo_alpha"])))
+	# 外侧保留细方向弧，与平涂图标保持相近视觉重量。
+	var points := PackedVector2Array()
+	for index in 19:
+		points.append(center + Vector2.from_angle(lerpf(cue_angles.x, cue_angles.y, index / 18.0)) * 27.0)
+	draw_polyline(points, Color("26212e", cue_color.a), 3.5, true)
+	draw_polyline(points, Color(cue_color, cue_color.a * 0.42), 1.5, true)
+	# 短亮段和帽面同步，较小角行程也能清楚看见旋向。
+	var sweep: float = cue_angles.y - cue_angles.x
+	var progress: float = pose["demo_progress"]
+	var motion_arc := PackedVector2Array()
+	for index in 9:
+		var t := lerpf(maxf(0.0, progress - 0.24), progress, index / 8.0)
+		motion_arc.append(center + Vector2.from_angle(cue_angles.x + sweep * t) * 27.0)
+	if progress > 0.001:
+		var glow_alpha := cue_color.a * float(pose["demo_alpha"])
+		draw_polyline(motion_arc, Color(cue_color, glow_alpha * 0.08), 7.0, true)
+		draw_polyline(motion_arc, Color(cue_color, glow_alpha * 0.12), 4.5, true)
+		draw_polyline(motion_arc, Color(cue_color, cue_color.a * float(pose["demo_alpha"])), 2.7, true)
+	var tangent := Vector2.from_angle(cue_angles.y + PI * 0.5) * rotation_sign
+	var normal := tangent.orthogonal()
 	var tip: Vector2 = points[-1]
-	var tangent := Vector2(-sin(end_angle), cos(end_angle)) * float(rotation_sign)
-	var normal := Vector2(-tangent.y, tangent.x)
-	draw_colored_polygon(
-		PackedVector2Array([
-			tip + tangent * 2.0,
-			tip - tangent * 18.0 + normal * 10.0,
-			tip - tangent * 18.0 - normal * 10.0,
-		]),
-		cue_color
-	)
+	draw_polyline(PackedVector2Array([tip - tangent * 5.0 + normal * 3.0, tip, tip - tangent * 5.0 - normal * 3.0]), cue_color, 1.5, true)
+	draw_set_transform(Vector2.ZERO)
 
+
+func _draw_stick_soft_glow(center: Vector2, radius: Vector2, alpha: float) -> void:
+	# 缓存的柔边遮罩同时提供阵营外晕和骨白近边，强度低于条身。
+	var side_color := life_color if affinity == GameplayTypes.Affinity.ZHU else death_color
+	var outer_size := (radius + Vector2(9, 7)) * 2.0
+	draw_texture_rect(_stick_glow_texture, Rect2(center - outer_size * 0.5, outer_size), false, Color(side_color, alpha * 0.34))
+	var edge_size := radius * (2.0 / 0.68)
+	draw_texture_rect(_stick_glow_texture, Rect2(center - edge_size * 0.5, edge_size), false, Color(bone_color, alpha * 0.24))
 
 
 func _draw_turnaround_hint() -> void:

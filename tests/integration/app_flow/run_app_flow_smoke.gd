@@ -45,12 +45,19 @@ func _run() -> void:
 		return
 	_expect_equal(router.current_route, &"title", "boot routes to Title")
 	_expect(_has_child_named(app.get_node("ScreenHost"), "TitleScreen"), "TitleScreen is mounted")
-	var title_start := _find_button_with_text(app.get_node("ScreenHost"), "开始渡河")
+	await create_timer(2.9).timeout
+	# 首次确认只展开主菜单，必须释放后再次确认才能进入选关。
+	_send_joy_button(JOY_BUTTON_A, true)
+	await process_frame
+	_send_joy_button(JOY_BUTTON_A, false)
+	await create_timer(0.8).timeout
+	_expect_equal(router.current_route, &"title", "wake input only reveals Title menu")
+	var title_start := app.get_node("ScreenHost/TitleScreen").get_node("%Start") as Button
 	_expect(title_start != null and title_start.has_focus(), "title gives controller focus to Start")
 	_send_joy_button(JOY_BUTTON_A, true)
 	await process_frame
 	_send_joy_button(JOY_BUTTON_A, false)
-	await process_frame
+	await create_timer(0.2).timeout
 	_expect_equal(router.current_route, &"stage_select", "gamepad A confirms the focused menu button")
 	_send_joy_button(JOY_BUTTON_B, true)
 	await process_frame
@@ -60,7 +67,7 @@ func _run() -> void:
 	var settings_modal := (load("res://scenes/ui/modals/settings_modal.tscn") as PackedScene).instantiate()
 	root.add_child(settings_modal)
 	await process_frame
-	var intensity_slider := settings_modal.find_child("TuningWaveIntensitySlider", true, false) as HSlider
+	var intensity_slider := settings_modal.get_node("%Wave") as HSlider
 	_expect(intensity_slider != null, "settings exposes a dedicated tuning-wave intensity slider")
 	if intensity_slider != null:
 		# 设置弹窗展示可读范围，并从 SettingsService 读回持久化值。
@@ -97,7 +104,7 @@ func _run() -> void:
 	router.call("navigate", &"stage_select", {}, false)
 	await process_frame
 	_expect_equal(router.current_route, &"stage_select", "Title routes to StageSelect")
-	_expect(_has_child_named(app.get_node("ScreenHost"), "StageSelectScreen"), "StageSelectScreen is mounted")
+	_expect(app.get_node("ScreenHost").get_child(0).get_node_or_null("Design/Cards") != null, "StageSelectScreen is mounted")
 	var content_catalog := root.get_node_or_null("ContentCatalog")
 	_expect(
 		content_catalog != null and content_catalog.call("get_stage", "s01") != null,
@@ -117,7 +124,7 @@ func _run() -> void:
 		_expect(session != null and session.stage_definition != null, "StageSession receives StageDefinition")
 		if session != null and session.stage_definition != null:
 			_expect_equal(session.stage_definition.stage_id, "s01", "loaded stage ID is s01")
-		var input_router := stage_root.get_node_or_null("Session/InputRouter")
+		var input_router: Node = stage_root.input_buffer
 		var semantic_kinds: Array[int] = []
 		var strike_affinities: Array[int] = []
 		var presentation := stage_root.get_node_or_null("Presentation/GrayboxStagePresentation")
@@ -126,8 +133,9 @@ func _run() -> void:
 				strike_affinities.append(affinity)
 			)
 		if input_router != null:
-			input_router.semantic_input_emitted.connect(func(sample: SemanticInputSample) -> void:
-				semantic_kinds.append(sample.kind)
+			input_router.physical_input_emitted.connect(func(sample: PhysicalInputEvent) -> void:
+				var converted := InputSemanticConverter.to_gameplay(sample)
+				if converted.exists: semantic_kinds.append(int(converted.event.kind))
 			)
 			_send_mouse_button(MOUSE_BUTTON_LEFT, true)
 			await process_frame
@@ -137,20 +145,20 @@ func _run() -> void:
 			_send_mouse_button(MOUSE_BUTTON_RIGHT, false)
 			await process_frame
 		_expect(
-			semantic_kinds.has(GameplayTypes.SemanticInputKind.DEATH_PRESSED),
+			semantic_kinds.has(GameplayTypes.SemanticInputKind.DEATH_A_PRESSED),
 			"physical left mouse click reaches the death bell"
 		)
 		_expect(
-			semantic_kinds.has(GameplayTypes.SemanticInputKind.LIFE_PRESSED),
+			semantic_kinds.has(GameplayTypes.SemanticInputKind.LIFE_A_PRESSED),
 			"physical right mouse click reaches the life bell"
 		)
 		_expect_equal(
 			semantic_kinds,
 			[
-				GameplayTypes.SemanticInputKind.DEATH_PRESSED,
-				GameplayTypes.SemanticInputKind.DEATH_RELEASED,
-				GameplayTypes.SemanticInputKind.LIFE_PRESSED,
-				GameplayTypes.SemanticInputKind.LIFE_RELEASED,
+				GameplayTypes.SemanticInputKind.DEATH_A_PRESSED,
+				GameplayTypes.SemanticInputKind.DEATH_A_RELEASED,
+				GameplayTypes.SemanticInputKind.LIFE_A_PRESSED,
+				GameplayTypes.SemanticInputKind.LIFE_A_RELEASED,
 			],
 			"left-death then right-life mouse order remains deterministic"
 		)
@@ -173,10 +181,10 @@ func _run() -> void:
 		_expect_equal(
 			semantic_kinds,
 			[
-				GameplayTypes.SemanticInputKind.DEATH_PRESSED,
-				GameplayTypes.SemanticInputKind.DEATH_RELEASED,
-				GameplayTypes.SemanticInputKind.LIFE_PRESSED,
-				GameplayTypes.SemanticInputKind.LIFE_RELEASED,
+				GameplayTypes.SemanticInputKind.DEATH_A_PRESSED,
+				GameplayTypes.SemanticInputKind.DEATH_A_RELEASED,
+				GameplayTypes.SemanticInputKind.LIFE_A_PRESSED,
+				GameplayTypes.SemanticInputKind.LIFE_A_RELEASED,
 			],
 			"PC F/J fallback follows left-death then right-life"
 		)

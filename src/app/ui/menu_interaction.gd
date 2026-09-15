@@ -1,6 +1,11 @@
 class_name MenuInteraction
 extends Control
 ## 事件驱动的骨白细光；只画局部反馈，不接管输入，不持续刷新。
+## 主菜单把鼠标选择同步为焦点，避免同时画出两条选中线。
+@export var focus_only := false
+@export var underline_offset := -2.0
+@export var underline_width := 1.4
+@export var underline_strength := 0.70
 var _control: Control
 var _focus_motion: Tween
 var _pulse_motion: Tween
@@ -41,7 +46,7 @@ func _ready() -> void:
 		_control.text_submitted.connect(func(_text: String): acknowledge())
 
 func refresh() -> void:
-	var active := _control.has_focus() or _control.get_global_rect().has_point(_control.get_global_mouse_position())
+	var active := _control.has_focus() or (not focus_only and _control.get_global_rect().has_point(_control.get_global_mouse_position()))
 	if _control is BaseButton and _control.disabled: active = false
 	if _focus_motion: _focus_motion.kill()
 	_focus_motion = create_tween()
@@ -76,8 +81,8 @@ func _draw() -> void:
 		return
 	# 细光由中心舒展，暖色软边贴着按钮下沿；不扫过文字和美术字图。
 	var half_width := size.x*0.42*(0.35+0.65*amount)
-	var left := Vector2(size.x*0.5-half_width,size.y-2.0)
-	var right := Vector2(size.x*0.5+half_width,size.y-2.0)
+	var left := Vector2(size.x*0.5-half_width,size.y+underline_offset)
+	var right := Vector2(size.x*0.5+half_width,size.y+underline_offset)
 	for i in range(4,0,-1):
 		draw_line(left,right,Color(0.78,0.46,0.47,(amount+0.5*pulse)*0.025),1.0+i*2.0,true)
-	draw_line(left,right,Color(bone,0.70*amount+0.25*pulse),1.4,true)
+	draw_line(left,right,Color(bone,underline_strength*amount+0.25*pulse),underline_width,true)

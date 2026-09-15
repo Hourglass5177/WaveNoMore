@@ -44,7 +44,7 @@ func _run() -> void:
 	_check(flame_card._effect_frame==4 and is_equal_approx(flame_card._effect_elapsed,frame_duration*0.1),"火框后续相位连续")
 	_check(ui._cards[0].get_node("Score").text=="000000","无记录分数默认六位零")
 	_check(ui._cards[0].get_node("Rating").text.is_empty(),"不以示例关卡名称冒充评级")
-	_check(is_equal_approx(ui._cards[0].get_node("MonsterIcon").scale.x,1.40) and is_equal_approx(ui._cards[1].get_node("MonsterIcon").scale.x,1.0),"只放大蝙蝠")
+	_check(is_equal_approx(ui._cards[0].get_node("MonsterIcon").scale.x,2.00) and is_equal_approx(ui._cards[1].get_node("MonsterIcon").scale.x,1.0),"只放大蝙蝠")
 	_check(not ui._cards[0].clip_contents,"翅膀可超出卡片边界")
 	_check(ui._cards[0].get_node("Score").material != ui._cards[1].get_node("Score").material,"分数渐变范围逐卡片独立")
 	await _capture_catalog("score-default")
@@ -52,10 +52,21 @@ func _run() -> void:
 	ui.set_catalog(ui.catalog)
 	_check(ui._cards[0].get_node("Score").text=="165467","显示关联关卡最高分")
 	await _capture_catalog("score-record")
+	for index in [1,2]:
+		ui.set_levels(ui._levels,index)
+		await _capture_catalog("description-%d" % index)
+	ui.set_levels(ui._levels,0)
+	await process_frame
 	save.data.stage_results=previous_results
 	ui.selection_changed.connect(func(index: int, id: String): events.append([index, id]))
 	_check(ui._cards.size() == ui.catalog.cards.size(), "卡片数量来自 catalog")
 	_check(is_equal_approx(ui.horizontal_radius, 480.0), "默认 catalog 半径缩小为 480")
+	var score: Label = ui._cards[0].get_node("Score")
+	_check(score.label_settings.font_size == 60,"分数放大到60px")
+	_check(is_equal_approx(score.position.x+score.size.x*0.5,172.0),"分数向左校正8px")
+	var description: Label = ui._cards[1].get_node("Description")
+	_check(description.get_line_count() == 2,"描述不因空格缩进多折出一行")
+	_check(description.label_settings.font is FontVariation and is_equal_approx(description.label_settings.line_spacing,3.5),"描述斜体且额外行距减半")
 	var configured_catalog: Resource = ui.catalog.duplicate()
 	configured_catalog.horizontal_radius = 420.0
 	ui.set_catalog(configured_catalog)

@@ -33,5 +33,6 @@ func fade_out() -> void:
 	await _fade.finished
 
 func _input(_event: InputEvent) -> void:
+	if not Engine.is_editor_hint(): get_node("/root/UiInputHints").observe(_event)
 	if closing:
 		get_viewport().set_input_as_handled()

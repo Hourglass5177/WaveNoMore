@@ -1,0 +1,14 @@
+[remap]
+
+importer="spine.json"
+type="SpineSkeletonFileResource"
+uid="uid://dc71y5yk2xsgl"
+path="res://.godot/imported/boss.spine-json-b4e403b0520fed857120d4cb4c41362e.spjson"
+
+[deps]
+
+source_file="res://assets/bosses/animation_studies/goat/boss.spine-json"
+dest_files=["res://.godot/imported/boss.spine-json-b4e403b0520fed857120d4cb4c41362e.spjson"]
+
+[params]
+

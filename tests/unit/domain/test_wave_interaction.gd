@@ -211,7 +211,7 @@ func _simulate_paired_waves(
 	engine.advance_to(launch_us, false)
 	var sequence: int = 0
 	for note: Dictionary in compiled.notes:
-		var kind: int = GameplayTypes.SemanticInputKind.LIFE_PRESSED if int(note["affinity"]) == GameplayTypes.Affinity.ZHU else GameplayTypes.SemanticInputKind.DEATH_PRESSED
+		var kind: int = GameplayTypes.SemanticInputKind.LIFE_A_PRESSED if int(note["affinity"]) == GameplayTypes.Affinity.ZHU else GameplayTypes.SemanticInputKind.DEATH_A_PRESSED
 		engine.launch(SemanticInputSample.create(launch_us, sequence, kind), true, GameplayTypes.InputOwner.NOTE, note)
 		sequence += 1
 	var cursor_us: int = launch_us
@@ -242,7 +242,7 @@ func _compile(chart: SongChart, label: String) -> CompiledChart:
 
 
 func _life_press(timestamp_us: int, sequence: int) -> SemanticInputSample:
-	return SemanticInputSample.create(timestamp_us, sequence, GameplayTypes.SemanticInputKind.LIFE_PRESSED)
+	return SemanticInputSample.create(timestamp_us, sequence, GameplayTypes.SemanticInputKind.LIFE_A_PRESSED)
 
 
 func _expected_life_contact_us(launch_us: int, cue_us: int) -> int:

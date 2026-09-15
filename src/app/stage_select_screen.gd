@@ -42,3 +42,24 @@ func _unhandled_input(event: InputEvent) -> void:
 func _process(delta: float) -> void:
 	if not has_focus(): _set_held_direction(0)
 	super._process(delta)
+
+func _input(event: InputEvent) -> void:
+	get_node("/root/UiInputHints").observe(event)
+
+func _shortcut_input(event: InputEvent) -> void:
+	var focused := get_viewport().gui_get_focus_owner()
+	if focused == null or (focused != self and not is_ancestor_of(focused)): return
+	for action: StringName in [&"menu_pets", &"menu_settings", &"menu_previous", &"menu_next"]:
+		if not event.is_action(action): continue
+		get_viewport().set_input_as_handled()
+		if not event.is_action_pressed(action): return
+		_set_held_direction(0)
+		if action == &"menu_previous" or action == &"menu_next":
+			grab_focus()
+			step(-1 if action == &"menu_previous" else 1)
+		else:
+			# 快捷键与点击共用按钮信号，关闭弹窗后自然恢复到对应入口。
+			var button: Button = $Design/Actions/Pets if action == &"menu_pets" else $Design/Actions/Settings
+			button.grab_focus()
+			button.pressed.emit()
+		return
