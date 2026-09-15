@@ -134,6 +134,7 @@ texture = ExtResource("10_hwrvv")
 material = SubResource("ShaderMaterial_xu5h3")
 infinite = true
 random_flip = true
+direct_transition = true
 position = Vector2(-589.60034, -329.56433)
 uniform_scale = 1.231761109580623
 
@@ -165,6 +166,7 @@ texture = ExtResource("10_hwrvv")
 material = SubResource("ShaderMaterial_pks16")
 infinite = true
 random_flip = true
+direct_transition = true
 position = Vector2(-589.60034, -329.56433)
 uniform_scale = 1.231761109580623
 
@@ -303,6 +305,7 @@ texture = ExtResource("10_hwrvv")
 material = SubResource("ShaderMaterial_r4llb")
 infinite = true
 random_flip = true
+direct_transition = true
 uniform_scale = 0.7631043957984558
 
 [sub_resource type="Resource" id="Resource_01qws"]
@@ -332,6 +335,7 @@ texture = ExtResource("10_hwrvv")
 material = SubResource("ShaderMaterial_b7ugp")
 infinite = true
 random_flip = true
+direct_transition = true
 uniform_scale = 0.7631043957984558
 
 [sub_resource type="Resource" id="Resource_b7ugp"]
@@ -367,6 +371,7 @@ texture = ExtResource("10_hwrvv")
 material = SubResource("ShaderMaterial_i36ux")
 infinite = true
 random_flip = true
+direct_transition = true
 uniform_scale = 1.026194169869533
 
 [sub_resource type="Resource" id="Resource_l17hx"]
@@ -396,6 +401,7 @@ texture = ExtResource("10_hwrvv")
 material = SubResource("ShaderMaterial_x3cgp")
 infinite = true
 random_flip = true
+direct_transition = true
 uniform_scale = 1.026194169869533
 
 [sub_resource type="Resource" id="Resource_rklt2"]
