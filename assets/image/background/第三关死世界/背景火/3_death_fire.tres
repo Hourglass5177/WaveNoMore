@@ -1,0 +1,34 @@
+[gd_resource type="SpriteFrames" format=3 uid="uid://d1ba2r8kog1ck"]
+
+[ext_resource type="Texture2D" uid="uid://c4mqsgbbv1fm5" path="res://assets/image/background/第三关死世界/背景火/未命名作品-1.png" id="1_gc4cg"]
+[ext_resource type="Texture2D" uid="uid://b6ojvct50qqor" path="res://assets/image/background/第三关死世界/背景火/未命名作品-2.png" id="2_a0x0o"]
+[ext_resource type="Texture2D" uid="uid://vwd3ifri5n2p" path="res://assets/image/background/第三关死世界/背景火/未命名作品-3.png" id="3_hl4gx"]
+[ext_resource type="Texture2D" uid="uid://cvp57a6qpipv5" path="res://assets/image/background/第三关死世界/背景火/未命名作品-4.png" id="4_p25vh"]
+[ext_resource type="Texture2D" uid="uid://di028q0d06q7d" path="res://assets/image/background/第三关死世界/背景火/未命名作品-5.png" id="5_76is3"]
+[ext_resource type="Texture2D" uid="uid://c1gq13aq5lbms" path="res://assets/image/background/第三关死世界/背景火/未命名作品-6.png" id="6_cnoyf"]
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_gc4cg")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_a0x0o")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_hl4gx")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_p25vh")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_76is3")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_cnoyf")
+}],
+"loop": 1,
+"name": &"default",
+"speed": 12.0
+}]

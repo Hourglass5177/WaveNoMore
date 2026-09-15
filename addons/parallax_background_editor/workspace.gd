@@ -251,6 +251,11 @@ func _build() -> void:
 	random_flip.name = "RandomFlip"
 	random_flip.toggled.connect(func(value: bool): _change_entry("random_flip", value))
 	properties.add_child(random_flip)
+	var direct_transition := CheckButton.new()
+	direct_transition.text = "换景时直接渐变替换"
+	direct_transition.name = "DirectTransition"
+	direct_transition.toggled.connect(func(value: bool): _change_entry("direct_transition", value))
+	properties.add_child(direct_transition)
 	_label(properties, "动画")
 	_animations = OptionButton.new()
 	_animations.item_selected.connect(func(index: int): _change_entry("animation", StringName(_animations.get_item_text(index))))
@@ -522,6 +527,10 @@ func _update_properties() -> void:
 	if random_flip != null:
 		random_flip.button_pressed = first.infinite and first.random_flip
 	random_flip.disabled = not editable or not first.infinite
+	var direct_transition: CheckButton = _properties.get_node_or_null("DirectTransition")
+	if direct_transition != null:
+		direct_transition.button_pressed = first.direct_transition
+		direct_transition.disabled = not editable
 	_fields.X.set_value_no_signal(first.position.x)
 	_fields.Y.set_value_no_signal(first.position.y)
 	_fields["深度"].set_value_no_signal(document.depth_of(document.selected_id))

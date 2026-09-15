@@ -71,6 +71,7 @@ func build(initial: StageBackgroundDefinition, cues: Array, resolve: Callable, d
 			var ready := maxi(requested, available)
 			var width := maxf(0.0, float(settings.get("blend_px", 128.0))) if settings.get("effect", "none") == "fade" else 0.0
 			var reference: Dictionary = active if not active.is_empty() else next
+			var direct_transition := _direct_transition(next)
 			var layer: StageBackgroundSubLayer = reference.resource
 			var axis: Vector2 = lane.direction
 			var speed := axis.dot(_velocity(reference) - base_velocity / float(reference.depth)) if reference.depth != 0 else 0.0
@@ -79,7 +80,12 @@ func build(initial: StageBackgroundDefinition, cues: Array, resolve: Callable, d
 			var finish := ready
 			var seam := 0.0
 			var offset := Vector2.ZERO
-			if stationary:
+			if direct_transition:
+				# 目标子层任意素材启用直接渐变时，从请求时刻整层交叉淡化。
+				enter = requested
+				finish = requested + maxi(1, int(settings.get("static_fade_us", 500000)))
+				seam = 0.0
+			elif stationary:
 				finish += maxi(0, int(settings.get("static_fade_us", 500000))) if settings.get("effect", "none") == "fade" else 0
 			else:
 				var bounds := projected_frame(axis)
@@ -93,7 +99,7 @@ func build(initial: StageBackgroundDefinition, cues: Array, resolve: Callable, d
 				if not next.is_empty():
 					var incoming: Dictionary = next.resource.cycle(next.depth, base_velocity)
 					offset = axis * (seam - float(incoming.end))
-			var transition := {"cue_id": str(cue.id), "layer_id": key, "name": lane.name, "section": str(cue.get("section", "song")), "request_us": requested, "ready_us": ready, "enter_us": enter, "finish_us": finish, "seam": seam, "width": width, "static": stationary, "direction": axis}
+			var transition := {"cue_id": str(cue.id), "layer_id": key, "name": lane.name, "section": str(cue.get("section", "song")), "request_us": requested, "ready_us": ready, "enter_us": enter, "finish_us": finish, "seam": seam, "width": width, "static": stationary or direct_transition, "direction": axis}
 			transitions.append(transition); lane.transitions.append(transition)
 			source["outgoing"] = transition
 			var following := _source(next, offset, enter)
@@ -107,6 +113,13 @@ func build(initial: StageBackgroundDefinition, cues: Array, resolve: Callable, d
 			lane.motions.append({"at": finish, "position": travel(lane, finish), "velocity": _velocity(next) if not next.is_empty() else _velocity(reference),"depth":next_depth,"camera_offset":next_offset})
 			active = next; source = following; available = finish
 		lanes.append(lane)
+
+static func _direct_transition(record: Dictionary) -> bool:
+	if record.is_empty(): return false
+	var layer: StageBackgroundSubLayer = record.resource
+	for entry: StageBackgroundEntry in layer.entries:
+		if entry.direct_transition: return true
+	return false
 
 static func _source(record: Dictionary, offset: Vector2, born: int) -> Dictionary:
 	return {"record": record, "offset": offset, "born_us": born, "incoming": {}, "outgoing": {}}
@@ -125,7 +138,7 @@ static func _same(a: Dictionary, b: Dictionary) -> bool:
 	for index in left.entries.size():
 		var x: StageBackgroundEntry = left.entries[index]
 		var y: StageBackgroundEntry = right.entries[index]
-		for property in ["texture", "sprite_frames", "scene", "animation", "material", "infinite", "random_flip", "position", "uniform_scale"]:
+		for property in ["texture", "sprite_frames", "scene", "animation", "material", "infinite", "random_flip", "direct_transition", "position", "uniform_scale"]:
 			if x.get(property) != y.get(property): return false
 	return true
 
@@ -134,7 +147,7 @@ static func _layer_values(record:Dictionary) -> Array:
 	var layer:StageBackgroundSubLayer=record.resource
 	var values:Array=[record.depth,layer.display_name,layer.velocity,layer.cycle_start,layer.cycle_end,layer.cycle_direction]
 	for entry in layer.entries:
-		values.append([entry.texture,entry.sprite_frames,entry.scene,entry.animation,entry.material,entry.infinite,entry.random_flip,entry.position,entry.uniform_scale])
+		values.append([entry.texture,entry.sprite_frames,entry.scene,entry.animation,entry.material,entry.infinite,entry.random_flip,entry.direct_transition,entry.position,entry.uniform_scale])
 	return values
 
 static func _depth_factor(depth:int) -> float:
