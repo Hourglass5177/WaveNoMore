@@ -28,6 +28,9 @@ var _dependency_requests: Array[Dictionary] = []
 
 func _ready() -> void:
 	super._ready()
+	# 加载页首帧必须不透明，主线程准备资源时保留完整画面。
+	if _fade: _fade.kill()
+	modulate.a = 1.0
 	MingheUiStyle.add_backdrop(self)
 	_progress = %Progress
 	_status = %Status
@@ -133,7 +136,9 @@ func _complete() -> void:
 	_phase = &"done"
 	_progress.value = 100.0
 	set_process(false)
-	await fade_out()
+	# 正常加载始终保留用户指定诗句，只有失败才显示具体原因。
+	%Cancel.disabled = true
+	await RenderingServer.frame_post_draw
 	stage_ready.emit(_stage)
 
 

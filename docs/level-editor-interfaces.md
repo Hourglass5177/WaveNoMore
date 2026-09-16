@@ -170,3 +170,13 @@ func level_advance(delta: float, silent: bool) -> void:
 运行时读取原始图片、SpineSkeletonFileResource 和 SpineAtlasResource，构建 PackedScene；对象沿用 `actor`，动作沿用现有 action 轨道。`LevelAnimationDriver` 使用手动骨骼更新，固定 60 Hz 推进；回拖、换动作和改变循环设置重新定位，避免沿用上一动作状态。对象中心取导出骨骼范围中心，显示比例属于素材内部变换。
 
 此入口接受当前运行库兼容的 Spine 4.3 JSON / SKEL，不转换旧版骨骼，不把美术审看工具中的脚本特效自动打包为骨骼动作。
+
+## 编辑与发行核对要点
+
+- 素材导入采用独立路径保留同名原资源；SpriteFrames 的窗口拖放与普通动画导入共用转换及依赖收集，跳过空动作。预览无法读取时不创建不可见对象。骨骼图集与图片随包收集，导出后在隔离目录验证。
+- 失败拖入、取消长任务和空选择确认不提交文档命令；失焦提交不得在属性控件已退出树后发生。旧模态窗口退出后才开启下一个窗口。读取无效工程时继续维护当前工程的自动恢复。
+- 初始环境及换景应统一控制背景显示宿主，包含随机装饰实例；恢复基础环境不应改写素材自身显隐。
+- Ghost 导出关联依赖 `GhostEvent` 的编辑器工具支持及同类型 `PackedStringArray` 初始化。实际发行资源必须保留 `tuning_ids`，验证应加载包内每关并执行 `StageRoot.load_stage`，不能只验证源资源或放宽校验。
+- 保留真实入口回归：`run_level_entrypoint_tests.gd`、`run_level_reliability_tests.gd`、`run_level_spriteframes_drop_tests.gd`、`run_level_pack_restart_tests.gd`（均在 `tests/editor`）。验证成功需同时检查完成标记、退出码和引擎错误；真实触摸板、中文组合输入和跨屏 DPI 仍需要人工检查。
+
+内置 BOSS 的发行资源通过 ResourceLoader 读取导入后的纹理、图集及骨骼，不能用原始文件读取接口代替；外部原始骨骼的成功加载不能代表此分支已验证。单一已配置 BOSS 可接收未分配音符，显式绑定优先；多个 BOSS 不自动猜测归属。静息播放不依赖战斗状态。

@@ -85,6 +85,14 @@ func _on_route_requested(route: StringName, context: Dictionary) -> void:
 		&"pets":
 			_show_modal(PET_SELECT_MODAL)
 			return
+	# 关卡装配期间保留加载页；新场景首帧绘制完成后才撤下，避免露出灰底。
+	var loading_cover: CanvasLayer
+	if route == AppRouter.ROUTE_STAGE and is_instance_valid(_current_screen):
+		loading_cover = CanvasLayer.new()
+		loading_cover.layer = 120
+		add_child(loading_cover)
+		_current_screen.reparent(loading_cover)
+		_current_screen.process_mode = Node.PROCESS_MODE_DISABLED
 	# 其余路由都代表完整页面切换，同一时间只保留一个 ScreenHost 子节点。
 	_clear_screen()
 	match route:
@@ -107,6 +115,9 @@ func _on_route_requested(route: StringName, context: Dictionary) -> void:
 		_:
 			_show_error("未知页面：%s" % route)
 	AppRouter.commit_route(route, context)
+	if loading_cover != null:
+		await RenderingServer.frame_post_draw
+		loading_cover.queue_free()
 
 
 func _show_title() -> void:

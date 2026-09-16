@@ -94,4 +94,4 @@ godot --headless --path . --script res://tests/editor/run_trial_flow_tests.gd --
 
 随从测试覆盖四档窗口及断持边界内外 1 微秒、短 / 双侧 Hold、暂停重臂、一次提档、伤害组、致死与非致死、不同帧步、领域重演、存档、菜单和真实 StageRoot。去掉 `--headless` 可检查实际渲染，并输出截图到 `builds/pet-review/`。
 
-本次正式动画接入记录见 [随从动画接入验证](pet-runtime-validation.md)；早期系统测试记录保留在 [随从系统验证记录](pet-validation.md)。
+本次正式动画接入记录见 [随从动画接入验证](pet-system.md)；早期系统测试记录保留在 [随从系统验证记录](pet-system.md)。

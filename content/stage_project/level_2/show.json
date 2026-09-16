@@ -1,9 +1,234 @@
 {
+  "bindings": [
+    {
+      "id": "fallback_boss_2_attack",
+      "object_id": "fallback_boss_2",
+      "difficulty": "normal",
+      "note_ids": [
+        "event_2f5f209fefdb6b0c",
+        "event_1dcc6c49d083731d",
+        "event_5816063b5da3c78b",
+        "event_a676797251434b68",
+        "event_771848f595d4df34",
+        "event_48cea4a8577f4a66",
+        "event_485a290bb9b9e014",
+        "event_71f8ba6d63f95c2a",
+        "event_a5fbb75be1d5711b",
+        "event_4ffe5a7ec53a1fdb",
+        "event_39fee4bfd87c8b1a",
+        "event_e9fd644997f3bba4",
+        "event_355735e62bc1b3bf",
+        "event_0774199767d9d9dc",
+        "event_2e97d3b46215c2b6",
+        "event_eaf21a9a63574bfc",
+        "event_0a6d43493912a989",
+        "event_ad05ec4677d2a588",
+        "event_bcf34de8c3dad31d",
+        "event_971d4a04655255d1",
+        "event_88c7b2973e6bc633",
+        "event_1881da8db3bf8c59",
+        "event_5ba6830420050676",
+        "event_62a11a4325289e55",
+        "event_c0597607007b80ae",
+        "event_852a3e007ea5fe09",
+        "event_01a124cf29f5ce4e",
+        "event_f7bb137cbed9dc62",
+        "event_de369d26bd115dd9",
+        "event_0244fa864240599a",
+        "event_0b0495260cf0b835",
+        "event_dbf85d05e29ac03d",
+        "event_0f0c5fcaf21f3b20",
+        "event_6e5b181a8cbcb1e8",
+        "event_fe1ca9e636efde46",
+        "event_9154a5dde9012b7c"
+      ],
+      "action_mode": "auto",
+      "action": "attack_start",
+      "rate": 1.0,
+      "release_sec": 0.45,
+      "return_us": 1000000.0,
+      "action_duration_us": 1000000.0,
+      "path_mode": "auto",
+      "life_anchor": "life",
+      "death_anchor": "death"
+    }
+  ],
   "format": "minghe-show",
-  "format_version": 1,
-  "objects": [],
-  "tracks": [],
-  "bindings": [],
+  "format_version": 1.0,
+  "objects": [
+    {
+      "id": "fallback_boss_2",
+      "name": "蛇 BOSS",
+      "type": "actor",
+      "asset": "",
+      "animation": "",
+      "parent_id": "",
+      "layer": "world",
+      "depth": 0.0,
+      "occlusion_depth": 0.0,
+      "occlusion_order": "none",
+      "hidden": false,
+      "locked": false,
+      "fields": {
+        "position": [
+          960.0,
+          250.0
+        ],
+        "scale": [
+          0.904474437236786,
+          0.904474437236786
+        ],
+        "rotation": 0.0,
+        "opacity": 1.0,
+        "color": "ffffffff",
+        "visible": true,
+        "size": [
+          560.0,
+          100.0
+        ]
+      },
+      "boss": {
+        "visual": "snake",
+        "health_ratio": 0.8,
+        "flight_speed": 600.0,
+        "spread_deg": 30.0
+      }
+    }
+  ],
+  "scene_cues": [
+    {
+      "asset": "level_2_2",
+      "blend_px": 128.0,
+      "difficulties": [],
+      "effect": "none",
+      "id": "scene_8c9feefacd50a5b5",
+      "layers": {},
+      "name": "level_2_2",
+      "section": "song",
+      "static_fade_us": 500000.0,
+      "time_us": 58389331.0
+    }
+  ],
   "sequences": [],
-  "scene_cues": []
+  "tracks": [
+    {
+      "id": "fallback_boss_2_position",
+      "object_id": "fallback_boss_2",
+      "type": "property",
+      "property": "position",
+      "section": "song",
+      "difficulties": [],
+      "muted": false,
+      "locked": false,
+      "keys": [
+        {
+          "id": "fallback_boss_2_position_0",
+          "time_us": 0.0,
+          "value": [
+            970.0,
+            -130.0
+          ],
+          "interpolation": "linear",
+          "in_handle": [
+            0.666667,
+            0.666667
+          ],
+          "out_handle": [
+            0.333333,
+            0.333333
+          ]
+        },
+        {
+          "id": "fallback_boss_2_position_1",
+          "time_us": 132158562.0,
+          "value": [
+            970.0,
+            -130.0
+          ],
+          "interpolation": "linear",
+          "in_handle": [
+            0.666667,
+            0.666667
+          ],
+          "out_handle": [
+            0.333333,
+            0.333333
+          ]
+        },
+        {
+          "id": "fallback_boss_2_position_2",
+          "time_us": 133558562.0,
+          "value": [
+            970.0,
+            460.0
+          ],
+          "interpolation": "linear",
+          "in_handle": [
+            0.666667,
+            0.666667
+          ],
+          "out_handle": [
+            0.333333,
+            0.333333
+          ]
+        }
+      ],
+      "clips": []
+    },
+    {
+      "id": "fallback_boss_2_opacity",
+      "object_id": "fallback_boss_2",
+      "type": "property",
+      "property": "opacity",
+      "section": "song",
+      "difficulties": [],
+      "muted": false,
+      "locked": false,
+      "keys": [
+        {
+          "id": "fallback_boss_2_opacity_0",
+          "time_us": 0.0,
+          "value": 0.0,
+          "interpolation": "linear",
+          "in_handle": [
+            0.666667,
+            0.666667
+          ],
+          "out_handle": [
+            0.333333,
+            0.333333
+          ]
+        },
+        {
+          "id": "fallback_boss_2_opacity_1",
+          "time_us": 132158562.0,
+          "value": 0.0,
+          "interpolation": "linear",
+          "in_handle": [
+            0.666667,
+            0.666667
+          ],
+          "out_handle": [
+            0.333333,
+            0.333333
+          ]
+        },
+        {
+          "id": "fallback_boss_2_opacity_2",
+          "time_us": 133358562.0,
+          "value": 1.0,
+          "interpolation": "linear",
+          "in_handle": [
+            0.666667,
+            0.666667
+          ],
+          "out_handle": [
+            0.333333,
+            0.333333
+          ]
+        }
+      ],
+      "clips": []
+    }
+  ]
 }

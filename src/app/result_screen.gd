@@ -46,10 +46,14 @@ func present(stage: StageDefinition, result: Dictionary) -> void:
 		grades.append(int(counts.get(["PERFECT", "GOOD", "PASS", "MISS"][i], counts.get(i, 0))))
 	for i in 4:
 		get_node("%" + ["Perfect", "Good", "Pass", "Miss"][i]).text = "%s  %d" % [["臻", "良", "过", "失"][i], grades[i]]
-	# 失败时尚未结算的音符不进入分母；百分比不能反推玄同、至臻。
-	var total := grades[0] + grades[1] + grades[2] + grades[3]
-	%HitRate.text = "%.2f%%" % (100.0 * (total-grades[3]) / total) if total > 0 else "—"
-	%PerfectRate.text = "%.2f%%" % (100.0 * grades[0] / total) if total > 0 else "—"
+	# 提前失败也按整关总判定数统计，未处理音符不能让百分比虚高。
+	var ghost: Dictionary = result.get("ghost_counts", {})
+	var ghost_hits := int(ghost.get("PERFECT", 0)) + int(ghost.get("GOOD", 0))
+	var total := int(result.get("expected_judgment_count", 0)) + int(result.get("expected_ghost_count", 0))
+	%GhostResult.text = "Ghost  击破 %d / %d · 漏击 %d" % [ghost_hits, int(result.get("expected_ghost_count", 0)), int(ghost.get("MISS", 0))]
+	%GhostResult.visible = int(result.get("expected_ghost_count", 0)) > 0
+	%HitRate.text = "%.2f%%" % (100.0 * (grades[0]+grades[1]+grades[2]+ghost_hits) / total) if total > 0 else "—"
+	%PerfectRate.text = "%.2f%%" % (100.0 * (grades[0] + int(ghost.get("PERFECT", 0))) / total) if total > 0 else "—"
 	%Soul.text = "魂火  %d" % int(result.get("soul_fire", 0))
 	var pet_name := str(result.get("pet_name", ""))
 	%Bonus.text = "%s%s · 随从加分 %d" % [pet_name, " · 进阶" if result.get("pet_advanced", false) else "", int(result.get("bonus_score", 0))] if not pet_name.is_empty() else ""

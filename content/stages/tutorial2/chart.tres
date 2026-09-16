@@ -12,7 +12,7 @@
 [ext_resource type="Script" path="res://src/content/resources/tuning_path_event.gd" id="10_ph7mj"]
 [ext_resource type="Script" path="res://src/content/resources/tuning_slider_event.gd" id="11_mvs2x"]
 
-[sub_resource type="Resource" id="Resource_xhfwb"]
+[sub_resource type="Resource" id="Resource_x6t73"]
 script = ExtResource("2_v3xkt")
 metadata/json_source = {
 "denominator": 4.0,
@@ -20,7 +20,7 @@ metadata/json_source = {
 "tick": 0.0
 }
 
-[sub_resource type="Resource" id="Resource_vbpe8"]
+[sub_resource type="Resource" id="Resource_v3xkt"]
 script = ExtResource("3_5a17y")
 event_id = "event_d9f9cd4b2d76438b"
 metadata/json_source = {
@@ -33,7 +33,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_uhekr"]
+[sub_resource type="Resource" id="Resource_5a17y"]
 script = ExtResource("3_5a17y")
 event_id = "event_ea0472f29acc1a3b"
 tick = 2160
@@ -47,7 +47,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_k1co8"]
+[sub_resource type="Resource" id="Resource_66scu"]
 script = ExtResource("3_5a17y")
 event_id = "event_ac7b75d3aa7aa98d"
 tick = 2880
@@ -62,7 +62,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_n1jxq"]
+[sub_resource type="Resource" id="Resource_m5d76"]
 script = ExtResource("3_5a17y")
 event_id = "event_4fc0b97c7b9eeb45"
 tick = 3840
@@ -76,7 +76,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_sjsxj"]
+[sub_resource type="Resource" id="Resource_o1s1t"]
 script = ExtResource("3_5a17y")
 event_id = "event_73c5d8f100bcc8d7"
 tick = 6000
@@ -90,7 +90,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_vo4da"]
+[sub_resource type="Resource" id="Resource_geve8"]
 script = ExtResource("3_5a17y")
 event_id = "event_87b337c3d73a4f8d"
 tick = 6720
@@ -105,7 +105,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_yv6nt"]
+[sub_resource type="Resource" id="Resource_uocuv"]
 script = ExtResource("3_5a17y")
 event_id = "event_e3a4e20a4041d81a"
 tick = 7680
@@ -120,7 +120,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_aimys"]
+[sub_resource type="Resource" id="Resource_5rkeg"]
 script = ExtResource("3_5a17y")
 event_id = "event_983cfd525d2910eb"
 tick = 9840
@@ -135,7 +135,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_506ht"]
+[sub_resource type="Resource" id="Resource_ph7mj"]
 script = ExtResource("3_5a17y")
 event_id = "event_ed177fe8723e9fb7"
 tick = 10560
@@ -149,7 +149,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_4b1mj"]
+[sub_resource type="Resource" id="Resource_mvs2x"]
 script = ExtResource("3_5a17y")
 event_id = "event_c95bfba586daf12d"
 tick = 11520
@@ -164,7 +164,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_omhev"]
+[sub_resource type="Resource" id="Resource_xhfwb"]
 script = ExtResource("3_5a17y")
 event_id = "event_5b4b216f31a65f91"
 tick = 13680
@@ -179,7 +179,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_cr4f1"]
+[sub_resource type="Resource" id="Resource_vbpe8"]
 script = ExtResource("3_5a17y")
 event_id = "event_2e96bc09596d6e63"
 tick = 14400
@@ -193,7 +193,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_2twbw"]
+[sub_resource type="Resource" id="Resource_uhekr"]
 script = ExtResource("3_5a17y")
 event_id = "event_743f14fa02006f9c"
 tick = 15360
@@ -207,7 +207,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_u0d17"]
+[sub_resource type="Resource" id="Resource_k1co8"]
 script = ExtResource("3_5a17y")
 event_id = "event_06ab10cf0dd89da4"
 tick = 16320
@@ -222,7 +222,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_h34bk"]
+[sub_resource type="Resource" id="Resource_n1jxq"]
 script = ExtResource("3_5a17y")
 event_id = "event_b20e4ce8b5302ab3"
 tick = 18240
@@ -237,7 +237,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_t281r"]
+[sub_resource type="Resource" id="Resource_sjsxj"]
 script = ExtResource("3_5a17y")
 event_id = "event_ba543f6808ca4313"
 tick = 18240
@@ -251,7 +251,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_5ojhq"]
+[sub_resource type="Resource" id="Resource_vo4da"]
 script = ExtResource("3_5a17y")
 event_id = "event_202aac00f14d4e39"
 tick = 19200
@@ -265,7 +265,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_ce3jh"]
+[sub_resource type="Resource" id="Resource_yv6nt"]
 script = ExtResource("3_5a17y")
 event_id = "event_41ca942b0f5c044a"
 tick = 20160
@@ -280,7 +280,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_8n8w1"]
+[sub_resource type="Resource" id="Resource_aimys"]
 script = ExtResource("3_5a17y")
 event_id = "event_10348b61742c5a06"
 tick = 22080
@@ -294,7 +294,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_4hshf"]
+[sub_resource type="Resource" id="Resource_506ht"]
 script = ExtResource("3_5a17y")
 event_id = "event_4f570b2f71c4826e"
 tick = 22080
@@ -309,7 +309,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_xdxsc"]
+[sub_resource type="Resource" id="Resource_4b1mj"]
 script = ExtResource("3_5a17y")
 event_id = "event_ab168efc061085e3"
 tick = 23040
@@ -324,7 +324,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_epv0s"]
+[sub_resource type="Resource" id="Resource_omhev"]
 script = ExtResource("3_5a17y")
 event_id = "event_c0b05e1e6b0a255b"
 tick = 24000
@@ -338,7 +338,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_elemo"]
+[sub_resource type="Resource" id="Resource_cr4f1"]
 script = ExtResource("3_5a17y")
 event_id = "event_72cce1583f3a79b6"
 tick = 25920
@@ -352,7 +352,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_pm6oo"]
+[sub_resource type="Resource" id="Resource_2twbw"]
 script = ExtResource("3_5a17y")
 event_id = "event_784be9188161a350"
 tick = 25920
@@ -367,7 +367,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_hqbng"]
+[sub_resource type="Resource" id="Resource_u0d17"]
 script = ExtResource("3_5a17y")
 event_id = "event_2716ff8fa42b530f"
 tick = 26880
@@ -382,7 +382,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_p8ywq"]
+[sub_resource type="Resource" id="Resource_h34bk"]
 script = ExtResource("3_5a17y")
 event_id = "event_11a6c0886f680bcd"
 tick = 27840
@@ -396,7 +396,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_5ce0f"]
+[sub_resource type="Resource" id="Resource_t281r"]
 script = ExtResource("3_5a17y")
 event_id = "event_b71ece09ceb3f33e"
 tick = 29760
@@ -411,7 +411,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_obvof"]
+[sub_resource type="Resource" id="Resource_5ojhq"]
 script = ExtResource("3_5a17y")
 event_id = "event_bc6ab67ddfab868e"
 tick = 29760
@@ -425,7 +425,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_eywnl"]
+[sub_resource type="Resource" id="Resource_ce3jh"]
 script = ExtResource("3_5a17y")
 event_id = "event_03ee320095b83f40"
 tick = 30720
@@ -441,7 +441,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_htteb"]
+[sub_resource type="Resource" id="Resource_8n8w1"]
 script = ExtResource("3_5a17y")
 event_id = "event_861e29c167ffb0ef"
 tick = 34560
@@ -458,7 +458,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_kfsmi"]
+[sub_resource type="Resource" id="Resource_4hshf"]
 script = ExtResource("3_5a17y")
 event_id = "event_e968ea1c85425e56"
 tick = 38400
@@ -474,7 +474,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_d2b0p"]
+[sub_resource type="Resource" id="Resource_xdxsc"]
 script = ExtResource("3_5a17y")
 event_id = "event_dcaea1e8c7dc70d2"
 tick = 42240
@@ -491,22 +491,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_e430i"]
-script = ExtResource("3_5a17y")
-event_id = "event_4bec6cad65d85050"
-tick = 46080
-affinity = 1
-metadata/json_source = {
-"affinity": "xuan",
-"boss": false,
-"duration_ticks": 0.0,
-"id": "event_4bec6cad65d85050",
-"kind": "tap",
-"tick": 46080.0,
-"visual_variant": "default"
-}
-
-[sub_resource type="Resource" id="Resource_v27lh"]
+[sub_resource type="Resource" id="Resource_epv0s"]
 script = ExtResource("3_5a17y")
 event_id = "event_93259b80e243cd89"
 tick = 46080
@@ -522,36 +507,40 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_rs7d4"]
+[sub_resource type="Resource" id="Resource_elemo"]
 script = ExtResource("3_5a17y")
-event_id = "event_9f614f02edcdb0c6"
-tick = 48960
+event_id = "event_9771f916b9f8c9d1"
+tick = 46080
+duration_ticks = 2880
+kind = 1
 affinity = 1
 metadata/json_source = {
 "affinity": "xuan",
 "boss": false,
-"duration_ticks": 0.0,
-"id": "event_9f614f02edcdb0c6",
-"kind": "tap",
-"tick": 48960.0,
+"duration_ticks": 2880.0,
+"id": "event_9771f916b9f8c9d1",
+"kind": "hold",
+"tick": 46080.0,
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_yq7c7"]
+[sub_resource type="Resource" id="Resource_pm6oo"]
 script = ExtResource("3_5a17y")
-event_id = "event_ba615af20ef99874"
+event_id = "event_6c882cc2c9818b83"
 tick = 49920
+duration_ticks = 2880
+kind = 1
 metadata/json_source = {
 "affinity": "zhu",
 "boss": false,
-"duration_ticks": 0.0,
-"id": "event_ba615af20ef99874",
-"kind": "tap",
+"duration_ticks": 2880.0,
+"id": "event_6c882cc2c9818b83",
+"kind": "hold",
 "tick": 49920.0,
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_hlw7j"]
+[sub_resource type="Resource" id="Resource_hqbng"]
 script = ExtResource("3_5a17y")
 event_id = "event_f315487ec6fd71ac"
 tick = 49920
@@ -568,21 +557,24 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_0sr8s"]
+[sub_resource type="Resource" id="Resource_p8ywq"]
 script = ExtResource("3_5a17y")
-event_id = "event_60cddc15a72c0124"
-tick = 52800
+event_id = "event_00fd98166df0fe8e"
+tick = 53760
+duration_ticks = 2880
+kind = 1
+affinity = 1
 metadata/json_source = {
-"affinity": "zhu",
+"affinity": "xuan",
 "boss": false,
-"duration_ticks": 0.0,
-"id": "event_60cddc15a72c0124",
-"kind": "tap",
-"tick": 52800.0,
+"duration_ticks": 2880.0,
+"id": "event_00fd98166df0fe8e",
+"kind": "hold",
+"tick": 53760.0,
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_6xc67"]
+[sub_resource type="Resource" id="Resource_5ce0f"]
 script = ExtResource("3_5a17y")
 event_id = "event_897888f09cb8a33c"
 tick = 53760
@@ -598,51 +590,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_wg7pl"]
-script = ExtResource("3_5a17y")
-event_id = "event_8f2e712b15ef2c3e"
-tick = 53760
-affinity = 1
-metadata/json_source = {
-"affinity": "xuan",
-"boss": false,
-"duration_ticks": 0.0,
-"id": "event_8f2e712b15ef2c3e",
-"kind": "tap",
-"tick": 53760.0,
-"visual_variant": "default"
-}
-
-[sub_resource type="Resource" id="Resource_2fao6"]
-script = ExtResource("3_5a17y")
-event_id = "event_5750f57f9b2a345c"
-tick = 56640
-affinity = 1
-metadata/json_source = {
-"affinity": "xuan",
-"boss": false,
-"duration_ticks": 0.0,
-"id": "event_5750f57f9b2a345c",
-"kind": "tap",
-"tick": 56640.0,
-"visual_variant": "default"
-}
-
-[sub_resource type="Resource" id="Resource_ufn1c"]
-script = ExtResource("3_5a17y")
-event_id = "event_07bafd103021ebb2"
-tick = 57600
-metadata/json_source = {
-"affinity": "zhu",
-"boss": false,
-"duration_ticks": 0.0,
-"id": "event_07bafd103021ebb2",
-"kind": "tap",
-"tick": 57600.0,
-"visual_variant": "default"
-}
-
-[sub_resource type="Resource" id="Resource_sjjmh"]
+[sub_resource type="Resource" id="Resource_obvof"]
 script = ExtResource("3_5a17y")
 event_id = "event_7c71aa3b8679f071"
 tick = 57600
@@ -659,21 +607,23 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_8wfdg"]
+[sub_resource type="Resource" id="Resource_eywnl"]
 script = ExtResource("3_5a17y")
-event_id = "event_05d2ba15ddbd7b78"
-tick = 60480
+event_id = "event_ec28338157aae7e5"
+tick = 57600
+duration_ticks = 2880
+kind = 1
 metadata/json_source = {
 "affinity": "zhu",
 "boss": false,
-"duration_ticks": 0.0,
-"id": "event_05d2ba15ddbd7b78",
-"kind": "tap",
-"tick": 60480.0,
+"duration_ticks": 2880.0,
+"id": "event_ec28338157aae7e5",
+"kind": "hold",
+"tick": 57600.0,
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_cn6e3"]
+[sub_resource type="Resource" id="Resource_htteb"]
 script = ExtResource("3_5a17y")
 event_id = "event_595939b598af4433"
 tick = 61440
@@ -687,7 +637,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_qjpot"]
+[sub_resource type="Resource" id="Resource_kfsmi"]
 script = ExtResource("3_5a17y")
 event_id = "event_b12847132a3935bb"
 tick = 62400
@@ -701,7 +651,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_3u2h2"]
+[sub_resource type="Resource" id="Resource_d2b0p"]
 script = ExtResource("3_5a17y")
 event_id = "event_c0d934596617f1b0"
 tick = 63360
@@ -715,7 +665,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_muguc"]
+[sub_resource type="Resource" id="Resource_e430i"]
 script = ExtResource("3_5a17y")
 event_id = "event_a180c1a2181c9ffb"
 tick = 64320
@@ -729,7 +679,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_hab8w"]
+[sub_resource type="Resource" id="Resource_v27lh"]
 script = ExtResource("3_5a17y")
 event_id = "event_69f1e65f95f26768"
 tick = 65280
@@ -744,7 +694,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_6ryje"]
+[sub_resource type="Resource" id="Resource_rs7d4"]
 script = ExtResource("3_5a17y")
 event_id = "event_d1ba8dc23e3b195b"
 tick = 66240
@@ -759,7 +709,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_vlrm7"]
+[sub_resource type="Resource" id="Resource_yq7c7"]
 script = ExtResource("3_5a17y")
 event_id = "event_2cb4ccf6859ed923"
 tick = 67200
@@ -774,7 +724,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_bwdn6"]
+[sub_resource type="Resource" id="Resource_hlw7j"]
 script = ExtResource("3_5a17y")
 event_id = "event_e605b52fa70b3047"
 tick = 68160
@@ -789,7 +739,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_4o2ux"]
+[sub_resource type="Resource" id="Resource_0sr8s"]
 script = ExtResource("3_5a17y")
 event_id = "event_ffcbf7d16997377a"
 tick = 69120
@@ -803,7 +753,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_3fpxq"]
+[sub_resource type="Resource" id="Resource_6xc67"]
 script = ExtResource("3_5a17y")
 event_id = "event_b1bb709d02b95f15"
 tick = 70080
@@ -817,7 +767,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_22ijf"]
+[sub_resource type="Resource" id="Resource_wg7pl"]
 script = ExtResource("3_5a17y")
 event_id = "event_362b399e7a325216"
 tick = 71040
@@ -831,7 +781,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_tjvuc"]
+[sub_resource type="Resource" id="Resource_2fao6"]
 script = ExtResource("3_5a17y")
 event_id = "event_81daac3378ef552b"
 tick = 72000
@@ -845,7 +795,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_oekhl"]
+[sub_resource type="Resource" id="Resource_ufn1c"]
 script = ExtResource("3_5a17y")
 event_id = "event_2ec91542eaef9e58"
 tick = 72960
@@ -860,7 +810,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_83u47"]
+[sub_resource type="Resource" id="Resource_sjjmh"]
 script = ExtResource("3_5a17y")
 event_id = "event_738cb8d4d4ea1082"
 tick = 73920
@@ -875,7 +825,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_iwtwg"]
+[sub_resource type="Resource" id="Resource_8wfdg"]
 script = ExtResource("3_5a17y")
 event_id = "event_6bfc2035ffed7ab6"
 tick = 74880
@@ -890,7 +840,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_20fuv"]
+[sub_resource type="Resource" id="Resource_cn6e3"]
 script = ExtResource("3_5a17y")
 event_id = "event_522982ce3aa223b4"
 tick = 75840
@@ -905,7 +855,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_wucvq"]
+[sub_resource type="Resource" id="Resource_qjpot"]
 script = ExtResource("3_5a17y")
 event_id = "event_1061416fbffe9d36"
 tick = 76800
@@ -919,7 +869,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_fe33h"]
+[sub_resource type="Resource" id="Resource_3u2h2"]
 script = ExtResource("3_5a17y")
 event_id = "event_056a0123028745b0"
 tick = 77760
@@ -933,7 +883,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_2bu5u"]
+[sub_resource type="Resource" id="Resource_muguc"]
 script = ExtResource("3_5a17y")
 event_id = "event_f4030be6e961cfbe"
 tick = 78240
@@ -947,7 +897,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_k28mn"]
+[sub_resource type="Resource" id="Resource_hab8w"]
 script = ExtResource("3_5a17y")
 event_id = "event_28fdf18651700ce2"
 tick = 78720
@@ -961,7 +911,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_q3umi"]
+[sub_resource type="Resource" id="Resource_6ryje"]
 script = ExtResource("3_5a17y")
 event_id = "event_24cfd9553fabb04f"
 tick = 79680
@@ -975,7 +925,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_gae7g"]
+[sub_resource type="Resource" id="Resource_vlrm7"]
 script = ExtResource("3_5a17y")
 event_id = "event_ed5090bb2db9f931"
 tick = 80640
@@ -990,7 +940,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_1vdru"]
+[sub_resource type="Resource" id="Resource_bwdn6"]
 script = ExtResource("3_5a17y")
 event_id = "event_9c9d7fe3cca4dc16"
 tick = 81600
@@ -1005,7 +955,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_8w5gj"]
+[sub_resource type="Resource" id="Resource_4o2ux"]
 script = ExtResource("3_5a17y")
 event_id = "event_8192c455634545da"
 tick = 82080
@@ -1020,7 +970,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_gd5nl"]
+[sub_resource type="Resource" id="Resource_3fpxq"]
 script = ExtResource("3_5a17y")
 event_id = "event_691f6454066947a3"
 tick = 82560
@@ -1035,7 +985,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_41mhi"]
+[sub_resource type="Resource" id="Resource_22ijf"]
 script = ExtResource("3_5a17y")
 event_id = "event_040f10fe3d8a94a0"
 tick = 83520
@@ -1050,7 +1000,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_ye0ov"]
+[sub_resource type="Resource" id="Resource_tjvuc"]
 script = ExtResource("3_5a17y")
 event_id = "event_f6aa452f1d7a99d8"
 tick = 84480
@@ -1064,7 +1014,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_xwh2n"]
+[sub_resource type="Resource" id="Resource_oekhl"]
 script = ExtResource("3_5a17y")
 event_id = "event_2e8f8c06298915b1"
 tick = 85440
@@ -1078,7 +1028,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_w4705"]
+[sub_resource type="Resource" id="Resource_83u47"]
 script = ExtResource("3_5a17y")
 event_id = "event_88074b25454366d9"
 tick = 85920
@@ -1092,7 +1042,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_yev74"]
+[sub_resource type="Resource" id="Resource_iwtwg"]
 script = ExtResource("3_5a17y")
 event_id = "event_a69d7ff50fb0472e"
 tick = 86400
@@ -1106,7 +1056,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_mjubq"]
+[sub_resource type="Resource" id="Resource_20fuv"]
 script = ExtResource("3_5a17y")
 event_id = "event_609f17febd3c2d7f"
 tick = 87360
@@ -1120,7 +1070,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_55yud"]
+[sub_resource type="Resource" id="Resource_wucvq"]
 script = ExtResource("3_5a17y")
 event_id = "event_ab57d841dcc46f5a"
 tick = 88320
@@ -1135,7 +1085,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_5wagh"]
+[sub_resource type="Resource" id="Resource_fe33h"]
 script = ExtResource("3_5a17y")
 event_id = "event_411a398ac5cb0432"
 tick = 89280
@@ -1150,7 +1100,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_47krl"]
+[sub_resource type="Resource" id="Resource_2bu5u"]
 script = ExtResource("3_5a17y")
 event_id = "event_45fc9f713bbc3e0e"
 tick = 89760
@@ -1165,7 +1115,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_gwifi"]
+[sub_resource type="Resource" id="Resource_k28mn"]
 script = ExtResource("3_5a17y")
 event_id = "event_80dae712ac503d86"
 tick = 90240
@@ -1180,7 +1130,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_3cey1"]
+[sub_resource type="Resource" id="Resource_q3umi"]
 script = ExtResource("3_5a17y")
 event_id = "event_2503af076ed38c03"
 tick = 91200
@@ -1195,7 +1145,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_a4hxg"]
+[sub_resource type="Resource" id="Resource_gae7g"]
 script = ExtResource("3_5a17y")
 event_id = "event_8c0492fe8921facd"
 tick = 94440
@@ -1209,7 +1159,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_crwde"]
+[sub_resource type="Resource" id="Resource_1vdru"]
 script = ExtResource("3_5a17y")
 event_id = "event_40f6532fb91968f8"
 tick = 95400
@@ -1223,7 +1173,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_m5m00"]
+[sub_resource type="Resource" id="Resource_8w5gj"]
 script = ExtResource("3_5a17y")
 event_id = "event_72e1e22e931bb5ed"
 tick = 96120
@@ -1237,7 +1187,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_3d1h2"]
+[sub_resource type="Resource" id="Resource_gd5nl"]
 script = ExtResource("3_5a17y")
 event_id = "event_b0eeed92412388b3"
 tick = 97320
@@ -1251,7 +1201,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_o5pas"]
+[sub_resource type="Resource" id="Resource_41mhi"]
 script = ExtResource("3_5a17y")
 event_id = "event_18cd98fe96c0c9c7"
 tick = 98280
@@ -1266,7 +1216,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_pltyd"]
+[sub_resource type="Resource" id="Resource_ye0ov"]
 script = ExtResource("3_5a17y")
 event_id = "event_d06279456ef2fada"
 tick = 99240
@@ -1281,7 +1231,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_cmb74"]
+[sub_resource type="Resource" id="Resource_xwh2n"]
 script = ExtResource("3_5a17y")
 event_id = "event_6c9e7e4989cc9934"
 tick = 99960
@@ -1296,7 +1246,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_hrx4n"]
+[sub_resource type="Resource" id="Resource_w4705"]
 script = ExtResource("3_5a17y")
 event_id = "event_e14c7c9fff8b93ac"
 tick = 100440
@@ -1311,7 +1261,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_86ofu"]
+[sub_resource type="Resource" id="Resource_yev74"]
 script = ExtResource("3_5a17y")
 event_id = "event_9c4bc4380a9b4c2c"
 tick = 101160
@@ -1326,7 +1276,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_e773j"]
+[sub_resource type="Resource" id="Resource_mjubq"]
 script = ExtResource("3_5a17y")
 event_id = "event_15b4126ddf6e5b0a"
 tick = 102120
@@ -1340,7 +1290,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_dxvcc"]
+[sub_resource type="Resource" id="Resource_55yud"]
 script = ExtResource("3_5a17y")
 event_id = "event_55a092354e24f0b2"
 tick = 103080
@@ -1354,7 +1304,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_h8swa"]
+[sub_resource type="Resource" id="Resource_5wagh"]
 script = ExtResource("3_5a17y")
 event_id = "event_92492f0fa07559ab"
 tick = 103800
@@ -1368,7 +1318,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_krco6"]
+[sub_resource type="Resource" id="Resource_47krl"]
 script = ExtResource("3_5a17y")
 event_id = "event_859b18de3b2b08a0"
 tick = 105000
@@ -1382,7 +1332,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_g61pk"]
+[sub_resource type="Resource" id="Resource_gwifi"]
 script = ExtResource("3_5a17y")
 event_id = "event_4aa74cf34378936e"
 tick = 105960
@@ -1397,7 +1347,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_8ase2"]
+[sub_resource type="Resource" id="Resource_3cey1"]
 script = ExtResource("3_5a17y")
 event_id = "event_232a750e335d3ac1"
 tick = 106920
@@ -1412,7 +1362,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_vsnrm"]
+[sub_resource type="Resource" id="Resource_a4hxg"]
 script = ExtResource("3_5a17y")
 event_id = "event_976cca10136feb95"
 tick = 107880
@@ -1427,7 +1377,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_83rjw"]
+[sub_resource type="Resource" id="Resource_crwde"]
 script = ExtResource("3_5a17y")
 event_id = "event_18c8e09d87a12778"
 tick = 108360
@@ -1442,24 +1392,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_qn2cf"]
-script = ExtResource("3_5a17y")
-event_id = "event_2d2e55fc4558287d"
-tick = 109800
-duration_ticks = 1440
-kind = 1
-affinity = 1
-metadata/json_source = {
-"affinity": "xuan",
-"boss": false,
-"duration_ticks": 1440.0,
-"id": "event_2d2e55fc4558287d",
-"kind": "hold",
-"tick": 109800.0,
-"visual_variant": "default"
-}
-
-[sub_resource type="Resource" id="Resource_4nbi1"]
+[sub_resource type="Resource" id="Resource_m5m00"]
 script = ExtResource("3_5a17y")
 event_id = "event_7195b031cc1b20ea"
 boss = true
@@ -1476,7 +1409,22 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_vko33"]
+[sub_resource type="Resource" id="Resource_3d1h2"]
+script = ExtResource("3_5a17y")
+event_id = "event_d7d40adf8d256c22"
+tick = 109800
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_d7d40adf8d256c22",
+"kind": "tap",
+"tick": 109800.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_o5pas"]
 script = ExtResource("3_5a17y")
 event_id = "event_779adcdf13acff6a"
 tick = 112680
@@ -1491,7 +1439,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_yr4su"]
+[sub_resource type="Resource" id="Resource_pltyd"]
 script = ExtResource("3_5a17y")
 event_id = "event_2399615b56694d54"
 boss = true
@@ -1509,23 +1457,21 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_ac5xk"]
+[sub_resource type="Resource" id="Resource_cmb74"]
 script = ExtResource("3_5a17y")
-event_id = "event_bfbdb5521075fc91"
+event_id = "event_56b199283597f4d4"
 tick = 113640
-duration_ticks = 1440
-kind = 1
 metadata/json_source = {
 "affinity": "zhu",
 "boss": false,
-"duration_ticks": 1440.0,
-"id": "event_bfbdb5521075fc91",
-"kind": "hold",
+"duration_ticks": 0.0,
+"id": "event_56b199283597f4d4",
+"kind": "tap",
 "tick": 113640.0,
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_lbpww"]
+[sub_resource type="Resource" id="Resource_hrx4n"]
 script = ExtResource("3_5a17y")
 event_id = "event_1f87afad806cb12d"
 tick = 116520
@@ -1539,7 +1485,22 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_vhnro"]
+[sub_resource type="Resource" id="Resource_86ofu"]
+script = ExtResource("3_5a17y")
+event_id = "event_45037946fbe260cf"
+tick = 117480
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_45037946fbe260cf",
+"kind": "tap",
+"tick": 117480.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_e773j"]
 script = ExtResource("3_5a17y")
 event_id = "event_4ab498a004bccc18"
 boss = true
@@ -1556,24 +1517,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_nqr3y"]
-script = ExtResource("3_5a17y")
-event_id = "event_5ed035c8dc62ab85"
-tick = 117480
-duration_ticks = 1440
-kind = 1
-affinity = 1
-metadata/json_source = {
-"affinity": "xuan",
-"boss": false,
-"duration_ticks": 1440.0,
-"id": "event_5ed035c8dc62ab85",
-"kind": "hold",
-"tick": 117480.0,
-"visual_variant": "default"
-}
-
-[sub_resource type="Resource" id="Resource_71gry"]
+[sub_resource type="Resource" id="Resource_dxvcc"]
 script = ExtResource("3_5a17y")
 event_id = "event_b910435e2fff93fd"
 tick = 120360
@@ -1588,7 +1532,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_3076b"]
+[sub_resource type="Resource" id="Resource_h8swa"]
 script = ExtResource("3_5a17y")
 event_id = "event_84a5b9ac37231897"
 boss = true
@@ -1606,23 +1550,21 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_vpj13"]
+[sub_resource type="Resource" id="Resource_krco6"]
 script = ExtResource("3_5a17y")
-event_id = "event_851955e73e19c78a"
+event_id = "event_ef88db95caf2993f"
 tick = 121320
-duration_ticks = 1440
-kind = 1
 metadata/json_source = {
 "affinity": "zhu",
 "boss": false,
-"duration_ticks": 1440.0,
-"id": "event_851955e73e19c78a",
-"kind": "hold",
+"duration_ticks": 0.0,
+"id": "event_ef88db95caf2993f",
+"kind": "tap",
 "tick": 121320.0,
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_0h1bs"]
+[sub_resource type="Resource" id="Resource_g61pk"]
 script = ExtResource("3_5a17y")
 event_id = "event_dfc97f2337d8bfad"
 tick = 124200
@@ -1636,7 +1578,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_t1xu0"]
+[sub_resource type="Resource" id="Resource_8ase2"]
 script = ExtResource("3_5a17y")
 event_id = "event_20d616650252bdf3"
 tick = 125160
@@ -1650,7 +1592,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_n5s6g"]
+[sub_resource type="Resource" id="Resource_vsnrm"]
 script = ExtResource("3_5a17y")
 event_id = "event_52a7f6bdd84a3393"
 tick = 126120
@@ -1664,7 +1606,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_ofkfw"]
+[sub_resource type="Resource" id="Resource_83rjw"]
 script = ExtResource("3_5a17y")
 event_id = "event_f5c76e5610113f5d"
 tick = 126840
@@ -1678,7 +1620,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_r3mok"]
+[sub_resource type="Resource" id="Resource_qn2cf"]
 script = ExtResource("3_5a17y")
 event_id = "event_cadb52c301c171a4"
 boss = true
@@ -1694,7 +1636,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_ek21s"]
+[sub_resource type="Resource" id="Resource_4nbi1"]
 script = ExtResource("3_5a17y")
 event_id = "event_fc3ae9bdf7797491"
 boss = true
@@ -1709,7 +1651,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_ytwna"]
+[sub_resource type="Resource" id="Resource_vko33"]
 script = ExtResource("3_5a17y")
 event_id = "event_6882d166dcfa9bac"
 tick = 129000
@@ -1724,7 +1666,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_ewx6x"]
+[sub_resource type="Resource" id="Resource_yr4su"]
 script = ExtResource("3_5a17y")
 event_id = "event_025ff4076a8d46dc"
 tick = 129960
@@ -1739,7 +1681,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_43amf"]
+[sub_resource type="Resource" id="Resource_ac5xk"]
 script = ExtResource("3_5a17y")
 event_id = "event_c81f18708e9342de"
 tick = 130680
@@ -1754,7 +1696,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_3eifl"]
+[sub_resource type="Resource" id="Resource_lbpww"]
 script = ExtResource("3_5a17y")
 event_id = "event_c9e271bd7e68a82a"
 tick = 131160
@@ -1769,7 +1711,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_sn0tt"]
+[sub_resource type="Resource" id="Resource_vhnro"]
 script = ExtResource("3_5a17y")
 event_id = "event_13fd0e5b3e154374"
 boss = true
@@ -1785,7 +1727,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_qtjer"]
+[sub_resource type="Resource" id="Resource_nqr3y"]
 script = ExtResource("3_5a17y")
 event_id = "event_83419d63ff6ecaaf"
 boss = true
@@ -1800,7 +1742,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_3vlv5"]
+[sub_resource type="Resource" id="Resource_71gry"]
 script = ExtResource("3_5a17y")
 event_id = "event_261e52135cbada8d"
 tick = 132840
@@ -1814,7 +1756,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_5ucy3"]
+[sub_resource type="Resource" id="Resource_3076b"]
 script = ExtResource("3_5a17y")
 event_id = "event_79aeda68d3d2bee5"
 tick = 133800
@@ -1828,7 +1770,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_witi1"]
+[sub_resource type="Resource" id="Resource_vpj13"]
 script = ExtResource("3_5a17y")
 event_id = "event_f4ff72750ff270c9"
 tick = 134520
@@ -1842,7 +1784,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_mihfd"]
+[sub_resource type="Resource" id="Resource_0h1bs"]
 script = ExtResource("3_5a17y")
 event_id = "event_254f15243f3f3499"
 boss = true
@@ -1858,7 +1800,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_aqf6u"]
+[sub_resource type="Resource" id="Resource_t1xu0"]
 script = ExtResource("3_5a17y")
 event_id = "event_42ceb57a582d3b2f"
 boss = true
@@ -1873,7 +1815,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_dfr6f"]
+[sub_resource type="Resource" id="Resource_n5s6g"]
 script = ExtResource("3_5a17y")
 event_id = "event_11de4331b623daff"
 tick = 136680
@@ -1888,7 +1830,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_sjr40"]
+[sub_resource type="Resource" id="Resource_ofkfw"]
 script = ExtResource("3_5a17y")
 event_id = "event_30c57c2b3d7c5f44"
 tick = 137640
@@ -1903,7 +1845,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_1ddsj"]
+[sub_resource type="Resource" id="Resource_r3mok"]
 script = ExtResource("3_5a17y")
 event_id = "event_97975d17bf53250e"
 tick = 138360
@@ -1918,7 +1860,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_xput4"]
+[sub_resource type="Resource" id="Resource_ek21s"]
 script = ExtResource("3_5a17y")
 event_id = "event_08750516c3de228b"
 tick = 138840
@@ -1933,7 +1875,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_n0f3d"]
+[sub_resource type="Resource" id="Resource_ytwna"]
 script = ExtResource("3_5a17y")
 event_id = "event_281a20ab6ba5b5d5"
 boss = true
@@ -1948,7 +1890,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_mmsqm"]
+[sub_resource type="Resource" id="Resource_ewx6x"]
 script = ExtResource("3_5a17y")
 event_id = "event_37a6bb24ede0cf6e"
 boss = true
@@ -1964,7 +1906,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_24x3m"]
+[sub_resource type="Resource" id="Resource_43amf"]
 script = ExtResource("3_5a17y")
 event_id = "event_88040ee45867e1ba"
 tick = 140520
@@ -1981,7 +1923,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_rixjj"]
+[sub_resource type="Resource" id="Resource_3eifl"]
 script = ExtResource("3_5a17y")
 event_id = "event_b90f42b639fb6019"
 tick = 140520
@@ -1997,7 +1939,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_0oerj"]
+[sub_resource type="Resource" id="Resource_sn0tt"]
 script = ExtResource("3_5a17y")
 event_id = "event_dd11d13189bfa965"
 tick = 144360
@@ -2014,7 +1956,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_6ggaa"]
+[sub_resource type="Resource" id="Resource_qtjer"]
 script = ExtResource("3_5a17y")
 event_id = "event_fe3c0033af5c5e16"
 tick = 144360
@@ -2030,7 +1972,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_tae7i"]
+[sub_resource type="Resource" id="Resource_3vlv5"]
 script = ExtResource("3_5a17y")
 event_id = "event_9eb7c0022981b8d7"
 boss = true
@@ -2047,7 +1989,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_u7frh"]
+[sub_resource type="Resource" id="Resource_5ucy3"]
 script = ExtResource("3_5a17y")
 event_id = "event_dab64e7a0aaf617c"
 boss = true
@@ -2065,7 +2007,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_xphoj"]
+[sub_resource type="Resource" id="Resource_witi1"]
 script = ExtResource("3_5a17y")
 event_id = "event_be83e4f46dccb70a"
 boss = true
@@ -2082,7 +2024,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_yr00i"]
+[sub_resource type="Resource" id="Resource_mihfd"]
 script = ExtResource("3_5a17y")
 event_id = "event_fb208f062f413912"
 boss = true
@@ -2100,7 +2042,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_yh0mc"]
+[sub_resource type="Resource" id="Resource_aqf6u"]
 script = ExtResource("3_5a17y")
 event_id = "event_bca2ecce67aaf318"
 tick = 157800
@@ -2114,7 +2056,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_xs82s"]
+[sub_resource type="Resource" id="Resource_dfr6f"]
 script = ExtResource("3_5a17y")
 event_id = "event_b60270ea737cd927"
 tick = 158040
@@ -2128,7 +2070,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_w3bww"]
+[sub_resource type="Resource" id="Resource_sjr40"]
 script = ExtResource("3_5a17y")
 event_id = "event_e8331e9479dccbd4"
 tick = 161160
@@ -2143,7 +2085,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_gwiq4"]
+[sub_resource type="Resource" id="Resource_1ddsj"]
 script = ExtResource("3_5a17y")
 event_id = "event_3378de93f945a51a"
 tick = 161400
@@ -2158,7 +2100,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_vsh3y"]
+[sub_resource type="Resource" id="Resource_xput4"]
 script = ExtResource("3_5a17y")
 event_id = "event_5a0bf4681b0bdd1a"
 tick = 162600
@@ -2172,7 +2114,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_yf4je"]
+[sub_resource type="Resource" id="Resource_n0f3d"]
 script = ExtResource("3_5a17y")
 event_id = "event_f7eed450c128c776"
 tick = 162840
@@ -2186,7 +2128,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_a1pvd"]
+[sub_resource type="Resource" id="Resource_mmsqm"]
 script = ExtResource("3_5a17y")
 event_id = "event_958a07a6eee544ba"
 tick = 165000
@@ -2201,7 +2143,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_phqm3"]
+[sub_resource type="Resource" id="Resource_24x3m"]
 script = ExtResource("3_5a17y")
 event_id = "event_157b0c16b29580e2"
 tick = 165240
@@ -2216,7 +2158,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_oettl"]
+[sub_resource type="Resource" id="Resource_rixjj"]
 script = ExtResource("3_5a17y")
 event_id = "event_5493ae1e69ddd1dc"
 tick = 167400
@@ -2230,7 +2172,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_fbr82"]
+[sub_resource type="Resource" id="Resource_0oerj"]
 script = ExtResource("3_5a17y")
 event_id = "event_0db878453d5f37b6"
 tick = 167640
@@ -2244,7 +2186,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_mf2p8"]
+[sub_resource type="Resource" id="Resource_6ggaa"]
 script = ExtResource("3_5a17y")
 event_id = "event_c0a7533f1c80c5de"
 tick = 169320
@@ -2259,7 +2201,7 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
-[sub_resource type="Resource" id="Resource_xulij"]
+[sub_resource type="Resource" id="Resource_tae7i"]
 script = ExtResource("3_5a17y")
 event_id = "event_6f10e367e4368b72"
 tick = 169560
@@ -2274,7 +2216,183 @@ metadata/json_source = {
 "visual_variant": "default"
 }
 
+[sub_resource type="Resource" id="Resource_u7frh"]
+script = ExtResource("7_geve8")
+event_id = "event_9c45a1e3a51ddf08"
+tuning_ids = PackedStringArray("event_9869722d4a7eb51f:point_885151e2f37f02e8", "event_600280b6e1cfe82f:point_b245edeb14633506")
+preparation_tick = 53760
+tick = 54240
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_xphoj"]
+script = ExtResource("7_geve8")
+event_id = "event_5f5e88cd77af8174"
+tuning_ids = PackedStringArray("event_9869722d4a7eb51f:point_885151e2f37f02e8", "event_600280b6e1cfe82f:point_b245edeb14633506")
+preparation_tick = 53760
+tick = 54720
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_yr00i"]
+script = ExtResource("7_geve8")
+event_id = "event_c2302cbaf518ceef"
+tuning_ids = PackedStringArray("event_9869722d4a7eb51f:point_885151e2f37f02e8", "event_600280b6e1cfe82f:point_b245edeb14633506")
+preparation_tick = 53760
+tick = 55920
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_yh0mc"]
+script = ExtResource("7_geve8")
+event_id = "event_addb3ef6321760ef"
+tuning_ids = PackedStringArray("event_9869722d4a7eb51f:point_885151e2f37f02e8", "event_600280b6e1cfe82f:point_b245edeb14633506")
+preparation_tick = 53760
+tick = 56400
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_xs82s"]
+script = ExtResource("7_geve8")
+event_id = "event_b08388259e2aac55"
+tuning_ids = PackedStringArray("event_a5d1b656641d1b17:point_a08e1c336d5116ec", "event_2bbb818f9d47cc7c:point_f9d31d48c37f1466")
+preparation_tick = 57600
+tick = 58320
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_w3bww"]
+script = ExtResource("7_geve8")
+event_id = "event_befc4b0bf8362712"
+tuning_ids = PackedStringArray("event_a5d1b656641d1b17:point_a08e1c336d5116ec", "event_2bbb818f9d47cc7c:point_f9d31d48c37f1466")
+preparation_tick = 57600
+tick = 58560
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_gwiq4"]
+script = ExtResource("7_geve8")
+event_id = "event_2efa9802056eb539"
+tuning_ids = PackedStringArray("event_a5d1b656641d1b17:point_a08e1c336d5116ec", "event_2bbb818f9d47cc7c:point_f9d31d48c37f1466")
+preparation_tick = 57600
+tick = 59040
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_vsh3y"]
+script = ExtResource("7_geve8")
+event_id = "event_bfd5426da889f12e"
+tuning_ids = PackedStringArray("event_a5d1b656641d1b17:point_a08e1c336d5116ec", "event_2bbb818f9d47cc7c:point_f9d31d48c37f1466")
+preparation_tick = 57600
+tick = 59760
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_yf4je"]
+script = ExtResource("7_geve8")
+event_id = "event_c2d847e5764339c7"
+tuning_ids = PackedStringArray("event_a5d1b656641d1b17:point_a08e1c336d5116ec", "event_2bbb818f9d47cc7c:point_f9d31d48c37f1466")
+preparation_tick = 57600
+tick = 60000
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_a1pvd"]
+script = ExtResource("7_geve8")
+event_id = "event_4a122278cb9a6898"
+tuning_ids = PackedStringArray("event_a5d1b656641d1b17:point_a08e1c336d5116ec", "event_2bbb818f9d47cc7c:point_f9d31d48c37f1466")
+preparation_tick = 57600
+tick = 60240
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_phqm3"]
+script = ExtResource("7_geve8")
+event_id = "event_39f90bc8a13133ae"
+tuning_ids = PackedStringArray("event_38e67155772e65eb:point_bda0cba7f66e0a85", "event_d6770f2956d1865b:point_0f41579bc54cbb1b")
+preparation_tick = 148200
+tick = 148680
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_oettl"]
+script = ExtResource("7_geve8")
+event_id = "event_50c0faf48461f46e"
+tuning_ids = PackedStringArray("event_38e67155772e65eb:point_bda0cba7f66e0a85", "event_d6770f2956d1865b:point_0f41579bc54cbb1b")
+preparation_tick = 148200
+tick = 149160
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_fbr82"]
+script = ExtResource("7_geve8")
+event_id = "event_76c6c30379e33a5c"
+tuning_ids = PackedStringArray("event_38e67155772e65eb:point_bda0cba7f66e0a85", "event_d6770f2956d1865b:point_0f41579bc54cbb1b")
+preparation_tick = 148200
+tick = 149640
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_mf2p8"]
+script = ExtResource("7_geve8")
+event_id = "event_80c34840dceb1f95"
+tuning_ids = PackedStringArray("event_38e67155772e65eb:point_bda0cba7f66e0a85", "event_d6770f2956d1865b:point_0f41579bc54cbb1b")
+preparation_tick = 148200
+tick = 150120
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_xulij"]
+script = ExtResource("7_geve8")
+event_id = "event_b7ad2559d1394f31"
+tuning_ids = PackedStringArray("event_38e67155772e65eb:point_bda0cba7f66e0a85", "event_d6770f2956d1865b:point_0f41579bc54cbb1b")
+preparation_tick = 148200
+tick = 150600
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
 [sub_resource type="Resource" id="Resource_hahj1"]
+script = ExtResource("7_geve8")
+event_id = "event_7f839d0bf7db6577"
+tuning_ids = PackedStringArray("event_965eb5ec59110595:point_4988e612eca56d0a", "event_da7e17f8d8756916:point_b4f29ae762279c9b")
+preparation_tick = 152040
+tick = 152520
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_shjrt"]
+script = ExtResource("7_geve8")
+event_id = "event_fa178d962e110114"
+tuning_ids = PackedStringArray("event_965eb5ec59110595:point_4988e612eca56d0a", "event_da7e17f8d8756916:point_b4f29ae762279c9b")
+preparation_tick = 152040
+tick = 153000
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_a7v1h"]
+script = ExtResource("7_geve8")
+event_id = "event_4be60cc86a16713c"
+tuning_ids = PackedStringArray("event_965eb5ec59110595:point_4988e612eca56d0a", "event_da7e17f8d8756916:point_b4f29ae762279c9b")
+preparation_tick = 152040
+tick = 153480
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_vfhps"]
+script = ExtResource("7_geve8")
+event_id = "event_13fc76c12e3c180c"
+tuning_ids = PackedStringArray("event_965eb5ec59110595:point_4988e612eca56d0a", "event_da7e17f8d8756916:point_b4f29ae762279c9b")
+preparation_tick = 152040
+tick = 153960
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_eej4h"]
+script = ExtResource("7_geve8")
+event_id = "event_a7ac34fa6ece6068"
+tuning_ids = PackedStringArray("event_965eb5ec59110595:point_4988e612eca56d0a", "event_da7e17f8d8756916:point_b4f29ae762279c9b")
+preparation_tick = 152040
+tick = 154440
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_0mo0b"]
+script = ExtResource("7_geve8")
+event_id = "event_8767e46c0c4c1b0d"
+tuning_ids = PackedStringArray("event_965eb5ec59110595:point_4988e612eca56d0a", "event_da7e17f8d8756916:point_b4f29ae762279c9b")
+preparation_tick = 152040
+tick = 154920
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_jrrs2"]
+script = ExtResource("7_geve8")
+event_id = "event_c42d499c768f6e90"
+tuning_ids = PackedStringArray("event_965eb5ec59110595:point_4988e612eca56d0a", "event_da7e17f8d8756916:point_b4f29ae762279c9b")
+preparation_tick = 152040
+tick = 155400
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_mfh62"]
 script = ExtResource("8_uocuv")
 bpm = 132.99556681444
 metadata/json_source = {
@@ -2282,76 +2400,278 @@ metadata/json_source = {
 "tick": 0.0
 }
 
-[sub_resource type="Resource" id="Resource_shjrt"]
+[sub_resource type="Resource" id="Resource_lp680"]
 script = ExtResource("9_5rkeg")
 event_id = "preview_field_0"
+tick = 53760
+duration_ticks = 2880
+
+[sub_resource type="Resource" id="Resource_uq8f2"]
+script = ExtResource("9_5rkeg")
+event_id = "preview_field_1"
+tick = 57600
+duration_ticks = 2880
+
+[sub_resource type="Resource" id="Resource_mncfm"]
+script = ExtResource("9_5rkeg")
+event_id = "preview_field_2"
 tick = 148200
 duration_ticks = 2880
 
-[sub_resource type="Resource" id="Resource_a7v1h"]
+[sub_resource type="Resource" id="Resource_2bbpm"]
 script = ExtResource("9_5rkeg")
-event_id = "preview_field_1"
+event_id = "preview_field_3"
 tick = 152040
 duration_ticks = 3840
 
-[sub_resource type="Resource" id="Resource_vfhps"]
+[sub_resource type="Resource" id="Resource_qxc4y"]
+script = ExtResource("11_mvs2x")
+event_id = "event_600280b6e1cfe82f:point_b245edeb14633506"
+field_id = "preview_field_0"
+affinity = 1
+tick = 53760
+traversal_ticks = 2880
+start_value = 0.5051814855409194
+end_value = 0.0
+visual_radius_px = 400.0
+arc_rotation_deg = -1.2789769e-13
+visual_hold_ids = PackedStringArray("event_00fd98166df0fe8e", "event_897888f09cb8a33c")
+
+[sub_resource type="Resource" id="Resource_n12uc"]
+script = ExtResource("11_mvs2x")
+event_id = "event_9869722d4a7eb51f:point_885151e2f37f02e8"
+field_id = "preview_field_0"
+tick = 53760
+traversal_ticks = 2880
+start_value = 0.3333333333333333
+end_value = 0.8385148188742559
+visual_radius_px = 400.0
+arc_rotation_deg = 2.842171e-14
+visual_hold_ids = PackedStringArray("event_897888f09cb8a33c", "event_00fd98166df0fe8e")
+
+[sub_resource type="Resource" id="Resource_sro71"]
+script = ExtResource("11_mvs2x")
+event_id = "event_2bbb818f9d47cc7c:point_f9d31d48c37f1466"
+field_id = "preview_field_1"
+affinity = 1
+tick = 57600
+traversal_ticks = 2880
+start_value = 0.5051814855409194
+end_value = 0.0
+visual_radius_px = 400.0
+arc_rotation_deg = -1.2789769e-13
+visual_hold_ids = PackedStringArray("event_7c71aa3b8679f071", "event_ec28338157aae7e5")
+
+[sub_resource type="Resource" id="Resource_c384w"]
+script = ExtResource("11_mvs2x")
+event_id = "event_a5d1b656641d1b17:point_a08e1c336d5116ec"
+field_id = "preview_field_1"
+tick = 57600
+traversal_ticks = 2880
+start_value = 0.3333333333333333
+end_value = 0.8385148188742559
+visual_radius_px = 400.0
+arc_rotation_deg = 2.842171e-14
+visual_hold_ids = PackedStringArray("event_ec28338157aae7e5", "event_7c71aa3b8679f071")
+
+[sub_resource type="Resource" id="Resource_i5w78"]
 script = ExtResource("11_mvs2x")
 event_id = "event_38e67155772e65eb:point_bda0cba7f66e0a85"
-field_id = "preview_field_0"
+field_id = "preview_field_2"
 tick = 148200
 traversal_ticks = 2880
 start_value = 0.3333333333333333
 end_value = 0.8385148188742559
-arc_rotation_deg = 2.842171e-14
+visual_radius_px = 400.0
+arc_rotation_deg = -29.357753542791272
+visual_hold_ids = PackedStringArray("event_9eb7c0022981b8d7", "event_dab64e7a0aaf617c")
 
-[sub_resource type="Resource" id="Resource_eej4h"]
+[sub_resource type="Resource" id="Resource_57jkr"]
 script = ExtResource("11_mvs2x")
 event_id = "event_d6770f2956d1865b:point_0f41579bc54cbb1b"
-field_id = "preview_field_0"
+field_id = "preview_field_2"
 affinity = 1
 tick = 148200
 traversal_ticks = 2880
-start_value = 0.5051814855409194
+start_value = 0.5051814855409226
 end_value = 0.0
-arc_rotation_deg = -1.2789769e-13
+visual_radius_px = 400.0
+arc_rotation_deg = -29.357753542791272
+visual_hold_ids = PackedStringArray("event_dab64e7a0aaf617c", "event_9eb7c0022981b8d7")
 
-[sub_resource type="Resource" id="Resource_0mo0b"]
+[sub_resource type="Resource" id="Resource_jfoqm"]
 script = ExtResource("11_mvs2x")
-event_id = "event_6fb2f6fee4677a4b:point_18fba5c572baafe9"
-field_id = "preview_field_1"
+event_id = "event_965eb5ec59110595:point_4988e612eca56d0a"
+field_id = "preview_field_3"
+tick = 152040
+traversal_ticks = 3840
+start_value = 0.1250000000000001
+visual_radius_px = 400.0
+arc_rotation_deg = -14.357753542791272
+visual_hold_ids = PackedStringArray("event_be83e4f46dccb70a", "event_fb208f062f413912")
+
+[sub_resource type="Resource" id="Resource_uqnkh"]
+script = ExtResource("11_mvs2x")
+event_id = "event_da7e17f8d8756916:point_b4f29ae762279c9b"
+field_id = "preview_field_3"
 affinity = 1
 tick = 152040
 traversal_ticks = 3840
-start_value = 0.5051814855409194
+start_value = 0.8749999999999999
 end_value = 0.0
-arc_rotation_deg = -1.2789769e-13
-
-[sub_resource type="Resource" id="Resource_jrrs2"]
-script = ExtResource("11_mvs2x")
-event_id = "event_9c2d1f9bce2cdc1a:point_d1afda6247edf0ad"
-field_id = "preview_field_1"
-tick = 152040
-traversal_ticks = 3840
-start_value = 0.3333333333333333
-end_value = 0.8385148188742559
-arc_rotation_deg = 2.842171e-14
+visual_radius_px = 400.0
+arc_rotation_deg = -14.357753542791272
+visual_hold_ids = PackedStringArray("event_fb208f062f413912", "event_be83e4f46dccb70a")
 
 [resource]
 script = ExtResource("5_m5d76")
 chart_id = "chart_e96bcaa47af11c55"
 end_tick = 183627
-tempo_events = Array[ExtResource("8_uocuv")]([SubResource("Resource_hahj1")])
-meter_events = Array[ExtResource("2_v3xkt")]([SubResource("Resource_xhfwb")])
-note_events = Array[ExtResource("3_5a17y")]([SubResource("Resource_vbpe8"), SubResource("Resource_uhekr"), SubResource("Resource_k1co8"), SubResource("Resource_n1jxq"), SubResource("Resource_sjsxj"), SubResource("Resource_vo4da"), SubResource("Resource_yv6nt"), SubResource("Resource_aimys"), SubResource("Resource_506ht"), SubResource("Resource_4b1mj"), SubResource("Resource_omhev"), SubResource("Resource_cr4f1"), SubResource("Resource_2twbw"), SubResource("Resource_u0d17"), SubResource("Resource_h34bk"), SubResource("Resource_t281r"), SubResource("Resource_5ojhq"), SubResource("Resource_ce3jh"), SubResource("Resource_8n8w1"), SubResource("Resource_4hshf"), SubResource("Resource_xdxsc"), SubResource("Resource_epv0s"), SubResource("Resource_elemo"), SubResource("Resource_pm6oo"), SubResource("Resource_hqbng"), SubResource("Resource_p8ywq"), SubResource("Resource_5ce0f"), SubResource("Resource_obvof"), SubResource("Resource_eywnl"), SubResource("Resource_htteb"), SubResource("Resource_kfsmi"), SubResource("Resource_d2b0p"), SubResource("Resource_e430i"), SubResource("Resource_v27lh"), SubResource("Resource_rs7d4"), SubResource("Resource_yq7c7"), SubResource("Resource_hlw7j"), SubResource("Resource_0sr8s"), SubResource("Resource_6xc67"), SubResource("Resource_wg7pl"), SubResource("Resource_2fao6"), SubResource("Resource_ufn1c"), SubResource("Resource_sjjmh"), SubResource("Resource_8wfdg"), SubResource("Resource_cn6e3"), SubResource("Resource_qjpot"), SubResource("Resource_3u2h2"), SubResource("Resource_muguc"), SubResource("Resource_hab8w"), SubResource("Resource_6ryje"), SubResource("Resource_vlrm7"), SubResource("Resource_bwdn6"), SubResource("Resource_4o2ux"), SubResource("Resource_3fpxq"), SubResource("Resource_22ijf"), SubResource("Resource_tjvuc"), SubResource("Resource_oekhl"), SubResource("Resource_83u47"), SubResource("Resource_iwtwg"), SubResource("Resource_20fuv"), SubResource("Resource_wucvq"), SubResource("Resource_fe33h"), SubResource("Resource_2bu5u"), SubResource("Resource_k28mn"), SubResource("Resource_q3umi"), SubResource("Resource_gae7g"), SubResource("Resource_1vdru"), SubResource("Resource_8w5gj"), SubResource("Resource_gd5nl"), SubResource("Resource_41mhi"), SubResource("Resource_ye0ov"), SubResource("Resource_xwh2n"), SubResource("Resource_w4705"), SubResource("Resource_yev74"), SubResource("Resource_mjubq"), SubResource("Resource_55yud"), SubResource("Resource_5wagh"), SubResource("Resource_47krl"), SubResource("Resource_gwifi"), SubResource("Resource_3cey1"), SubResource("Resource_a4hxg"), SubResource("Resource_crwde"), SubResource("Resource_m5m00"), SubResource("Resource_3d1h2"), SubResource("Resource_o5pas"), SubResource("Resource_pltyd"), SubResource("Resource_cmb74"), SubResource("Resource_hrx4n"), SubResource("Resource_86ofu"), SubResource("Resource_e773j"), SubResource("Resource_dxvcc"), SubResource("Resource_h8swa"), SubResource("Resource_krco6"), SubResource("Resource_g61pk"), SubResource("Resource_8ase2"), SubResource("Resource_vsnrm"), SubResource("Resource_83rjw"), SubResource("Resource_qn2cf"), SubResource("Resource_4nbi1"), SubResource("Resource_vko33"), SubResource("Resource_yr4su"), SubResource("Resource_ac5xk"), SubResource("Resource_lbpww"), SubResource("Resource_vhnro"), SubResource("Resource_nqr3y"), SubResource("Resource_71gry"), SubResource("Resource_3076b"), SubResource("Resource_vpj13"), SubResource("Resource_0h1bs"), SubResource("Resource_t1xu0"), SubResource("Resource_n5s6g"), SubResource("Resource_ofkfw"), SubResource("Resource_r3mok"), SubResource("Resource_ek21s"), SubResource("Resource_ytwna"), SubResource("Resource_ewx6x"), SubResource("Resource_43amf"), SubResource("Resource_3eifl"), SubResource("Resource_sn0tt"), SubResource("Resource_qtjer"), SubResource("Resource_3vlv5"), SubResource("Resource_5ucy3"), SubResource("Resource_witi1"), SubResource("Resource_mihfd"), SubResource("Resource_aqf6u"), SubResource("Resource_dfr6f"), SubResource("Resource_sjr40"), SubResource("Resource_1ddsj"), SubResource("Resource_xput4"), SubResource("Resource_n0f3d"), SubResource("Resource_mmsqm"), SubResource("Resource_24x3m"), SubResource("Resource_rixjj"), SubResource("Resource_0oerj"), SubResource("Resource_6ggaa"), SubResource("Resource_tae7i"), SubResource("Resource_u7frh"), SubResource("Resource_xphoj"), SubResource("Resource_yr00i"), SubResource("Resource_yh0mc"), SubResource("Resource_xs82s"), SubResource("Resource_w3bww"), SubResource("Resource_gwiq4"), SubResource("Resource_vsh3y"), SubResource("Resource_yf4je"), SubResource("Resource_a1pvd"), SubResource("Resource_phqm3"), SubResource("Resource_oettl"), SubResource("Resource_fbr82"), SubResource("Resource_mf2p8"), SubResource("Resource_xulij")])
-tuning_fields = Array[ExtResource("9_5rkeg")]([SubResource("Resource_shjrt"), SubResource("Resource_a7v1h")])
-tuning_sliders = Array[ExtResource("11_mvs2x")]([SubResource("Resource_vfhps"), SubResource("Resource_eej4h"), SubResource("Resource_0mo0b"), SubResource("Resource_jrrs2")])
+tempo_events = Array[ExtResource("8_uocuv")]([SubResource("Resource_mfh62")])
+meter_events = Array[ExtResource("2_v3xkt")]([SubResource("Resource_x6t73")])
+note_events = Array[ExtResource("3_5a17y")]([SubResource("Resource_v3xkt"), SubResource("Resource_5a17y"), SubResource("Resource_66scu"), SubResource("Resource_m5d76"), SubResource("Resource_o1s1t"), SubResource("Resource_geve8"), SubResource("Resource_uocuv"), SubResource("Resource_5rkeg"), SubResource("Resource_ph7mj"), SubResource("Resource_mvs2x"), SubResource("Resource_xhfwb"), SubResource("Resource_vbpe8"), SubResource("Resource_uhekr"), SubResource("Resource_k1co8"), SubResource("Resource_n1jxq"), SubResource("Resource_sjsxj"), SubResource("Resource_vo4da"), SubResource("Resource_yv6nt"), SubResource("Resource_aimys"), SubResource("Resource_506ht"), SubResource("Resource_4b1mj"), SubResource("Resource_omhev"), SubResource("Resource_cr4f1"), SubResource("Resource_2twbw"), SubResource("Resource_u0d17"), SubResource("Resource_h34bk"), SubResource("Resource_t281r"), SubResource("Resource_5ojhq"), SubResource("Resource_ce3jh"), SubResource("Resource_8n8w1"), SubResource("Resource_4hshf"), SubResource("Resource_xdxsc"), SubResource("Resource_epv0s"), SubResource("Resource_elemo"), SubResource("Resource_pm6oo"), SubResource("Resource_hqbng"), SubResource("Resource_p8ywq"), SubResource("Resource_5ce0f"), SubResource("Resource_obvof"), SubResource("Resource_eywnl"), SubResource("Resource_htteb"), SubResource("Resource_kfsmi"), SubResource("Resource_d2b0p"), SubResource("Resource_e430i"), SubResource("Resource_v27lh"), SubResource("Resource_rs7d4"), SubResource("Resource_yq7c7"), SubResource("Resource_hlw7j"), SubResource("Resource_0sr8s"), SubResource("Resource_6xc67"), SubResource("Resource_wg7pl"), SubResource("Resource_2fao6"), SubResource("Resource_ufn1c"), SubResource("Resource_sjjmh"), SubResource("Resource_8wfdg"), SubResource("Resource_cn6e3"), SubResource("Resource_qjpot"), SubResource("Resource_3u2h2"), SubResource("Resource_muguc"), SubResource("Resource_hab8w"), SubResource("Resource_6ryje"), SubResource("Resource_vlrm7"), SubResource("Resource_bwdn6"), SubResource("Resource_4o2ux"), SubResource("Resource_3fpxq"), SubResource("Resource_22ijf"), SubResource("Resource_tjvuc"), SubResource("Resource_oekhl"), SubResource("Resource_83u47"), SubResource("Resource_iwtwg"), SubResource("Resource_20fuv"), SubResource("Resource_wucvq"), SubResource("Resource_fe33h"), SubResource("Resource_2bu5u"), SubResource("Resource_k28mn"), SubResource("Resource_q3umi"), SubResource("Resource_gae7g"), SubResource("Resource_1vdru"), SubResource("Resource_8w5gj"), SubResource("Resource_gd5nl"), SubResource("Resource_41mhi"), SubResource("Resource_ye0ov"), SubResource("Resource_xwh2n"), SubResource("Resource_w4705"), SubResource("Resource_yev74"), SubResource("Resource_mjubq"), SubResource("Resource_55yud"), SubResource("Resource_5wagh"), SubResource("Resource_47krl"), SubResource("Resource_gwifi"), SubResource("Resource_3cey1"), SubResource("Resource_a4hxg"), SubResource("Resource_crwde"), SubResource("Resource_m5m00"), SubResource("Resource_3d1h2"), SubResource("Resource_o5pas"), SubResource("Resource_pltyd"), SubResource("Resource_cmb74"), SubResource("Resource_hrx4n"), SubResource("Resource_86ofu"), SubResource("Resource_e773j"), SubResource("Resource_dxvcc"), SubResource("Resource_h8swa"), SubResource("Resource_krco6"), SubResource("Resource_g61pk"), SubResource("Resource_8ase2"), SubResource("Resource_vsnrm"), SubResource("Resource_83rjw"), SubResource("Resource_qn2cf"), SubResource("Resource_4nbi1"), SubResource("Resource_vko33"), SubResource("Resource_yr4su"), SubResource("Resource_ac5xk"), SubResource("Resource_lbpww"), SubResource("Resource_vhnro"), SubResource("Resource_nqr3y"), SubResource("Resource_71gry"), SubResource("Resource_3076b"), SubResource("Resource_vpj13"), SubResource("Resource_0h1bs"), SubResource("Resource_t1xu0"), SubResource("Resource_n5s6g"), SubResource("Resource_ofkfw"), SubResource("Resource_r3mok"), SubResource("Resource_ek21s"), SubResource("Resource_ytwna"), SubResource("Resource_ewx6x"), SubResource("Resource_43amf"), SubResource("Resource_3eifl"), SubResource("Resource_sn0tt"), SubResource("Resource_qtjer"), SubResource("Resource_3vlv5"), SubResource("Resource_5ucy3"), SubResource("Resource_witi1"), SubResource("Resource_mihfd"), SubResource("Resource_aqf6u"), SubResource("Resource_dfr6f"), SubResource("Resource_sjr40"), SubResource("Resource_1ddsj"), SubResource("Resource_xput4"), SubResource("Resource_n0f3d"), SubResource("Resource_mmsqm"), SubResource("Resource_24x3m"), SubResource("Resource_rixjj"), SubResource("Resource_0oerj"), SubResource("Resource_6ggaa"), SubResource("Resource_tae7i")])
+tuning_fields = Array[ExtResource("9_5rkeg")]([SubResource("Resource_lp680"), SubResource("Resource_uq8f2"), SubResource("Resource_mncfm"), SubResource("Resource_2bbpm")])
+tuning_sliders = Array[ExtResource("11_mvs2x")]([SubResource("Resource_qxc4y"), SubResource("Resource_n12uc"), SubResource("Resource_sro71"), SubResource("Resource_c384w"), SubResource("Resource_i5w78"), SubResource("Resource_57jkr"), SubResource("Resource_jfoqm"), SubResource("Resource_uqnkh")])
+su_manifestations = Array[ExtResource("7_geve8")]([SubResource("Resource_u7frh"), SubResource("Resource_xphoj"), SubResource("Resource_yr00i"), SubResource("Resource_yh0mc"), SubResource("Resource_xs82s"), SubResource("Resource_w3bww"), SubResource("Resource_gwiq4"), SubResource("Resource_vsh3y"), SubResource("Resource_yf4je"), SubResource("Resource_a1pvd"), SubResource("Resource_phqm3"), SubResource("Resource_oettl"), SubResource("Resource_fbr82"), SubResource("Resource_mf2p8"), SubResource("Resource_xulij"), SubResource("Resource_hahj1"), SubResource("Resource_shjrt"), SubResource("Resource_a7v1h"), SubResource("Resource_vfhps"), SubResource("Resource_eej4h"), SubResource("Resource_0mo0b"), SubResource("Resource_jrrs2")])
 metadata/json_source = {
 "chart_id": "chart_e96bcaa47af11c55",
 "difficulty_id": "normal",
 "difficulty_name": "normal",
 "format": "minghe-chart",
 "format_version": 2.0,
-"ghost_events": [],
+"ghost_events": [{
+"boss": false,
+"count": 1.0,
+"id": "event_9c45a1e3a51ddf08",
+"tick": 54240.0,
+"tuning_ids": ["event_9869722d4a7eb51f", "event_600280b6e1cfe82f"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_5f5e88cd77af8174",
+"tick": 54720.0,
+"tuning_ids": ["event_9869722d4a7eb51f", "event_600280b6e1cfe82f"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_c2302cbaf518ceef",
+"tick": 55920.0,
+"tuning_ids": ["event_9869722d4a7eb51f", "event_600280b6e1cfe82f"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_addb3ef6321760ef",
+"tick": 56400.0,
+"tuning_ids": ["event_9869722d4a7eb51f", "event_600280b6e1cfe82f"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_b08388259e2aac55",
+"tick": 58320.0,
+"tuning_ids": ["event_a5d1b656641d1b17", "event_2bbb818f9d47cc7c"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_befc4b0bf8362712",
+"tick": 58560.0,
+"tuning_ids": ["event_a5d1b656641d1b17", "event_2bbb818f9d47cc7c"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_2efa9802056eb539",
+"tick": 59040.0,
+"tuning_ids": ["event_a5d1b656641d1b17", "event_2bbb818f9d47cc7c"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_bfd5426da889f12e",
+"tick": 59760.0,
+"tuning_ids": ["event_a5d1b656641d1b17", "event_2bbb818f9d47cc7c"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_c2d847e5764339c7",
+"tick": 60000.0,
+"tuning_ids": ["event_a5d1b656641d1b17", "event_2bbb818f9d47cc7c"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_4a122278cb9a6898",
+"tick": 60240.0,
+"tuning_ids": ["event_a5d1b656641d1b17", "event_2bbb818f9d47cc7c"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_39f90bc8a13133ae",
+"tick": 148680.0,
+"tuning_ids": ["event_38e67155772e65eb", "event_d6770f2956d1865b"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_50c0faf48461f46e",
+"tick": 149160.0,
+"tuning_ids": ["event_38e67155772e65eb", "event_d6770f2956d1865b"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_76c6c30379e33a5c",
+"tick": 149640.0,
+"tuning_ids": ["event_38e67155772e65eb", "event_d6770f2956d1865b"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_80c34840dceb1f95",
+"tick": 150120.0,
+"tuning_ids": ["event_38e67155772e65eb", "event_d6770f2956d1865b"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_b7ad2559d1394f31",
+"tick": 150600.0,
+"tuning_ids": ["event_38e67155772e65eb", "event_d6770f2956d1865b"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_7f839d0bf7db6577",
+"tick": 152520.0,
+"tuning_ids": ["event_965eb5ec59110595", "event_da7e17f8d8756916"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_fa178d962e110114",
+"tick": 153000.0,
+"tuning_ids": ["event_965eb5ec59110595", "event_da7e17f8d8756916"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_4be60cc86a16713c",
+"tick": 153480.0,
+"tuning_ids": ["event_965eb5ec59110595", "event_da7e17f8d8756916"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_13fc76c12e3c180c",
+"tick": 153960.0,
+"tuning_ids": ["event_965eb5ec59110595", "event_da7e17f8d8756916"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_a7ac34fa6ece6068",
+"tick": 154440.0,
+"tuning_ids": ["event_965eb5ec59110595", "event_da7e17f8d8756916"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_8767e46c0c4c1b0d",
+"tick": 154920.0,
+"tuning_ids": ["event_965eb5ec59110595", "event_da7e17f8d8756916"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_c42d499c768f6e90",
+"tick": 155400.0,
+"tuning_ids": ["event_965eb5ec59110595", "event_da7e17f8d8756916"]
+}],
 "mapper": "",
 "notes": [{
 "affinity": "zhu",
@@ -2620,25 +2940,17 @@ metadata/json_source = {
 }, {
 "affinity": "xuan",
 "boss": false,
-"duration_ticks": 0.0,
-"id": "event_4bec6cad65d85050",
-"kind": "tap",
+"duration_ticks": 2880.0,
+"id": "event_9771f916b9f8c9d1",
+"kind": "hold",
 "tick": 46080.0,
-"visual_variant": "default"
-}, {
-"affinity": "xuan",
-"boss": false,
-"duration_ticks": 0.0,
-"id": "event_9f614f02edcdb0c6",
-"kind": "tap",
-"tick": 48960.0,
 "visual_variant": "default"
 }, {
 "affinity": "zhu",
 "boss": false,
-"duration_ticks": 0.0,
-"id": "event_ba615af20ef99874",
-"kind": "tap",
+"duration_ticks": 2880.0,
+"id": "event_6c882cc2c9818b83",
+"kind": "hold",
 "tick": 49920.0,
 "visual_variant": "default"
 }, {
@@ -2652,14 +2964,6 @@ metadata/json_source = {
 }, {
 "affinity": "zhu",
 "boss": false,
-"duration_ticks": 0.0,
-"id": "event_60cddc15a72c0124",
-"kind": "tap",
-"tick": 52800.0,
-"visual_variant": "default"
-}, {
-"affinity": "zhu",
-"boss": false,
 "duration_ticks": 2880.0,
 "id": "event_897888f09cb8a33c",
 "kind": "hold",
@@ -2668,25 +2972,17 @@ metadata/json_source = {
 }, {
 "affinity": "xuan",
 "boss": false,
-"duration_ticks": 0.0,
-"id": "event_8f2e712b15ef2c3e",
-"kind": "tap",
+"duration_ticks": 2880.0,
+"id": "event_00fd98166df0fe8e",
+"kind": "hold",
 "tick": 53760.0,
-"visual_variant": "default"
-}, {
-"affinity": "xuan",
-"boss": false,
-"duration_ticks": 0.0,
-"id": "event_5750f57f9b2a345c",
-"kind": "tap",
-"tick": 56640.0,
 "visual_variant": "default"
 }, {
 "affinity": "zhu",
 "boss": false,
-"duration_ticks": 0.0,
-"id": "event_07bafd103021ebb2",
-"kind": "tap",
+"duration_ticks": 2880.0,
+"id": "event_ec28338157aae7e5",
+"kind": "hold",
 "tick": 57600.0,
 "visual_variant": "default"
 }, {
@@ -2696,14 +2992,6 @@ metadata/json_source = {
 "id": "event_7c71aa3b8679f071",
 "kind": "hold",
 "tick": 57600.0,
-"visual_variant": "default"
-}, {
-"affinity": "zhu",
-"boss": false,
-"duration_ticks": 0.0,
-"id": "event_05d2ba15ddbd7b78",
-"kind": "tap",
-"tick": 60480.0,
 "visual_variant": "default"
 }, {
 "affinity": "zhu",
@@ -3140,9 +3428,9 @@ metadata/json_source = {
 }, {
 "affinity": "xuan",
 "boss": false,
-"duration_ticks": 1440.0,
-"id": "event_2d2e55fc4558287d",
-"kind": "hold",
+"duration_ticks": 0.0,
+"id": "event_d7d40adf8d256c22",
+"kind": "tap",
 "tick": 109800.0,
 "visual_variant": "default"
 }, {
@@ -3156,9 +3444,9 @@ metadata/json_source = {
 }, {
 "affinity": "zhu",
 "boss": false,
-"duration_ticks": 1440.0,
-"id": "event_bfbdb5521075fc91",
-"kind": "hold",
+"duration_ticks": 0.0,
+"id": "event_56b199283597f4d4",
+"kind": "tap",
 "tick": 113640.0,
 "visual_variant": "default"
 }, {
@@ -3188,9 +3476,9 @@ metadata/json_source = {
 }, {
 "affinity": "xuan",
 "boss": false,
-"duration_ticks": 1440.0,
-"id": "event_5ed035c8dc62ab85",
-"kind": "hold",
+"duration_ticks": 0.0,
+"id": "event_45037946fbe260cf",
+"kind": "tap",
 "tick": 117480.0,
 "visual_variant": "default"
 }, {
@@ -3204,9 +3492,9 @@ metadata/json_source = {
 }, {
 "affinity": "zhu",
 "boss": false,
-"duration_ticks": 1440.0,
-"id": "event_851955e73e19c78a",
-"kind": "hold",
+"duration_ticks": 0.0,
+"id": "event_ef88db95caf2993f",
+"kind": "tap",
 "tick": 121320.0,
 "visual_variant": "default"
 }, {
@@ -3584,65 +3872,133 @@ metadata/json_source = {
 }]
 },
 "tuning_paths": [{
+"affinity": "xuan",
+"hold_id": "event_00fd98166df0fe8e",
+"id": "event_600280b6e1cfe82f",
+"points": [{
+"angle_deg": 89.3577535427913,
+"id": "point_b245edeb14633506",
+"offset_ticks": 0.0
+}, {
+"angle_deg": 149.357753542791,
+"id": "point_a06f728bcfb49d4c",
+"offset_ticks": 2880.0
+}],
+"support_hold_id": "event_897888f09cb8a33c",
+"tick": 53760.0,
+"visual_radius_px": 400.0
+}, {
+"affinity": "zhu",
+"hold_id": "event_897888f09cb8a33c",
+"id": "event_9869722d4a7eb51f",
+"points": [{
+"angle_deg": -90.6422464572087,
+"id": "point_885151e2f37f02e8",
+"offset_ticks": 0.0
+}, {
+"angle_deg": -30.6422464572087,
+"id": "point_7b747bcf109efeed",
+"offset_ticks": 2880.0
+}],
+"support_hold_id": "event_00fd98166df0fe8e",
+"tick": 53760.0,
+"visual_radius_px": 400.0
+}, {
+"affinity": "xuan",
+"hold_id": "event_7c71aa3b8679f071",
+"id": "event_2bbb818f9d47cc7c",
+"points": [{
+"angle_deg": 89.3577535427913,
+"id": "point_f9d31d48c37f1466",
+"offset_ticks": 0.0
+}, {
+"angle_deg": 149.357753542791,
+"id": "point_7ec9e835e055716c",
+"offset_ticks": 2880.0
+}],
+"support_hold_id": "event_ec28338157aae7e5",
+"tick": 57600.0,
+"visual_radius_px": 400.0
+}, {
+"affinity": "zhu",
+"hold_id": "event_ec28338157aae7e5",
+"id": "event_a5d1b656641d1b17",
+"points": [{
+"angle_deg": -90.6422464572087,
+"id": "point_a08e1c336d5116ec",
+"offset_ticks": 0.0
+}, {
+"angle_deg": -30.6422464572087,
+"id": "point_d62b926884512dbb",
+"offset_ticks": 2880.0
+}],
+"support_hold_id": "event_7c71aa3b8679f071",
+"tick": 57600.0,
+"visual_radius_px": 400.0
+}, {
 "affinity": "zhu",
 "hold_id": "event_9eb7c0022981b8d7",
 "id": "event_38e67155772e65eb",
 "points": [{
-"angle_deg": -90.6422464572087,
+"angle_deg": -120.0,
 "id": "point_bda0cba7f66e0a85",
 "offset_ticks": 0.0
 }, {
-"angle_deg": -30.6422464572087,
+"angle_deg": -60.0,
 "id": "point_7acc14fe592d866a",
 "offset_ticks": 2880.0
 }],
 "support_hold_id": "event_dab64e7a0aaf617c",
-"tick": 148200.0
+"tick": 148200.0,
+"visual_radius_px": 400.0
 }, {
 "affinity": "xuan",
 "hold_id": "event_dab64e7a0aaf617c",
 "id": "event_d6770f2956d1865b",
 "points": [{
-"angle_deg": 89.3577535427913,
+"angle_deg": 60.0,
 "id": "point_0f41579bc54cbb1b",
 "offset_ticks": 0.0
 }, {
-"angle_deg": 149.357753542791,
+"angle_deg": 120.0,
 "id": "point_04450fd9a78f6e1f",
 "offset_ticks": 2880.0
 }],
 "support_hold_id": "event_9eb7c0022981b8d7",
-"tick": 148200.0
-}, {
-"affinity": "xuan",
-"hold_id": "event_fb208f062f413912",
-"id": "event_6fb2f6fee4677a4b",
-"points": [{
-"angle_deg": 89.3577535427913,
-"id": "point_18fba5c572baafe9",
-"offset_ticks": 0.0
-}, {
-"angle_deg": 149.357753542791,
-"id": "point_809571061f30e1af",
-"offset_ticks": 3840.0
-}],
-"support_hold_id": "event_be83e4f46dccb70a",
-"tick": 152040.0
+"tick": 148200.0,
+"visual_radius_px": 400.0
 }, {
 "affinity": "zhu",
 "hold_id": "event_be83e4f46dccb70a",
-"id": "event_9c2d1f9bce2cdc1a",
+"id": "event_965eb5ec59110595",
 "points": [{
-"angle_deg": -90.6422464572087,
-"id": "point_d1afda6247edf0ad",
+"angle_deg": -120.0,
+"id": "point_4988e612eca56d0a",
 "offset_ticks": 0.0
 }, {
-"angle_deg": -30.6422464572087,
-"id": "point_ae54944c97b391eb",
+"angle_deg": -30.0,
+"id": "point_3da566113f1a5f96",
 "offset_ticks": 3840.0
 }],
 "support_hold_id": "event_fb208f062f413912",
-"tick": 152040.0
+"tick": 152040.0,
+"visual_radius_px": 400.0
+}, {
+"affinity": "xuan",
+"hold_id": "event_fb208f062f413912",
+"id": "event_da7e17f8d8756916",
+"points": [{
+"angle_deg": 60.0,
+"id": "point_b4f29ae762279c9b",
+"offset_ticks": 0.0
+}, {
+"angle_deg": 150.0,
+"id": "point_1aa76a488b2d0763",
+"offset_ticks": 3840.0
+}],
+"support_hold_id": "event_be83e4f46dccb70a",
+"tick": 152040.0,
+"visual_radius_px": 400.0
 }]
 }
 metadata/unknown_notes = []

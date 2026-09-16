@@ -11,7 +11,7 @@ static var mounted := {}
 func configure(root: String, packs: Array) -> void:
 	boss_defaults.clear()
 	var values: Dictionary=PlanningParameters.read().get("values",{})
-	for key in ["health_ratio","flight_speed","spread_deg","glow_strength","effect_scale","fragment_multiplier"]:
+	for key in ["route_join_ratio","launch_speed_ratio","health_ratio","flight_speed","spread_deg","glow_strength","effect_scale","fragment_multiplier"]:
 		if values.has("boss/"+key):boss_defaults[key]=values["boss/"+key]
 	directory = root; entries.clear(); cache.clear(); issues.clear()
 	for pack_data: Dictionary in packs:

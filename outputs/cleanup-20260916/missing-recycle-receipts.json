@@ -1,0 +1,583 @@
+[
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-animation",
+    "result": "已回收",
+    "files": 5210,
+    "bytes": 1167990460,
+    "time": "2026-09-16T20:06:58.1226499+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-api.gd",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 235,
+    "time": "2026-09-16T20:06:58.2026191+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\bat-base-0.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 136065,
+    "time": "2026-09-16T20:06:58.2370171+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\bat-base-1.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 151395,
+    "time": "2026-09-16T20:06:58.2632623+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\bat-base-1000.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 150802,
+    "time": "2026-09-16T20:06:58.2896424+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\bat-base-1500.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 145123,
+    "time": "2026-09-16T20:06:58.3156089+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\bat-base-2.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 138009,
+    "time": "2026-09-16T20:06:58.3384389+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\bat-base-2000.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 137317,
+    "time": "2026-09-16T20:06:58.3654646+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\bat-base-3.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 150498,
+    "time": "2026-09-16T20:06:58.3920545+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\bat-base-3000.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 149911,
+    "time": "2026-09-16T20:06:58.4189834+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\bat-base-3999.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 136335,
+    "time": "2026-09-16T20:06:58.4420390+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\bat-base-500.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 144952,
+    "time": "2026-09-16T20:06:58.4656380+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\bat-bones.json",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 3271,
+    "time": "2026-09-16T20:06:58.4910345+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\bat-parts.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 86294,
+    "time": "2026-09-16T20:06:58.5138136+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\bat-rig.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 147654,
+    "time": "2026-09-16T20:06:58.5372556+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\bat-sampled-bones.json",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 30065,
+    "time": "2026-09-16T20:06:58.5609502+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\death-eyes-check.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 148732,
+    "time": "2026-09-16T20:06:58.5895039+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\delivery.json",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 716,
+    "time": "2026-09-16T20:06:58.6112910+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\frame-checks.json",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 1172,
+    "time": "2026-09-16T20:06:58.6347440+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat-base-0.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 219039,
+    "time": "2026-09-16T20:06:58.6595017+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat-base-1.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 217946,
+    "time": "2026-09-16T20:06:58.6834434+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat-base-1000.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 217355,
+    "time": "2026-09-16T20:06:58.7052976+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat-base-1500.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 217500,
+    "time": "2026-09-16T20:06:58.7302052+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat-base-2.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 218424,
+    "time": "2026-09-16T20:06:58.7562183+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat-base-2000.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 217905,
+    "time": "2026-09-16T20:06:58.7811595+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat-base-3.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 218157,
+    "time": "2026-09-16T20:06:58.8158133+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat-base-3000.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 217707,
+    "time": "2026-09-16T20:06:58.8435948+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat-base-3999.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 219017,
+    "time": "2026-09-16T20:06:58.8682478+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat-base-500.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 218530,
+    "time": "2026-09-16T20:06:58.8948733+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat-bones.json",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 2387,
+    "time": "2026-09-16T20:06:58.9201584+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat-handoff-fragments.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 225173,
+    "time": "2026-09-16T20:06:58.9443923+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat-handoff-skeleton.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 225189,
+    "time": "2026-09-16T20:06:58.9696387+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat-parts.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 232252,
+    "time": "2026-09-16T20:06:58.9916690+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat-rig.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 230682,
+    "time": "2026-09-16T20:06:59.0119371+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat-sampled-bones.json",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 26707,
+    "time": "2026-09-16T20:06:59.0375791+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat_eye-base-0.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 223899,
+    "time": "2026-09-16T20:06:59.0616782+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat_eye-base-1.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 223241,
+    "time": "2026-09-16T20:06:59.0859821+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat_eye-base-1000.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 222719,
+    "time": "2026-09-16T20:06:59.1104019+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat_eye-base-1500.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 222573,
+    "time": "2026-09-16T20:06:59.1368930+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat_eye-base-2.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 223183,
+    "time": "2026-09-16T20:06:59.1670924+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat_eye-base-2000.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 222602,
+    "time": "2026-09-16T20:06:59.1951588+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat_eye-base-3.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 222857,
+    "time": "2026-09-16T20:06:59.2196751+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat_eye-base-3000.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 222384,
+    "time": "2026-09-16T20:06:59.2441682+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat_eye-base-3999.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 223937,
+    "time": "2026-09-16T20:06:59.2669600+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat_eye-base-500.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 223700,
+    "time": "2026-09-16T20:06:59.2913275+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat_eye-bones.json",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 2387,
+    "time": "2026-09-16T20:06:59.3151155+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat_eye-parts.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 259663,
+    "time": "2026-09-16T20:06:59.3410590+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat_eye-sampled-bones.json",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 26707,
+    "time": "2026-09-16T20:06:59.3627238+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\new-poses.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 450084,
+    "time": "2026-09-16T20:06:59.3857054+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\planning-before-boss.xlsx",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 24301,
+    "time": "2026-09-16T20:06:59.4179843+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\planning-before-goat.xlsx",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 26163,
+    "time": "2026-09-16T20:06:59.4441792+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\SkeletonJson.cpp",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 66549,
+    "time": "2026-09-16T20:06:59.4753468+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\snake-base-0.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 193715,
+    "time": "2026-09-16T20:06:59.4966179+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\snake-base-1.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 195640,
+    "time": "2026-09-16T20:06:59.5208942+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\snake-base-1000.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 194881,
+    "time": "2026-09-16T20:06:59.5461799+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\snake-base-1500.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 195382,
+    "time": "2026-09-16T20:06:59.5687094+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\snake-base-2.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 195965,
+    "time": "2026-09-16T20:06:59.5900608+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\snake-base-2000.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 195214,
+    "time": "2026-09-16T20:06:59.6159649+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\snake-base-3.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 199800,
+    "time": "2026-09-16T20:06:59.6411125+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\snake-base-3000.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 198646,
+    "time": "2026-09-16T20:06:59.6682531+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\snake-base-3999.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 193571,
+    "time": "2026-09-16T20:06:59.6934462+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\snake-base-500.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 195157,
+    "time": "2026-09-16T20:06:59.7196528+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\snake-bones.json",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 4029,
+    "time": "2026-09-16T20:06:59.7451968+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\snake-parts.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 144491,
+    "time": "2026-09-16T20:06:59.7715774+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\snake-rig.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 205554,
+    "time": "2026-09-16T20:06:59.7992373+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\snake-sampled-bones.json",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 36797,
+    "time": "2026-09-16T20:06:59.8240718+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\source-poses.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 456113,
+    "time": "2026-09-16T20:06:59.8512890+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\sync_workbook.mjs",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 9625,
+    "time": "2026-09-16T20:06:59.8787787+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-phase-check.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 527362,
+    "time": "2026-09-16T20:06:59.9044833+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boundary-animation",
+    "result": "已回收",
+    "files": 9003,
+    "bytes": 4651827336,
+    "time": "2026-09-16T20:07:02.0156254+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\goat-eye-inspection.png",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 227850,
+    "time": "2026-09-16T20:07:02.0345711+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\lingjun",
+    "result": "已回收",
+    "files": 2766,
+    "bytes": 797872191,
+    "time": "2026-09-16T20:07:03.2719326+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\pet-animation",
+    "result": "已回收",
+    "files": 1746,
+    "bytes": 97422413,
+    "time": "2026-09-16T20:07:04.1196245+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\pet-runtime",
+    "result": "已回收",
+    "files": 532,
+    "bytes": 979219977,
+    "time": "2026-09-16T20:07:04.8440994+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\pet-skill-upgrade",
+    "result": "已回收",
+    "files": 144,
+    "bytes": 8345928,
+    "time": "2026-09-16T20:07:05.4672569+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\ui-flame",
+    "result": "已回收",
+    "files": 2463,
+    "bytes": 1452807924,
+    "time": "2026-09-16T20:07:06.4305706+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\AudioLab\\runtime\\bootstrap",
+    "result": "已回收",
+    "files": 3657,
+    "bytes": 137234419,
+    "time": "2026-09-16T20:07:07.9740135+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\AudioLab\\runtime\\python\\.gitignore",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 1,
+    "time": "2026-09-16T20:07:08.0073456+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\AudioLab\\runtime\\python\\.lock",
+    "result": "已回收",
+    "files": 1,
+    "bytes": 0,
+    "time": "2026-09-16T20:07:08.0609249+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\AudioLab\\runtime\\python\\.temp",
+    "result": "已回收",
+    "files": 0,
+    "bytes": 0,
+    "time": "2026-09-16T20:07:08.7358042+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\AudioLab\\runtime\\python\\cpython-3.10.21-windows-x86_64-none",
+    "result": "已回收",
+    "files": 3964,
+    "bytes": 60890841,
+    "time": "2026-09-16T20:07:10.4034730+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\AudioLab\\runtime\\toucan",
+    "result": "已回收",
+    "files": 19059,
+    "bytes": 4915521989,
+    "time": "2026-09-16T20:07:15.1581058+08:00"
+  },
+  {
+    "path": "E:\\大学\\MEMO\\编钟音游\\AudioLab\\cache",
+    "result": "已回收",
+    "files": 23233,
+    "bytes": 5108805794,
+    "time": "2026-09-16T20:07:21.2308166+08:00"
+  }
+]

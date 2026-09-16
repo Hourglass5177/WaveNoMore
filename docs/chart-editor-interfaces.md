@@ -74,14 +74,14 @@ producer 仅操作 RefCounted 数据和 Generator playback，不访问 Node；�
 
 `StudioDocument.execute` 的 annotation 用途只更新 BOSS 界面和保存状态。`StudioPreviewSession.ghost_results_changed` 复用已发布快照提供旧预览实际生成数量，不代表共同等级或独立计分。字段表、时间示例与完整样例见 [新编排说明](chart-editor-tuning.md)。
 
-Ghost 共享运行时已由写谱器分支补充候选池随机抽取、足量冻结和不足诊断：运行时结果增加 `generation_issue`，不写入 JSON。新版编排默认全画布候选区，旧资源的显式区域保留。合并边界和限制见 [游戏侧交接](tuning-su-game-editor-handoff-2026-09-08.md)。
+Ghost 共享运行时已由写谱器分支补充候选池随机抽取、足量冻结和不足诊断：运行时结果增加 `generation_issue`，不写入 JSON。新版编排默认全画布候选区，旧资源的显式区域保留。合并边界和限制见 [游戏侧交接](chart-editor-tuning.md)。
 
 
 ## 2026-09-08：本地谱面与独立真人试玩
 
 新增游戏“本地谱面”固定入口、写谱器“在游戏中试玩”和匹配的游戏 EXE。共有加载器补充全难度检查；`ChartPackageWriter` 从内存纯打包，正式导出也取消隐式保存。应用层用外部来源上下文贯穿加载、暂停、重试、结算；本地成绩独立，临时试玩不写成绩、不触发正式奖励。
 
-详细接线、CLI、`-WithGame` 构建方式见 [导入与试玩接口](local-chart-playtest.md)，实测范围见 [验证记录](local-chart-validation.md)。本轮涉及 `app_main`、选关/结算/暂停页面、SaveService 的临时入口启动分流及共用 JSON 包加载；未改 Tap/Hold/Tuning/Ghost 判定、预测和计分规则。队友合并时需一并带上新来源上下文和暂停重试出口，不能退回仅凭 stage_id 重试。
+详细接线、CLI、`-WithGame` 构建方式见 [导入与试玩接口](local-chart-playtest.md)，实测范围见 [验证记录](local-chart-playtest.md)。本轮涉及 `app_main`、选关/结算/暂停页面、SaveService 的临时入口启动分流及共用 JSON 包加载；未改 Tap/Hold/Tuning/Ghost 判定、预测和计分规则。队友合并时需一并带上新来源上下文和暂停重试出口，不能退回仅凭 stage_id 重试。
 
 ## 单条 Tuning 半径（2026-09-10）
 
@@ -95,7 +95,7 @@ Ghost 共享运行时已由写谱器分支补充候选池随机抽取、足量�
 
 `StudioPreviewSession` 完整索引领域判定、接触、抵达时间，再使用调度器可见性边界与 `preview_motion_cache` 恢复目标对象。`DynamicHoldSpine`、`GrayboxHoldVisual` 导出/恢复纯运动数据；缓存不持有节点，不落盘。`GrayboxFieldVisual.restore_motion_control` 与正式圆弧共用游标方向计算。角色历史推进暂缓 Spine 网格更新，最后发布一次完整画面。
 
-这些是内部接线，不改变判定、音频或试玩进程。共享文件合并时应一并带上准备结果、调度可见性、运动恢复和角色时间边界；具体测量、失效规则及未达标项见 [性能记录](chart-editor-preview-performance-2026-09-14.md)。
+这些是内部接线，不改变判定、音频或试玩进程。共享文件合并时应一并带上准备结果、调度可见性、运动恢复和角色时间边界；具体测量、失效规则及未达标项见 [性能记录](chart-editor-interfaces.md)。
 
 ## 构建参数与独立试玩（2026-09-14）
 
@@ -104,3 +104,13 @@ Ghost 共享运行时已由写谱器分支补充候选池随机抽取、足量�
 `StudioPlaytest` 将写谱器当前参数写入本次临时目录的 `planning.json`，通过参数数组中的 `--planning-values=<绝对路径>` 传给匹配游戏，沿原有进程生命周期清理。快照不写入歌曲 JSON，也不改变源项目。旧版游戏不支持此入口，因此本次同步发布 0.1.5.0 配套游戏。
 
 包内预览回归使用 Godot 开发可执行程序的 `--main-pack <写谱器EXE> --script <绝对测试脚本>`，执行 `tests/editor/run_packaged_preview_tests.gd -- --project <song.json>`；它检查发布资源中的参数和预览，不以源码环境代替发布资源验证。游戏额外使用真正导出的 EXE 与 `--play-chart` 启动参数验证。
+
+## 预览恢复与文件选择约定
+
+预览先运行正式领域模拟并索引判定、接触和抵达，再恢复目标时刻仍可见的表现。活动 Hold 保留 120 Hz 运动积分，每 0.5 秒缓存运动状态，按序列化体积约 64 MiB 的预算淘汰；谱面编辑从最早受影响时刻失效缓存，规则、场景、谱面身份或时间偏移变化则清空。角色历史推进完成后才提交最终骨骼与网格。恢复期间允许取消及最新请求替换，不补播历史音效。
+
+回归入口为 `tests/editor/run_preview_restore_tests.gd`、`run_preview_cache_tests.gd`、`run_preview_failure_tests.gd`；性能采样使用 `measure_preview_restore.gd`。现存长谱同步初始化和历史输入恢复仍可能耗时，不能把缓存接入视作所有压力谱已达流畅目标。
+
+文件选择器使用 `*.json` 过滤，并提示选择 `song.json`。精确文件名过滤曾导致 Godot 对话框预选条目与文件名不同步；加载失败须显示具体原因。回归入口为 `tests/editor/run_open_dialog_tests.gd`。
+
+发行程序使用构建时封装的策划参数，不读取运行目录遗留的外部工作簿；开发工程仍使用正式策划表。包内参数与加载回归见 `tests/editor/run_packaged_preview_tests.gd`。

@@ -46,3 +46,7 @@
 额外运行旧综合运行时套件（`tools/testing/run_stage_runtime.gd`）时，356 项中有 4 项未通过，涉及远端调频提示透明度、接近时间及鼠标／旋转输入尺度与当前装配值不同；Ghost 覆盖层相关断言通过。本轮未修改这些无关预期，不宣称全工程回归全通过。
 
 截图写入 `builds/ghost-review/`。本轮不导出、提交或推送。
+
+## 应用图标素材
+
+`assets/ui/art/app_icon/ghost_logo.png` 为 1254×1254 RGBA 标识；`ghost_icon.png` 为 256×256 窗口图标，`ghost_icon.ico` 包含 16～256 px 七档 Windows 图标。它们来自用户 Ghost 原画的下缘柔光编辑，不替换局内眼睛贴图。项目图标与 Windows 导出图标分别配置 PNG 和 ICO；素材来源与使用权沿用原画归档。

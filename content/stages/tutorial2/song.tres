@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="SongDefinition" format=3]
 
-[ext_resource type="AudioStream" path="res://content/stages/tutorial2/source/audio/level 2-v3.wav" id="1_030ob"]
+[ext_resource type="AudioStream" path="res://content/stage_project/tutorial_1/song/audio/level 2-v3.wav" id="1_030ob"]
 [ext_resource type="Script" path="res://src/content/resources/song_definition.gd" id="2_efbyq"]
 
 [resource]

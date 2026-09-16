@@ -10,7 +10,9 @@ static func evaluate(
 		score: ScoreEngine,
 		health: HealthEngine,
 		expected_judgment_count: int,
-		damage_settled: bool = true
+		damage_settled: bool = true,
+		ghost_results: Array[Dictionary] = [],
+		expected_ghost_count: int = 0
 ) -> ResultSummary:
 	var result := ResultSummary.new()
 	result.failed = health.failed
@@ -28,7 +30,11 @@ static func evaluate(
 		if stray.breaks_combo:
 			result.stray_break_count += 1
 	result.cleared = damage_settled and not result.failed and judgments.size() == expected_judgment_count
-	result.full_combo = result.cleared and result.miss_count == 0 and result.stray_break_count == 0
+	# Ghost 不重复授予音符基础分，但漏击必须影响 FC；Good 击破也不能算 AP。
+	result.ghost_counts = ghost_counts(ghost_results)
+	result.expected_ghost_count = expected_ghost_count
+	result.full_combo = result.cleared and result.miss_count == 0 and result.stray_break_count == 0 and int(result.ghost_counts.MISS) == 0 and int(result.ghost_counts.PERFECT) + int(result.ghost_counts.GOOD) == expected_ghost_count
+	every_perfect = every_perfect and int(result.ghost_counts.GOOD) == 0
 	result.all_perfect = result.full_combo and every_perfect
 	result.raw_score = score.raw_score
 	result.bonus_score = score.bonus_score
@@ -38,3 +44,12 @@ static func evaluate(
 	result.grants_base_pet = result.cleared and result.full_combo
 	result.grants_advanced_pet = result.cleared and result.all_perfect
 	return result
+
+
+static func ghost_counts(results: Array[Dictionary]) -> Dictionary:
+	var counts := {"PERFECT": 0, "GOOD": 0, "MISS": 0}
+	for event: Dictionary in results:
+		var key := "PERFECT" if int(event.get("grade", GameplayTypes.JudgmentGrade.PERFECT)) == GameplayTypes.JudgmentGrade.PERFECT else "GOOD"
+		counts[key] += int(event.get("hit_count", 0))
+		counts.MISS += int(event.get("miss_count", 0))
+	return counts

@@ -32,6 +32,7 @@ var _heading_pending := false
 
 
 func _ready() -> void:
+	SaveService.developer_mode_changed.connect(_refresh_access)
 	$Design/Left.pressed.connect(step.bind(-1))
 	$Design/Right.pressed.connect(step.bind(1))
 	var heading_material := $Design/Heading/HeadingText.material as ShaderMaterial
@@ -243,6 +244,10 @@ func _rebuild_cards() -> void:
 		var card := CARD.instantiate() as Control
 		$Design/Cards.add_child(card)
 		card.configure(_levels[index], index)
+		var stage := ContentCatalog.get_stage(str(_levels[index].get("stage_id", "")))
+		if stage != null:
+			card.set_locked(not SaveService.is_stage_unlocked(stage))
+			card.set_boss_seen(SaveService.has_seen_boss(stage.stage_id))
 		card.get_node("Flame").apply_planning(flame_planning)
 		card.clicked.connect(func(): focus_index(index) if index != current_index() else select_current())
 		_cards.append(card)
@@ -277,3 +282,10 @@ func _fit_design() -> void:
 	var factor := minf(size.x / DESIGN_SIZE.x, size.y / DESIGN_SIZE.y)
 	$Design.scale = Vector2.ONE * factor
 	$Design.position = (size - DESIGN_SIZE * factor) * 0.5
+
+func _refresh_access() -> void:
+	for i in _cards.size():
+		var stage := ContentCatalog.get_stage(str(_levels[i].get("stage_id", "")))
+		if stage != null:
+			_cards[i].set_locked(not SaveService.is_stage_unlocked(stage))
+			_cards[i].set_boss_seen(SaveService.has_seen_boss(stage.stage_id))

@@ -1,0 +1,466 @@
+ M BUILDING.md
+ M README.md
+ M content/backgrounds/level_3.tres
+ M content/catalogs/mvp_catalog.tres
+ M content/level_cards/default_level_card_catalog.tres
+ M content/rules/planning_parameters.json
+ M content/stage_project/level_2/level.json
+ M content/stage_project/level_2/show.json
+ M content/stage_project/tutorial_1/level.json
+ M content/stage_project/tutorial_1/show.json
+ M content/stages/tutorial2/background.tres
+ M content/stages/tutorial2/chart.tres
+ M content/stages/tutorial2/reward.tres
+ M content/stages/tutorial2/song.tres
+ M content/stages/tutorial2/source_chart.tres
+ M content/stages/tutorial2/stage_definition.tres
+ M content/stages/tutorial2/stage_show.tres
+ M content/stages/tutorial2/visual_theme.tres
+ D docs/background-preview-fix.md
+ M docs/boss-animation.md
+ D docs/boundary-waves-validation.md
+ D docs/branch-sync-2026-09-14.md
+ M docs/build-output.md
+ M docs/chart-editor-guide.md
+ M docs/chart-editor-interfaces.md
+ D docs/chart-editor-open-dialog-fix.md
+ D docs/chart-editor-preview-performance-2026-09-14.md
+ D docs/chart-editor-progress.md
+ D docs/chart-editor-trial-performance-2026-09-09.md
+ D docs/chart-editor-tuning-validation.md
+ M docs/chart-editor-tuning.md
+ D docs/chart-editor-ui-review.md
+ D docs/chart-studio-v0.1.3.md
+ D docs/chart-studio-v0.1.4.md
+ D docs/develop-merge-review-2026-09-08.md
+ D docs/editor-branch-audit-2026-09-13.md
+ M docs/ghost-effects.md
+ D docs/ghost-icon-prompts.md
+ D docs/launch-guides-prompts.md
+ M docs/launch-guides.md
+ D docs/level-editor-boss-combat-validation-2026-09-15.md
+ D docs/level-editor-boss-overview-playback-validation-2026-09-15.md
+ D docs/level-editor-entrypoint-audit-2026-09-15.md
+ D docs/level-editor-fixes-validation-2026-09-13.md
+ M docs/level-editor-guide.md
+ D docs/level-editor-initial-environment-validation-2026-09-15.md
+ M docs/level-editor-interfaces.md
+ D docs/level-editor-reliability-validation-2026-09-14.md
+ D docs/level-editor-spine-validation-2026-09-15.md
+ D docs/level-editor-validation.md
+ M docs/local-chart-playtest.md
+ D docs/local-chart-validation.md
+ D docs/note-effects-performance-2026-09.md
+ D docs/note-effects-validation.md
+ M docs/note-effects.md
+ D docs/note-glow-2026-09.md
+ D docs/note-wave-effects-validation.md
+ M docs/performance-and-resolution.md
+ M docs/pet-animation-studies.md
+ D docs/pet-runtime-validation.md
+ M docs/pet-skill-upgrade.md
+ M docs/pet-system.md
+ D docs/pet-validation.md
+ M docs/timing-cue-style.md
+ D docs/tuning-su-game-editor-handoff-2026-09-08.md
+ M docs/ui-art-integration.md
+ M export_presets.cfg
+ D outputs/boss-animation/alignment-review.png
+ D outputs/boss-animation/alignment-review.png.import
+ D outputs/boss-animation/all-states.png
+ D outputs/boss-animation/all-states.png.import
+ D outputs/boss-animation/bat-attack-poster.png
+ D outputs/boss-animation/bat-attack-poster.png.import
+ D outputs/boss-animation/bat-attack.gif
+ D outputs/boss-animation/bat-attack.webm
+ D outputs/boss-animation/bat-combo-poster.png
+ D outputs/boss-animation/bat-combo-poster.png.import
+ D outputs/boss-animation/bat-combo.gif
+ D outputs/boss-animation/bat-combo.webm
+ D outputs/boss-animation/bat-death-poster.png
+ D outputs/boss-animation/bat-death-poster.png.import
+ D outputs/boss-animation/bat-death.gif
+ D outputs/boss-animation/bat-death.webm
+ D outputs/boss-animation/bat-hurt-poster.png
+ D outputs/boss-animation/bat-hurt-poster.png.import
+ D outputs/boss-animation/bat-hurt.gif
+ D outputs/boss-animation/bat-hurt.webm
+ D outputs/boss-animation/death-poses.png
+ D outputs/boss-animation/death-poses.png.import
+ D outputs/boss-animation/goat-attack-poster.png
+ D outputs/boss-animation/goat-attack-poster.png.import
+ D outputs/boss-animation/goat-attack.gif
+ D outputs/boss-animation/goat-attack.webm
+ D outputs/boss-animation/goat-combo-poster.png
+ D outputs/boss-animation/goat-combo-poster.png.import
+ D outputs/boss-animation/goat-combo.gif
+ D outputs/boss-animation/goat-combo.webm
+ D outputs/boss-animation/goat-death-poses.png
+ D outputs/boss-animation/goat-death-poses.png.import
+ D outputs/boss-animation/goat-death-poster.png
+ D outputs/boss-animation/goat-death-poster.png.import
+ D outputs/boss-animation/goat-death.gif
+ D outputs/boss-animation/goat-death.webm
+ D outputs/boss-animation/goat-eye-closeup.gif
+ D outputs/boss-animation/goat-eye-closeup.png
+ D outputs/boss-animation/goat-eye-closeup.png.import
+ D outputs/boss-animation/goat-eye-closeup.webm
+ D outputs/boss-animation/goat-hurt-poster.png
+ D outputs/boss-animation/goat-hurt-poster.png.import
+ D outputs/boss-animation/goat-hurt.gif
+ D outputs/boss-animation/goat-hurt.webm
+ D outputs/boss-animation/goat-phase_break-poses.png
+ D outputs/boss-animation/goat-phase_break-poses.png.import
+ D outputs/boss-animation/goat-phase_break.gif
+ D outputs/boss-animation/goat-phase_break.webm
+ D outputs/boss-animation/goat-two_phase.gif
+ D outputs/boss-animation/goat-two_phase.webm
+ D outputs/boss-animation/goat_eye-attack-poster.png
+ D outputs/boss-animation/goat_eye-attack-poster.png.import
+ D outputs/boss-animation/goat_eye-attack.gif
+ D outputs/boss-animation/goat_eye-attack.webm
+ D outputs/boss-animation/goat_eye-combo-poster.png
+ D outputs/boss-animation/goat_eye-combo-poster.png.import
+ D outputs/boss-animation/goat_eye-combo.gif
+ D outputs/boss-animation/goat_eye-combo.webm
+ D outputs/boss-animation/goat_eye-death-poster.png
+ D outputs/boss-animation/goat_eye-death-poster.png.import
+ D outputs/boss-animation/goat_eye-death.gif
+ D outputs/boss-animation/goat_eye-death.webm
+ D outputs/boss-animation/goat_eye-hurt-poster.png
+ D outputs/boss-animation/goat_eye-hurt-poster.png.import
+ D outputs/boss-animation/goat_eye-hurt.gif
+ D outputs/boss-animation/goat_eye-hurt.webm
+ D outputs/boss-animation/index.html
+ D outputs/boss-animation/layers/goat-awaken-effects.png
+ D outputs/boss-animation/layers/goat-awaken-effects.png.import
+ D outputs/boss-animation/layers/goat-awaken-full.png
+ D outputs/boss-animation/layers/goat-awaken-full.png.import
+ D outputs/boss-animation/layers/goat-eye-0.png
+ D outputs/boss-animation/layers/goat-eye-0.png.import
+ D outputs/boss-animation/layers/goat-eye-1.png
+ D outputs/boss-animation/layers/goat-eye-1.png.import
+ D outputs/boss-animation/layers/goat-eye-2.png
+ D outputs/boss-animation/layers/goat-eye-2.png.import
+ D outputs/boss-animation/snake-attack-poster.png
+ D outputs/boss-animation/snake-attack-poster.png.import
+ D outputs/boss-animation/snake-attack.gif
+ D outputs/boss-animation/snake-attack.webm
+ D outputs/boss-animation/snake-combo-poster.png
+ D outputs/boss-animation/snake-combo-poster.png.import
+ D outputs/boss-animation/snake-combo.gif
+ D outputs/boss-animation/snake-combo.webm
+ D outputs/boss-animation/snake-death-poster.png
+ D outputs/boss-animation/snake-death-poster.png.import
+ D outputs/boss-animation/snake-death.gif
+ D outputs/boss-animation/snake-death.webm
+ D outputs/boss-animation/snake-hurt-poster.png
+ D outputs/boss-animation/snake-hurt-poster.png.import
+ D outputs/boss-animation/snake-hurt.gif
+ D outputs/boss-animation/snake-hurt.webm
+ D outputs/boss-animation/stage/bat-1280.png
+ D outputs/boss-animation/stage/bat-1280.png.import
+ D outputs/boss-animation/stage/bat-1920.png
+ D outputs/boss-animation/stage/bat-1920.png.import
+ D outputs/boss-animation/stage/goat-1280.png
+ D outputs/boss-animation/stage/goat-1280.png.import
+ D outputs/boss-animation/stage/goat-1920.png
+ D outputs/boss-animation/stage/goat-1920.png.import
+ D outputs/boss-animation/stage/goat-crack-pair-1280.png
+ D outputs/boss-animation/stage/goat-crack-pair-1280.png.import
+ D outputs/boss-animation/stage/goat-crack-pair-1920.png
+ D outputs/boss-animation/stage/goat-crack-pair-1920.png.import
+ D outputs/boss-animation/stage/goat-crack-single-1280.png
+ D outputs/boss-animation/stage/goat-crack-single-1280.png.import
+ D outputs/boss-animation/stage/goat-crack-single-1920.png
+ D outputs/boss-animation/stage/goat-crack-single-1920.png.import
+ D outputs/boss-animation/stage/goat-empty-pair-1280.png
+ D outputs/boss-animation/stage/goat-empty-pair-1280.png.import
+ D outputs/boss-animation/stage/goat-empty-pair-1920.png
+ D outputs/boss-animation/stage/goat-empty-pair-1920.png.import
+ D outputs/boss-animation/stage/goat-empty-single-1280.png
+ D outputs/boss-animation/stage/goat-empty-single-1280.png.import
+ D outputs/boss-animation/stage/goat-empty-single-1920.png
+ D outputs/boss-animation/stage/goat-empty-single-1920.png.import
+ D outputs/boss-animation/stage/goat-reveal-pair-1280.png
+ D outputs/boss-animation/stage/goat-reveal-pair-1280.png.import
+ D outputs/boss-animation/stage/goat-reveal-pair-1920.png
+ D outputs/boss-animation/stage/goat-reveal-pair-1920.png.import
+ D outputs/boss-animation/stage/goat-reveal-single-1280.png
+ D outputs/boss-animation/stage/goat-reveal-single-1280.png.import
+ D outputs/boss-animation/stage/goat-reveal-single-1920.png
+ D outputs/boss-animation/stage/goat-reveal-single-1920.png.import
+ D outputs/boss-animation/stage/goat-white-pair-1280.png
+ D outputs/boss-animation/stage/goat-white-pair-1280.png.import
+ D outputs/boss-animation/stage/goat-white-pair-1920.png
+ D outputs/boss-animation/stage/goat-white-pair-1920.png.import
+ D outputs/boss-animation/stage/goat-white-single-1280.png
+ D outputs/boss-animation/stage/goat-white-single-1280.png.import
+ D outputs/boss-animation/stage/goat-white-single-1920.png
+ D outputs/boss-animation/stage/goat-white-single-1920.png.import
+ D outputs/boss-animation/stage/goat_eye-1280.png
+ D outputs/boss-animation/stage/goat_eye-1280.png.import
+ D outputs/boss-animation/stage/goat_eye-1920.png
+ D outputs/boss-animation/stage/goat_eye-1920.png.import
+ D outputs/boss-animation/stage/snake-1280.png
+ D outputs/boss-animation/stage/snake-1280.png.import
+ D outputs/boss-animation/stage/snake-1920.png
+ D outputs/boss-animation/stage/snake-1920.png.import
+ D outputs/launch-guides/.gdignore
+ D outputs/launch-guides/controller-1280.png
+ D outputs/launch-guides/controller-1920.png
+ D outputs/launch-guides/controller-3840.png
+ D outputs/launch-guides/headphones-1280.png
+ D outputs/launch-guides/headphones-1920.png
+ D outputs/launch-guides/headphones-3840.png
+ M outputs/planning/策划参数.xlsx
+ D outputs/ui-flame/blue-rounded-bottom.gif
+ D outputs/ui-flame/blue.gif
+ D outputs/ui-flame/bottom-and-alignment.png
+ D outputs/ui-flame/bottom-and-alignment.png.import
+ D outputs/ui-flame/closeup.mp4
+ D outputs/ui-flame/horizontal-aligned.mp4
+ D outputs/ui-flame/horizontal.mp4
+ D outputs/ui-flame/horizontal.png
+ D outputs/ui-flame/horizontal.png.import
+ D outputs/ui-flame/index.html
+ D outputs/ui-flame/integration/level-selection.png
+ D outputs/ui-flame/integration/level-selection.png.import
+ D outputs/ui-flame/integration/pause-centered.png
+ D outputs/ui-flame/integration/pause-centered.png.import
+ D outputs/ui-flame/integration/pause.png
+ D outputs/ui-flame/integration/pause.png.import
+ D outputs/ui-flame/integration/settings.png
+ D outputs/ui-flame/integration/settings.png.import
+ D outputs/ui-flame/motion-poses.png
+ D outputs/ui-flame/motion-poses.png.import
+ D outputs/ui-flame/old-new.mp4
+ D outputs/ui-flame/old-new.png
+ D outputs/ui-flame/old-new.png.import
+ D outputs/ui-flame/performance.json
+ D outputs/ui-flame/red-blue-bottom.mp4
+ D outputs/ui-flame/red-blue-corners.mp4
+ D outputs/ui-flame/red-blue-rounded-bottom.mp4
+ D outputs/ui-flame/red-blue.mp4
+ D outputs/ui-flame/red-blue.png
+ D outputs/ui-flame/red-blue.png.import
+ D outputs/ui-flame/red-rounded-bottom.gif
+ D outputs/ui-flame/red.gif
+ D outputs/ui-flame/resolutions/0-1280.png
+ D outputs/ui-flame/resolutions/0-1280.png.import
+ D outputs/ui-flame/resolutions/0-3840.png
+ D outputs/ui-flame/resolutions/0-3840.png.import
+ D outputs/ui-flame/resolutions/1-1280.png
+ D outputs/ui-flame/resolutions/1-1280.png.import
+ D outputs/ui-flame/resolutions/1-3840.png
+ D outputs/ui-flame/resolutions/1-3840.png.import
+ D outputs/ui-flame/rooted-sample.gif
+ D outputs/ui-flame/rooted-sample.mp4
+ D outputs/ui-flame/verification.json
+ M scenes/screens/result_screen.tscn
+ M scenes/screens/stage_loading_screen.tscn
+ M scenes/ui/modals/level_card.tscn
+ M scenes/ui/modals/pet_select_modal.tscn
+ M shaders/characters/pet_study_highlight.gdshader
+ M shaders/materials/monster_icon.gdshader
+ M src/app/app_main.gd
+ M src/app/level_card.gd
+ M src/app/level_carousel.gd
+ M src/app/pet_select_modal.gd
+ M src/app/result_screen.gd
+ M src/app/stage_loading_screen.gd
+ M src/content/level_format/level_asset_library.gd
+ M src/content/level_format/level_asset_pack_writer.gd
+ M src/content/resources/gameplay_rule_set.gd
+ M src/content/resources/ghost_event.gd
+ M src/content/resources/stage_show.gd
+ M src/content/resources/su_manifestation_event.gd
+ M src/domain/results/result_evaluator.gd
+ M src/domain/results/result_summary.gd
+ M src/domain/session/gameplay_simulation.gd
+ M src/domain/tuning/tuning_engine.gd
+ M src/presentation/pets/animated_pet_visual.gd
+ M src/presentation/vfx/note_fragment_host.gd
+ M src/presentation/vfx/su_manifestation_overlay.gd
+ M src/runtime/director/boss_emission_path.gd
+ M src/runtime/director/level_boss_compiler.gd
+ M src/runtime/director/level_show_player.gd
+ M src/runtime/session/stage_root.gd
+ M src/services/save/save_service.gd
+ M src/tools/chart_studio/studio_playtest.gd
+ M src/tools/level_studio/level_workspace.gd
+ M tools/content/import_tutorial2.gd
+ M tools/planning/sync_workbook.mjs
+?? content/stage_project/level_2/packs/revision_af18865d8cdae18b/level_2_2.pck
+?? content/stage_project/level_2/packs/revision_afd4190646291c79/level_2.pck
+?? content/stage_project/level_3/level.json
+?? content/stage_project/level_3/packs/level_3.pck
+?? content/stage_project/level_3/show.json
+?? "content/stage_project/level_3/song/audio/level 4.wav"
+?? "content/stage_project/level_3/song/audio/level 4.wav.import"
+?? content/stage_project/level_3/song/charts/normal.json
+?? content/stage_project/level_3/song/song.json
+?? content/stage_project/tutorial_1/packs/revision_af18865d8cdae18b/level_2_2.pck
+?? content/stage_project/tutorial_1/packs/revision_afd4190646291c79/level_2.pck
+?? content/stages/level2/background.tres
+?? content/stages/level2/chart.tres
+?? content/stages/level2/reward.tres
+?? content/stages/level2/song.tres
+?? content/stages/level2/source_chart.tres
+?? content/stages/level2/stage_definition.tres
+?? content/stages/level2/stage_show.tres
+?? content/stages/level2/visual_theme.tres
+?? content/stages/level3/background.tres
+?? content/stages/level3/chart.tres
+?? content/stages/level3/reward.tres
+?? content/stages/level3/song.tres
+?? content/stages/level3/source_chart.tres
+?? content/stages/level3/stage_definition.tres
+?? content/stages/level3/stage_show.tres
+?? content/stages/level3/visual_theme.tres
+?? docs/planning/BOSS与Ghost读谱调整.md
+?? docs/planning/正式三关接入与解锁.md
+?? outputs/cleanup-20260916/.gdignore
+?? outputs/cleanup-20260916/RecycleOnly.cs
+?? outputs/cleanup-20260916/directory-after.json
+?? outputs/cleanup-20260916/document-backups/AudioLab/README.md
+?? outputs/cleanup-20260916/document-backups/Charts/docs/build-output.md
+?? outputs/cleanup-20260916/document-backups/Charts/docs/chart-editor-guide.md
+?? outputs/cleanup-20260916/document-backups/Charts/docs/chart-editor-interfaces.md
+?? outputs/cleanup-20260916/document-backups/Charts/docs/chart-editor-preview-performance-2026-09-14.md
+?? outputs/cleanup-20260916/document-backups/Charts/docs/chart-editor-progress.md
+?? outputs/cleanup-20260916/document-backups/Charts/docs/chart-editor-rhythm-analysis.md
+?? outputs/cleanup-20260916/document-backups/Charts/docs/chart-editor-timing-2026-09.md
+?? outputs/cleanup-20260916/document-backups/Charts/docs/chart-editor-trial-performance-2026-09-09.md
+?? outputs/cleanup-20260916/document-backups/Charts/docs/chart-editor-tuning-validation.md
+?? outputs/cleanup-20260916/document-backups/Charts/docs/chart-editor-tuning.md
+?? outputs/cleanup-20260916/document-backups/Charts/docs/chart-editor-ui-review.md
+?? outputs/cleanup-20260916/document-backups/Charts/docs/chart-studio-scenes.md
+?? outputs/cleanup-20260916/document-backups/Charts/docs/develop-merge-review-2026-09-08.md
+?? outputs/cleanup-20260916/document-backups/Charts/docs/game-audio-calibration-2026-09.md
+?? outputs/cleanup-20260916/document-backups/Charts/docs/history/chart-editor-guide.md
+?? outputs/cleanup-20260916/document-backups/Charts/docs/history/chart-editor-interfaces.md
+?? outputs/cleanup-20260916/document-backups/Charts/docs/history/chart-editor-progress.md
+?? outputs/cleanup-20260916/document-backups/Charts/docs/history/chart-editor-ui-review.md
+?? outputs/cleanup-20260916/document-backups/Charts/docs/history/开发验证记录.md
+?? outputs/cleanup-20260916/document-backups/Charts/docs/history/谱师使用说明.md
+?? outputs/cleanup-20260916/document-backups/Charts/docs/local-chart-playtest.md
+?? outputs/cleanup-20260916/document-backups/Charts/docs/local-chart-validation.md
+?? outputs/cleanup-20260916/document-backups/Charts/docs/note-glow-2026-09.md
+?? outputs/cleanup-20260916/document-backups/Charts/docs/rhythm-fit-2026-09.md
+?? outputs/cleanup-20260916/document-backups/Charts/docs/tap-feedback-tuning-radius.md
+?? outputs/cleanup-20260916/document-backups/Charts/docs/tuning-su-game-editor-handoff-2026-09-08.md
+?? outputs/cleanup-20260916/document-backups/Docs/Design/《冥河，冥河！》古楚拟音AI音频生成可行性.md
+?? outputs/cleanup-20260916/document-backups/Docs/Design/《冥河，冥河！》古楚语词汇、拟音与PV配音调研.md
+?? outputs/cleanup-20260916/document-backups/Docs/Design/干涉玩法试错历程.md
+?? outputs/cleanup-20260916/document-backups/Docs/Product/PPT大纲.md
+?? "outputs/cleanup-20260916/document-backups/Docs/Program/《冥河，冥河！》Godot MVP程序架构.md"
+?? outputs/cleanup-20260916/document-backups/Docs/Program/《冥河，冥河！》Godot工程代码导览.md
+?? outputs/cleanup-20260916/document-backups/Docs/Program/《冥河，冥河！》MVP写谱器架构.md
+?? outputs/cleanup-20260916/document-backups/Docs/Program/《冥河，冥河！》MVP美术资产与演出接入规范.md
+?? outputs/cleanup-20260916/document-backups/Docs/Program/《冥河，冥河！》写谱器设计说明书.md
+?? outputs/cleanup-20260916/document-backups/Docs/Program/《冥河，冥河！》写谱器调研与重构设计原则.md
+?? outputs/cleanup-20260916/document-backups/Docs/Temp/写谱器关卡素材如何更新.md
+?? outputs/cleanup-20260916/document-backups/Game/BUILDING.md
+?? outputs/cleanup-20260916/document-backups/Game/README.md
+?? outputs/cleanup-20260916/document-backups/Game/docs/bell-visual.md
+?? outputs/cleanup-20260916/document-backups/Game/docs/boss-animation.md
+?? outputs/cleanup-20260916/document-backups/Game/docs/boundary-motion.md
+?? outputs/cleanup-20260916/document-backups/Game/docs/build-output.md
+?? outputs/cleanup-20260916/document-backups/Game/docs/chart-editor-guide.md
+?? outputs/cleanup-20260916/document-backups/Game/docs/chart-editor-interfaces.md
+?? outputs/cleanup-20260916/document-backups/Game/docs/chart-editor-release-notes.md
+?? outputs/cleanup-20260916/document-backups/Game/docs/chart-editor-rhythm-analysis.md
+?? outputs/cleanup-20260916/document-backups/Game/docs/chart-editor-timing-2026-09.md
+?? outputs/cleanup-20260916/document-backups/Game/docs/chart-editor-tuning.md
+?? outputs/cleanup-20260916/document-backups/Game/docs/chart-studio-scenes.md
+?? outputs/cleanup-20260916/document-backups/Game/docs/chart-studio-v0.1.5.md
+?? outputs/cleanup-20260916/document-backups/Game/docs/controller-haptics-investigation.md
+?? outputs/cleanup-20260916/document-backups/Game/docs/game-audio-calibration-2026-09.md
+?? outputs/cleanup-20260916/document-backups/Game/docs/ghost-effects.md
+?? outputs/cleanup-20260916/document-backups/Game/docs/launch-guides.md
+?? outputs/cleanup-20260916/document-backups/Game/docs/level-editor-environment-decoration-fix-2026-09-15.md
+?? outputs/cleanup-20260916/document-backups/Game/docs/level-editor-guide.md
+?? outputs/cleanup-20260916/document-backups/Game/docs/level-editor-interfaces.md
+?? outputs/cleanup-20260916/document-backups/Game/docs/lingjun-animation.md
+?? outputs/cleanup-20260916/document-backups/Game/docs/local-chart-playtest.md
+?? outputs/cleanup-20260916/document-backups/Game/docs/menu-audio.md
+?? outputs/cleanup-20260916/document-backups/Game/docs/note-effects.md
+?? outputs/cleanup-20260916/document-backups/Game/docs/performance-and-resolution.md
+?? outputs/cleanup-20260916/document-backups/Game/docs/pet-animation-studies.md
+?? outputs/cleanup-20260916/document-backups/Game/docs/pet-skill-upgrade.md
+?? outputs/cleanup-20260916/document-backups/Game/docs/pet-system.md
+?? outputs/cleanup-20260916/document-backups/Game/docs/planning/01-全局数值.md
+?? outputs/cleanup-20260916/document-backups/Game/docs/planning/02-随从数值.md
+?? outputs/cleanup-20260916/document-backups/Game/docs/planning/03-谱面与关卡.md
+?? outputs/cleanup-20260916/document-backups/Game/docs/planning/04-停用字段与技术说明.md
+?? outputs/cleanup-20260916/document-backups/Game/docs/planning/05-伤害与Ghost实现验收.md
+?? outputs/cleanup-20260916/document-backups/Game/docs/planning/06-调频分档与命中反馈.md
+?? outputs/cleanup-20260916/document-backups/Game/docs/planning/07-分界线表现.md
+?? outputs/cleanup-20260916/document-backups/Game/docs/planning/08-角色移动.md
+?? outputs/cleanup-20260916/document-backups/Game/docs/planning/09-BOSS表现.md
+?? outputs/cleanup-20260916/document-backups/Game/docs/planning/10-UI火框.md
+?? outputs/cleanup-20260916/document-backups/Game/docs/planning/11-关卡奖励.md
+?? outputs/cleanup-20260916/document-backups/Game/docs/planning/12-开屏引导.md
+?? outputs/cleanup-20260916/document-backups/Game/docs/planning/13-判定表现.md
+?? outputs/cleanup-20260916/document-backups/Game/docs/planning/BOSS与Ghost读谱调整.md
+?? outputs/cleanup-20260916/document-backups/Game/docs/planning/README.md
+?? outputs/cleanup-20260916/document-backups/Game/docs/planning/正式三关接入与解锁.md
+?? outputs/cleanup-20260916/document-backups/Game/docs/rhythm-fit-2026-09.md
+?? outputs/cleanup-20260916/document-backups/Game/docs/tap-feedback-tuning-radius.md
+?? outputs/cleanup-20260916/document-backups/Game/docs/timing-cue-style.md
+?? outputs/cleanup-20260916/document-backups/Game/docs/tuning-visual-style.md
+?? outputs/cleanup-20260916/document-backups/Game/docs/ui-art-integration.md
+?? outputs/cleanup-20260916/document-backups/Game/docs/ui-flame.md
+?? outputs/cleanup-20260916/document-backups/Levels/docs/level-editor-entrypoint-audit-2026-09-15.md
+?? outputs/cleanup-20260916/document-backups/Levels/docs/level-editor-fixes-validation-2026-09-13.md
+?? outputs/cleanup-20260916/document-backups/Levels/docs/level-editor-guide.md
+?? outputs/cleanup-20260916/document-backups/Levels/docs/level-editor-initial-environment-validation-2026-09-15.md
+?? outputs/cleanup-20260916/document-backups/Levels/docs/level-editor-interfaces.md
+?? outputs/cleanup-20260916/document-backups/Levels/docs/level-editor-reliability-validation-2026-09-14.md
+?? outputs/cleanup-20260916/document-backups/Levels/docs/level-editor-validation.md
+?? outputs/cleanup-20260916/document-backups/Prototype/README.md
+?? outputs/cleanup-20260916/document-edits.json
+?? outputs/cleanup-20260916/document-link-edits.json
+?? outputs/cleanup-20260916/git-after.txt
+?? outputs/cleanup-20260916/git-before.txt
+?? outputs/cleanup-20260916/git-cleanup-delta.txt
+?? outputs/cleanup-20260916/manifest-before-visual-review-split.json
+?? outputs/cleanup-20260916/manifest.json
+?? outputs/cleanup-20260916/missing-recycle-receipts.json
+?? outputs/cleanup-20260916/prepare.py
+?? outputs/cleanup-20260916/protected-before.json
+?? outputs/cleanup-20260916/receipts-before-resume.json
+?? outputs/cleanup-20260916/recycle-capacity-before.json
+?? outputs/cleanup-20260916/recycle-receipts.json
+?? outputs/cleanup-20260916/recycle-results.jsonl
+?? outputs/cleanup-20260916/recycle.ps1
+?? outputs/cleanup-20260916/resume-recycle.ps1
+?? outputs/cleanup-20260916/tidy_docs.py
+?? outputs/cleanup-20260916/verification.json
+?? outputs/cleanup-20260916/verify.py
+?? outputs/cleanup-20260916/worktrees-before.txt
+?? tools/content/import_authored_fire.gd
+?? tools/content/import_authored_fire.gd.uid
+?? tools/content/import_authored_third.gd
+?? tools/content/import_authored_third.gd.uid
+?? tools/levels/check_delivery_five_changes.gd
+?? tools/levels/check_delivery_five_changes.gd.uid
+?? tools/levels/check_final_progression.gd
+?? tools/levels/check_final_progression.gd.uid
+?? tools/levels/check_ghost_result.gd
+?? tools/levels/check_ghost_result.gd.uid
+?? tools/levels/check_imported_authored_levels.gd
+?? tools/levels/check_imported_authored_levels.gd.uid
+?? tools/levels/check_level_3_phase.gd
+?? tools/levels/check_level_3_phase.gd.uid
+?? tools/levels/check_locked_preview.gd
+?? tools/levels/check_locked_preview.gd.uid
+?? tools/levels/check_packaged_three_stages.gd
+?? tools/levels/check_packaged_three_stages.gd.uid
+?? tools/levels/check_pet_reward_migration.gd
+?? tools/levels/check_pet_reward_migration.gd.uid
+?? tools/levels/check_restored_third_visual.gd
+?? tools/levels/check_restored_third_visual.gd.uid
+?? tools/levels/restore_third_environment.gd
+?? tools/levels/restore_third_environment.gd.uid

@@ -1,0 +1,94 @@
+{
+  "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\chart-editor-interfaces.md": {
+    "before": "c99292ba1d46addda5520d6c99bf67ab839afe34cbf4825f92fd5407d8210b58",
+    "after": "772b38029f381a39914dc0f5ec0983b851fec1a38b46dae617ea1848bab4c07a"
+  },
+  "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\local-chart-playtest.md": {
+    "before": "fb3e8b7b526bbd9833fd94484164abb28be708f4b65a1ab35462439874c5bcf3",
+    "after": "fecc1120c15e7e0d5aea66dc5fe2f426e07b5db0264e4dc9f6acd888fa2c987b"
+  },
+  "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\level-editor-interfaces.md": {
+    "before": "6d972c18bfcf597b888531003f31335bd252a451c5a1211a6b52565974fa02aa",
+    "after": "0b655a1783401b67ab4f38eaa86cf5fc8ca0b50847273cf00979d969f2995969"
+  },
+  "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\performance-and-resolution.md": {
+    "before": "6e037741df09c5676974fe266391538320e03f5c0c4ccd66fd63de7725b2e6d3",
+    "after": "6cc6fb32f4efee1810118c3677dd743ec4c92a488a9cf65e2f3190d3699b0e78"
+  },
+  "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\ghost-effects.md": {
+    "before": "133b6eeec1de4ecb15117644ac7c8a7e67fb0b1b93228315b10487a8bd6111a1",
+    "after": "c3bab6ef0a8700f08675f5c1e377f0712c4fc2f991545744565a99aaca171074"
+  },
+  "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\launch-guides.md": {
+    "before": "4e504b240ac84a8483ed00077776cf622ddf106505a7000e68d64ac5e7660445",
+    "after": "c80babaa763b92b5a62a3ba2242ca12fbe99c82b250c5e9a3361cbb342ae3ee1"
+  },
+  "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\build-output.md": {
+    "before": "4a9a63caeea2080575d7e693a21f3d2760e5061f090c6b8dc2892469fed95489",
+    "after": "e9e10d9c2937ed4b0f040d35f6689c17dd008813927d93bb8bcdf39ee3c5e59a"
+  },
+  "E:\\大学\\MEMO\\编钟音游\\AudioLab\\README.md": {
+    "before": "653c1633a603f1d8b74c5bbc0b9537460489626a8838b4312a4d6cd34b584db6",
+    "after": "ae9f5842128e9288d7b8e8cbed776622e00fb3ff0061166171600674818df59d"
+  },
+  "E:\\大学\\MEMO\\编钟音游\\Docs\\Design\\干涉玩法试错历程.md": {
+    "before": "d22cc7b24d13b1b525d86d3a856aac0c8f9db46336b6f173b9f2815137d18008",
+    "after": "ee9dc1fa2cdf0d97f75b5e402efccaa84d74d0d4d331da87dfea92e874b5c03a"
+  },
+  "E:\\大学\\MEMO\\编钟音游\\Docs\\Program\\《冥河，冥河！》写谱器设计说明书.md": {
+    "before": "db69d2022223f30aff5cfeac7d27a0376fc63110196d0622457fa39fecbbf319",
+    "after": "b61df8b8619b7f8b18263499f565814413407a135e25a0de4e4dc1e9dd265c05"
+  },
+  "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\boss-animation.md": {
+    "before": "933d3252e4e179f175a5c5d6700e0e34cded541f8fd500842dc1f2d9e7d3fb92",
+    "after": "b2b67b92c3f54d5d993b61f041b692269fd08b466df17a3d523ceca437f370a7"
+  },
+  "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\chart-editor-guide.md": {
+    "before": "31849453c45b39287a4b122e15a1324223ef13c7f4b95998c024680df7118844",
+    "after": "fc86ea11b798bf5a810592851d6cbd7f0085ec7a1305ac211f23349008664d4d"
+  },
+  "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\chart-editor-tuning.md": {
+    "before": "5a66391b32a832a66e5cc1252c57571f45393918e992a83cb114e83131e2c01d",
+    "after": "29146e17ce76a7f5a829e9f9328fa4e856474c2d4da5d84c97fc68f8895b0108"
+  },
+  "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\level-editor-guide.md": {
+    "before": "ff5059d42a781519c3f6368c20bc2b57c6a521ddf542e4c6eebb18fa3a3399d2",
+    "after": "00ec80597ad5f4ed72a4b5b08ff37b58236f9db8a355b9f4084d1eaf3b887920"
+  },
+  "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\note-effects.md": {
+    "before": "18d869185b7475b1b21b5307c2f0a8466494e97e2e592566b06e238c7347dade",
+    "after": "51ea4447c7e7e5df4cfbc719723c340d3f896af40fb3d918d557c8936f7330f0"
+  },
+  "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\pet-animation-studies.md": {
+    "before": "7efb4904e429ccb88b50f5cbd5e8abbfd7d2a6c89d0881b904e9586344a6f949",
+    "after": "432e217eb7d0f22ea82dbfdf8124d62fe537841014025c0e9a9697f6c5d0cdbe"
+  },
+  "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\pet-skill-upgrade.md": {
+    "before": "24cefca69b7a645fa2038594a4d18097ff05a28347ff50597a7e3ac9cb25d212",
+    "after": "5f799011073674d2a7f574fd5e225a531f13b72bc01225031f2b6b34f311f75b"
+  },
+  "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\pet-system.md": {
+    "before": "0e2e12dedef61e733998fb478a3894f7086d6af2e547feb2ebb68c98202b5482",
+    "after": "a80d5bc28e6677ec67bd48f2d496fd490f3306f12d0818797ac86eebfb7a3338"
+  },
+  "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\timing-cue-style.md": {
+    "before": "e67f1975e018a027678282d1800b58988db984c3388b484ed527521d32a5f3de",
+    "after": "413bd156c9f32d91a1dd8f906606add5f6e2801081c68da1c006e4972f913695"
+  },
+  "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\ui-art-integration.md": {
+    "before": "8ac9f0102ae7fd946b40440840b1c7d8c35f962378db12fce0b2ef7e7c4a9820",
+    "after": "da844aef0aec09edbf355844c9efad0df28189b60129f68ec2f49a53245cbb66"
+  },
+  "E:\\大学\\MEMO\\编钟音游\\Game\\BUILDING.md": {
+    "before": "8b43d074756dcce2d503da1d3023d43ca6883e16f9b8b4b71920e2dacb0366d2",
+    "after": "c67c28b06a34e66167ae5c90620ed789224f53efc61ea87e1243ec97629da496"
+  },
+  "E:\\大学\\MEMO\\编钟音游\\Game\\README.md": {
+    "before": "eeab084a8d7d459cdcbaeeccf32ba660d600b9efb640238c82cd864267bfb9b6",
+    "after": "4c358c2f1328a3e2e1ac1efe9a969ae64e74faccfa04045242b25d31a319f87d"
+  },
+  "E:\\大学\\MEMO\\编钟音游\\Prototype\\README.md": {
+    "before": "83642653ba27e6b6f738c270861faa8f545fcf375f71f05912b8a8c9349240f0",
+    "after": "d02ac5ebc3e9f1d68d2848cb2d04f17e576ec6f0255d06eebf0d24cc7dc873dd"
+  }
+}

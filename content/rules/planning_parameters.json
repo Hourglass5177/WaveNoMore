@@ -94,7 +94,7 @@
     "target": "rules",
     "key": "tap_miss_damage",
     "name": "Tap 漏击伤害",
-    "default": 16,
+    "default": 12,
     "unit": "点",
     "suggested": "10～25",
     "step": 1,
@@ -109,7 +109,7 @@
     "target": "rules",
     "key": "hold_segment_damage",
     "name": "Hold 每段身体伤害",
-    "default": 1.6,
+    "default": 1.2,
     "unit": "点/段",
     "suggested": "1～4",
     "step": 0.1,
@@ -139,11 +139,11 @@
     "target": "rules",
     "key": "ghost_miss_damage",
     "name": "Ghost 漏击伤害",
-    "default": 8,
+    "default": 3,
     "unit": "点/枚",
-    "suggested": "5～15",
+    "suggested": "0～6",
     "step": 1,
-    "meaning": "按关联调频完成情况判定；失败逐枚扣血。预测位置只作引导，不额外判相纹碰撞。",
+    "meaning": "关联调频达到 Good 即可击破；失败逐枚扣血并中断 Combo、FC/AP。Ghost 独立统计并计入整关命中率，不追加基础分。预测位置只作引导。",
     "minimum": 0,
     "maximum": 1000,
     "source": "src/content/resources/gameplay_rule_set.gd",
@@ -1069,14 +1069,14 @@
     "target": "reward:tutorial2",
     "key": "next_stage_id",
     "name": "女土蝠 · 下一关",
-    "default": "s07",
+    "default": "level2",
     "type": "string",
     "unit": "关卡 ID",
     "minimum": 0,
     "maximum": 1,
     "suggested": "已登记关卡 ID / 留空",
     "step": 0,
-    "meaning": "通关后解锁并提供下一关入口。填写关卡稳定 ID；留空表示末关。仅正式关卡使用。",
+    "meaning": "默认只有钟开放；钟通关解锁火，火通关解锁牲。通关不要求玄同或至臻；失败不解锁，已获解锁保留。下一关使用稳定 ID，末关留空。",
     "source": "content/stages/tutorial2/reward.tres"
   },
   {
@@ -1111,22 +1111,22 @@
   },
   {
     "section": "11 关卡奖励",
-    "target": "reward:s07",
+    "target": "reward:level2",
     "key": "next_stage_id",
     "name": "翼火蛇 · 下一关",
-    "default": "s08",
+    "default": "level3",
     "type": "string",
     "unit": "关卡 ID",
     "minimum": 0,
     "maximum": 1,
     "suggested": "已登记关卡 ID / 留空",
     "step": 0,
-    "meaning": "通关后解锁并提供下一关入口。填写关卡稳定 ID；留空表示末关。仅正式关卡使用。",
-    "source": "content/stages/s07/reward_definition.tres"
+    "meaning": "默认只有钟开放；钟通关解锁火，火通关解锁牲。通关不要求玄同或至臻；失败不解锁，已获解锁保留。下一关使用稳定 ID，末关留空。",
+    "source": "content/stages/level2/reward.tres"
   },
   {
     "section": "11 关卡奖励",
-    "target": "reward:s07",
+    "target": "reward:level2",
     "key": "fc_grants_base_pet",
     "name": "翼火蛇 · 玄同收服",
     "default": true,
@@ -1137,11 +1137,11 @@
     "suggested": "0 / 1",
     "step": 1,
     "meaning": "玄同授予本关对应随从的基础形态。0 关闭，1 开启；不撤回已经获得的随从。",
-    "source": "content/stages/s07/reward_definition.tres"
+    "source": "content/stages/level2/reward.tres"
   },
   {
     "section": "11 关卡奖励",
-    "target": "reward:s07",
+    "target": "reward:level2",
     "key": "ap_grants_advanced_pet",
     "name": "翼火蛇 · 至臻进阶",
     "default": true,
@@ -1152,11 +1152,11 @@
     "suggested": "0 / 1",
     "step": 1,
     "meaning": "至臻授予本关对应随从的进阶形态，并保证已收服。0 关闭，1 开启。",
-    "source": "content/stages/s07/reward_definition.tres"
+    "source": "content/stages/level2/reward.tres"
   },
   {
     "section": "11 关卡奖励",
-    "target": "reward:s08",
+    "target": "reward:level3",
     "key": "next_stage_id",
     "name": "鬼金羊 · 下一关",
     "default": "",
@@ -1166,12 +1166,12 @@
     "maximum": 1,
     "suggested": "已登记关卡 ID / 留空",
     "step": 0,
-    "meaning": "通关后解锁并提供下一关入口。填写关卡稳定 ID；留空表示末关。仅正式关卡使用。",
-    "source": "content/stages/s08/reward_definition.tres"
+    "meaning": "默认只有钟开放；钟通关解锁火，火通关解锁牲。通关不要求玄同或至臻；失败不解锁，已获解锁保留。下一关使用稳定 ID，末关留空。",
+    "source": "content/stages/level3/reward.tres"
   },
   {
     "section": "11 关卡奖励",
-    "target": "reward:s08",
+    "target": "reward:level3",
     "key": "fc_grants_base_pet",
     "name": "鬼金羊 · 玄同收服",
     "default": true,
@@ -1182,11 +1182,11 @@
     "suggested": "0 / 1",
     "step": 1,
     "meaning": "玄同授予本关对应随从的基础形态。0 关闭，1 开启；不撤回已经获得的随从。",
-    "source": "content/stages/s08/reward_definition.tres"
+    "source": "content/stages/level3/reward.tres"
   },
   {
     "section": "11 关卡奖励",
-    "target": "reward:s08",
+    "target": "reward:level3",
     "key": "ap_grants_advanced_pet",
     "name": "鬼金羊 · 至臻进阶",
     "default": true,
@@ -1197,7 +1197,7 @@
     "suggested": "0 / 1",
     "step": 1,
     "meaning": "至臻授予本关对应随从的进阶形态，并保证已收服。0 关闭，1 开启。",
-    "source": "content/stages/s08/reward_definition.tres"
+    "source": "content/stages/level3/reward.tres"
   },
   {
     "section": "12 开屏引导",
@@ -1438,5 +1438,35 @@
     "step": 0.5,
     "meaning": "每次在中心周围圆形范围内随机偏移，整段动画不再移动；0 关闭。同一判定重演位置一致。",
     "source": "src/content/resources/judgment_texture_set.gd"
+  },
+  {
+    "section": "09 BOSS 表现",
+    "target": "boss",
+    "key": "launch_speed_ratio",
+    "name": "音符起步弹射倍率",
+    "default": 2.0,
+    "unit": "倍",
+    "suggested": "1～3",
+    "step": 0.1,
+    "meaning": "相对巡航速度的起步速度，初段平滑回落，让音符更快离开 BOSS；不改变发射和判定时刻。",
+    "minimum": 1,
+    "maximum": 3,
+    "type": "float",
+    "source": "src/runtime/director/boss_emission_path.gd"
+  },
+  {
+    "section": "09 BOSS 表现",
+    "target": "boss",
+    "key": "route_join_ratio",
+    "name": "BOSS 音符普通路线接入比例",
+    "default": 0.05,
+    "unit": "比例",
+    "suggested": "0～0.2",
+    "step": 0.01,
+    "meaning": "0 为普通出生点，1 为判定点；默认 0.05 保留 95% 普通接近路线，长路线自动提前发射。",
+    "minimum": 0,
+    "maximum": 0.2,
+    "type": "float",
+    "source": "src/runtime/director/boss_emission_path.gd"
   }
 ]

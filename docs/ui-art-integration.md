@@ -6,11 +6,11 @@
 
 AppMain 统一隔离底层导航并在关闭后恢复“著作信息”按钮焦点；返回按钮、Esc 和手柄返回均可关闭。页面使用 1920×1080 等比适配。检查入口 `tools/ui/run_ui_review.ps1 -Suites credits`：33 项通过，包含正式入口、署名、焦点恢复、重复关闭及 720p／1080p／2K／4K／1600×1000，截图位于 `builds/credits-review/`。
 
-游戏图标使用 Ghost 原画的下缘白光版本，窗口 PNG 与 Windows ICO 统一配置；素材路径、导出接入及生成记录见 [Ghost 游戏图标](ghost-icon-prompts.md)。
+游戏图标使用 Ghost 原画的下缘白光版本，窗口 PNG 与 Windows ICO 统一配置；素材路径、导出接入及生成记录见 [Ghost 游戏图标](ghost-effects.md)。
 
-### 魂火与 BOSS 血条（2026-09-15）
+### 玩家魂火（2026-09-16）
 
-玩家血条维持左上位置，改用细长玉白亮线、深墨底轨、细旧金边及小菱形收笔，BOSS 血条复用同一组件。构图参考《黑神话：悟空》的细长血条比例，使用本项目的玉白、灰青、赭红色调；无外部游戏素材复制。
+玩家血条维持左上位置，改用细长玉白亮线、深墨底轨、细旧金边及小菱形收笔。正式游戏不显示 BOSS 血条、名称及阶段状态 HUD；BOSS 战斗和阶段逻辑保留。构图参考《黑神话：悟空》的细长血条比例，使用本项目的玉白、灰青、赭红色调；无外部游戏素材复制。
 
 - 可编辑场景：`scenes/ui/hud/soul_fire_bar.tscn`。玩家占位 520×40 设计像素，实际条身高 12 px，两端和上下为光晕留边；随现有 HUD 画布缩放。
 - `Ink` 材质的 `jade / ivory / old_gold / cinnabar` 控制色板，`bar_height` 控制厚度，`glow_width` 默认 11 px、`glow_strength` 默认 0.46。低血量平滑转暖，不循环闪烁。
@@ -82,7 +82,7 @@ AppMain 统一隔离底层导航并在关闭后恢复“著作信息”按钮焦
 
 ## 随从动画与分支衔接
 
-2026-09-14 集中合并后，以下初期快照已被 editor 的最新完整随从实现替换；菜单与正式游戏现在共用播放器，移除旧的双参数 `set_state` 兼容调用。投影只在 `trigger()` 返回接受时响应。详见[分支同步审查](branch-sync-2026-09-14.md)。
+2026-09-14 集中合并后，以下初期快照已被 editor 的最新完整随从实现替换；菜单与正式游戏现在共用播放器，移除旧的双参数 `set_state` 兼容调用。投影只在 `trigger()` 返回接受时响应。详见[分支同步审查](build-output.md)。
 
 ### 初期接入记录
 
@@ -125,12 +125,12 @@ AppMain 统一隔离底层导航并在关闭后恢复“著作信息”按钮焦
 
 选关截图位于 `builds/level-carousel/score-default.png` 和 `score-record.png`，分别为零分和隔离测试记录 165467。其他截图输出在 `builds/ui-review`：
 
-- [暂停](../builds/ui-review/pause.png)、[独立眼内倒计时](../builds/ui-review/pause-countdown.png)、[真实会话重玩倒计时](../builds/ui-review/pause-retry-countdown.png)
-- [按钮轻压](../builds/ui-review/interaction-button-down.png)、[滑块柔光](../builds/ui-review/interaction-slider.png)
-- [声音](../builds/ui-review/settings-sound.png)、[画面](../builds/ui-review/settings-display.png)、[校准](../builds/ui-review/settings-calibration.png)
-- [女土蝠静息](../builds/ui-review/pet-nu_tu_fu-idle.png)、[技能](../builds/ui-review/pet-nu_tu_fu-trigger.png)
-- [鬼金羊静息](../builds/ui-review/pet-gui_jin_yang-idle.png)、[技能](../builds/ui-review/pet-gui_jin_yang-trigger.png)
-- [翼火蛇静息](../builds/ui-review/pet-yi_huo_she-idle.png)、[技能](../builds/ui-review/pet-yi_huo_she-trigger.png)
+- 暂停（历史产物已清理）、独立眼内倒计时（历史产物已清理）、真实会话重玩倒计时（历史产物已清理）
+- 按钮轻压（历史产物已清理）、滑块柔光（历史产物已清理）
+- 声音（历史产物已清理）、画面（历史产物已清理）、校准（历史产物已清理）
+- 女土蝠静息（历史产物已清理）、技能（历史产物已清理）
+- 鬼金羊静息（历史产物已清理）、技能（历史产物已清理）
+- 翼火蛇静息（历史产物已清理）、技能（历史产物已清理）
 
 截图是工程实际渲染。暂停与设置的审看底景使用工程背景贴图，运行时实际底景来自打开页面前的场景。校准区域支持滚动，底部保存/取消始终固定。
 
@@ -261,9 +261,9 @@ Godot --headless --path . --script res://tools/testing/run_stage_runtime.gd
 
 `tools/ui/run_ui_review.ps1 -Suites result,carousel,app-flow,pet-rules,save,clear-mark` 使用隔离存档和 Compatibility 渲染。覆盖真实奖励保存重开、失败比例、键鼠／手柄焦点、淡出重复确认、正式下一关路由、试玩返回、节点复用及 720p／1080p／2K／4K／1920×1200 实际渲染目标。
 
-- [结算至臻](../builds/result-review/size-1920x1080.png)、[玄同](../builds/result-review/fc.png)、[失败](../builds/result-review/failed.png)、[临时试玩](../builds/result-review/trial.png)。
-- [选关零分对齐](../builds/clear-mark/alignment-after-0.png)、[修正前对齐复现](../builds/clear-mark/alignment-before-0.png)。修正前图仅在同一静止场景重现旧 -8 px 和字体留白，便于比较。
-- [玄同／至臻呼吸动图](../builds/clear-mark/breathing.gif)，由正式页面采样后编码。
+- 结算至臻（历史产物已清理）、玄同（历史产物已清理）、失败（历史产物已清理）、临时试玩（历史产物已清理）。
+- 选关零分对齐（历史产物已清理）、修正前对齐复现（历史产物已清理）。修正前图仅在同一静止场景重现旧 -8 px 和字体留白，便于比较。
+- 玄同／至臻呼吸动图（历史产物已清理），由正式页面采样后编码。
 
 本轮最终检查：结算 UI 51 项、轮播 528 项、正式流程 38 项、随从 262 项、存档 13 项均通过。结算套件对渲染尺寸和分数字形中心做实际像素检查；正式流程从结算按下手柄确认，经过加载进入 s07。未进行发布构建。
 
@@ -276,4 +276,4 @@ TitleScreen Inspector 提供 `arrival_duration_sec`（默认 1.35 秒）、`prom
 
 ArrivalMaterial 提供粒度 2.2 设计像素、柔化 0.065、灰白尘强度 0.16 和颜色参数；所有颗粒由位置和 progress 决定，不使用每帧随机或 shader TIME。保持 1920×1080 设计比例，非 16:9 留黑边。标题字图和菜单按钮仍由用户后续新按键展开，不提前出现。
 
-验证：`title` 套件 63 项、`app-flow` 38 项通过，覆盖控制器说明确认、过渡期间连按与松键、提示时序、主界面回访和现有导航。`title-video` 从正式 AppMain 以 60 FPS 记录全过程；录制脚本收尾先停止音源，避免 MovieWriter 退出时遗留 Ogg 解码器。原速片段见 [颗粒显现动图](../builds/title-review/title-arrival.gif)，由 `tools/ui/encode_title_arrival.py` 从录制裁取并按 20 FPS 编码，未加速。
+验证：`title` 套件 63 项、`app-flow` 38 项通过，覆盖控制器说明确认、过渡期间连按与松键、提示时序、主界面回访和现有导航。`title-video` 从正式 AppMain 以 60 FPS 记录全过程；录制脚本收尾先停止音源，避免 MovieWriter 退出时遗留 Ogg 解码器。原速片段见 颗粒显现动图（历史产物已清理），由 `tools/ui/encode_title_arrival.py` 从录制裁取并按 20 FPS 编码，未加速。

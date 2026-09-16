@@ -1,0 +1,109 @@
+ M content/backgrounds/level_3.tres
+ M content/catalogs/mvp_catalog.tres
+ M content/level_cards/default_level_card_catalog.tres
+ M content/rules/planning_parameters.json
+ M content/stage_project/level_2/level.json
+ M content/stage_project/level_2/show.json
+ M content/stage_project/tutorial_1/level.json
+ M content/stage_project/tutorial_1/show.json
+ M content/stages/tutorial2/background.tres
+ M content/stages/tutorial2/chart.tres
+ M content/stages/tutorial2/reward.tres
+ M content/stages/tutorial2/song.tres
+ M content/stages/tutorial2/source_chart.tres
+ M content/stages/tutorial2/stage_definition.tres
+ M content/stages/tutorial2/stage_show.tres
+ M content/stages/tutorial2/visual_theme.tres
+ M docs/ui-art-integration.md
+ M export_presets.cfg
+ M outputs/planning/策划参数.xlsx
+ M scenes/screens/result_screen.tscn
+ M scenes/screens/stage_loading_screen.tscn
+ M scenes/ui/modals/level_card.tscn
+ M scenes/ui/modals/pet_select_modal.tscn
+ M shaders/characters/pet_study_highlight.gdshader
+ M shaders/materials/monster_icon.gdshader
+ M src/app/app_main.gd
+ M src/app/level_card.gd
+ M src/app/level_carousel.gd
+ M src/app/pet_select_modal.gd
+ M src/app/result_screen.gd
+ M src/app/stage_loading_screen.gd
+ M src/content/level_format/level_asset_library.gd
+ M src/content/level_format/level_asset_pack_writer.gd
+ M src/content/resources/gameplay_rule_set.gd
+ M src/content/resources/ghost_event.gd
+ M src/content/resources/stage_show.gd
+ M src/content/resources/su_manifestation_event.gd
+ M src/domain/results/result_evaluator.gd
+ M src/domain/results/result_summary.gd
+ M src/domain/session/gameplay_simulation.gd
+ M src/domain/tuning/tuning_engine.gd
+ M src/presentation/pets/animated_pet_visual.gd
+ M src/presentation/vfx/note_fragment_host.gd
+ M src/presentation/vfx/su_manifestation_overlay.gd
+ M src/runtime/director/boss_emission_path.gd
+ M src/runtime/director/level_boss_compiler.gd
+ M src/runtime/director/level_show_player.gd
+ M src/runtime/session/stage_root.gd
+ M src/services/save/save_service.gd
+ M src/tools/chart_studio/studio_playtest.gd
+ M src/tools/level_studio/level_workspace.gd
+ M tools/content/import_tutorial2.gd
+ M tools/planning/sync_workbook.mjs
+?? content/stage_project/level_2/packs/revision_af18865d8cdae18b/level_2_2.pck
+?? content/stage_project/level_2/packs/revision_afd4190646291c79/level_2.pck
+?? content/stage_project/level_3/level.json
+?? content/stage_project/level_3/packs/level_3.pck
+?? content/stage_project/level_3/show.json
+?? "content/stage_project/level_3/song/audio/level 4.wav"
+?? "content/stage_project/level_3/song/audio/level 4.wav.import"
+?? content/stage_project/level_3/song/charts/normal.json
+?? content/stage_project/level_3/song/song.json
+?? content/stage_project/tutorial_1/packs/revision_af18865d8cdae18b/level_2_2.pck
+?? content/stage_project/tutorial_1/packs/revision_afd4190646291c79/level_2.pck
+?? content/stages/level2/background.tres
+?? content/stages/level2/chart.tres
+?? content/stages/level2/reward.tres
+?? content/stages/level2/song.tres
+?? content/stages/level2/source_chart.tres
+?? content/stages/level2/stage_definition.tres
+?? content/stages/level2/stage_show.tres
+?? content/stages/level2/visual_theme.tres
+?? content/stages/level3/background.tres
+?? content/stages/level3/chart.tres
+?? content/stages/level3/reward.tres
+?? content/stages/level3/song.tres
+?? content/stages/level3/source_chart.tres
+?? content/stages/level3/stage_definition.tres
+?? content/stages/level3/stage_show.tres
+?? content/stages/level3/visual_theme.tres
+?? docs/ghost-export-fix.md
+?? docs/planning/BOSS与Ghost读谱调整.md
+?? docs/planning/正式三关接入与解锁.md
+?? outputs/cleanup-20260916/manifest.json
+?? outputs/cleanup-20260916/prepare.py
+?? tools/content/import_authored_fire.gd
+?? tools/content/import_authored_fire.gd.uid
+?? tools/content/import_authored_third.gd
+?? tools/content/import_authored_third.gd.uid
+?? tools/levels/check_delivery_five_changes.gd
+?? tools/levels/check_delivery_five_changes.gd.uid
+?? tools/levels/check_final_progression.gd
+?? tools/levels/check_final_progression.gd.uid
+?? tools/levels/check_ghost_result.gd
+?? tools/levels/check_ghost_result.gd.uid
+?? tools/levels/check_imported_authored_levels.gd
+?? tools/levels/check_imported_authored_levels.gd.uid
+?? tools/levels/check_level_3_phase.gd
+?? tools/levels/check_level_3_phase.gd.uid
+?? tools/levels/check_locked_preview.gd
+?? tools/levels/check_locked_preview.gd.uid
+?? tools/levels/check_packaged_three_stages.gd
+?? tools/levels/check_packaged_three_stages.gd.uid
+?? tools/levels/check_pet_reward_migration.gd
+?? tools/levels/check_pet_reward_migration.gd.uid
+?? tools/levels/check_restored_third_visual.gd
+?? tools/levels/check_restored_third_visual.gd.uid
+?? tools/levels/restore_third_environment.gd
+?? tools/levels/restore_third_environment.gd.uid

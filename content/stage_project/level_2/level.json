@@ -1,21 +1,33 @@
 {
-  "format": "minghe-level",
-  "format_version": 1,
-  "level_id": "level_4b7d05929e639f9c",
-  "title": "未命名关卡",
-  "author": "",
-  "description": "",
-  "cover": "",
-  "order_index": 0,
-  "scene_id": "s08",
-  "song_path": "song/song.json",
-  "intro_us": 0,
-  "outro_us": 0,
-  "rule_path": "res://content/rules/default_gameplay_rules.tres",
-  "next_stage_id": "",
-  "pet_id": "",
-  "fc_grants_base_pet": true,
   "ap_grants_advanced_pet": true,
-  "packs": [],
-  "show_path": "show.json"
+  "author": "",
+  "cover": "",
+  "description": "",
+  "fc_grants_base_pet": true,
+  "format": "minghe-level",
+  "format_version": 1.0,
+  "initial_background": "level_2_background_1",
+  "intro_us": 0.0,
+  "level_id": "level_2",
+  "next_stage_id": "",
+  "order_index": 0.0,
+  "outro_us": 0.0,
+  "packs": [
+    {
+      "manifest": "res://content/backgrounds/level_2.tres",
+      "name": "",
+      "path": "packs/revision_afd4190646291c79/level_2.pck"
+    },
+    {
+      "manifest": "res://content/backgrounds/level_2_2.tres",
+      "name": "",
+      "path": "packs/revision_af18865d8cdae18b/level_2_2.pck"
+    }
+  ],
+  "pet_id": "",
+  "rule_path": "res://content/rules/default_gameplay_rules.tres",
+  "scene_id": "s08",
+  "show_path": "show.json",
+  "song_path": "song/song.json",
+  "title": "火"
 }

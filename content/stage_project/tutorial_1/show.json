@@ -1,9 +1,201 @@
 {
   "format": "minghe-show",
-  "format_version": 1,
-  "objects": [],
-  "tracks": [],
-  "bindings": [],
-  "sequences": [],
-  "scene_cues": []
+  "format_version": 1.0,
+  "objects": [
+    {
+      "id": "fallback_boss_1",
+      "name": "蝙蝠 BOSS",
+      "type": "actor",
+      "asset": "",
+      "animation": "",
+      "parent_id": "",
+      "layer": "world",
+      "depth": 0.0,
+      "occlusion_depth": 0.0,
+      "occlusion_order": "none",
+      "hidden": false,
+      "locked": false,
+      "fields": {
+        "position": [
+          960.0,
+          250.0
+        ],
+        "scale": [
+          1.7,
+          1.7
+        ],
+        "rotation": 0.0,
+        "opacity": 1.0,
+        "color": "ffffffff",
+        "visible": true,
+        "size": [
+          560.0,
+          100.0
+        ]
+      },
+      "boss": {
+        "visual": "bat",
+        "health_ratio": 0.8,
+        "flight_speed": 600.0,
+        "spread_deg": 30.0
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "id": "fallback_boss_1_position",
+      "object_id": "fallback_boss_1",
+      "type": "property",
+      "property": "position",
+      "section": "song",
+      "difficulties": [],
+      "muted": false,
+      "locked": false,
+      "keys": [
+        {
+          "id": "fallback_boss_1_position_0",
+          "time_us": 0.0,
+          "value": [
+            960.0,
+            -340.0
+          ],
+          "interpolation": "linear",
+          "in_handle": [
+            0.666667,
+            0.666667
+          ],
+          "out_handle": [
+            0.333333,
+            0.333333
+          ]
+        },
+        {
+          "id": "fallback_boss_1_position_1",
+          "time_us": 110648294.0,
+          "value": [
+            960.0,
+            -340.0
+          ],
+          "interpolation": "linear",
+          "in_handle": [
+            0.666667,
+            0.666667
+          ],
+          "out_handle": [
+            0.333333,
+            0.333333
+          ]
+        },
+        {
+          "id": "fallback_boss_1_position_2",
+          "time_us": 112048294.0,
+          "value": [
+            960.0,
+            250.0
+          ],
+          "interpolation": "linear",
+          "in_handle": [
+            0.666667,
+            0.666667
+          ],
+          "out_handle": [
+            0.333333,
+            0.333333
+          ]
+        }
+      ],
+      "clips": []
+    },
+    {
+      "id": "fallback_boss_1_opacity",
+      "object_id": "fallback_boss_1",
+      "type": "property",
+      "property": "opacity",
+      "section": "song",
+      "difficulties": [],
+      "muted": false,
+      "locked": false,
+      "keys": [
+        {
+          "id": "fallback_boss_1_opacity_0",
+          "time_us": 0.0,
+          "value": 0.0,
+          "interpolation": "linear",
+          "in_handle": [
+            0.666667,
+            0.666667
+          ],
+          "out_handle": [
+            0.333333,
+            0.333333
+          ]
+        },
+        {
+          "id": "fallback_boss_1_opacity_1",
+          "time_us": 110648294.0,
+          "value": 0.0,
+          "interpolation": "linear",
+          "in_handle": [
+            0.666667,
+            0.666667
+          ],
+          "out_handle": [
+            0.333333,
+            0.333333
+          ]
+        },
+        {
+          "id": "fallback_boss_1_opacity_2",
+          "time_us": 111848294.0,
+          "value": 1.0,
+          "interpolation": "linear",
+          "in_handle": [
+            0.666667,
+            0.666667
+          ],
+          "out_handle": [
+            0.333333,
+            0.333333
+          ]
+        }
+      ],
+      "clips": []
+    }
+  ],
+  "bindings": [
+    {
+      "id": "fallback_boss_1_attack",
+      "object_id": "fallback_boss_1",
+      "difficulty": "normal",
+      "note_ids": [
+        "event_7195b031cc1b20ea",
+        "event_2399615b56694d54",
+        "event_4ab498a004bccc18",
+        "event_84a5b9ac37231897",
+        "event_fc3ae9bdf7797491",
+        "event_cadb52c301c171a4",
+        "event_83419d63ff6ecaaf",
+        "event_13fd0e5b3e154374",
+        "event_42ceb57a582d3b2f",
+        "event_254f15243f3f3499",
+        "event_281a20ab6ba5b5d5",
+        "event_37a6bb24ede0cf6e",
+        "event_9eb7c0022981b8d7",
+        "event_dab64e7a0aaf617c",
+        "event_be83e4f46dccb70a",
+        "event_fb208f062f413912"
+      ],
+      "action_mode": "auto",
+      "action": "attack_start",
+      "rate": 1.0,
+      "release_sec": 0.45,
+      "return_us": 1000000.0,
+      "action_duration_us": 1000000.0,
+      "path_mode": "auto",
+      "life_anchor": "life",
+      "death_anchor": "death"
+    }
+  ],
+  "scene_cues": [],
+  "sequences": []
 }

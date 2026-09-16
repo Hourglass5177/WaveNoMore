@@ -11,7 +11,7 @@ extends Resource
 @export var cues: Array[ShowCue] = []
 ## 关卡工具的绝对时间演出；旧 Cue 与它显式并存，不自动复制场景演出。
 @export var level_data: Dictionary = {}
-## 装载工程时注入的素材根目录，不写进发布资源。
-var asset_directory: String = ""
-var asset_packs: Array = []
+## 外部关卡装载时注入；内置关卡保存 res:// 素材目录及包引用。
+@export var asset_directory: String = ""
+@export var asset_packs: Array = []
 var difficulty_id: String = ""

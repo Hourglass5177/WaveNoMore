@@ -5,3 +5,119 @@
 
 [resource]
 script = ExtResource("2_sgp1c")
+level_data = {
+"bindings": [{
+"action": "attack_start",
+"action_duration_us": 1000000.0,
+"action_mode": "auto",
+"death_anchor": "death",
+"difficulty": "normal",
+"id": "fallback_boss_1_attack",
+"life_anchor": "life",
+"note_ids": ["event_7195b031cc1b20ea", "event_2399615b56694d54", "event_4ab498a004bccc18", "event_84a5b9ac37231897", "event_fc3ae9bdf7797491", "event_cadb52c301c171a4", "event_83419d63ff6ecaaf", "event_13fd0e5b3e154374", "event_42ceb57a582d3b2f", "event_254f15243f3f3499", "event_281a20ab6ba5b5d5", "event_37a6bb24ede0cf6e", "event_9eb7c0022981b8d7", "event_dab64e7a0aaf617c", "event_be83e4f46dccb70a", "event_fb208f062f413912"],
+"object_id": "fallback_boss_1",
+"path_mode": "auto",
+"rate": 1.0,
+"release_sec": 0.45,
+"return_us": 1000000.0
+}],
+"format": "minghe-show",
+"format_version": 1.0,
+"objects": [{
+"animation": "",
+"asset": "",
+"boss": {
+"flight_speed": 600.0,
+"health_ratio": 0.8,
+"spread_deg": 30.0,
+"visual": "bat"
+},
+"depth": 0.0,
+"fields": {
+"color": "ffffffff",
+"opacity": 1.0,
+"position": [960.0, 250.0],
+"rotation": 0.0,
+"scale": [1.7, 1.7],
+"size": [560.0, 100.0],
+"visible": true
+},
+"hidden": false,
+"id": "fallback_boss_1",
+"layer": "world",
+"locked": false,
+"name": "蝙蝠 BOSS",
+"occlusion_depth": 0.0,
+"occlusion_order": "none",
+"parent_id": "",
+"type": "actor"
+}],
+"scene_cues": [],
+"sequences": [],
+"tracks": [{
+"clips": [],
+"difficulties": [],
+"id": "fallback_boss_1_position",
+"keys": [{
+"id": "fallback_boss_1_position_0",
+"in_handle": [0.666667, 0.666667],
+"interpolation": "linear",
+"out_handle": [0.333333, 0.333333],
+"time_us": 0.0,
+"value": [960.0, -340.0]
+}, {
+"id": "fallback_boss_1_position_1",
+"in_handle": [0.666667, 0.666667],
+"interpolation": "linear",
+"out_handle": [0.333333, 0.333333],
+"time_us": 110648294.0,
+"value": [960.0, -340.0]
+}, {
+"id": "fallback_boss_1_position_2",
+"in_handle": [0.666667, 0.666667],
+"interpolation": "linear",
+"out_handle": [0.333333, 0.333333],
+"time_us": 112048294.0,
+"value": [960.0, 250.0]
+}],
+"locked": false,
+"muted": false,
+"object_id": "fallback_boss_1",
+"property": "position",
+"section": "song",
+"type": "property"
+}, {
+"clips": [],
+"difficulties": [],
+"id": "fallback_boss_1_opacity",
+"keys": [{
+"id": "fallback_boss_1_opacity_0",
+"in_handle": [0.666667, 0.666667],
+"interpolation": "linear",
+"out_handle": [0.333333, 0.333333],
+"time_us": 0.0,
+"value": 0.0
+}, {
+"id": "fallback_boss_1_opacity_1",
+"in_handle": [0.666667, 0.666667],
+"interpolation": "linear",
+"out_handle": [0.333333, 0.333333],
+"time_us": 110648294.0,
+"value": 0.0
+}, {
+"id": "fallback_boss_1_opacity_2",
+"in_handle": [0.666667, 0.666667],
+"interpolation": "linear",
+"out_handle": [0.333333, 0.333333],
+"time_us": 111848294.0,
+"value": 1.0
+}],
+"locked": false,
+"muted": false,
+"object_id": "fallback_boss_1",
+"property": "opacity",
+"section": "song",
+"type": "property"
+}]
+}
+asset_directory = "res://content/stage_project/tutorial_1"

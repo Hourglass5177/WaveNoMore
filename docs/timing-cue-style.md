@@ -37,7 +37,7 @@
 - `run_tap_feedback_tests.gd`：185 项通过；`run_wave_distortion_tests.gd`：46 项通过，包含 HUD 分层和缩放。上述运行日志无脚本错误。
 - 导入仍提示现有两份 monkey.tres 的 UID 重复，属于当前关卡编辑器素材，未在本轮改写。
 
-正式背景中的计时环对照：[之前](../builds/timing-cue-review/before-1200000.png)、[之后](../builds/timing-cue-review/after-1200000.png)。对照使用同一谱面与目标时刻，之前的圆环脚本从 7e99bab 读取；背景角色依旧由预览重演。滑条填充对照：[之前](../builds/timing-cue-review/preview-3800000.png)、[之后](../builds/visual-review/tuning-style/preview-3800000.png)。这些是工程内生成的本地截图，不属于发布包。
+正式背景中的计时环对照：之前（历史产物已清理）、之后（历史产物已清理）。对照使用同一谱面与目标时刻，之前的圆环脚本从 7e99bab 读取；背景角色依旧由预览重演。滑条填充对照：之前（历史产物已清理）、之后（历史产物已清理）。这些是工程内生成的本地截图，不属于发布包。
 
 ## 密集提示开销
 

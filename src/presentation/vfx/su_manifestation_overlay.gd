@@ -12,11 +12,14 @@ extends Node2D
 @export_range(0.1, 2.0, 0.01) var lifetime_sec := 0.78
 
 const EYE_SHADER = preload("res://shaders/notes/ghost_eye.gdshader")
+var _fragments := NoteFragmentHost.new()
 var _visual_time_sec := 0.0
 var _entries: Dictionary[String, Dictionary] = {}
 var _pool: Array[MeshInstance2D] = []
 
 func _ready() -> void:
+	add_child(_fragments)
+	_fragments.z_index = 1
 	# 加载阶段准备常用数量；超过既有峰值才扩容，后续批次复用。
 	for i in maxi(0, 8 - get_child_count()): _pool.append(_create_view())
 
@@ -91,6 +94,12 @@ func resolve_targets(result: Dictionary) -> void:
 	if entry.resolved: return
 	entry.resolved = true
 	entry.success = int(result.hit_count) > 0 if result.has("hit_count") else bool(result.success)
+	if entry.success:
+		# 同一歌曲时钟驱动裂解，暂停与定位不会继续播放残留粒子。
+		var size := style.open_texture.get_size() * (style.width_px / style.open_texture.get_width()) * minf(canvas_size.x / 1920.0, canvas_size.y / 1080.0)
+		for i in entry.points.size():
+			var center: Vector2 = entry.points[i] * canvas_size + (Vector2(0.5, 0.5) - style.eye_anchor_uv) * size
+			_fragments.burst(event_id + "/" + str(i), {"texture": style.open_texture, "size": size, "transform": Transform2D(0.0, center), "affinity": 0}, float(entry.target_time_sec), Vector2.UP, &"ghost")
 	entry.view.material.set_shader_parameter("result_kind", 1.0 if entry.success else -1.0)
 	_update_entry(entry)
 
@@ -102,7 +111,7 @@ func visual_phase(entry: Dictionary) -> Vector4:
 	var result_progress := 0.0
 	if entry.resolved:
 		result_progress = clampf((_visual_time_sec - float(entry.target_time_sec)) / float(entry.duration_sec), 0.0, 1.0)
-		opacity *= 1.0 - smoothstep(0.0, 1.0, result_progress)
+		opacity *= 1.0 - smoothstep(0.0, 0.15 if entry.success else 1.0, result_progress)
 		glow = lerpf(1.1, 0.0, result_progress) if entry.success else 0.0
 	return Vector4(opening, opacity, glow, result_progress)
 
@@ -112,6 +121,7 @@ func _update_entry(entry: Dictionary) -> void:
 func set_visual_time(time_sec: float) -> void:
 	if _visual_time_sec == time_sec: return
 	_visual_time_sec = time_sec
+	_fragments.set_time(time_sec)
 	for event_id: String in _entries.keys():
 		var entry: Dictionary = _entries[event_id]
 		if entry.resolved and time_sec >= float(entry.target_time_sec) + float(entry.duration_sec):
@@ -125,6 +135,7 @@ func _recycle(entry: Dictionary) -> void:
 	_pool.append(view)
 
 func clear() -> void:
+	_fragments.clear()
 	for entry: Dictionary in _entries.values(): _recycle(entry)
 	_entries.clear()
 	_visual_time_sec = 0.0

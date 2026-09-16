@@ -38,6 +38,9 @@ for(const name of groups){
   const sheet=wb.worksheets.getItem(name);
   const values=sheet.getRange('A6:J300').values;
   values.forEach((v,i)=>{
+    // 正式关卡替换测试入口时迁移定位键，保留策划已调整的奖励开关。
+    if(v[7]==='reward:s07') v[7]='reward:level2';
+    if(v[7]==='reward:s08') v[7]='reward:level3';
     if(v.some(value=>value!==null&&value!=='')) occupied.set(name,i+6);
     if(String(v[0]||'').startsWith('已停用：')){
       const old=String(v[0]).slice(4);sheet.getRange(`A${i+6}`).values=[['已停用：'+(retiredNames[old]||old)]];

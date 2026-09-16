@@ -3,6 +3,17 @@
 [ext_resource type="Script" uid="uid://1ripw1fv282p" path="res://src/content/resources/visual_asset_entry.gd" id="1_i7dwk"]
 [ext_resource type="Script" uid="uid://dw4idp43p5kbu" path="res://src/content/resources/visual_asset_manifest.gd" id="2_phopr"]
 
+[ext_resource type="Resource" path="res://content/backgrounds/s03_grave3_background.tres" id="3_background"]
+
+[sub_resource type="Resource" id="Entry_environment"]
+script = ExtResource("1_i7dwk")
+asset_id = "level_3_background_1"
+display_name = "牲 · 第三关环境"
+category = &"environment"
+background = ExtResource("3_background")
+
 [resource]
 script = ExtResource("2_phopr")
+manifest_id = "level_3"
+entries = Array[ExtResource("1_i7dwk")]([SubResource("Entry_environment")])
 metadata/_custom_type_script = "uid://dw4idp43p5kbu"

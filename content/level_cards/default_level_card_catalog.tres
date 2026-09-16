@@ -18,7 +18,7 @@
 
 [sub_resource type="Resource" id="Entry1"]
 script = ExtResource("2")
-title = "教程2"
+title = "钟"
 stage_id = "tutorial2"
 image = ExtResource("2_7ogen")
 monster_scale = 2.0
@@ -33,8 +33,8 @@ description = "〔你坚信生命依然
 
 [sub_resource type="Resource" id="Entry2"]
 script = ExtResource("2")
-title = "素音目标点专测"
-stage_id = "s07"
+title = "火"
+stage_id = "level2"
 image = ExtResource("4_7xqlx")
 eye_icon_selected = ExtResource("8_w757c")
 eye_icon_unselected = ExtResource("9_63cwa")
@@ -47,8 +47,8 @@ description = "〔别着香草的美人，
 
 [sub_resource type="Resource" id="Resource_s6mt0"]
 script = ExtResource("2")
-title = "双 Hold 调频联动"
-stage_id = "s08"
+title = "牲"
+stage_id = "level3"
 image = ExtResource("5_lehv5")
 eye_icon_selected = ExtResource("12_y8xns")
 eye_icon_unselected = ExtResource("13_1uasq")

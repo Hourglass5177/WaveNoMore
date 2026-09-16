@@ -1427,7 +1427,10 @@ func playtest() -> void:
 		var loaded:=LevelProjectLoader.make_stage(document.data,document.directory,difficulty())
 		if not loaded.errors.is_empty():message(ChartProjectLoader.describe_issues(loaded.errors));return
 		_pending_trial={"level":document.data.duplicate(true),"directory":document.directory,"difficulty":difficulty()}
-		if _trial_executable.is_empty():
+		# 开发工具合集优先使用上一级配套游戏，避免调用旧版本试玩程序。
+		var collection_game := OS.get_executable_path().get_base_dir().path_join("../冥河，冥河！.exe").simplify_path()
+		if not OS.has_feature("editor") and FileAccess.file_exists(collection_game): _trial_executable = collection_game
+		if _trial_executable.is_empty() or not FileAccess.file_exists(_trial_executable):
 			var bundled:=OS.get_executable_path().get_base_dir().path_join("game/minghe.exe")
 			if FileAccess.file_exists(bundled):_trial_executable=bundled
 		if _trial_executable.is_empty() and OS.has_feature("editor"):_trial_executable=OS.get_executable_path()

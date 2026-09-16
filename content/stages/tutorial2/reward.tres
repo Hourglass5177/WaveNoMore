@@ -6,7 +6,5 @@
 [resource]
 script = ExtResource("1")
 reward_id = "reward_tutorial2"
-next_stage_id = "s07"
+next_stage_id = "level2"
 pet = ExtResource("2")
-fc_grants_base_pet = true
-ap_grants_advanced_pet = true

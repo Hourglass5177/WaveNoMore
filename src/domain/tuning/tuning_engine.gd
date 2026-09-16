@@ -1001,28 +1001,36 @@ func _try_finalize_group(group_key: String, finalized_at_us: int) -> void:
 func ghost_grade(slider_ids: PackedStringArray, time_us: int) -> int:
 	## Ghost 检查所属单程截至此刻应完成的行程；位置预测不构成第二道碰撞门槛。
 	if slider_ids.is_empty(): return GameplayTypes.JudgmentGrade.MISS
+	var grade := GameplayTypes.JudgmentGrade.PERFECT
 	for id: String in slider_ids:
 		if not _slider_by_id.has(id): return GameplayTypes.JudgmentGrade.MISS
 		var state: Dictionary = _slider_states[_slider_by_id[id]]
 		var slider: Dictionary = state.slider
 		if bool(state.finished):
-			if int(state.grade) == GameplayTypes.JudgmentGrade.MISS: return GameplayTypes.JudgmentGrade.MISS
+			if int(state.grade) not in [GameplayTypes.JudgmentGrade.PERFECT, GameplayTypes.JudgmentGrade.GOOD]: return GameplayTypes.JudgmentGrade.MISS
+			if int(state.grade) == GameplayTypes.JudgmentGrade.GOOD: grade = GameplayTypes.JudgmentGrade.GOOD
 			continue
 		# 恰好折返点使用已完成端点评价，避免下一程初始化覆盖同刻结果。
 		var endpoint_at_time := false
 		for endpoint: Dictionary in state.endpoint_states:
 			if int(endpoint.target_us) == time_us and bool(endpoint.finalized):
-				if int(endpoint.grade) == GameplayTypes.JudgmentGrade.MISS: return GameplayTypes.JudgmentGrade.MISS
+				if int(endpoint.grade) not in [GameplayTypes.JudgmentGrade.PERFECT, GameplayTypes.JudgmentGrade.GOOD]: return GameplayTypes.JudgmentGrade.MISS
+				if int(endpoint.grade) == GameplayTypes.JudgmentGrade.GOOD: grade = GameplayTypes.JudgmentGrade.GOOD
 				endpoint_at_time = true; break
 		if endpoint_at_time: continue
 		var held := _last_life_held if int(slider.affinity) == 0 else _last_death_held
 		if not _dual_holding_notes or not held or not bool(state.started): return GameplayTypes.JudgmentGrade.MISS
 		var current := _value_to_slider_progress(slider,_value_for_affinity(int(slider.affinity)))
 		var expected := _guide_progress(slider,time_us)
-		var tolerance := _rules.tuning_endpoint_capture_ratio + TRACKING_EPSILON
-		var behind := expected-current if int(state.traversal_index)%2 == 0 else current-expected
-		if behind > tolerance: return GameplayTypes.JudgmentGrade.MISS
-	return GameplayTypes.JudgmentGrade.PERFECT
+		# 当前单程已走距离达到截至此刻应走距离的 Good 比例即可击破。
+		var reverse := int(state.traversal_index) % 2 == 1
+		var required := 1.0 - expected if reverse else expected
+		var traveled := 1.0 - current if reverse else current
+		var completion := clampf(traveled / required, 0.0, 1.0) if required > TRACKING_EPSILON else 1.0
+		var current_grade := completion_grade(completion)
+		if current_grade not in [GameplayTypes.JudgmentGrade.PERFECT, GameplayTypes.JudgmentGrade.GOOD]: return GameplayTypes.JudgmentGrade.MISS
+		if current_grade == GameplayTypes.JudgmentGrade.GOOD: grade = current_grade
+	return grade
 
 
 func _guide_progress(slider: Dictionary, time_us: int) -> float:

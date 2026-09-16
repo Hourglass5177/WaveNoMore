@@ -1,0 +1,8 @@
+worktree E:/大学/MEMO/编钟音游/Game
+HEAD d323b4d1dd52ed8a63505fcba8cb876c277551f1
+branch refs/heads/develop
+
+worktree E:/大学/MEMO/编钟音游/Game/builds/worktrees/ui/Game
+HEAD 0434d1d5737cac1ec2868f6d88e39a7f3045d5d3
+detached
+

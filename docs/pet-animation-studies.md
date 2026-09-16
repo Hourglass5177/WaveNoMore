@@ -8,7 +8,7 @@
 
 “技能”播放一次完整短动作，期间的重复触发不重启、不排队；结束以 0.08 秒混合回到原常态相位。死亡用 0.12 秒接管当前姿态，之后不再接受技能。回拖后触发新事件会替换后面的审看历史。空间键切换播放与暂停。
 
-动图、九条动作的关键姿势图、正式背景截图位于 [`build/pet-animation/`](../build/pet-animation/)：
+动图、九条动作的关键姿势图、正式背景截图位于 `build/pet-animation/`（历史产物已清理）：
 
 - `three-pets.gif`：三只并排的常态、技能与死亡演示，使用实际 Spine 过渡采样。
 - `bat-states.gif / snake-states.gif / sheep-states.gif`：每只随从的三状态演示。

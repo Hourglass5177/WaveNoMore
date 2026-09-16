@@ -27,6 +27,9 @@ var judgment_count: int = 0
 var expected_judgment_count: int = 0
 ## 最终等级为 MISS 的判定数量。
 var miss_count: int = 0
+## Ghost 独立展示，避免冒充普通音符计分单位。
+var ghost_counts: Dictionary = {"PERFECT": 0, "GOOD": 0, "MISS": 0}
+var expected_ghost_count: int = 0
 ## 按规则会断 Combo 的乱按数量。
 var stray_break_count: int = 0
 ## 本次结算是否满足普通随从奖励条件；真正写存档由上层完成。
@@ -59,6 +62,8 @@ func to_dictionary() -> Dictionary:
 		"judgment_count": judgment_count,
 		"expected_judgment_count": expected_judgment_count,
 		"miss_count": miss_count,
+		"ghost_counts": ghost_counts.duplicate(),
+		"expected_ghost_count": expected_ghost_count,
 		"stray_break_count": stray_break_count,
 		"grade_counts": grade_counts.duplicate(true),
 		"grants_base_pet": grants_base_pet,

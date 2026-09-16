@@ -5,6 +5,8 @@ extends RefCounted
 static func write(manifest_path: String, target: String) -> String:
 	var manifest := load(manifest_path) as VisualAssetManifest
 	if manifest == null: return "请选择 VisualAssetManifest 素材清单"
+	# 空清单会生成看似成功、实际不含任何场景的包，直接提示制作端补上引用。
+	if manifest.entries.is_empty(): return "素材清单为空：请先添加素材条目；环境场景需填写条目的 background 引用。"
 	var pending: Array[String] = [manifest_path]
 	var files := {}
 	while not pending.is_empty():

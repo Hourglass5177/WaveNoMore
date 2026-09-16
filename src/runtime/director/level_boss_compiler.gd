@@ -45,12 +45,12 @@ static func compile(stage: StageDefinition, tempo: TempoMap, player: LevelShowPl
 					var settings: Dictionary = player.assets.boss_defaults.duplicate()
 					settings.merge(object_data.get("boss", {}),true)
 					var seed := source.chart_id+":"+stage.chart.difficulty_id+":"+object_id+":"+note_id
-					path=BossEmissionPath.scatter(origin,profile,stage.rule_set.approach_duration_sec,float(stage.rule_set.miss_window_ms)/1000,seed,float(binding.get("flight_speed",settings.get("flight_speed",600.0))),float(binding.get("spread_deg",settings.get("spread_deg",30.0))))
+					path=BossEmissionPath.scatter(origin,profile,stage.rule_set.approach_duration_sec,float(stage.rule_set.miss_window_ms)/1000,seed,float(binding.get("flight_speed",settings.get("flight_speed",600.0))),float(binding.get("spread_deg",settings.get("spread_deg",30.0))),float(settings.get("launch_speed_ratio",2.0)),float(settings.get("route_join_ratio",0.05)))
 					entry_us=tempo.tick_to_us(note.tick)-int(path.join_lead_us)
 					release_us=entry_us-int(path.duration_us)
 					# 出手时间改变后再次读取对象运动，避免沿用旧固定提前段的位置。
 					origin=player.anchor_at(object_id,anchor_name,"song",release_us+offset_us,release_pose)
-					path=BossEmissionPath.scatter(origin,profile,stage.rule_set.approach_duration_sec,float(stage.rule_set.miss_window_ms)/1000,seed,float(binding.get("flight_speed",settings.get("flight_speed",600.0))),float(binding.get("spread_deg",settings.get("spread_deg",30.0))))
+					path=BossEmissionPath.scatter(origin,profile,stage.rule_set.approach_duration_sec,float(stage.rule_set.miss_window_ms)/1000,seed,float(binding.get("flight_speed",settings.get("flight_speed",600.0))),float(binding.get("spread_deg",settings.get("spread_deg",30.0))),float(settings.get("launch_speed_ratio",2.0)),float(settings.get("route_join_ratio",0.05)))
 					release_us=entry_us-int(path.duration_us)
 				path.merge({"release_us": release_us, "entry_us": entry_us, "object_id": object_id, "binding_id": binding.id, "binding": binding.duplicate(true)})
 				if path.has("arc_profile"):
@@ -70,7 +70,7 @@ static func compile(stage: StageDefinition, tempo: TempoMap, player: LevelShowPl
 					var profile := NoteApproachPath.build_profile(entrance,cue,bell,rules.note_curve_outer_bend_px,rules.note_curve_center_handle_px)
 					var origin := player.anchor_at(object_id,str(binding.get(side+"_anchor",side)),"song",release_us+offset_us)
 					var settings: Dictionary=player.assets.boss_defaults.duplicate();settings.merge(object_data.get("boss",{}),true)
-					var path := BossEmissionPath.scatter(origin,profile,rules.approach_duration_sec,float(rules.miss_window_ms)/1000,source.chart_id+object_id+note_id+side,float(binding.get("flight_speed",settings.get("flight_speed",600))),float(binding.get("spread_deg",settings.get("spread_deg",30))))
+					var path := BossEmissionPath.scatter(origin,profile,rules.approach_duration_sec,float(rules.miss_window_ms)/1000,source.chart_id+object_id+note_id+side,float(binding.get("flight_speed",settings.get("flight_speed",600))),float(binding.get("spread_deg",settings.get("spread_deg",30))),float(settings.get("launch_speed_ratio",2.0)),float(settings.get("route_join_ratio",0.05)))
 					var end := tempo.tick_to_us(note.tick)-int(path.join_lead_us)
 					var start := end-int(path.duration_us)
 					path.merge({"release_us":start,"entry_us":end,"object_id":object_id,"binding_id":binding.id,"binding":binding.duplicate(true),"ghost":true,"side":side})

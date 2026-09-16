@@ -5,6 +5,7 @@ signal close_requested
 @export var entries: Array[PetPreviewEntry] = [preload("res://content/ui/nu_tu_fu_preview.tres"), preload("res://content/ui/gui_jin_yang_preview.tres"), preload("res://content/ui/yi_huo_she_preview.tres")]
 var _index := 0
 var _clock := 0.0
+var _locked := true
 var _actor: PetVisual
 var _selection_motion: Tween
 var _shadow_motion: Tween
@@ -12,6 +13,7 @@ var _stick_direction := 0
 func _ready() -> void:
 	super._ready()
 	if Engine.is_editor_hint(): return
+	SaveService.developer_mode_changed.connect(_show_pet)
 	for name in ["Left","Right","Preview"]:
 		var button: Button = get_node("%"+name)
 		for state in ["normal","hover","pressed","disabled"]: button.add_theme_stylebox_override(state,StyleBoxEmpty.new())
@@ -23,23 +25,21 @@ func _ready() -> void:
 	%Preview.pressed.connect(play_skill)
 	%Equip.pressed.connect(_equip)
 	%Back.pressed.connect(func(): close_requested.emit())
-	%Developer.visible = OS.is_debug_build()
-	%Developer.pressed.connect(func(): %DevPanel.visible = not %DevPanel.visible)
-	%GrantBase.pressed.connect(_grant.bind(false))
-	%GrantAdvanced.pressed.connect(_grant.bind(true))
-	%EndTest.pressed.connect(func():
-		SaveService.debug_pet_tiers.clear()
-		_show_pet())
+	%Developer.hide()
+	%DevPanel.hide()
 	for i in entries.size():
 		if entries[i].pet_id == SaveService.equipped_pet_id(): _index = i
 	_show_pet()
-	%Preview.grab_focus.call_deferred()
+	if _locked: %Back.grab_focus.call_deferred()
+	else: %Preview.grab_focus.call_deferred()
 func step(direction: int) -> void:
 	get_node("/root/MenuAudioService").play_ui(&"focus")
 	_index = posmod(_index+direction,entries.size())
 	_show_pet(direction)
 	# 切到未获得随从时装备按钮会禁用，把焦点移回可操作的预览。
-	if get_viewport().gui_get_focus_owner() == null: %Preview.grab_focus()
+	if get_viewport().gui_get_focus_owner() == null:
+		if _locked: %Back.grab_focus()
+		else: %Preview.grab_focus()
 func _show_pet(direction: int = 0) -> void:
 	if is_instance_valid(_actor):
 		%Actor.remove_child(_actor)
@@ -48,7 +48,12 @@ func _show_pet(direction: int = 0) -> void:
 	var entry := entries[_index]
 	var pet := ContentCatalog.get_pet(entry.pet_id)
 	var state := SaveService.pet_state(entry.pet_id)
+	_locked = not bool(state.get("owned",false))
+	%Preview.disabled = _locked
+	%Preview.tooltip_text = "获得随从后可预览技能" if _locked else ""
 	%Heading.texture = entry.heading
+	%Heading.visible = not _locked
+	%UnknownName.visible = _locked
 	%Base.text = pet.base_description if state.get("owned",false) else "？？？"
 	%Base.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT if state.get("owned",false) else HORIZONTAL_ALIGNMENT_CENTER
 	%Advanced.text = pet.advanced_description if state.get("advanced",false) else "？？？"
@@ -68,6 +73,11 @@ func _show_pet(direction: int = 0) -> void:
 	_actor.bind(display_pet,state.get("advanced",false))
 	_actor.set_world(GameplayTypes.Affinity.ZHU)
 	_actor.set_state(0.0)
+	# 锁定只显示首帧黑色轮廓，关闭呼吸、亮光及后续时间采样。
+	if _actor.has_method("set_locked_preview"): _actor.set_locked_preview(_locked)
+	_actor.modulate = Color.BLACK if _locked else Color.WHITE
+	_actor.process_mode = Node.PROCESS_MODE_DISABLED if _locked else Node.PROCESS_MODE_INHERIT
+	%GroundGlow.visible = not _locked
 	# 投影颜色取原画的主色，仅配置菜单展示资源，不改局内角色或技能。
 	if _shadow_motion: _shadow_motion.kill()
 	%GroundGlow.size = entry.shadow_size
@@ -86,6 +96,7 @@ func _show_pet(direction: int = 0) -> void:
 	for item in [%Actor,%GroundGlow,%Heading]:
 		_selection_motion.tween_property(item,"modulate:a",1.0,0.22).set_trans(Tween.TRANS_SINE)
 func play_skill() -> void:
+	if _locked: return
 	if not _actor.trigger(_clock): return
 	# 技能被播放器接受时投影只舒展一次；连按不会反复点亮。
 	if _shadow_motion: _shadow_motion.kill()
@@ -93,7 +104,7 @@ func play_skill() -> void:
 	_shadow_motion.tween_property(%GroundGlow,"scale",Vector2(1.08,1.04),0.12).set_trans(Tween.TRANS_SINE)
 	_shadow_motion.tween_property(%GroundGlow,"scale",Vector2.ONE,0.32).set_trans(Tween.TRANS_SINE)
 func _process(delta: float) -> void:
-	if Engine.is_editor_hint() or not is_visible_in_tree() or not is_instance_valid(_actor): return
+	if _locked or Engine.is_editor_hint() or not is_visible_in_tree() or not is_instance_valid(_actor): return
 	_clock += delta
 	_actor.set_state(_clock)
 func _equip() -> void:

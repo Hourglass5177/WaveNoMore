@@ -10,6 +10,8 @@ var _effect_offset := Vector2.ZERO
 var _eye_selected: Texture2D
 var _eye_unselected: Texture2D
 var _flame_enabled := false
+var _locked := false
+var _boss_unseen := false
 var _selection_weight := 0.0
 var _background_region: Rect2
 
@@ -52,7 +54,7 @@ func configure(data: Dictionary, index: int) -> void:
 	_flame_enabled = int(data.get("flame_palette", 0)) > 0
 	$Flame.palette = maxi(0, int(data.get("flame_palette", 0)) - 1)
 	$Flame.random_seed = index * 19 + 4
-	$Flame.visible = _flame_enabled and _selection_weight > 0.0
+	$Flame.visible = not _locked and not _boss_unseen and _flame_enabled and _selection_weight > 0.0
 	background_scale = float(data.get("background_scale", background_scale))
 	_effect_frames = null if _flame_enabled else data.get("background_effect_frames") as SpriteFrames
 	var animation_value: Variant = data.get("background_effect_animation", "default")
@@ -66,7 +68,7 @@ func configure(data: Dictionary, index: int) -> void:
 	_layout_effect()
 
 func _process(delta: float) -> void:
-	if _effect_frames == null or not _effect_frames.has_animation(_effect_animation): return
+	if _locked or _effect_frames == null or not _effect_frames.has_animation(_effect_animation): return
 	_effect_elapsed += delta
 	var speed := _effect_frames.get_animation_speed(_effect_animation)
 	var frame_count := _effect_frames.get_frame_count(_effect_animation)
@@ -115,7 +117,7 @@ func set_background_effect_scale(value: float) -> void:
 func set_selection_weight(weight: float) -> void:
 	_selection_weight = clampf(weight, 0.0, 1.0)
 	$Flame.modulate.a = _selection_weight
-	$Flame.visible = _flame_enabled and _selection_weight > 0.0
+	$Flame.visible = not _locked and not _boss_unseen and _flame_enabled and _selection_weight > 0.0
 	$Score.modulate.a = clampf(weight,0.0,1.0)
 	$Rating.set_emphasis(weight)
 	var icon_material := $MonsterIcon.material as ShaderMaterial
@@ -131,8 +133,14 @@ func set_selection_weight(weight: float) -> void:
 
 ## 重构后的卡片不含锁定遮罩；使用提示，并转交材质支持的锁定效果。
 func set_locked(value: bool) -> void:
-	tooltip_text = "未解锁" if value else ""
-	set_locked_shader_state(value)
+	_locked = value
+	$Flame.set_process(not value)
+	$Flame.visible = not value and _flame_enabled and _selection_weight > 0.0
+	$BackgroundEffect.visible = not value
+	$EyeIcon.self_modulate = Color.BLACK if value else Color.WHITE
+	tooltip_text = "通关上一关后解锁" if value else ""
+	$LockNotice.visible = value
+	set_locked_shader_state(value or _boss_unseen)
 
 ## 仅向声明了 locked 参数的怪物材质传值，不修改其他美术参数。
 func set_locked_shader_state(value: bool) -> void:
@@ -146,3 +154,10 @@ func set_locked_shader_state(value: bool) -> void:
 func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 		clicked.emit()
+
+func set_boss_seen(seen: bool) -> void:
+	_boss_unseen = not seen
+	set_locked_shader_state(_locked or _boss_unseen)
+	$Flame.visible = not _locked and seen and _flame_enabled and _selection_weight > 0.0
+	$Flame.set_process(not _locked and seen)
+	$BackgroundEffect.visible = not _locked and seen

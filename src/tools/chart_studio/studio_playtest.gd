@@ -35,7 +35,10 @@ func start(doc: StudioDocument) -> void:
 	_snapshot_charts.assign([doc.chart().duplicate(true)])
 	_source_directory = doc.directory
 	_set_state(true, "准备试玩…")
-	if executable.is_empty():
+	# 开发工具合集优先使用上一级配套游戏，避免调用旧版本试玩程序。
+	var collection_game := OS.get_executable_path().get_base_dir().path_join("../冥河，冥河！.exe").simplify_path()
+	if not OS.has_feature("editor") and FileAccess.file_exists(collection_game): executable = collection_game
+	if executable.is_empty() or not FileAccess.file_exists(executable):
 		var bundled := OS.get_executable_path().get_base_dir().path_join("game/minghe.exe")
 		if FileAccess.file_exists(bundled): executable = bundled
 	if executable.is_empty() or not FileAccess.file_exists(executable): executable_needed.emit()

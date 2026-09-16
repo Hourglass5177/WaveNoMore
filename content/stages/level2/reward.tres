@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="RewardDefinition" format=3]
+
+[ext_resource type="Resource" path="res://content/pets/pet_yi_huo_she.tres" id="1_sb2fo"]
+[ext_resource type="Script" path="res://src/content/resources/reward_definition.gd" id="2_k0bvc"]
+
+[resource]
+script = ExtResource("2_k0bvc")
+reward_id = "reward_s07"
+next_stage_id = "level3"
+pet = ExtResource("1_sb2fo")

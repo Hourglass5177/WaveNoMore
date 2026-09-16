@@ -95,14 +95,14 @@ extends Resource
 ## 旧资源兼容字段；正式 Tap、Hold、Ghost 已使用各自伤害。
 @export_range(0, 1000, 1) var miss_damage: int = 20
 ## Tap 漏击抵达角色时的伤害；同一 Tap 伤害组只结算一次。
-@export_range(0, 1000, 1) var tap_miss_damage: int = 16
+@export_range(0, 1000, 1) var tap_miss_damage: int = 12
 ## Hold 未消耗身体每单位拍长的伤害，不另收头部或整条失败伤害。
 ## 可填写小数；身体伤害按已漏失拍长累计取整，避免每小段分别取整放大惩罚。
-@export_range(0, 1000, 0.1) var hold_segment_damage: float = 1.6
+@export_range(0, 1000, 0.1) var hold_segment_damage: float = 1.2
 ## 一段身体对应的四分音符拍数；按 TempoMap 换算，不依赖显示长度。
 @export_range(0.0625, 4.0, 0.0625) var hold_damage_segment_beats: float = 0.25
 ## 每枚未命中 Ghost 的伤害；Tuning 轨道自身不扣血。
-@export_range(0, 1000, 1) var ghost_miss_damage: int = 8
+@export_range(0, 1000, 1) var ghost_miss_damage: int = 3
 ## 仅在开启空按扣血时使用。
 @export_range(0, 1000, 1) var stray_input_damage: int = 20
 ## 开启时，没有被任何机制消费的乱按会中断 Combo。

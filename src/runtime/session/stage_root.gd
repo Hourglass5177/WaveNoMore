@@ -102,7 +102,6 @@ var _section_elapsed_us := 0.0
 var _pending_level_result := {}
 var _boss_tail_us := 0
 var _boss_finish_origin_us := 0
-var _boss_hud: CanvasLayer
 
 func set_pet(pet: PetDefinition, advanced: bool = false) -> void:
 	active_pet = pet
@@ -420,8 +419,6 @@ func _configure_level_show(stage: StageDefinition) -> void:
 		battle.configure(replay_input_driver.replay_data.boss_battles,stage_session.compiled_chart,stage.rule_set)
 	level_show_player.boss_battle = battle
 	level_show_player.boss_offset_us = roundi(stage.song.first_beat_offset_sec*1000000)
-	if not is_instance_valid(_boss_hud):
-		_boss_hud=load("res://scenes/presentation/boss_hud.tscn").instantiate();add_child(_boss_hud)
 	var duration_us := roundi((stage_session.get_end_song_time_sec() + stage.song.first_beat_offset_sec) * 1000000.0)
 	level_show_player.configure_environment(get_parallax_controller(), _level, stage.background, Vector3i(int(_level.get("intro_us",0)), duration_us, int(_level.get("outro_us",0))), stage.visual_theme.camera_velocity if stage.visual_theme != null else Vector2.ZERO)
 	var first_beat_offset:=stage.song.first_beat_offset_sec
@@ -433,7 +430,15 @@ func _update_level_show(sample: ClockSample) -> void:
 	if level_show_external or not is_instance_valid(level_show_player) or _level_section != "song": return
 	var audio_us := roundi((sample.visual_time_sec + stage_session.stage_definition.song.first_beat_offset_sec) * 1000000.0)
 	level_show_player.advance("song", audio_us, not stage_session.external_preview, sample.song_time_sec)
-	_update_boss_hud(roundi(sample.song_time_sec*1000000))
+	# 只有实际出现过的 BOSS 才揭示选关剪影；试玩和编辑预览不写正式进度。
+	var stage_id := stage_session.stage_definition.stage_id
+	if not stage_session.external_preview and not SaveService.has_seen_boss(stage_id):
+		for object: Dictionary in level_show_player.show.objects:
+			if object.get("boss", {}).is_empty() or not level_show_player.drivers.has(object.id): continue
+			var actor: Node2D = level_show_player.drivers[object.id].root
+			if actor.is_visible_in_tree() and actor.modulate.a > 0.01:
+				SaveService.mark_boss_seen(stage_id)
+				break
 	# 摄像头只影响环境视差，判定基准和波源坐标不随演出移动。
 	if get_parallax_controller().environment == null:
 		get_parallax_controller().set_camera_position(get_parallax_controller().get_camera_position() + level_show_player.camera_position)
@@ -446,6 +451,7 @@ func _level_state_changed(_previous: int, current: int, _reason: StringName) -> 
 
 
 func _level_run_started(_run_id: int) -> void:
+	SaveService.developer_run = SaveService.developer_unlocked
 	_level_section = "song"; _pending_level_result.clear()
 	if is_instance_valid(level_show_player): level_show_player.seek("song", 0)
 
@@ -478,7 +484,6 @@ func _process(delta: float) -> void:
 	if _level_section == "outro":
 		duration=maxi(duration,_boss_tail_us)
 		level_show_player.boss_song_us=_boss_finish_origin_us+roundi(_section_elapsed_us)
-		_update_boss_hud(level_show_player.boss_song_us)
 	level_show_player.advance(_level_section, mini(roundi(_section_elapsed_us), duration))
 	if _section_elapsed_us < duration: return
 	level_show_player.stop_audio()
@@ -493,10 +498,3 @@ func _process(delta: float) -> void:
 func _on_replay_saved(path: String, replay: ReplayData, _run_log: Dictionary) -> void:
 	last_replay = replay
 	replay_persisted.emit(path)
-
-func _update_boss_hud(at: int) -> void:
-	if not is_instance_valid(_boss_hud) or level_show_player.boss_battle == null: return
-	var flash := 0.0
-	for driver in level_show_player.drivers.values():
-		if driver.root.has_method("sample_show"): flash=maxf(flash,float(driver.root.white_flash))
-	_boss_hud.display(level_show_player.boss_battle,at,flash)

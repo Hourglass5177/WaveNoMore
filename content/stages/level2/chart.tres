@@ -1,0 +1,7545 @@
+[gd_resource type="Resource" script_class="SongChart" format=3]
+
+[ext_resource type="Script" path="res://src/content/resources/ghost_event.gd" id="1_axfjx"]
+[ext_resource type="Script" path="res://src/content/resources/meter_event.gd" id="2_4a4b2"]
+[ext_resource type="Script" path="res://src/content/resources/note_event.gd" id="3_cetgf"]
+[ext_resource type="Script" path="res://src/content/resources/rapid_region.gd" id="4_77633"]
+[ext_resource type="Script" path="res://src/content/resources/song_chart.gd" id="5_u3y3f"]
+[ext_resource type="Script" path="res://src/content/resources/section_marker.gd" id="6_waq0r"]
+[ext_resource type="Script" path="res://src/content/resources/su_manifestation_event.gd" id="7_s5vvk"]
+[ext_resource type="Script" path="res://src/content/resources/tempo_event.gd" id="8_m7yvf"]
+[ext_resource type="Script" path="res://src/content/resources/tuning_field_region.gd" id="9_4uhrw"]
+[ext_resource type="Script" path="res://src/content/resources/tuning_path_event.gd" id="10_xmg7b"]
+[ext_resource type="Script" path="res://src/content/resources/tuning_slider_event.gd" id="11_sd8ty"]
+
+[sub_resource type="Resource" id="Resource_uk22j"]
+script = ExtResource("2_4a4b2")
+metadata/json_source = {
+"denominator": 4.0,
+"numerator": 4.0,
+"tick": 0.0
+}
+
+[sub_resource type="Resource" id="Resource_2306f"]
+script = ExtResource("3_cetgf")
+event_id = "event_a7f61357edaf131f"
+duration_ticks = 3840
+kind = 1
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 3840.0,
+"id": "event_a7f61357edaf131f",
+"kind": "hold",
+"tick": 0.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_hyq5p"]
+script = ExtResource("3_cetgf")
+event_id = "event_74c5558a3e426269"
+tick = 4020
+duration_ticks = 3720
+kind = 1
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 3720.0,
+"id": "event_74c5558a3e426269",
+"kind": "hold",
+"tick": 4020.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_1pp27"]
+script = ExtResource("3_cetgf")
+event_id = "event_59d4f347eadbc787"
+tick = 8160
+duration_ticks = 2880
+kind = 1
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 2880.0,
+"id": "event_59d4f347eadbc787",
+"kind": "hold",
+"tick": 8160.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_uhy0d"]
+script = ExtResource("3_cetgf")
+event_id = "event_886958e2d7318f86"
+tick = 10560
+duration_ticks = 3840
+kind = 1
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 3840.0,
+"id": "event_886958e2d7318f86",
+"kind": "hold",
+"tick": 10560.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_76vs1"]
+script = ExtResource("3_cetgf")
+event_id = "event_6fc06e9261524987"
+tick = 14400
+duration_ticks = 2400
+kind = 1
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 2400.0,
+"id": "event_6fc06e9261524987",
+"kind": "hold",
+"tick": 14400.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_03kh2"]
+script = ExtResource("3_cetgf")
+event_id = "event_807a48a81097dadf"
+tick = 20640
+duration_ticks = 3360
+kind = 1
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_807a48a81097dadf",
+"kind": "hold",
+"tick": 20640.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_4ouga"]
+script = ExtResource("3_cetgf")
+event_id = "event_56c6392bfed0e686"
+tick = 25440
+duration_ticks = 7200
+kind = 1
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 7200.0,
+"id": "event_56c6392bfed0e686",
+"kind": "hold",
+"tick": 25440.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_jerva"]
+script = ExtResource("3_cetgf")
+event_id = "event_e305460adb291811"
+tick = 29040
+duration_ticks = 3600
+kind = 1
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 3600.0,
+"id": "event_e305460adb291811",
+"kind": "hold",
+"tick": 29040.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_g7086"]
+script = ExtResource("3_cetgf")
+event_id = "event_78309843275db7ff"
+tick = 33120
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_78309843275db7ff",
+"kind": "tap",
+"tick": 33120.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_d8bku"]
+script = ExtResource("3_cetgf")
+event_id = "event_7c933dd9a550f117"
+tick = 33120
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_7c933dd9a550f117",
+"kind": "tap",
+"tick": 33120.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_eov65"]
+script = ExtResource("3_cetgf")
+event_id = "event_fe88fb62573ab6d5"
+tick = 33840
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_fe88fb62573ab6d5",
+"kind": "tap",
+"tick": 33840.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_4uw4r"]
+script = ExtResource("3_cetgf")
+event_id = "event_16c5a180deffc154"
+tick = 34560
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_16c5a180deffc154",
+"kind": "tap",
+"tick": 34560.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_5n4ni"]
+script = ExtResource("3_cetgf")
+event_id = "event_8de12f197c3ef23f"
+tick = 35040
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_8de12f197c3ef23f",
+"kind": "tap",
+"tick": 35040.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_jpfiv"]
+script = ExtResource("3_cetgf")
+event_id = "event_75af23a6c8846bb7"
+tick = 35760
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_75af23a6c8846bb7",
+"kind": "tap",
+"tick": 35760.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_kg6mf"]
+script = ExtResource("3_cetgf")
+event_id = "event_fa626deec196639d"
+tick = 36480
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_fa626deec196639d",
+"kind": "tap",
+"tick": 36480.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_rjjgi"]
+script = ExtResource("3_cetgf")
+event_id = "event_5fc091be6fd4442c"
+tick = 36960
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_5fc091be6fd4442c",
+"kind": "tap",
+"tick": 36960.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_iowun"]
+script = ExtResource("3_cetgf")
+event_id = "event_6603ff568c76f967"
+tick = 37680
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_6603ff568c76f967",
+"kind": "tap",
+"tick": 37680.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_cskts"]
+script = ExtResource("3_cetgf")
+event_id = "event_3f2e787d366591e0"
+tick = 38400
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_3f2e787d366591e0",
+"kind": "tap",
+"tick": 38400.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_l3c1l"]
+script = ExtResource("3_cetgf")
+event_id = "event_e2b85583433982ae"
+tick = 38880
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_e2b85583433982ae",
+"kind": "tap",
+"tick": 38880.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_6yyj3"]
+script = ExtResource("3_cetgf")
+event_id = "event_1d47326f0c1f302e"
+tick = 39600
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_1d47326f0c1f302e",
+"kind": "tap",
+"tick": 39600.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_5s6or"]
+script = ExtResource("3_cetgf")
+event_id = "event_45d5cb522364c857"
+tick = 40320
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_45d5cb522364c857",
+"kind": "tap",
+"tick": 40320.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_gyxqu"]
+script = ExtResource("3_cetgf")
+event_id = "event_22090b31e2cdeec0"
+tick = 40800
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_22090b31e2cdeec0",
+"kind": "tap",
+"tick": 40800.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_hpj1o"]
+script = ExtResource("3_cetgf")
+event_id = "event_5f11f9d87ac2f283"
+tick = 41520
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_5f11f9d87ac2f283",
+"kind": "tap",
+"tick": 41520.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_nyyjo"]
+script = ExtResource("3_cetgf")
+event_id = "event_b7d2f8afe6843597"
+tick = 42240
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_b7d2f8afe6843597",
+"kind": "tap",
+"tick": 42240.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_1dopq"]
+script = ExtResource("3_cetgf")
+event_id = "event_09a0a5e592a76b5c"
+tick = 42720
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_09a0a5e592a76b5c",
+"kind": "tap",
+"tick": 42720.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_j72of"]
+script = ExtResource("3_cetgf")
+event_id = "event_de77a7b3b5f13d5b"
+tick = 43440
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_de77a7b3b5f13d5b",
+"kind": "tap",
+"tick": 43440.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_0ixaw"]
+script = ExtResource("3_cetgf")
+event_id = "event_459a308902b94cdf"
+tick = 44160
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_459a308902b94cdf",
+"kind": "tap",
+"tick": 44160.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_2uucp"]
+script = ExtResource("3_cetgf")
+event_id = "event_5e8e89f44bdcd603"
+tick = 44640
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_5e8e89f44bdcd603",
+"kind": "tap",
+"tick": 44640.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_j3rmh"]
+script = ExtResource("3_cetgf")
+event_id = "event_8309dd24bc90ee1e"
+tick = 45360
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_8309dd24bc90ee1e",
+"kind": "tap",
+"tick": 45360.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_3rkth"]
+script = ExtResource("3_cetgf")
+event_id = "event_1484d2fdd1876b82"
+tick = 46080
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_1484d2fdd1876b82",
+"kind": "tap",
+"tick": 46080.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_vwxn1"]
+script = ExtResource("3_cetgf")
+event_id = "event_600286c44c202d57"
+tick = 46560
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_600286c44c202d57",
+"kind": "tap",
+"tick": 46560.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_c0dxb"]
+script = ExtResource("3_cetgf")
+event_id = "event_edd0b38c7a15c531"
+tick = 47280
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_edd0b38c7a15c531",
+"kind": "tap",
+"tick": 47280.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_tibbg"]
+script = ExtResource("3_cetgf")
+event_id = "event_9522a7dbed3641fa"
+tick = 48000
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_9522a7dbed3641fa",
+"kind": "tap",
+"tick": 48000.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_c5kx7"]
+script = ExtResource("3_cetgf")
+event_id = "event_403035b3db21e01b"
+tick = 48480
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_403035b3db21e01b",
+"kind": "tap",
+"tick": 48480.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_6a808"]
+script = ExtResource("3_cetgf")
+event_id = "event_922ab20ecb646343"
+tick = 49200
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_922ab20ecb646343",
+"kind": "tap",
+"tick": 49200.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_8flpm"]
+script = ExtResource("3_cetgf")
+event_id = "event_87f123147c553a35"
+tick = 49920
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_87f123147c553a35",
+"kind": "tap",
+"tick": 49920.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_iwsxc"]
+script = ExtResource("3_cetgf")
+event_id = "event_e9ca8738aebf5f3c"
+tick = 50400
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_e9ca8738aebf5f3c",
+"kind": "tap",
+"tick": 50400.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_5i343"]
+script = ExtResource("3_cetgf")
+event_id = "event_0a845ea7f9864841"
+tick = 51120
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_0a845ea7f9864841",
+"kind": "tap",
+"tick": 51120.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_5xwv0"]
+script = ExtResource("3_cetgf")
+event_id = "event_30d871f24eec212f"
+tick = 51840
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_30d871f24eec212f",
+"kind": "tap",
+"tick": 51840.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_631ki"]
+script = ExtResource("3_cetgf")
+event_id = "event_853c21cbbab425d7"
+tick = 52320
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_853c21cbbab425d7",
+"kind": "tap",
+"tick": 52320.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_aaops"]
+script = ExtResource("3_cetgf")
+event_id = "event_87d8971aaa2126a8"
+tick = 53040
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_87d8971aaa2126a8",
+"kind": "tap",
+"tick": 53040.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_qh8sj"]
+script = ExtResource("3_cetgf")
+event_id = "event_e40342c2f935bbda"
+tick = 53760
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_e40342c2f935bbda",
+"kind": "tap",
+"tick": 53760.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_7vxm3"]
+script = ExtResource("3_cetgf")
+event_id = "event_f75d695c41bc26b5"
+tick = 54240
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_f75d695c41bc26b5",
+"kind": "tap",
+"tick": 54240.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_1xpo1"]
+script = ExtResource("3_cetgf")
+event_id = "event_d21b3bef5d34bf16"
+tick = 54960
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_d21b3bef5d34bf16",
+"kind": "tap",
+"tick": 54960.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_ywts5"]
+script = ExtResource("3_cetgf")
+event_id = "event_662ee67d37236940"
+tick = 55680
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_662ee67d37236940",
+"kind": "tap",
+"tick": 55680.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_ago0a"]
+script = ExtResource("3_cetgf")
+event_id = "event_24de8412a3d1194c"
+tick = 56160
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_24de8412a3d1194c",
+"kind": "tap",
+"tick": 56160.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_h0hep"]
+script = ExtResource("3_cetgf")
+event_id = "event_8343192e97d67b8b"
+tick = 56880
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_8343192e97d67b8b",
+"kind": "tap",
+"tick": 56880.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_8h4sw"]
+script = ExtResource("3_cetgf")
+event_id = "event_46c1d7883e68d36e"
+tick = 57600
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_46c1d7883e68d36e",
+"kind": "tap",
+"tick": 57600.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_ve1oq"]
+script = ExtResource("3_cetgf")
+event_id = "event_e511737e81b50013"
+tick = 58080
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_e511737e81b50013",
+"kind": "tap",
+"tick": 58080.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_k3rsk"]
+script = ExtResource("3_cetgf")
+event_id = "event_c3a95cd704a3b705"
+tick = 58800
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_c3a95cd704a3b705",
+"kind": "tap",
+"tick": 58800.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_vdrbc"]
+script = ExtResource("3_cetgf")
+event_id = "event_cdd4d2be7e29343c"
+tick = 59520
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_cdd4d2be7e29343c",
+"kind": "tap",
+"tick": 59520.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_ihf2b"]
+script = ExtResource("3_cetgf")
+event_id = "event_b0dc994a1692cac7"
+tick = 60000
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_b0dc994a1692cac7",
+"kind": "tap",
+"tick": 60000.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_isced"]
+script = ExtResource("3_cetgf")
+event_id = "event_54b72e994744e997"
+tick = 60720
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_54b72e994744e997",
+"kind": "tap",
+"tick": 60720.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_8cf2p"]
+script = ExtResource("3_cetgf")
+event_id = "event_48eae32e84bff2e5"
+tick = 61440
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_48eae32e84bff2e5",
+"kind": "tap",
+"tick": 61440.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_mdfrx"]
+script = ExtResource("3_cetgf")
+event_id = "event_fcee3365a0825be6"
+tick = 61920
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_fcee3365a0825be6",
+"kind": "tap",
+"tick": 61920.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_cvue5"]
+script = ExtResource("3_cetgf")
+event_id = "event_49fe2be35aeb0384"
+tick = 62640
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_49fe2be35aeb0384",
+"kind": "tap",
+"tick": 62640.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_n71ga"]
+script = ExtResource("3_cetgf")
+event_id = "event_623cdf019ba8103d"
+tick = 63360
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_623cdf019ba8103d",
+"kind": "tap",
+"tick": 63360.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_sanst"]
+script = ExtResource("3_cetgf")
+event_id = "event_d41597b5e157bad3"
+tick = 63840
+duration_ticks = 3360
+kind = 1
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_d41597b5e157bad3",
+"kind": "hold",
+"tick": 63840.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_dl3ko"]
+script = ExtResource("3_cetgf")
+event_id = "event_e1c782386629c916"
+tick = 65280
+duration_ticks = 1920
+kind = 1
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 1920.0,
+"id": "event_e1c782386629c916",
+"kind": "hold",
+"tick": 65280.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_arcg8"]
+script = ExtResource("3_cetgf")
+event_id = "event_6942b72c82bf40f9"
+tick = 67680
+duration_ticks = 3360
+kind = 1
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_6942b72c82bf40f9",
+"kind": "hold",
+"tick": 67680.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_qpbmn"]
+script = ExtResource("3_cetgf")
+event_id = "event_8098d25e98fc141e"
+tick = 69120
+duration_ticks = 1920
+kind = 1
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 1920.0,
+"id": "event_8098d25e98fc141e",
+"kind": "hold",
+"tick": 69120.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_oee0i"]
+script = ExtResource("3_cetgf")
+event_id = "event_cc604789245768e3"
+tick = 71520
+duration_ticks = 3360
+kind = 1
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_cc604789245768e3",
+"kind": "hold",
+"tick": 71520.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_74c3o"]
+script = ExtResource("3_cetgf")
+event_id = "event_13ffb182320386a5"
+tick = 72960
+duration_ticks = 1920
+kind = 1
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 1920.0,
+"id": "event_13ffb182320386a5",
+"kind": "hold",
+"tick": 72960.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_0rlgv"]
+script = ExtResource("3_cetgf")
+event_id = "event_ec3b3fda79420d56"
+tick = 75360
+duration_ticks = 3360
+kind = 1
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_ec3b3fda79420d56",
+"kind": "hold",
+"tick": 75360.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_x5sn5"]
+script = ExtResource("3_cetgf")
+event_id = "event_3c65a54149dcaf19"
+tick = 76800
+duration_ticks = 1920
+kind = 1
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 1920.0,
+"id": "event_3c65a54149dcaf19",
+"kind": "hold",
+"tick": 76800.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_yae83"]
+script = ExtResource("3_cetgf")
+event_id = "event_2762d601b8c71423"
+tick = 79200
+duration_ticks = 3360
+kind = 1
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_2762d601b8c71423",
+"kind": "hold",
+"tick": 79200.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_wllom"]
+script = ExtResource("3_cetgf")
+event_id = "event_3c7188c3d2ae5b63"
+tick = 79200
+duration_ticks = 3360
+kind = 1
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_3c7188c3d2ae5b63",
+"kind": "hold",
+"tick": 79200.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_lf5y1"]
+script = ExtResource("3_cetgf")
+event_id = "event_15a48865df21b52d"
+tick = 83040
+duration_ticks = 3360
+kind = 1
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_15a48865df21b52d",
+"kind": "hold",
+"tick": 83040.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_vwgon"]
+script = ExtResource("3_cetgf")
+event_id = "event_be7096527aa8b409"
+tick = 83040
+duration_ticks = 3360
+kind = 1
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_be7096527aa8b409",
+"kind": "hold",
+"tick": 83040.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_o56br"]
+script = ExtResource("3_cetgf")
+event_id = "event_0866f556f8a22606"
+tick = 86880
+duration_ticks = 3360
+kind = 1
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_0866f556f8a22606",
+"kind": "hold",
+"tick": 86880.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_mf05b"]
+script = ExtResource("3_cetgf")
+event_id = "event_e5f9b6150ab5b2dc"
+tick = 86880
+duration_ticks = 3360
+kind = 1
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_e5f9b6150ab5b2dc",
+"kind": "hold",
+"tick": 86880.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_p468b"]
+script = ExtResource("3_cetgf")
+event_id = "event_2e845f757d995465"
+tick = 90720
+duration_ticks = 3360
+kind = 1
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_2e845f757d995465",
+"kind": "hold",
+"tick": 90720.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_va41u"]
+script = ExtResource("3_cetgf")
+event_id = "event_5324c4957ec97acd"
+tick = 90720
+duration_ticks = 3360
+kind = 1
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_5324c4957ec97acd",
+"kind": "hold",
+"tick": 90720.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_mur0g"]
+script = ExtResource("3_cetgf")
+event_id = "event_8d0f05a0c3966556"
+tick = 94560
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_8d0f05a0c3966556",
+"kind": "tap",
+"tick": 94560.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_68hqs"]
+script = ExtResource("3_cetgf")
+event_id = "event_56b43508f38c289d"
+tick = 95040
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_56b43508f38c289d",
+"kind": "tap",
+"tick": 95040.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_nlsin"]
+script = ExtResource("3_cetgf")
+event_id = "event_1acc0a4ee1113e49"
+tick = 95280
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_1acc0a4ee1113e49",
+"kind": "tap",
+"tick": 95280.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_60e6w"]
+script = ExtResource("3_cetgf")
+event_id = "event_d1ec5d746330a47c"
+tick = 96000
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_d1ec5d746330a47c",
+"kind": "tap",
+"tick": 96000.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_npqk2"]
+script = ExtResource("3_cetgf")
+event_id = "event_52201e8e64391607"
+tick = 96240
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_52201e8e64391607",
+"kind": "tap",
+"tick": 96240.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_q8x5b"]
+script = ExtResource("3_cetgf")
+event_id = "event_a63e1c144f46d887"
+tick = 96480
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_a63e1c144f46d887",
+"kind": "tap",
+"tick": 96480.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_mj1ik"]
+script = ExtResource("3_cetgf")
+event_id = "event_c450b24c33c162bb"
+tick = 97200
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_c450b24c33c162bb",
+"kind": "tap",
+"tick": 97200.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_np5j5"]
+script = ExtResource("3_cetgf")
+event_id = "event_442c67f56415493a"
+tick = 97920
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_442c67f56415493a",
+"kind": "tap",
+"tick": 97920.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_20bvc"]
+script = ExtResource("3_cetgf")
+event_id = "event_556640c2882e8d31"
+tick = 98400
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_556640c2882e8d31",
+"kind": "tap",
+"tick": 98400.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_ykhsx"]
+script = ExtResource("3_cetgf")
+event_id = "event_e59314c1c5e5a95a"
+tick = 98880
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_e59314c1c5e5a95a",
+"kind": "tap",
+"tick": 98880.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_5dy8k"]
+script = ExtResource("3_cetgf")
+event_id = "event_a1802a99be1019ea"
+tick = 99120
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_a1802a99be1019ea",
+"kind": "tap",
+"tick": 99120.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_dyqr8"]
+script = ExtResource("3_cetgf")
+event_id = "event_361c0cc0ae9017cf"
+tick = 99840
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_361c0cc0ae9017cf",
+"kind": "tap",
+"tick": 99840.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_33sd6"]
+script = ExtResource("3_cetgf")
+event_id = "event_ce811b88ea6f17d1"
+tick = 100080
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_ce811b88ea6f17d1",
+"kind": "tap",
+"tick": 100080.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_35wtb"]
+script = ExtResource("3_cetgf")
+event_id = "event_68c71bc470475dcb"
+tick = 100320
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_68c71bc470475dcb",
+"kind": "tap",
+"tick": 100320.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_rdjk4"]
+script = ExtResource("3_cetgf")
+event_id = "event_f9b362d2f0cb3900"
+tick = 101040
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_f9b362d2f0cb3900",
+"kind": "tap",
+"tick": 101040.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_2h5a4"]
+script = ExtResource("3_cetgf")
+event_id = "event_4e6450cc6ef322d7"
+tick = 101760
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_4e6450cc6ef322d7",
+"kind": "tap",
+"tick": 101760.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_in1mq"]
+script = ExtResource("3_cetgf")
+event_id = "event_18575676329d3717"
+tick = 102240
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_18575676329d3717",
+"kind": "tap",
+"tick": 102240.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_7xgso"]
+script = ExtResource("3_cetgf")
+event_id = "event_678db6b3bd8530f1"
+tick = 102720
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_678db6b3bd8530f1",
+"kind": "tap",
+"tick": 102720.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_e11ai"]
+script = ExtResource("3_cetgf")
+event_id = "event_f2736e8e98bb01d9"
+tick = 102960
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_f2736e8e98bb01d9",
+"kind": "tap",
+"tick": 102960.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_2wgfr"]
+script = ExtResource("3_cetgf")
+event_id = "event_6d53a61834e08175"
+tick = 103680
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_6d53a61834e08175",
+"kind": "tap",
+"tick": 103680.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_7dqeq"]
+script = ExtResource("3_cetgf")
+event_id = "event_e1589794eebb52f7"
+tick = 103920
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_e1589794eebb52f7",
+"kind": "tap",
+"tick": 103920.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_yr1x4"]
+script = ExtResource("3_cetgf")
+event_id = "event_49dc38e12a275fc7"
+tick = 104160
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_49dc38e12a275fc7",
+"kind": "tap",
+"tick": 104160.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_215h6"]
+script = ExtResource("3_cetgf")
+event_id = "event_763af21c503cb5ef"
+tick = 104880
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_763af21c503cb5ef",
+"kind": "tap",
+"tick": 104880.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_48ero"]
+script = ExtResource("3_cetgf")
+event_id = "event_c32ec14a61bd2ccc"
+tick = 105600
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_c32ec14a61bd2ccc",
+"kind": "tap",
+"tick": 105600.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_k26to"]
+script = ExtResource("3_cetgf")
+event_id = "event_ecca43230fb82231"
+tick = 106080
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_ecca43230fb82231",
+"kind": "tap",
+"tick": 106080.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_hv3u5"]
+script = ExtResource("3_cetgf")
+event_id = "event_6a0142ac00de82bb"
+tick = 106560
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_6a0142ac00de82bb",
+"kind": "tap",
+"tick": 106560.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_0055u"]
+script = ExtResource("3_cetgf")
+event_id = "event_d4b94d5866226505"
+tick = 106800
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_d4b94d5866226505",
+"kind": "tap",
+"tick": 106800.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_obb1b"]
+script = ExtResource("3_cetgf")
+event_id = "event_fea94732e1eced66"
+tick = 107520
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_fea94732e1eced66",
+"kind": "tap",
+"tick": 107520.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_0g2bl"]
+script = ExtResource("3_cetgf")
+event_id = "event_79bcc0f931497b8a"
+tick = 107760
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_79bcc0f931497b8a",
+"kind": "tap",
+"tick": 107760.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_8whrj"]
+script = ExtResource("3_cetgf")
+event_id = "event_5cbaa54320494666"
+tick = 108000
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_5cbaa54320494666",
+"kind": "tap",
+"tick": 108000.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_i8rmv"]
+script = ExtResource("3_cetgf")
+event_id = "event_3d0f17bba3e95789"
+tick = 108720
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_3d0f17bba3e95789",
+"kind": "tap",
+"tick": 108720.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_o2lhe"]
+script = ExtResource("3_cetgf")
+event_id = "event_c95268aa0990e814"
+tick = 109440
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_c95268aa0990e814",
+"kind": "tap",
+"tick": 109440.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_kcs32"]
+script = ExtResource("3_cetgf")
+event_id = "event_fc531c31a205ee4c"
+tick = 109920
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_fc531c31a205ee4c",
+"kind": "tap",
+"tick": 109920.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_omgv4"]
+script = ExtResource("3_cetgf")
+event_id = "event_9b357f8944902f22"
+tick = 110400
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_9b357f8944902f22",
+"kind": "tap",
+"tick": 110400.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_no8w1"]
+script = ExtResource("3_cetgf")
+event_id = "event_ef4f780fed86f72d"
+tick = 110640
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_ef4f780fed86f72d",
+"kind": "tap",
+"tick": 110640.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_gs1p4"]
+script = ExtResource("3_cetgf")
+event_id = "event_f5fe1a1e9d4a2f55"
+tick = 111360
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_f5fe1a1e9d4a2f55",
+"kind": "tap",
+"tick": 111360.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_dvmc1"]
+script = ExtResource("3_cetgf")
+event_id = "event_96f8c3126eb7eaac"
+tick = 111600
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_96f8c3126eb7eaac",
+"kind": "tap",
+"tick": 111600.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_ikxl6"]
+script = ExtResource("3_cetgf")
+event_id = "event_43b3cbe044bec061"
+tick = 111840
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_43b3cbe044bec061",
+"kind": "tap",
+"tick": 111840.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_6ux0n"]
+script = ExtResource("3_cetgf")
+event_id = "event_e2e09368dc35c76f"
+tick = 112560
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_e2e09368dc35c76f",
+"kind": "tap",
+"tick": 112560.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_cfkt7"]
+script = ExtResource("3_cetgf")
+event_id = "event_78c032159726be81"
+tick = 113280
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_78c032159726be81",
+"kind": "tap",
+"tick": 113280.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_3aut5"]
+script = ExtResource("3_cetgf")
+event_id = "event_6f7331a408c68085"
+tick = 113760
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_6f7331a408c68085",
+"kind": "tap",
+"tick": 113760.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_v1ukx"]
+script = ExtResource("3_cetgf")
+event_id = "event_0a03432273878b0f"
+tick = 114240
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_0a03432273878b0f",
+"kind": "tap",
+"tick": 114240.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_ttn81"]
+script = ExtResource("3_cetgf")
+event_id = "event_b9a975e9a3bd522a"
+tick = 114480
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_b9a975e9a3bd522a",
+"kind": "tap",
+"tick": 114480.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_smyb2"]
+script = ExtResource("3_cetgf")
+event_id = "event_724ce5274a38292c"
+tick = 115200
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_724ce5274a38292c",
+"kind": "tap",
+"tick": 115200.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_4bmwp"]
+script = ExtResource("3_cetgf")
+event_id = "event_d1cc9fadb0a02adf"
+tick = 115440
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_d1cc9fadb0a02adf",
+"kind": "tap",
+"tick": 115440.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_yf5km"]
+script = ExtResource("3_cetgf")
+event_id = "event_5894c118e87c0ffd"
+tick = 115680
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_5894c118e87c0ffd",
+"kind": "tap",
+"tick": 115680.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_tdv8a"]
+script = ExtResource("3_cetgf")
+event_id = "event_b0bed66f8e10def5"
+tick = 116400
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_b0bed66f8e10def5",
+"kind": "tap",
+"tick": 116400.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_1upsv"]
+script = ExtResource("3_cetgf")
+event_id = "event_c4d0ca2370484f20"
+tick = 117120
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_c4d0ca2370484f20",
+"kind": "tap",
+"tick": 117120.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_u6sc8"]
+script = ExtResource("3_cetgf")
+event_id = "event_27d17d92695c14cf"
+tick = 117600
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_27d17d92695c14cf",
+"kind": "tap",
+"tick": 117600.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_fkjcr"]
+script = ExtResource("3_cetgf")
+event_id = "event_fd7f6985f8df858c"
+tick = 118080
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_fd7f6985f8df858c",
+"kind": "tap",
+"tick": 118080.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_gjt5v"]
+script = ExtResource("3_cetgf")
+event_id = "event_9e42261a35325479"
+tick = 118320
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_9e42261a35325479",
+"kind": "tap",
+"tick": 118320.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_2bpqb"]
+script = ExtResource("3_cetgf")
+event_id = "event_100e8baa0871c799"
+tick = 119040
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_100e8baa0871c799",
+"kind": "tap",
+"tick": 119040.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_yyqiu"]
+script = ExtResource("3_cetgf")
+event_id = "event_aa30802b0717825b"
+tick = 119280
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_aa30802b0717825b",
+"kind": "tap",
+"tick": 119280.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_8rm46"]
+script = ExtResource("3_cetgf")
+event_id = "event_0c56fbdf7a203375"
+tick = 119520
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_0c56fbdf7a203375",
+"kind": "tap",
+"tick": 119520.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_ko2fq"]
+script = ExtResource("3_cetgf")
+event_id = "event_d7aefdf16a6cd5b7"
+tick = 120240
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_d7aefdf16a6cd5b7",
+"kind": "tap",
+"tick": 120240.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_u0qpo"]
+script = ExtResource("3_cetgf")
+event_id = "event_4532f5aba3ecdd14"
+tick = 120960
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_4532f5aba3ecdd14",
+"kind": "tap",
+"tick": 120960.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_7qgep"]
+script = ExtResource("3_cetgf")
+event_id = "event_6a789101a8adbbe0"
+tick = 121440
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_6a789101a8adbbe0",
+"kind": "tap",
+"tick": 121440.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_w13x3"]
+script = ExtResource("3_cetgf")
+event_id = "event_6c8978b5295b6fa4"
+tick = 121920
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_6c8978b5295b6fa4",
+"kind": "tap",
+"tick": 121920.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_wcs81"]
+script = ExtResource("3_cetgf")
+event_id = "event_21c8074bcbfd127b"
+tick = 122160
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_21c8074bcbfd127b",
+"kind": "tap",
+"tick": 122160.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_h1s1q"]
+script = ExtResource("3_cetgf")
+event_id = "event_398e6ba80a22c9fe"
+tick = 122880
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_398e6ba80a22c9fe",
+"kind": "tap",
+"tick": 122880.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_lnrtb"]
+script = ExtResource("3_cetgf")
+event_id = "event_4f43c8755f83d583"
+tick = 123120
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_4f43c8755f83d583",
+"kind": "tap",
+"tick": 123120.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_22r6w"]
+script = ExtResource("3_cetgf")
+event_id = "event_abeaa2ee49bdd4fc"
+tick = 123360
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_abeaa2ee49bdd4fc",
+"kind": "tap",
+"tick": 123360.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_a0os0"]
+script = ExtResource("3_cetgf")
+event_id = "event_43e40c1ea4b283d8"
+tick = 124080
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_43e40c1ea4b283d8",
+"kind": "tap",
+"tick": 124080.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_hnrsw"]
+script = ExtResource("3_cetgf")
+event_id = "event_7a9d80f0a50c2b4a"
+tick = 124800
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_7a9d80f0a50c2b4a",
+"kind": "tap",
+"tick": 124800.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_6axbo"]
+script = ExtResource("3_cetgf")
+event_id = "event_8c4cd1578a8f8544"
+tick = 125280
+duration_ticks = 3360
+kind = 1
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_8c4cd1578a8f8544",
+"kind": "hold",
+"tick": 125280.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_8d4sl"]
+script = ExtResource("3_cetgf")
+event_id = "event_997635e2c4516d2c"
+tick = 125280
+duration_ticks = 3360
+kind = 1
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_997635e2c4516d2c",
+"kind": "hold",
+"tick": 125280.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_s6asn"]
+script = ExtResource("3_cetgf")
+event_id = "event_ef783d4ffc70c046"
+tick = 129120
+duration_ticks = 3360
+kind = 1
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_ef783d4ffc70c046",
+"kind": "hold",
+"tick": 129120.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_y1fcn"]
+script = ExtResource("3_cetgf")
+event_id = "event_fe669f3c3f2bdfcb"
+tick = 129120
+duration_ticks = 3360
+kind = 1
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_fe669f3c3f2bdfcb",
+"kind": "hold",
+"tick": 129120.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_qv13s"]
+script = ExtResource("3_cetgf")
+event_id = "event_69f65784330f90ea"
+tick = 132960
+duration_ticks = 3360
+kind = 1
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_69f65784330f90ea",
+"kind": "hold",
+"tick": 132960.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_88841"]
+script = ExtResource("3_cetgf")
+event_id = "event_fee88eeeadef9b4a"
+tick = 132960
+duration_ticks = 3360
+kind = 1
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_fee88eeeadef9b4a",
+"kind": "hold",
+"tick": 132960.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_h454g"]
+script = ExtResource("3_cetgf")
+event_id = "event_0c5dcbe53bc301e3"
+tick = 136800
+duration_ticks = 3360
+kind = 1
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_0c5dcbe53bc301e3",
+"kind": "hold",
+"tick": 136800.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_3o8vc"]
+script = ExtResource("3_cetgf")
+event_id = "event_ae4d652e8abc676d"
+tick = 136800
+duration_ticks = 3360
+kind = 1
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_ae4d652e8abc676d",
+"kind": "hold",
+"tick": 136800.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_ndsdf"]
+script = ExtResource("3_cetgf")
+event_id = "event_1f388eedcdde78b9"
+tick = 140640
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_1f388eedcdde78b9",
+"kind": "tap",
+"tick": 140640.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_tdj8e"]
+script = ExtResource("3_cetgf")
+event_id = "event_e29429fdc940c73a"
+tick = 140640
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_e29429fdc940c73a",
+"kind": "tap",
+"tick": 140640.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_hl0hg"]
+script = ExtResource("3_cetgf")
+event_id = "event_a8cee534ae0b868a"
+tick = 142560
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_a8cee534ae0b868a",
+"kind": "tap",
+"tick": 142560.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_tkj5f"]
+script = ExtResource("3_cetgf")
+event_id = "event_c66259964bb7ed6d"
+tick = 144480
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_c66259964bb7ed6d",
+"kind": "tap",
+"tick": 144480.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_onwwp"]
+script = ExtResource("3_cetgf")
+event_id = "event_24b5a1593705d8ef"
+tick = 144960
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_24b5a1593705d8ef",
+"kind": "tap",
+"tick": 144960.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_6wk1t"]
+script = ExtResource("3_cetgf")
+event_id = "event_a1e07eac7228540c"
+tick = 147360
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_a1e07eac7228540c",
+"kind": "tap",
+"tick": 147360.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_v2xq5"]
+script = ExtResource("3_cetgf")
+event_id = "event_bb7a2f6e6801a00d"
+tick = 147360
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_bb7a2f6e6801a00d",
+"kind": "tap",
+"tick": 147360.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_3cdma"]
+script = ExtResource("3_cetgf")
+event_id = "event_b6578d7f2fdc0a94"
+tick = 148320
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_b6578d7f2fdc0a94",
+"kind": "tap",
+"tick": 148320.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_jtokk"]
+script = ExtResource("3_cetgf")
+event_id = "event_eb1a1509d0bea323"
+tick = 150240
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_eb1a1509d0bea323",
+"kind": "tap",
+"tick": 150240.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_12jh8"]
+script = ExtResource("3_cetgf")
+event_id = "event_d0c294a54415959e"
+tick = 151200
+duration_ticks = 4800
+kind = 1
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 4800.0,
+"id": "event_d0c294a54415959e",
+"kind": "hold",
+"tick": 151200.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_lyi2k"]
+script = ExtResource("3_cetgf")
+event_id = "event_6396e41bb860a521"
+tick = 154080
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_6396e41bb860a521",
+"kind": "tap",
+"tick": 154080.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_cevs7"]
+script = ExtResource("3_cetgf")
+event_id = "event_8dd3d3d5cfde189a"
+tick = 155040
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_8dd3d3d5cfde189a",
+"kind": "tap",
+"tick": 155040.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_p5u4s"]
+script = ExtResource("3_cetgf")
+event_id = "event_beca3c594fe547d9"
+tick = 155520
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_beca3c594fe547d9",
+"kind": "tap",
+"tick": 155520.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_xahgk"]
+script = ExtResource("3_cetgf")
+event_id = "event_9f5d4b5b20aa18b7"
+tick = 156000
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_9f5d4b5b20aa18b7",
+"kind": "tap",
+"tick": 156000.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_ds88w"]
+script = ExtResource("3_cetgf")
+event_id = "event_2f5f209fefdb6b0c"
+boss = true
+tick = 156960
+duration_ticks = 960
+kind = 1
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": true,
+"duration_ticks": 960.0,
+"id": "event_2f5f209fefdb6b0c",
+"kind": "hold",
+"tick": 156960.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_qvtht"]
+script = ExtResource("3_cetgf")
+event_id = "event_8f47f052d953335c"
+tick = 156960
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_8f47f052d953335c",
+"kind": "tap",
+"tick": 156960.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_8b7oq"]
+script = ExtResource("3_cetgf")
+event_id = "event_3997e38974a16ab4"
+tick = 157920
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_3997e38974a16ab4",
+"kind": "tap",
+"tick": 157920.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_xnwk0"]
+script = ExtResource("3_cetgf")
+event_id = "event_0c682df2b8a68888"
+tick = 158880
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_0c682df2b8a68888",
+"kind": "tap",
+"tick": 158880.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_jcw3o"]
+script = ExtResource("3_cetgf")
+event_id = "event_1dcc6c49d083731d"
+boss = true
+tick = 158880
+duration_ticks = 960
+kind = 1
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": true,
+"duration_ticks": 960.0,
+"id": "event_1dcc6c49d083731d",
+"kind": "hold",
+"tick": 158880.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_rnpkt"]
+script = ExtResource("3_cetgf")
+event_id = "event_21eaa3a8fb71e071"
+tick = 159840
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_21eaa3a8fb71e071",
+"kind": "tap",
+"tick": 159840.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_0jmog"]
+script = ExtResource("3_cetgf")
+event_id = "event_1b522ca9bc14228d"
+tick = 160800
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_1b522ca9bc14228d",
+"kind": "tap",
+"tick": 160800.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_n5u44"]
+script = ExtResource("3_cetgf")
+event_id = "event_5816063b5da3c78b"
+boss = true
+tick = 160800
+duration_ticks = 960
+kind = 1
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": true,
+"duration_ticks": 960.0,
+"id": "event_5816063b5da3c78b",
+"kind": "hold",
+"tick": 160800.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_oy421"]
+script = ExtResource("3_cetgf")
+event_id = "event_51abbad551f357f7"
+tick = 161760
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_51abbad551f357f7",
+"kind": "tap",
+"tick": 161760.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_d43i2"]
+script = ExtResource("3_cetgf")
+event_id = "event_414dfa4870847d71"
+tick = 162720
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_414dfa4870847d71",
+"kind": "tap",
+"tick": 162720.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_1f1qu"]
+script = ExtResource("3_cetgf")
+event_id = "event_a676797251434b68"
+boss = true
+tick = 162720
+duration_ticks = 960
+kind = 1
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": true,
+"duration_ticks": 960.0,
+"id": "event_a676797251434b68",
+"kind": "hold",
+"tick": 162720.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_ehcr3"]
+script = ExtResource("3_cetgf")
+event_id = "event_f871b16737dfdc83"
+tick = 163680
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_f871b16737dfdc83",
+"kind": "tap",
+"tick": 163680.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_m8ytl"]
+script = ExtResource("3_cetgf")
+event_id = "event_b9aabef86ca2dcd5"
+tick = 164160
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_b9aabef86ca2dcd5",
+"kind": "tap",
+"tick": 164160.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_vnfbc"]
+script = ExtResource("3_cetgf")
+event_id = "event_6bffd4ee55af0121"
+tick = 164640
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_6bffd4ee55af0121",
+"kind": "tap",
+"tick": 164640.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_6k2ik"]
+script = ExtResource("3_cetgf")
+event_id = "event_24c57eba4d1b5deb"
+tick = 165120
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_24c57eba4d1b5deb",
+"kind": "tap",
+"tick": 165120.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_0bwwa"]
+script = ExtResource("3_cetgf")
+event_id = "event_1c10bc10d2331804"
+tick = 165600
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_1c10bc10d2331804",
+"kind": "tap",
+"tick": 165600.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_nuc1h"]
+script = ExtResource("3_cetgf")
+event_id = "event_b507dfaee366aaec"
+tick = 166080
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_b507dfaee366aaec",
+"kind": "tap",
+"tick": 166080.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_ij574"]
+script = ExtResource("3_cetgf")
+event_id = "event_b324dc9e76cb87a6"
+tick = 166560
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_b324dc9e76cb87a6",
+"kind": "tap",
+"tick": 166560.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_y27e2"]
+script = ExtResource("3_cetgf")
+event_id = "event_12ec94a3a18d6f06"
+tick = 167040
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_12ec94a3a18d6f06",
+"kind": "tap",
+"tick": 167040.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_fftuf"]
+script = ExtResource("3_cetgf")
+event_id = "event_24d8d4d46d2ded72"
+tick = 167520
+duration_ticks = 480
+kind = 1
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 480.0,
+"id": "event_24d8d4d46d2ded72",
+"kind": "hold",
+"tick": 167520.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_ekp2v"]
+script = ExtResource("3_cetgf")
+event_id = "event_59ab288328cb295a"
+tick = 168000
+duration_ticks = 480
+kind = 1
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 480.0,
+"id": "event_59ab288328cb295a",
+"kind": "hold",
+"tick": 168000.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_kow68"]
+script = ExtResource("3_cetgf")
+event_id = "event_78bf3ac9ab160aed"
+tick = 168480
+duration_ticks = 480
+kind = 1
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 480.0,
+"id": "event_78bf3ac9ab160aed",
+"kind": "hold",
+"tick": 168480.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_so772"]
+script = ExtResource("3_cetgf")
+event_id = "event_dcb328d7cbdeb3d7"
+tick = 168960
+duration_ticks = 480
+kind = 1
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 480.0,
+"id": "event_dcb328d7cbdeb3d7",
+"kind": "hold",
+"tick": 168960.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_j5lbh"]
+script = ExtResource("3_cetgf")
+event_id = "event_d845947dfbd794ee"
+tick = 169440
+duration_ticks = 480
+kind = 1
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 480.0,
+"id": "event_d845947dfbd794ee",
+"kind": "hold",
+"tick": 169440.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_3l0ok"]
+script = ExtResource("3_cetgf")
+event_id = "event_1f3d2f1cc56f796f"
+tick = 169920
+duration_ticks = 480
+kind = 1
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 480.0,
+"id": "event_1f3d2f1cc56f796f",
+"kind": "hold",
+"tick": 169920.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_2bbc2"]
+script = ExtResource("3_cetgf")
+event_id = "event_3ce7f59e82d832cb"
+tick = 170400
+duration_ticks = 480
+kind = 1
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 480.0,
+"id": "event_3ce7f59e82d832cb",
+"kind": "hold",
+"tick": 170400.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_5j0fq"]
+script = ExtResource("3_cetgf")
+event_id = "event_4771beb4623bdba2"
+tick = 170880
+duration_ticks = 480
+kind = 1
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 480.0,
+"id": "event_4771beb4623bdba2",
+"kind": "hold",
+"tick": 170880.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_3svqy"]
+script = ExtResource("3_cetgf")
+event_id = "event_38cbb1180537773b"
+tick = 171360
+duration_ticks = 3840
+kind = 1
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 3840.0,
+"id": "event_38cbb1180537773b",
+"kind": "hold",
+"tick": 171360.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_3t7dk"]
+script = ExtResource("3_cetgf")
+event_id = "event_771848f595d4df34"
+boss = true
+tick = 172080
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": true,
+"duration_ticks": 0.0,
+"id": "event_771848f595d4df34",
+"kind": "tap",
+"tick": 172080.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_tc8kq"]
+script = ExtResource("3_cetgf")
+event_id = "event_48cea4a8577f4a66"
+boss = true
+tick = 172800
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": true,
+"duration_ticks": 0.0,
+"id": "event_48cea4a8577f4a66",
+"kind": "tap",
+"tick": 172800.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_6774d"]
+script = ExtResource("3_cetgf")
+event_id = "event_485a290bb9b9e014"
+boss = true
+tick = 173040
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": true,
+"duration_ticks": 0.0,
+"id": "event_485a290bb9b9e014",
+"kind": "tap",
+"tick": 173040.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_6niph"]
+script = ExtResource("3_cetgf")
+event_id = "event_71f8ba6d63f95c2a"
+boss = true
+tick = 173280
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": true,
+"duration_ticks": 0.0,
+"id": "event_71f8ba6d63f95c2a",
+"kind": "tap",
+"tick": 173280.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_jgn2i"]
+script = ExtResource("3_cetgf")
+event_id = "event_a5fbb75be1d5711b"
+boss = true
+tick = 174000
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": true,
+"duration_ticks": 0.0,
+"id": "event_a5fbb75be1d5711b",
+"kind": "tap",
+"tick": 174000.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_x43sr"]
+script = ExtResource("3_cetgf")
+event_id = "event_4ffe5a7ec53a1fdb"
+boss = true
+tick = 174720
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": true,
+"duration_ticks": 0.0,
+"id": "event_4ffe5a7ec53a1fdb",
+"kind": "tap",
+"tick": 174720.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_08mou"]
+script = ExtResource("3_cetgf")
+event_id = "event_daf3853c65674225"
+tick = 175200
+duration_ticks = 3840
+kind = 1
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 3840.0,
+"id": "event_daf3853c65674225",
+"kind": "hold",
+"tick": 175200.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_dn7la"]
+script = ExtResource("3_cetgf")
+event_id = "event_39fee4bfd87c8b1a"
+boss = true
+tick = 175920
+metadata/json_source = {
+"affinity": "zhu",
+"boss": true,
+"duration_ticks": 0.0,
+"id": "event_39fee4bfd87c8b1a",
+"kind": "tap",
+"tick": 175920.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_3m5af"]
+script = ExtResource("3_cetgf")
+event_id = "event_e9fd644997f3bba4"
+boss = true
+tick = 176640
+metadata/json_source = {
+"affinity": "zhu",
+"boss": true,
+"duration_ticks": 0.0,
+"id": "event_e9fd644997f3bba4",
+"kind": "tap",
+"tick": 176640.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_sqpof"]
+script = ExtResource("3_cetgf")
+event_id = "event_355735e62bc1b3bf"
+boss = true
+tick = 176880
+metadata/json_source = {
+"affinity": "zhu",
+"boss": true,
+"duration_ticks": 0.0,
+"id": "event_355735e62bc1b3bf",
+"kind": "tap",
+"tick": 176880.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_atgu6"]
+script = ExtResource("3_cetgf")
+event_id = "event_0774199767d9d9dc"
+boss = true
+tick = 177120
+metadata/json_source = {
+"affinity": "zhu",
+"boss": true,
+"duration_ticks": 0.0,
+"id": "event_0774199767d9d9dc",
+"kind": "tap",
+"tick": 177120.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_b0jvq"]
+script = ExtResource("3_cetgf")
+event_id = "event_2e97d3b46215c2b6"
+boss = true
+tick = 177840
+metadata/json_source = {
+"affinity": "zhu",
+"boss": true,
+"duration_ticks": 0.0,
+"id": "event_2e97d3b46215c2b6",
+"kind": "tap",
+"tick": 177840.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_q6ijx"]
+script = ExtResource("3_cetgf")
+event_id = "event_eaf21a9a63574bfc"
+boss = true
+tick = 178560
+metadata/json_source = {
+"affinity": "zhu",
+"boss": true,
+"duration_ticks": 0.0,
+"id": "event_eaf21a9a63574bfc",
+"kind": "tap",
+"tick": 178560.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_ckajn"]
+script = ExtResource("3_cetgf")
+event_id = "event_1ec8884cd151888d"
+tick = 179040
+duration_ticks = 3840
+kind = 1
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 3840.0,
+"id": "event_1ec8884cd151888d",
+"kind": "hold",
+"tick": 179040.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_h5j8d"]
+script = ExtResource("3_cetgf")
+event_id = "event_0a6d43493912a989"
+boss = true
+tick = 179760
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": true,
+"duration_ticks": 0.0,
+"id": "event_0a6d43493912a989",
+"kind": "tap",
+"tick": 179760.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_4bjwx"]
+script = ExtResource("3_cetgf")
+event_id = "event_ad05ec4677d2a588"
+boss = true
+tick = 180480
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": true,
+"duration_ticks": 0.0,
+"id": "event_ad05ec4677d2a588",
+"kind": "tap",
+"tick": 180480.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_7v7sd"]
+script = ExtResource("3_cetgf")
+event_id = "event_bcf34de8c3dad31d"
+boss = true
+tick = 180720
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": true,
+"duration_ticks": 0.0,
+"id": "event_bcf34de8c3dad31d",
+"kind": "tap",
+"tick": 180720.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_sly68"]
+script = ExtResource("3_cetgf")
+event_id = "event_971d4a04655255d1"
+boss = true
+tick = 180960
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": true,
+"duration_ticks": 0.0,
+"id": "event_971d4a04655255d1",
+"kind": "tap",
+"tick": 180960.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_46f1b"]
+script = ExtResource("3_cetgf")
+event_id = "event_88c7b2973e6bc633"
+boss = true
+tick = 181680
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": true,
+"duration_ticks": 0.0,
+"id": "event_88c7b2973e6bc633",
+"kind": "tap",
+"tick": 181680.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_yqm5y"]
+script = ExtResource("3_cetgf")
+event_id = "event_1881da8db3bf8c59"
+boss = true
+tick = 182400
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": true,
+"duration_ticks": 0.0,
+"id": "event_1881da8db3bf8c59",
+"kind": "tap",
+"tick": 182400.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_obndr"]
+script = ExtResource("3_cetgf")
+event_id = "event_78d3c7fa4441deba"
+tick = 182880
+duration_ticks = 3840
+kind = 1
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 3840.0,
+"id": "event_78d3c7fa4441deba",
+"kind": "hold",
+"tick": 182880.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_buo7j"]
+script = ExtResource("3_cetgf")
+event_id = "event_5ba6830420050676"
+boss = true
+tick = 183600
+metadata/json_source = {
+"affinity": "zhu",
+"boss": true,
+"duration_ticks": 0.0,
+"id": "event_5ba6830420050676",
+"kind": "tap",
+"tick": 183600.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_ixde1"]
+script = ExtResource("3_cetgf")
+event_id = "event_62a11a4325289e55"
+boss = true
+tick = 184320
+metadata/json_source = {
+"affinity": "zhu",
+"boss": true,
+"duration_ticks": 0.0,
+"id": "event_62a11a4325289e55",
+"kind": "tap",
+"tick": 184320.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_xcptu"]
+script = ExtResource("3_cetgf")
+event_id = "event_c0597607007b80ae"
+boss = true
+tick = 184560
+metadata/json_source = {
+"affinity": "zhu",
+"boss": true,
+"duration_ticks": 0.0,
+"id": "event_c0597607007b80ae",
+"kind": "tap",
+"tick": 184560.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_seo1l"]
+script = ExtResource("3_cetgf")
+event_id = "event_852a3e007ea5fe09"
+boss = true
+tick = 184800
+metadata/json_source = {
+"affinity": "zhu",
+"boss": true,
+"duration_ticks": 0.0,
+"id": "event_852a3e007ea5fe09",
+"kind": "tap",
+"tick": 184800.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_jty4i"]
+script = ExtResource("3_cetgf")
+event_id = "event_01a124cf29f5ce4e"
+boss = true
+tick = 185520
+metadata/json_source = {
+"affinity": "zhu",
+"boss": true,
+"duration_ticks": 0.0,
+"id": "event_01a124cf29f5ce4e",
+"kind": "tap",
+"tick": 185520.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_jgihx"]
+script = ExtResource("3_cetgf")
+event_id = "event_f7bb137cbed9dc62"
+boss = true
+tick = 186240
+metadata/json_source = {
+"affinity": "zhu",
+"boss": true,
+"duration_ticks": 0.0,
+"id": "event_f7bb137cbed9dc62",
+"kind": "tap",
+"tick": 186240.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_6mdy1"]
+script = ExtResource("3_cetgf")
+event_id = "event_5bebe98d92ffdd7e"
+tick = 186720
+duration_ticks = 3360
+kind = 1
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_5bebe98d92ffdd7e",
+"kind": "hold",
+"tick": 186720.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_687gj"]
+script = ExtResource("3_cetgf")
+event_id = "event_de369d26bd115dd9"
+boss = true
+tick = 188160
+duration_ticks = 1920
+kind = 1
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": true,
+"duration_ticks": 1920.0,
+"id": "event_de369d26bd115dd9",
+"kind": "hold",
+"tick": 188160.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_ei4l2"]
+script = ExtResource("3_cetgf")
+event_id = "event_2526f0db8964eb82"
+tick = 190560
+duration_ticks = 3360
+kind = 1
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_2526f0db8964eb82",
+"kind": "hold",
+"tick": 190560.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_fqc3k"]
+script = ExtResource("3_cetgf")
+event_id = "event_0244fa864240599a"
+boss = true
+tick = 192000
+duration_ticks = 1920
+kind = 1
+metadata/json_source = {
+"affinity": "zhu",
+"boss": true,
+"duration_ticks": 1920.0,
+"id": "event_0244fa864240599a",
+"kind": "hold",
+"tick": 192000.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_8e2es"]
+script = ExtResource("3_cetgf")
+event_id = "event_d30cf126e0624f2e"
+tick = 194400
+duration_ticks = 3360
+kind = 1
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_d30cf126e0624f2e",
+"kind": "hold",
+"tick": 194400.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_npm5u"]
+script = ExtResource("3_cetgf")
+event_id = "event_0b0495260cf0b835"
+boss = true
+tick = 195840
+duration_ticks = 1920
+kind = 1
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": true,
+"duration_ticks": 1920.0,
+"id": "event_0b0495260cf0b835",
+"kind": "hold",
+"tick": 195840.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_5egj2"]
+script = ExtResource("3_cetgf")
+event_id = "event_2f3b75362ba3ad13"
+tick = 198240
+duration_ticks = 3360
+kind = 1
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_2f3b75362ba3ad13",
+"kind": "hold",
+"tick": 198240.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_4yxhb"]
+script = ExtResource("3_cetgf")
+event_id = "event_dbf85d05e29ac03d"
+boss = true
+tick = 199680
+duration_ticks = 1920
+kind = 1
+metadata/json_source = {
+"affinity": "zhu",
+"boss": true,
+"duration_ticks": 1920.0,
+"id": "event_dbf85d05e29ac03d",
+"kind": "hold",
+"tick": 199680.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_tmxl4"]
+script = ExtResource("3_cetgf")
+event_id = "event_3d3206ab83951cf5"
+tick = 202080
+duration_ticks = 3360
+kind = 1
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_3d3206ab83951cf5",
+"kind": "hold",
+"tick": 202080.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_htcrm"]
+script = ExtResource("3_cetgf")
+event_id = "event_0f0c5fcaf21f3b20"
+boss = true
+tick = 203520
+duration_ticks = 1920
+kind = 1
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": true,
+"duration_ticks": 1920.0,
+"id": "event_0f0c5fcaf21f3b20",
+"kind": "hold",
+"tick": 203520.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_phg1k"]
+script = ExtResource("3_cetgf")
+event_id = "event_6b564e460dfafaa0"
+tick = 205920
+duration_ticks = 3360
+kind = 1
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_6b564e460dfafaa0",
+"kind": "hold",
+"tick": 205920.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_juwmy"]
+script = ExtResource("3_cetgf")
+event_id = "event_6e5b181a8cbcb1e8"
+boss = true
+tick = 207360
+duration_ticks = 1920
+kind = 1
+metadata/json_source = {
+"affinity": "zhu",
+"boss": true,
+"duration_ticks": 1920.0,
+"id": "event_6e5b181a8cbcb1e8",
+"kind": "hold",
+"tick": 207360.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_b73xk"]
+script = ExtResource("3_cetgf")
+event_id = "event_ea9f12348d2c14bd"
+tick = 209760
+duration_ticks = 3360
+kind = 1
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_ea9f12348d2c14bd",
+"kind": "hold",
+"tick": 209760.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_mq55n"]
+script = ExtResource("3_cetgf")
+event_id = "event_fe1ca9e636efde46"
+boss = true
+tick = 211200
+duration_ticks = 1920
+kind = 1
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": true,
+"duration_ticks": 1920.0,
+"id": "event_fe1ca9e636efde46",
+"kind": "hold",
+"tick": 211200.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_e6ldk"]
+script = ExtResource("3_cetgf")
+event_id = "event_46defd887efcaad4"
+tick = 213600
+duration_ticks = 2880
+kind = 1
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 2880.0,
+"id": "event_46defd887efcaad4",
+"kind": "hold",
+"tick": 213600.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_uv7v0"]
+script = ExtResource("3_cetgf")
+event_id = "event_9154a5dde9012b7c"
+boss = true
+tick = 215040
+duration_ticks = 1440
+kind = 1
+metadata/json_source = {
+"affinity": "zhu",
+"boss": true,
+"duration_ticks": 1440.0,
+"id": "event_9154a5dde9012b7c",
+"kind": "hold",
+"tick": 215040.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_mnx4j"]
+script = ExtResource("3_cetgf")
+event_id = "event_c5d039dc47963ee8"
+tick = 216960
+affinity = 1
+metadata/json_source = {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_c5d039dc47963ee8",
+"kind": "tap",
+"tick": 216960.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_kdd5h"]
+script = ExtResource("3_cetgf")
+event_id = "event_0bbf7ec6ecf53a01"
+tick = 217200
+metadata/json_source = {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_0bbf7ec6ecf53a01",
+"kind": "tap",
+"tick": 217200.0,
+"visual_variant": "default"
+}
+
+[sub_resource type="Resource" id="Resource_ebg83"]
+script = ExtResource("7_s5vvk")
+event_id = "event_0de8b8457e25652f"
+tuning_ids = PackedStringArray("event_38c2e7bf599d725d:point_d26a5b5e936ec94c")
+preparation_tick = 65280
+tick = 66240
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_bgjnw"]
+script = ExtResource("7_s5vvk")
+event_id = "event_08b1ceb0a08d3b57"
+tuning_ids = PackedStringArray("event_7a864cb3865a1d9f:point_7e47bb46e27a0e1a")
+preparation_tick = 69120
+tick = 70080
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_1dofq"]
+script = ExtResource("7_s5vvk")
+event_id = "event_242a1e04c0ff7561"
+tuning_ids = PackedStringArray("event_46fcf56dff5716f2:point_85bc36e4bc690339")
+preparation_tick = 72960
+tick = 73920
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_s4hgc"]
+script = ExtResource("7_s5vvk")
+event_id = "event_cca15ccc3007639a"
+tuning_ids = PackedStringArray("event_c3f30e3386227c9a:point_129dfbde859fc41a")
+preparation_tick = 76800
+tick = 77760
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_mfl04"]
+script = ExtResource("7_s5vvk")
+event_id = "event_bac186dda45f7d9a"
+tuning_ids = PackedStringArray("event_7e1cfc92b1d68a8b:point_b586f2a0dc60aa55", "event_75ff3e39621d0a5a:point_a14e5e4c4d8c4a52")
+preparation_tick = 80640
+tick = 81120
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_k23d7"]
+script = ExtResource("7_s5vvk")
+event_id = "event_976ec94b81334b43"
+tuning_ids = PackedStringArray("event_7e1cfc92b1d68a8b:point_b586f2a0dc60aa55", "event_75ff3e39621d0a5a:point_a14e5e4c4d8c4a52")
+preparation_tick = 80640
+tick = 81600
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_wevvu"]
+script = ExtResource("7_s5vvk")
+event_id = "event_2577ca1992a7308a"
+tuning_ids = PackedStringArray("event_7e1cfc92b1d68a8b:point_b586f2a0dc60aa55", "event_75ff3e39621d0a5a:point_a14e5e4c4d8c4a52")
+preparation_tick = 80640
+tick = 82080
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_n44st"]
+script = ExtResource("7_s5vvk")
+event_id = "event_a5b642302202c0d3"
+tuning_ids = PackedStringArray("event_62a1b68b50583c1f:point_d9f5c60dfb01c396", "event_08f26a2da92d21b2:point_fa41782e529d6341")
+preparation_tick = 84480
+tick = 84960
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_0acw4"]
+script = ExtResource("7_s5vvk")
+event_id = "event_e44b7ca517fd4bd4"
+tuning_ids = PackedStringArray("event_62a1b68b50583c1f:point_d9f5c60dfb01c396", "event_08f26a2da92d21b2:point_fa41782e529d6341")
+preparation_tick = 84480
+tick = 85440
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_ucchl"]
+script = ExtResource("7_s5vvk")
+event_id = "event_51e2ce684cc946d3"
+tuning_ids = PackedStringArray("event_62a1b68b50583c1f:point_d9f5c60dfb01c396", "event_08f26a2da92d21b2:point_fa41782e529d6341")
+preparation_tick = 84480
+tick = 85920
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_h8v6k"]
+script = ExtResource("7_s5vvk")
+event_id = "event_2a2e19f3d8c0a5cb"
+tuning_ids = PackedStringArray("event_cd3f3b726d65dc66:point_3a5647108fcd2fe2", "event_efd2aef254de54e9:point_fe448f82ddd1cf72")
+preparation_tick = 88320
+tick = 88800
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_m8wmc"]
+script = ExtResource("7_s5vvk")
+event_id = "event_c58c027c05ddb810"
+tuning_ids = PackedStringArray("event_cd3f3b726d65dc66:point_3a5647108fcd2fe2", "event_efd2aef254de54e9:point_fe448f82ddd1cf72")
+preparation_tick = 88320
+tick = 89280
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_g81fs"]
+script = ExtResource("7_s5vvk")
+event_id = "event_69b23e7ccfd7af80"
+tuning_ids = PackedStringArray("event_cd3f3b726d65dc66:point_3a5647108fcd2fe2", "event_efd2aef254de54e9:point_fe448f82ddd1cf72")
+preparation_tick = 88320
+tick = 89760
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_7d1a7"]
+script = ExtResource("7_s5vvk")
+event_id = "event_6ce45953cd062155"
+tuning_ids = PackedStringArray("event_90483925f7329cc9:point_96c056c34f0abe07", "event_74fc1a43e35ecd7f:point_eb7388bc283066b2")
+preparation_tick = 92160
+tick = 92640
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_84pn0"]
+script = ExtResource("7_s5vvk")
+event_id = "event_2f5c5801f4bf89d5"
+tuning_ids = PackedStringArray("event_90483925f7329cc9:point_96c056c34f0abe07", "event_74fc1a43e35ecd7f:point_eb7388bc283066b2")
+preparation_tick = 92160
+tick = 93120
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_o31hr"]
+script = ExtResource("7_s5vvk")
+event_id = "event_76353cb0002fd0c1"
+tuning_ids = PackedStringArray("event_90483925f7329cc9:point_96c056c34f0abe07", "event_74fc1a43e35ecd7f:point_eb7388bc283066b2")
+preparation_tick = 92160
+tick = 93600
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_xqqd3"]
+script = ExtResource("7_s5vvk")
+event_id = "event_c2c0c1f534ea3a91"
+tuning_ids = PackedStringArray("event_22a22d066a9b2335:point_4e7ed009efeaef01")
+preparation_tick = 125280
+tick = 125760
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_hki2w"]
+script = ExtResource("7_s5vvk")
+event_id = "event_f3314660b7f27cda"
+tuning_ids = PackedStringArray("event_22a22d066a9b2335:point_4e7ed009efeaef01")
+preparation_tick = 125280
+tick = 126240
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_yfdyi"]
+script = ExtResource("7_s5vvk")
+event_id = "event_324fcada31e659f3"
+tuning_ids = PackedStringArray("event_22a22d066a9b2335:point_4e7ed009efeaef01")
+preparation_tick = 125280
+tick = 126720
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_smfk0"]
+script = ExtResource("7_s5vvk")
+event_id = "event_b2a410949840d400"
+tuning_ids = PackedStringArray("event_5e8e215664e8c8aa:point_bd865f3ccd60d22c")
+preparation_tick = 127080
+tick = 127680
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_05gs5"]
+script = ExtResource("7_s5vvk")
+event_id = "event_99e69a4a17a2c47e"
+tuning_ids = PackedStringArray("event_5e8e215664e8c8aa:point_bd865f3ccd60d22c")
+preparation_tick = 127080
+tick = 128160
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_17iqq"]
+script = ExtResource("7_s5vvk")
+event_id = "event_2d8c4e6dfbc9fb9d"
+tuning_ids = PackedStringArray("event_c571114a9d99c6d0:point_32e833ddd5b9531a")
+preparation_tick = 129120
+tick = 129600
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_ul3pf"]
+script = ExtResource("7_s5vvk")
+event_id = "event_a207a259e958e20a"
+tuning_ids = PackedStringArray("event_c571114a9d99c6d0:point_32e833ddd5b9531a")
+preparation_tick = 129120
+tick = 130080
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_g3yog"]
+script = ExtResource("7_s5vvk")
+event_id = "event_7b5a65ef7dc96c06"
+tuning_ids = PackedStringArray("event_c571114a9d99c6d0:point_32e833ddd5b9531a")
+preparation_tick = 129120
+tick = 130560
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_k30qw"]
+script = ExtResource("7_s5vvk")
+event_id = "event_7e946f63246a853c"
+tuning_ids = PackedStringArray("event_231d513e7ef19c46:point_c94aeb4f104a55fa")
+preparation_tick = 130920
+tick = 131520
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_r4d2s"]
+script = ExtResource("7_s5vvk")
+event_id = "event_9306bedfef023ec2"
+tuning_ids = PackedStringArray("event_231d513e7ef19c46:point_c94aeb4f104a55fa")
+preparation_tick = 130920
+tick = 132000
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_jhyee"]
+script = ExtResource("7_s5vvk")
+event_id = "event_034e3126e1b9ca4e"
+tuning_ids = PackedStringArray("event_2b54c343236a006a:point_931405019ad0442a")
+preparation_tick = 132960
+tick = 133440
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_lpccv"]
+script = ExtResource("7_s5vvk")
+event_id = "event_b3ecde65730e3681"
+tuning_ids = PackedStringArray("event_2b54c343236a006a:point_931405019ad0442a")
+preparation_tick = 132960
+tick = 133920
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_t6qdw"]
+script = ExtResource("7_s5vvk")
+event_id = "event_c510be2b5d7af41e"
+tuning_ids = PackedStringArray("event_2b54c343236a006a:point_931405019ad0442a")
+preparation_tick = 132960
+tick = 134400
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_mo81s"]
+script = ExtResource("7_s5vvk")
+event_id = "event_3a48ed8258bfa77c"
+tuning_ids = PackedStringArray("event_be0b9e081e1ba318:point_1d16d678c948841e")
+preparation_tick = 134640
+tick = 134880
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_3rsm2"]
+script = ExtResource("7_s5vvk")
+event_id = "event_d95f4c589d7327a4"
+tuning_ids = PackedStringArray("event_be0b9e081e1ba318:point_1d16d678c948841e")
+preparation_tick = 134640
+tick = 135360
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_c1vdj"]
+script = ExtResource("7_s5vvk")
+event_id = "event_581d8204e80aac40"
+tuning_ids = PackedStringArray("event_be0b9e081e1ba318:point_1d16d678c948841e")
+preparation_tick = 134640
+tick = 135840
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_v70qm"]
+script = ExtResource("7_s5vvk")
+event_id = "event_eeee31ac2eccc126"
+tuning_ids = PackedStringArray("event_a508562c7c42a416:point_5f57ffbb87c5a863")
+preparation_tick = 136800
+tick = 137280
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_q8gk7"]
+script = ExtResource("7_s5vvk")
+event_id = "event_36bb40a18486f2df"
+tuning_ids = PackedStringArray("event_a508562c7c42a416:point_5f57ffbb87c5a863")
+preparation_tick = 136800
+tick = 137760
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_hwx7c"]
+script = ExtResource("7_s5vvk")
+event_id = "event_a6627b162a037be3"
+tuning_ids = PackedStringArray("event_a508562c7c42a416:point_5f57ffbb87c5a863")
+preparation_tick = 136800
+tick = 138240
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_45ufe"]
+script = ExtResource("7_s5vvk")
+event_id = "event_ff2312b2e9dda4b7"
+tuning_ids = PackedStringArray("event_0e180e6a2db8795d:point_1d772117939f57df")
+preparation_tick = 138480
+tick = 138720
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_escep"]
+script = ExtResource("7_s5vvk")
+event_id = "event_ee35f99ab5f51425"
+tuning_ids = PackedStringArray("event_0e180e6a2db8795d:point_1d772117939f57df")
+preparation_tick = 138480
+tick = 139200
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_varbn"]
+script = ExtResource("7_s5vvk")
+event_id = "event_a13f7a2fb9c82ee8"
+tuning_ids = PackedStringArray("event_0e180e6a2db8795d:point_1d772117939f57df")
+preparation_tick = 138480
+tick = 139680
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_k0k3u"]
+script = ExtResource("7_s5vvk")
+event_id = "event_c11e8de712ce839f"
+tuning_ids = PackedStringArray("event_b2222fd8005dd20c:point_f085b1fc39fa5834", "event_2300534537eb56ce:point_e8f06874ba76d270")
+preparation_tick = 188160
+tick = 188640
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_ve53q"]
+script = ExtResource("7_s5vvk")
+event_id = "event_8d5ea2f33c69ebff"
+tuning_ids = PackedStringArray("event_b2222fd8005dd20c:point_f085b1fc39fa5834", "event_2300534537eb56ce:point_e8f06874ba76d270")
+preparation_tick = 188160
+tick = 189120
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_inbhi"]
+script = ExtResource("7_s5vvk")
+event_id = "event_695fc14e73722ad5"
+tuning_ids = PackedStringArray("event_b2222fd8005dd20c:point_f085b1fc39fa5834", "event_2300534537eb56ce:point_e8f06874ba76d270")
+preparation_tick = 188160
+tick = 189600
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_3njrb"]
+script = ExtResource("7_s5vvk")
+event_id = "event_202368fc90a3dc2f"
+tuning_ids = PackedStringArray("event_ef3e5b54c653dcc7:point_71ca5969fb8fb942", "event_346ee438357949fa:point_a5a4273f2033acbe")
+preparation_tick = 192000
+tick = 192480
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_g86v2"]
+script = ExtResource("7_s5vvk")
+event_id = "event_7489fc888107f0d1"
+tuning_ids = PackedStringArray("event_ef3e5b54c653dcc7:point_71ca5969fb8fb942", "event_346ee438357949fa:point_a5a4273f2033acbe")
+preparation_tick = 192000
+tick = 192960
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_ymtdd"]
+script = ExtResource("7_s5vvk")
+event_id = "event_e23fbf662c136d33"
+tuning_ids = PackedStringArray("event_ef3e5b54c653dcc7:point_71ca5969fb8fb942", "event_346ee438357949fa:point_a5a4273f2033acbe")
+preparation_tick = 192000
+tick = 193440
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_urevd"]
+script = ExtResource("7_s5vvk")
+event_id = "event_81a192e2be205e69"
+tuning_ids = PackedStringArray("event_40f2fd335730a091:point_7e284387711e093f", "event_09d10409a877ad6d:point_f88c5e81052f5dbb")
+preparation_tick = 195840
+tick = 196320
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_1v6t8"]
+script = ExtResource("7_s5vvk")
+event_id = "event_fa26199416946f05"
+tuning_ids = PackedStringArray("event_40f2fd335730a091:point_7e284387711e093f", "event_09d10409a877ad6d:point_f88c5e81052f5dbb")
+preparation_tick = 195840
+tick = 196800
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_vl226"]
+script = ExtResource("7_s5vvk")
+event_id = "event_cef51b1d1b1bfece"
+tuning_ids = PackedStringArray("event_40f2fd335730a091:point_7e284387711e093f", "event_09d10409a877ad6d:point_f88c5e81052f5dbb")
+preparation_tick = 195840
+tick = 197160
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_vatk6"]
+script = ExtResource("7_s5vvk")
+event_id = "event_2b8f22805a61866e"
+tuning_ids = PackedStringArray("event_ff014f249e4fd03d:point_a9c42991e75b1826", "event_b9a220763d18a4c7:point_4ac3ee1374f60b4a")
+preparation_tick = 199680
+tick = 200160
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_wret1"]
+script = ExtResource("7_s5vvk")
+event_id = "event_49f00158dfb65579"
+tuning_ids = PackedStringArray("event_ff014f249e4fd03d:point_a9c42991e75b1826", "event_b9a220763d18a4c7:point_4ac3ee1374f60b4a")
+preparation_tick = 199680
+tick = 200640
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_0p7wr"]
+script = ExtResource("7_s5vvk")
+event_id = "event_53a8960adb0dd10e"
+tuning_ids = PackedStringArray("event_ff014f249e4fd03d:point_a9c42991e75b1826", "event_b9a220763d18a4c7:point_4ac3ee1374f60b4a")
+preparation_tick = 199680
+tick = 201120
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_uibf5"]
+script = ExtResource("7_s5vvk")
+event_id = "event_ca504e5d5782427e"
+tuning_ids = PackedStringArray("event_cbf6fb53267531ef:point_ed31360a3615f5c2", "event_3571217cff69469c:point_816ee525dc94ee44")
+preparation_tick = 203520
+tick = 203520
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_4dsjw"]
+script = ExtResource("7_s5vvk")
+event_id = "event_de41cc88dd2fd20d"
+tuning_ids = PackedStringArray("event_cbf6fb53267531ef:point_ed31360a3615f5c2", "event_3571217cff69469c:point_816ee525dc94ee44")
+preparation_tick = 203520
+tick = 203760
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_hcfhq"]
+script = ExtResource("7_s5vvk")
+event_id = "event_8afea1d6336725d0"
+tuning_ids = PackedStringArray("event_cbf6fb53267531ef:point_ed31360a3615f5c2", "event_3571217cff69469c:point_816ee525dc94ee44")
+preparation_tick = 203520
+tick = 204000
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_okux8"]
+script = ExtResource("7_s5vvk")
+event_id = "event_5a8a1b00a2336d2b"
+tuning_ids = PackedStringArray("event_cbf6fb53267531ef:point_ed31360a3615f5c2", "event_3571217cff69469c:point_816ee525dc94ee44")
+preparation_tick = 203520
+tick = 204480
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_py21b"]
+script = ExtResource("7_s5vvk")
+event_id = "event_8687de226fc78794"
+tuning_ids = PackedStringArray("event_cbf6fb53267531ef:point_ed31360a3615f5c2", "event_3571217cff69469c:point_816ee525dc94ee44")
+preparation_tick = 203520
+tick = 204960
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_s4p0u"]
+script = ExtResource("7_s5vvk")
+event_id = "event_9fe0ed393e64e4c8"
+tuning_ids = PackedStringArray("event_7bcd1f7cef128246:point_2188908b7b8df1c4", "event_c4554b2c69ce7577:point_445bf3f551d2705b")
+preparation_tick = 207360
+tick = 207360
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_iism8"]
+script = ExtResource("7_s5vvk")
+event_id = "event_459da9182c0e4a1b"
+tuning_ids = PackedStringArray("event_7bcd1f7cef128246:point_2188908b7b8df1c4", "event_c4554b2c69ce7577:point_445bf3f551d2705b")
+preparation_tick = 207360
+tick = 207600
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_dvi67"]
+script = ExtResource("7_s5vvk")
+event_id = "event_a4dfc1cce0f4145c"
+tuning_ids = PackedStringArray("event_7bcd1f7cef128246:point_2188908b7b8df1c4", "event_c4554b2c69ce7577:point_445bf3f551d2705b")
+preparation_tick = 207360
+tick = 207840
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_rik4x"]
+script = ExtResource("7_s5vvk")
+event_id = "event_017efe033bb5a53f"
+tuning_ids = PackedStringArray("event_7bcd1f7cef128246:point_2188908b7b8df1c4", "event_c4554b2c69ce7577:point_445bf3f551d2705b")
+preparation_tick = 207360
+tick = 208320
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_brpor"]
+script = ExtResource("7_s5vvk")
+event_id = "event_3021d5b3d7a1230c"
+tuning_ids = PackedStringArray("event_7bcd1f7cef128246:point_2188908b7b8df1c4", "event_c4554b2c69ce7577:point_445bf3f551d2705b")
+preparation_tick = 207360
+tick = 208800
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_lwmfc"]
+script = ExtResource("7_s5vvk")
+event_id = "event_9060627e7c5ec1d8"
+tuning_ids = PackedStringArray("event_f2a3ac440661ba8b:point_ab2d165c631b0ffa", "event_2c54db82321a9f51:point_30256e7e91c7767d")
+preparation_tick = 211200
+tick = 211200
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_q8vt6"]
+script = ExtResource("7_s5vvk")
+event_id = "event_b3b798533967edc3"
+tuning_ids = PackedStringArray("event_f2a3ac440661ba8b:point_ab2d165c631b0ffa", "event_2c54db82321a9f51:point_30256e7e91c7767d")
+preparation_tick = 211200
+tick = 211440
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_i7nq6"]
+script = ExtResource("7_s5vvk")
+event_id = "event_2333cb2f5d871bff"
+tuning_ids = PackedStringArray("event_f2a3ac440661ba8b:point_ab2d165c631b0ffa", "event_2c54db82321a9f51:point_30256e7e91c7767d")
+preparation_tick = 211200
+tick = 211680
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_7vv67"]
+script = ExtResource("7_s5vvk")
+event_id = "event_182992f316ce1bf9"
+tuning_ids = PackedStringArray("event_f2a3ac440661ba8b:point_ab2d165c631b0ffa", "event_2c54db82321a9f51:point_30256e7e91c7767d")
+preparation_tick = 211200
+tick = 212160
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_x3t05"]
+script = ExtResource("7_s5vvk")
+event_id = "event_3a366103a6da26cf"
+tuning_ids = PackedStringArray("event_f2a3ac440661ba8b:point_ab2d165c631b0ffa", "event_2c54db82321a9f51:point_30256e7e91c7767d")
+preparation_tick = 211200
+tick = 212640
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_etedb"]
+script = ExtResource("7_s5vvk")
+event_id = "event_bafdff4299ca2ee3"
+tuning_ids = PackedStringArray("event_79c7118c90f2ba53:point_6c4a1bf9edf81b9d", "event_7e40d54dff80561f:point_f6a2b5ec0a8cb528")
+preparation_tick = 215040
+tick = 215040
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_jy250"]
+script = ExtResource("7_s5vvk")
+event_id = "event_a5f3b59d40007b9e"
+tuning_ids = PackedStringArray("event_79c7118c90f2ba53:point_6c4a1bf9edf81b9d", "event_7e40d54dff80561f:point_f6a2b5ec0a8cb528")
+preparation_tick = 215040
+tick = 215280
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_7ihxd"]
+script = ExtResource("7_s5vvk")
+event_id = "event_f108c1621fdb4466"
+tuning_ids = PackedStringArray("event_79c7118c90f2ba53:point_6c4a1bf9edf81b9d", "event_7e40d54dff80561f:point_f6a2b5ec0a8cb528")
+preparation_tick = 215040
+tick = 215520
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_3als6"]
+script = ExtResource("7_s5vvk")
+event_id = "event_108db9282f35ecb1"
+tuning_ids = PackedStringArray("event_79c7118c90f2ba53:point_6c4a1bf9edf81b9d", "event_7e40d54dff80561f:point_f6a2b5ec0a8cb528")
+preparation_tick = 215040
+tick = 216000
+spawn_region_normalized = Rect2(0, 0, 1, 1)
+
+[sub_resource type="Resource" id="Resource_pgoas"]
+script = ExtResource("8_m7yvf")
+bpm = 143.0
+metadata/json_source = {
+"bpm": 143.0,
+"tick": 0.0
+}
+
+[sub_resource type="Resource" id="Resource_vk65g"]
+script = ExtResource("9_4uhrw")
+event_id = "preview_field_0"
+tick = 65280
+duration_ticks = 1920
+
+[sub_resource type="Resource" id="Resource_7o5du"]
+script = ExtResource("9_4uhrw")
+event_id = "preview_field_1"
+tick = 69120
+duration_ticks = 1920
+
+[sub_resource type="Resource" id="Resource_oy66u"]
+script = ExtResource("9_4uhrw")
+event_id = "preview_field_2"
+tick = 72960
+duration_ticks = 1920
+
+[sub_resource type="Resource" id="Resource_k2lxa"]
+script = ExtResource("9_4uhrw")
+event_id = "preview_field_3"
+tick = 76800
+duration_ticks = 1920
+
+[sub_resource type="Resource" id="Resource_2nhn7"]
+script = ExtResource("9_4uhrw")
+event_id = "preview_field_4"
+tick = 79200
+duration_ticks = 3360
+
+[sub_resource type="Resource" id="Resource_uakpw"]
+script = ExtResource("9_4uhrw")
+event_id = "preview_field_5"
+tick = 83040
+duration_ticks = 3360
+
+[sub_resource type="Resource" id="Resource_4li2i"]
+script = ExtResource("9_4uhrw")
+event_id = "preview_field_6"
+tick = 86880
+duration_ticks = 3360
+
+[sub_resource type="Resource" id="Resource_48o4i"]
+script = ExtResource("9_4uhrw")
+event_id = "preview_field_7"
+tick = 90720
+duration_ticks = 3360
+
+[sub_resource type="Resource" id="Resource_4o0bw"]
+script = ExtResource("9_4uhrw")
+event_id = "preview_field_8"
+tick = 125280
+duration_ticks = 3360
+
+[sub_resource type="Resource" id="Resource_i8gmq"]
+script = ExtResource("9_4uhrw")
+event_id = "preview_field_9"
+tick = 129120
+duration_ticks = 3360
+
+[sub_resource type="Resource" id="Resource_afede"]
+script = ExtResource("9_4uhrw")
+event_id = "preview_field_10"
+tick = 132960
+duration_ticks = 3360
+
+[sub_resource type="Resource" id="Resource_1sxc4"]
+script = ExtResource("9_4uhrw")
+event_id = "preview_field_11"
+tick = 136800
+duration_ticks = 3360
+
+[sub_resource type="Resource" id="Resource_g13f8"]
+script = ExtResource("9_4uhrw")
+event_id = "preview_field_12"
+tick = 188160
+duration_ticks = 1920
+
+[sub_resource type="Resource" id="Resource_bq5nd"]
+script = ExtResource("9_4uhrw")
+event_id = "preview_field_13"
+tick = 192000
+duration_ticks = 1920
+
+[sub_resource type="Resource" id="Resource_g7qut"]
+script = ExtResource("9_4uhrw")
+event_id = "preview_field_14"
+tick = 195840
+duration_ticks = 1920
+
+[sub_resource type="Resource" id="Resource_53igb"]
+script = ExtResource("9_4uhrw")
+event_id = "preview_field_15"
+tick = 199680
+duration_ticks = 1920
+
+[sub_resource type="Resource" id="Resource_vevwm"]
+script = ExtResource("9_4uhrw")
+event_id = "preview_field_16"
+tick = 203520
+duration_ticks = 1920
+
+[sub_resource type="Resource" id="Resource_p088b"]
+script = ExtResource("9_4uhrw")
+event_id = "preview_field_17"
+tick = 207360
+duration_ticks = 1920
+
+[sub_resource type="Resource" id="Resource_f70se"]
+script = ExtResource("9_4uhrw")
+event_id = "preview_field_18"
+tick = 211200
+duration_ticks = 1920
+
+[sub_resource type="Resource" id="Resource_kqjc1"]
+script = ExtResource("9_4uhrw")
+event_id = "preview_field_19"
+tick = 215040
+duration_ticks = 1440
+
+[sub_resource type="Resource" id="Resource_dusjy"]
+script = ExtResource("11_sd8ty")
+event_id = "event_38c2e7bf599d725d:point_d26a5b5e936ec94c"
+field_id = "preview_field_0"
+tick = 65280
+traversal_ticks = 1920
+start_value = 0.3333333333333333
+end_value = 0.8385148188742559
+arc_rotation_deg = 2.842171e-14
+visual_hold_ids = PackedStringArray("event_e1c782386629c916", "event_d41597b5e157bad3")
+
+[sub_resource type="Resource" id="Resource_sh4nf"]
+script = ExtResource("11_sd8ty")
+event_id = "event_7a864cb3865a1d9f:point_7e47bb46e27a0e1a"
+field_id = "preview_field_1"
+affinity = 1
+tick = 69120
+traversal_ticks = 1920
+start_value = 0.5051814855409194
+end_value = 0.0
+arc_rotation_deg = -1.2789769e-13
+visual_hold_ids = PackedStringArray("event_8098d25e98fc141e", "event_6942b72c82bf40f9")
+
+[sub_resource type="Resource" id="Resource_kghw4"]
+script = ExtResource("11_sd8ty")
+event_id = "event_46fcf56dff5716f2:point_85bc36e4bc690339"
+field_id = "preview_field_2"
+tick = 72960
+traversal_ticks = 1920
+start_value = 0.3333333333333333
+end_value = 0.8385148188742559
+arc_rotation_deg = 2.842171e-14
+visual_hold_ids = PackedStringArray("event_13ffb182320386a5", "event_cc604789245768e3")
+
+[sub_resource type="Resource" id="Resource_4m61u"]
+script = ExtResource("11_sd8ty")
+event_id = "event_c3f30e3386227c9a:point_129dfbde859fc41a"
+field_id = "preview_field_3"
+affinity = 1
+tick = 76800
+traversal_ticks = 1920
+start_value = 0.5051814855409194
+end_value = 0.0
+arc_rotation_deg = -1.2789769e-13
+visual_hold_ids = PackedStringArray("event_3c65a54149dcaf19", "event_ec3b3fda79420d56")
+
+[sub_resource type="Resource" id="Resource_5fae5"]
+script = ExtResource("11_sd8ty")
+event_id = "event_75ff3e39621d0a5a:point_a14e5e4c4d8c4a52"
+field_id = "preview_field_4"
+affinity = 1
+tick = 80640
+traversal_ticks = 1920
+start_value = 0.5051814855409194
+end_value = 0.0
+visual_radius_px = 350.0
+arc_rotation_deg = -1.2789769e-13
+visual_hold_ids = PackedStringArray("event_3c7188c3d2ae5b63", "event_2762d601b8c71423")
+
+[sub_resource type="Resource" id="Resource_5tugh"]
+script = ExtResource("11_sd8ty")
+event_id = "event_7e1cfc92b1d68a8b:point_b586f2a0dc60aa55"
+field_id = "preview_field_4"
+tick = 80640
+traversal_ticks = 1920
+start_value = 0.3333333333333333
+end_value = 0.8385148188742559
+visual_radius_px = 350.0
+arc_rotation_deg = 2.842171e-14
+visual_hold_ids = PackedStringArray("event_2762d601b8c71423", "event_3c7188c3d2ae5b63")
+
+[sub_resource type="Resource" id="Resource_o2m2q"]
+script = ExtResource("11_sd8ty")
+event_id = "event_08f26a2da92d21b2:point_fa41782e529d6341"
+field_id = "preview_field_5"
+affinity = 1
+tick = 84480
+traversal_ticks = 1920
+start_value = 0.5051814855409194
+end_value = 0.0
+visual_radius_px = 350.0
+arc_rotation_deg = -1.2789769e-13
+visual_hold_ids = PackedStringArray("event_15a48865df21b52d", "event_be7096527aa8b409")
+
+[sub_resource type="Resource" id="Resource_8nox5"]
+script = ExtResource("11_sd8ty")
+event_id = "event_62a1b68b50583c1f:point_d9f5c60dfb01c396"
+field_id = "preview_field_5"
+tick = 84480
+traversal_ticks = 1920
+start_value = 0.3333333333333333
+end_value = 0.8385148188742559
+visual_radius_px = 350.0
+arc_rotation_deg = 2.842171e-14
+visual_hold_ids = PackedStringArray("event_be7096527aa8b409", "event_15a48865df21b52d")
+
+[sub_resource type="Resource" id="Resource_01wht"]
+script = ExtResource("11_sd8ty")
+event_id = "event_cd3f3b726d65dc66:point_3a5647108fcd2fe2"
+field_id = "preview_field_6"
+tick = 88320
+traversal_ticks = 1920
+start_value = 0.3333333333333333
+end_value = 0.8385148188742559
+visual_radius_px = 350.0
+arc_rotation_deg = 2.842171e-14
+visual_hold_ids = PackedStringArray("event_e5f9b6150ab5b2dc", "event_0866f556f8a22606")
+
+[sub_resource type="Resource" id="Resource_h177p"]
+script = ExtResource("11_sd8ty")
+event_id = "event_efd2aef254de54e9:point_fe448f82ddd1cf72"
+field_id = "preview_field_6"
+affinity = 1
+tick = 88320
+traversal_ticks = 1920
+start_value = 0.5051814855409194
+end_value = 0.0
+visual_radius_px = 350.0
+arc_rotation_deg = -1.2789769e-13
+visual_hold_ids = PackedStringArray("event_0866f556f8a22606", "event_e5f9b6150ab5b2dc")
+
+[sub_resource type="Resource" id="Resource_xt2by"]
+script = ExtResource("11_sd8ty")
+event_id = "event_74fc1a43e35ecd7f:point_eb7388bc283066b2"
+field_id = "preview_field_7"
+affinity = 1
+tick = 92160
+traversal_ticks = 1920
+start_value = 0.5051814855409194
+end_value = 0.0
+visual_radius_px = 350.0
+arc_rotation_deg = -1.2789769e-13
+visual_hold_ids = PackedStringArray("event_2e845f757d995465", "event_5324c4957ec97acd")
+
+[sub_resource type="Resource" id="Resource_h0e7p"]
+script = ExtResource("11_sd8ty")
+event_id = "event_90483925f7329cc9:point_96c056c34f0abe07"
+field_id = "preview_field_7"
+tick = 92160
+traversal_ticks = 1920
+start_value = 0.3333333333333333
+end_value = 0.8385148188742559
+visual_radius_px = 350.0
+arc_rotation_deg = 2.842171e-14
+visual_hold_ids = PackedStringArray("event_5324c4957ec97acd", "event_2e845f757d995465")
+
+[sub_resource type="Resource" id="Resource_3a0x2"]
+script = ExtResource("11_sd8ty")
+event_id = "event_22a22d066a9b2335:point_4e7ed009efeaef01"
+field_id = "preview_field_8"
+tick = 125280
+traversal_ticks = 1800
+start_value = 0.11579873300630905
+visual_radius_px = 475.0
+arc_rotation_deg = 15.299675180690741
+visual_hold_ids = PackedStringArray("event_997635e2c4516d2c", "event_8c4cd1578a8f8544")
+
+[sub_resource type="Resource" id="Resource_o8cm5"]
+script = ExtResource("11_sd8ty")
+event_id = "event_5e8e215664e8c8aa:point_bd865f3ccd60d22c"
+field_id = "preview_field_8"
+affinity = 1
+tick = 127080
+traversal_ticks = 1560
+start_value = 0.8848635358971045
+end_value = 0.0
+visual_radius_px = 475.0
+arc_rotation_deg = 15.321123228604378
+visual_hold_ids = PackedStringArray("event_8c4cd1578a8f8544", "event_997635e2c4516d2c")
+
+[sub_resource type="Resource" id="Resource_exxaj"]
+script = ExtResource("11_sd8ty")
+event_id = "event_c571114a9d99c6d0:point_32e833ddd5b9531a"
+field_id = "preview_field_9"
+tick = 129120
+traversal_ticks = 1800
+start_value = 0.11579873300630905
+visual_radius_px = 475.0
+arc_rotation_deg = 15.299675180690741
+visual_hold_ids = PackedStringArray("event_ef783d4ffc70c046", "event_fe669f3c3f2bdfcb")
+
+[sub_resource type="Resource" id="Resource_4g7lg"]
+script = ExtResource("11_sd8ty")
+event_id = "event_231d513e7ef19c46:point_c94aeb4f104a55fa"
+field_id = "preview_field_9"
+affinity = 1
+tick = 130920
+traversal_ticks = 1560
+start_value = 0.8848635358971045
+end_value = 0.0
+visual_radius_px = 475.0
+arc_rotation_deg = 15.321123228604378
+visual_hold_ids = PackedStringArray("event_fe669f3c3f2bdfcb", "event_ef783d4ffc70c046")
+
+[sub_resource type="Resource" id="Resource_glacr"]
+script = ExtResource("11_sd8ty")
+event_id = "event_2b54c343236a006a:point_931405019ad0442a"
+field_id = "preview_field_10"
+affinity = 1
+tick = 132960
+traversal_ticks = 1680
+start_value = 0.8848635358971045
+end_value = 0.0
+visual_radius_px = 475.0
+arc_rotation_deg = 15.321123228604378
+visual_hold_ids = PackedStringArray("event_69f65784330f90ea", "event_fee88eeeadef9b4a")
+
+[sub_resource type="Resource" id="Resource_c46ge"]
+script = ExtResource("11_sd8ty")
+event_id = "event_be0b9e081e1ba318:point_1d16d678c948841e"
+field_id = "preview_field_10"
+tick = 134640
+traversal_ticks = 1680
+start_value = 0.11579873300630905
+visual_radius_px = 475.0
+arc_rotation_deg = 15.299675180690741
+visual_hold_ids = PackedStringArray("event_fee88eeeadef9b4a", "event_69f65784330f90ea")
+
+[sub_resource type="Resource" id="Resource_aao5t"]
+script = ExtResource("11_sd8ty")
+event_id = "event_a508562c7c42a416:point_5f57ffbb87c5a863"
+field_id = "preview_field_11"
+affinity = 1
+tick = 136800
+traversal_ticks = 1680
+start_value = 0.8848635358971045
+end_value = 0.0
+visual_radius_px = 475.0
+arc_rotation_deg = 15.321123228604378
+visual_hold_ids = PackedStringArray("event_0c5dcbe53bc301e3", "event_ae4d652e8abc676d")
+
+[sub_resource type="Resource" id="Resource_2siq1"]
+script = ExtResource("11_sd8ty")
+event_id = "event_0e180e6a2db8795d:point_1d772117939f57df"
+field_id = "preview_field_11"
+tick = 138480
+traversal_ticks = 1680
+start_value = 0.11579873300630905
+visual_radius_px = 475.0
+arc_rotation_deg = 15.299675180690741
+visual_hold_ids = PackedStringArray("event_ae4d652e8abc676d", "event_0c5dcbe53bc301e3")
+
+[sub_resource type="Resource" id="Resource_0n4jd"]
+script = ExtResource("11_sd8ty")
+event_id = "event_2300534537eb56ce:point_e8f06874ba76d270"
+field_id = "preview_field_12"
+affinity = 1
+tick = 188160
+traversal_ticks = 1920
+start_value = 0.8749999999999999
+end_value = 0.0
+visual_radius_px = 450.0
+arc_rotation_deg = -14.357753542791272
+visual_hold_ids = PackedStringArray("event_de369d26bd115dd9", "event_5bebe98d92ffdd7e")
+
+[sub_resource type="Resource" id="Resource_drjwc"]
+script = ExtResource("11_sd8ty")
+event_id = "event_b2222fd8005dd20c:point_f085b1fc39fa5834"
+field_id = "preview_field_12"
+tick = 188160
+traversal_ticks = 1920
+start_value = 0.1250000000000001
+visual_radius_px = 450.0
+arc_rotation_deg = -14.357753542791272
+visual_hold_ids = PackedStringArray("event_5bebe98d92ffdd7e", "event_de369d26bd115dd9")
+
+[sub_resource type="Resource" id="Resource_fr6p6"]
+script = ExtResource("11_sd8ty")
+event_id = "event_346ee438357949fa:point_a5a4273f2033acbe"
+field_id = "preview_field_13"
+affinity = 1
+tick = 192000
+traversal_ticks = 1920
+start_value = 0.8749999999999999
+end_value = 0.0
+visual_radius_px = 450.0
+arc_rotation_deg = 15.642246457208728
+visual_hold_ids = PackedStringArray("event_2526f0db8964eb82", "event_0244fa864240599a")
+
+[sub_resource type="Resource" id="Resource_fmkbh"]
+script = ExtResource("11_sd8ty")
+event_id = "event_ef3e5b54c653dcc7:point_71ca5969fb8fb942"
+field_id = "preview_field_13"
+tick = 192000
+traversal_ticks = 1920
+start_value = 0.1250000000000001
+visual_radius_px = 450.0
+arc_rotation_deg = 15.642246457208728
+visual_hold_ids = PackedStringArray("event_0244fa864240599a", "event_2526f0db8964eb82")
+
+[sub_resource type="Resource" id="Resource_7jm7l"]
+script = ExtResource("11_sd8ty")
+event_id = "event_09d10409a877ad6d:point_f88c5e81052f5dbb"
+field_id = "preview_field_14"
+affinity = 1
+tick = 195840
+traversal_ticks = 1920
+start_value = 0.8749999999999999
+end_value = 0.0
+visual_radius_px = 450.0
+arc_rotation_deg = -14.357753542791272
+visual_hold_ids = PackedStringArray("event_0b0495260cf0b835", "event_d30cf126e0624f2e")
+
+[sub_resource type="Resource" id="Resource_dth3a"]
+script = ExtResource("11_sd8ty")
+event_id = "event_40f2fd335730a091:point_7e284387711e093f"
+field_id = "preview_field_14"
+tick = 195840
+traversal_ticks = 1920
+start_value = 0.1250000000000001
+visual_radius_px = 450.0
+arc_rotation_deg = -14.357753542791272
+visual_hold_ids = PackedStringArray("event_d30cf126e0624f2e", "event_0b0495260cf0b835")
+
+[sub_resource type="Resource" id="Resource_niaop"]
+script = ExtResource("11_sd8ty")
+event_id = "event_b9a220763d18a4c7:point_4ac3ee1374f60b4a"
+field_id = "preview_field_15"
+affinity = 1
+tick = 199680
+traversal_ticks = 1920
+start_value = 0.8749999999999999
+end_value = 0.0
+visual_radius_px = 450.0
+arc_rotation_deg = 15.642246457208728
+visual_hold_ids = PackedStringArray("event_2f3b75362ba3ad13", "event_dbf85d05e29ac03d")
+
+[sub_resource type="Resource" id="Resource_e1wyu"]
+script = ExtResource("11_sd8ty")
+event_id = "event_ff014f249e4fd03d:point_a9c42991e75b1826"
+field_id = "preview_field_15"
+tick = 199680
+traversal_ticks = 1920
+start_value = 0.1250000000000001
+visual_radius_px = 450.0
+arc_rotation_deg = 15.642246457208728
+visual_hold_ids = PackedStringArray("event_dbf85d05e29ac03d", "event_2f3b75362ba3ad13")
+
+[sub_resource type="Resource" id="Resource_yiba4"]
+script = ExtResource("11_sd8ty")
+event_id = "event_3571217cff69469c:point_816ee525dc94ee44"
+field_id = "preview_field_16"
+affinity = 1
+tick = 203520
+traversal_ticks = 1920
+start_value = 0.8749999999999999
+end_value = 0.0
+visual_radius_px = 450.0
+arc_rotation_deg = 15.642246457208728
+visual_hold_ids = PackedStringArray("event_0f0c5fcaf21f3b20", "event_3d3206ab83951cf5")
+
+[sub_resource type="Resource" id="Resource_7n4bn"]
+script = ExtResource("11_sd8ty")
+event_id = "event_cbf6fb53267531ef:point_ed31360a3615f5c2"
+field_id = "preview_field_16"
+tick = 203520
+traversal_ticks = 1920
+start_value = 0.8749999999999999
+end_value = 0.0
+visual_radius_px = 450.0
+arc_rotation_deg = -14.357753542791272
+visual_hold_ids = PackedStringArray("event_3d3206ab83951cf5", "event_0f0c5fcaf21f3b20")
+
+[sub_resource type="Resource" id="Resource_222y2"]
+script = ExtResource("11_sd8ty")
+event_id = "event_7bcd1f7cef128246:point_2188908b7b8df1c4"
+field_id = "preview_field_17"
+tick = 207360
+traversal_ticks = 1920
+start_value = 0.8749999999999999
+end_value = 0.0
+visual_radius_px = 450.0
+arc_rotation_deg = -14.357753542791272
+visual_hold_ids = PackedStringArray("event_6e5b181a8cbcb1e8", "event_6b564e460dfafaa0")
+
+[sub_resource type="Resource" id="Resource_5ug3g"]
+script = ExtResource("11_sd8ty")
+event_id = "event_c4554b2c69ce7577:point_445bf3f551d2705b"
+field_id = "preview_field_17"
+affinity = 1
+tick = 207360
+traversal_ticks = 1920
+start_value = 0.8749999999999999
+end_value = 0.0
+visual_radius_px = 450.0
+arc_rotation_deg = 15.642246457208728
+visual_hold_ids = PackedStringArray("event_6b564e460dfafaa0", "event_6e5b181a8cbcb1e8")
+
+[sub_resource type="Resource" id="Resource_m1lrc"]
+script = ExtResource("11_sd8ty")
+event_id = "event_2c54db82321a9f51:point_30256e7e91c7767d"
+field_id = "preview_field_18"
+affinity = 1
+tick = 211200
+traversal_ticks = 1920
+start_value = 0.1250000000000001
+visual_radius_px = 450.0
+arc_rotation_deg = -14.357753542791272
+visual_hold_ids = PackedStringArray("event_fe1ca9e636efde46", "event_ea9f12348d2c14bd")
+
+[sub_resource type="Resource" id="Resource_2lu1h"]
+script = ExtResource("11_sd8ty")
+event_id = "event_f2a3ac440661ba8b:point_ab2d165c631b0ffa"
+field_id = "preview_field_18"
+tick = 211200
+traversal_ticks = 1920
+start_value = 0.1250000000000001
+visual_radius_px = 450.0
+arc_rotation_deg = 15.642246457208728
+visual_hold_ids = PackedStringArray("event_ea9f12348d2c14bd", "event_fe1ca9e636efde46")
+
+[sub_resource type="Resource" id="Resource_3mphi"]
+script = ExtResource("11_sd8ty")
+event_id = "event_79c7118c90f2ba53:point_6c4a1bf9edf81b9d"
+field_id = "preview_field_19"
+tick = 215040
+traversal_ticks = 1440
+start_value = 0.1250000000000001
+visual_radius_px = 450.0
+arc_rotation_deg = 15.642246457208728
+visual_hold_ids = PackedStringArray("event_9154a5dde9012b7c", "event_46defd887efcaad4")
+
+[sub_resource type="Resource" id="Resource_gg26e"]
+script = ExtResource("11_sd8ty")
+event_id = "event_7e40d54dff80561f:point_f6a2b5ec0a8cb528"
+field_id = "preview_field_19"
+affinity = 1
+tick = 215040
+traversal_ticks = 1440
+start_value = 0.1250000000000001
+visual_radius_px = 450.0
+arc_rotation_deg = -14.357753542791272
+visual_hold_ids = PackedStringArray("event_46defd887efcaad4", "event_9154a5dde9012b7c")
+
+[resource]
+script = ExtResource("5_u3y3f")
+chart_id = "chart_3a323bb6e82964c5"
+end_tick = 220800
+tempo_events = Array[ExtResource("8_m7yvf")]([SubResource("Resource_pgoas")])
+meter_events = Array[ExtResource("2_4a4b2")]([SubResource("Resource_uk22j")])
+note_events = Array[ExtResource("3_cetgf")]([SubResource("Resource_2306f"), SubResource("Resource_hyq5p"), SubResource("Resource_1pp27"), SubResource("Resource_uhy0d"), SubResource("Resource_76vs1"), SubResource("Resource_03kh2"), SubResource("Resource_4ouga"), SubResource("Resource_jerva"), SubResource("Resource_g7086"), SubResource("Resource_d8bku"), SubResource("Resource_eov65"), SubResource("Resource_4uw4r"), SubResource("Resource_5n4ni"), SubResource("Resource_jpfiv"), SubResource("Resource_kg6mf"), SubResource("Resource_rjjgi"), SubResource("Resource_iowun"), SubResource("Resource_cskts"), SubResource("Resource_l3c1l"), SubResource("Resource_6yyj3"), SubResource("Resource_5s6or"), SubResource("Resource_gyxqu"), SubResource("Resource_hpj1o"), SubResource("Resource_nyyjo"), SubResource("Resource_1dopq"), SubResource("Resource_j72of"), SubResource("Resource_0ixaw"), SubResource("Resource_2uucp"), SubResource("Resource_j3rmh"), SubResource("Resource_3rkth"), SubResource("Resource_vwxn1"), SubResource("Resource_c0dxb"), SubResource("Resource_tibbg"), SubResource("Resource_c5kx7"), SubResource("Resource_6a808"), SubResource("Resource_8flpm"), SubResource("Resource_iwsxc"), SubResource("Resource_5i343"), SubResource("Resource_5xwv0"), SubResource("Resource_631ki"), SubResource("Resource_aaops"), SubResource("Resource_qh8sj"), SubResource("Resource_7vxm3"), SubResource("Resource_1xpo1"), SubResource("Resource_ywts5"), SubResource("Resource_ago0a"), SubResource("Resource_h0hep"), SubResource("Resource_8h4sw"), SubResource("Resource_ve1oq"), SubResource("Resource_k3rsk"), SubResource("Resource_vdrbc"), SubResource("Resource_ihf2b"), SubResource("Resource_isced"), SubResource("Resource_8cf2p"), SubResource("Resource_mdfrx"), SubResource("Resource_cvue5"), SubResource("Resource_n71ga"), SubResource("Resource_sanst"), SubResource("Resource_dl3ko"), SubResource("Resource_arcg8"), SubResource("Resource_qpbmn"), SubResource("Resource_oee0i"), SubResource("Resource_74c3o"), SubResource("Resource_0rlgv"), SubResource("Resource_x5sn5"), SubResource("Resource_yae83"), SubResource("Resource_wllom"), SubResource("Resource_lf5y1"), SubResource("Resource_vwgon"), SubResource("Resource_o56br"), SubResource("Resource_mf05b"), SubResource("Resource_p468b"), SubResource("Resource_va41u"), SubResource("Resource_mur0g"), SubResource("Resource_68hqs"), SubResource("Resource_nlsin"), SubResource("Resource_60e6w"), SubResource("Resource_npqk2"), SubResource("Resource_q8x5b"), SubResource("Resource_mj1ik"), SubResource("Resource_np5j5"), SubResource("Resource_20bvc"), SubResource("Resource_ykhsx"), SubResource("Resource_5dy8k"), SubResource("Resource_dyqr8"), SubResource("Resource_33sd6"), SubResource("Resource_35wtb"), SubResource("Resource_rdjk4"), SubResource("Resource_2h5a4"), SubResource("Resource_in1mq"), SubResource("Resource_7xgso"), SubResource("Resource_e11ai"), SubResource("Resource_2wgfr"), SubResource("Resource_7dqeq"), SubResource("Resource_yr1x4"), SubResource("Resource_215h6"), SubResource("Resource_48ero"), SubResource("Resource_k26to"), SubResource("Resource_hv3u5"), SubResource("Resource_0055u"), SubResource("Resource_obb1b"), SubResource("Resource_0g2bl"), SubResource("Resource_8whrj"), SubResource("Resource_i8rmv"), SubResource("Resource_o2lhe"), SubResource("Resource_kcs32"), SubResource("Resource_omgv4"), SubResource("Resource_no8w1"), SubResource("Resource_gs1p4"), SubResource("Resource_dvmc1"), SubResource("Resource_ikxl6"), SubResource("Resource_6ux0n"), SubResource("Resource_cfkt7"), SubResource("Resource_3aut5"), SubResource("Resource_v1ukx"), SubResource("Resource_ttn81"), SubResource("Resource_smyb2"), SubResource("Resource_4bmwp"), SubResource("Resource_yf5km"), SubResource("Resource_tdv8a"), SubResource("Resource_1upsv"), SubResource("Resource_u6sc8"), SubResource("Resource_fkjcr"), SubResource("Resource_gjt5v"), SubResource("Resource_2bpqb"), SubResource("Resource_yyqiu"), SubResource("Resource_8rm46"), SubResource("Resource_ko2fq"), SubResource("Resource_u0qpo"), SubResource("Resource_7qgep"), SubResource("Resource_w13x3"), SubResource("Resource_wcs81"), SubResource("Resource_h1s1q"), SubResource("Resource_lnrtb"), SubResource("Resource_22r6w"), SubResource("Resource_a0os0"), SubResource("Resource_hnrsw"), SubResource("Resource_6axbo"), SubResource("Resource_8d4sl"), SubResource("Resource_s6asn"), SubResource("Resource_y1fcn"), SubResource("Resource_qv13s"), SubResource("Resource_88841"), SubResource("Resource_h454g"), SubResource("Resource_3o8vc"), SubResource("Resource_ndsdf"), SubResource("Resource_tdj8e"), SubResource("Resource_hl0hg"), SubResource("Resource_tkj5f"), SubResource("Resource_onwwp"), SubResource("Resource_6wk1t"), SubResource("Resource_v2xq5"), SubResource("Resource_3cdma"), SubResource("Resource_jtokk"), SubResource("Resource_12jh8"), SubResource("Resource_lyi2k"), SubResource("Resource_cevs7"), SubResource("Resource_p5u4s"), SubResource("Resource_xahgk"), SubResource("Resource_ds88w"), SubResource("Resource_qvtht"), SubResource("Resource_8b7oq"), SubResource("Resource_xnwk0"), SubResource("Resource_jcw3o"), SubResource("Resource_rnpkt"), SubResource("Resource_0jmog"), SubResource("Resource_n5u44"), SubResource("Resource_oy421"), SubResource("Resource_d43i2"), SubResource("Resource_1f1qu"), SubResource("Resource_ehcr3"), SubResource("Resource_m8ytl"), SubResource("Resource_vnfbc"), SubResource("Resource_6k2ik"), SubResource("Resource_0bwwa"), SubResource("Resource_nuc1h"), SubResource("Resource_ij574"), SubResource("Resource_y27e2"), SubResource("Resource_fftuf"), SubResource("Resource_ekp2v"), SubResource("Resource_kow68"), SubResource("Resource_so772"), SubResource("Resource_j5lbh"), SubResource("Resource_3l0ok"), SubResource("Resource_2bbc2"), SubResource("Resource_5j0fq"), SubResource("Resource_3svqy"), SubResource("Resource_3t7dk"), SubResource("Resource_tc8kq"), SubResource("Resource_6774d"), SubResource("Resource_6niph"), SubResource("Resource_jgn2i"), SubResource("Resource_x43sr"), SubResource("Resource_08mou"), SubResource("Resource_dn7la"), SubResource("Resource_3m5af"), SubResource("Resource_sqpof"), SubResource("Resource_atgu6"), SubResource("Resource_b0jvq"), SubResource("Resource_q6ijx"), SubResource("Resource_ckajn"), SubResource("Resource_h5j8d"), SubResource("Resource_4bjwx"), SubResource("Resource_7v7sd"), SubResource("Resource_sly68"), SubResource("Resource_46f1b"), SubResource("Resource_yqm5y"), SubResource("Resource_obndr"), SubResource("Resource_buo7j"), SubResource("Resource_ixde1"), SubResource("Resource_xcptu"), SubResource("Resource_seo1l"), SubResource("Resource_jty4i"), SubResource("Resource_jgihx"), SubResource("Resource_6mdy1"), SubResource("Resource_687gj"), SubResource("Resource_ei4l2"), SubResource("Resource_fqc3k"), SubResource("Resource_8e2es"), SubResource("Resource_npm5u"), SubResource("Resource_5egj2"), SubResource("Resource_4yxhb"), SubResource("Resource_tmxl4"), SubResource("Resource_htcrm"), SubResource("Resource_phg1k"), SubResource("Resource_juwmy"), SubResource("Resource_b73xk"), SubResource("Resource_mq55n"), SubResource("Resource_e6ldk"), SubResource("Resource_uv7v0"), SubResource("Resource_mnx4j"), SubResource("Resource_kdd5h")])
+tuning_fields = Array[ExtResource("9_4uhrw")]([SubResource("Resource_vk65g"), SubResource("Resource_7o5du"), SubResource("Resource_oy66u"), SubResource("Resource_k2lxa"), SubResource("Resource_2nhn7"), SubResource("Resource_uakpw"), SubResource("Resource_4li2i"), SubResource("Resource_48o4i"), SubResource("Resource_4o0bw"), SubResource("Resource_i8gmq"), SubResource("Resource_afede"), SubResource("Resource_1sxc4"), SubResource("Resource_g13f8"), SubResource("Resource_bq5nd"), SubResource("Resource_g7qut"), SubResource("Resource_53igb"), SubResource("Resource_vevwm"), SubResource("Resource_p088b"), SubResource("Resource_f70se"), SubResource("Resource_kqjc1")])
+tuning_sliders = Array[ExtResource("11_sd8ty")]([SubResource("Resource_dusjy"), SubResource("Resource_sh4nf"), SubResource("Resource_kghw4"), SubResource("Resource_4m61u"), SubResource("Resource_5fae5"), SubResource("Resource_5tugh"), SubResource("Resource_o2m2q"), SubResource("Resource_8nox5"), SubResource("Resource_01wht"), SubResource("Resource_h177p"), SubResource("Resource_xt2by"), SubResource("Resource_h0e7p"), SubResource("Resource_3a0x2"), SubResource("Resource_o8cm5"), SubResource("Resource_exxaj"), SubResource("Resource_4g7lg"), SubResource("Resource_glacr"), SubResource("Resource_c46ge"), SubResource("Resource_aao5t"), SubResource("Resource_2siq1"), SubResource("Resource_0n4jd"), SubResource("Resource_drjwc"), SubResource("Resource_fr6p6"), SubResource("Resource_fmkbh"), SubResource("Resource_7jm7l"), SubResource("Resource_dth3a"), SubResource("Resource_niaop"), SubResource("Resource_e1wyu"), SubResource("Resource_yiba4"), SubResource("Resource_7n4bn"), SubResource("Resource_222y2"), SubResource("Resource_5ug3g"), SubResource("Resource_m1lrc"), SubResource("Resource_2lu1h"), SubResource("Resource_3mphi"), SubResource("Resource_gg26e")])
+su_manifestations = Array[ExtResource("7_s5vvk")]([SubResource("Resource_ebg83"), SubResource("Resource_bgjnw"), SubResource("Resource_1dofq"), SubResource("Resource_s4hgc"), SubResource("Resource_mfl04"), SubResource("Resource_k23d7"), SubResource("Resource_wevvu"), SubResource("Resource_n44st"), SubResource("Resource_0acw4"), SubResource("Resource_ucchl"), SubResource("Resource_h8v6k"), SubResource("Resource_m8wmc"), SubResource("Resource_g81fs"), SubResource("Resource_7d1a7"), SubResource("Resource_84pn0"), SubResource("Resource_o31hr"), SubResource("Resource_xqqd3"), SubResource("Resource_hki2w"), SubResource("Resource_yfdyi"), SubResource("Resource_smfk0"), SubResource("Resource_05gs5"), SubResource("Resource_17iqq"), SubResource("Resource_ul3pf"), SubResource("Resource_g3yog"), SubResource("Resource_k30qw"), SubResource("Resource_r4d2s"), SubResource("Resource_jhyee"), SubResource("Resource_lpccv"), SubResource("Resource_t6qdw"), SubResource("Resource_mo81s"), SubResource("Resource_3rsm2"), SubResource("Resource_c1vdj"), SubResource("Resource_v70qm"), SubResource("Resource_q8gk7"), SubResource("Resource_hwx7c"), SubResource("Resource_45ufe"), SubResource("Resource_escep"), SubResource("Resource_varbn"), SubResource("Resource_k0k3u"), SubResource("Resource_ve53q"), SubResource("Resource_inbhi"), SubResource("Resource_3njrb"), SubResource("Resource_g86v2"), SubResource("Resource_ymtdd"), SubResource("Resource_urevd"), SubResource("Resource_1v6t8"), SubResource("Resource_vl226"), SubResource("Resource_vatk6"), SubResource("Resource_wret1"), SubResource("Resource_0p7wr"), SubResource("Resource_uibf5"), SubResource("Resource_4dsjw"), SubResource("Resource_hcfhq"), SubResource("Resource_okux8"), SubResource("Resource_py21b"), SubResource("Resource_s4p0u"), SubResource("Resource_iism8"), SubResource("Resource_dvi67"), SubResource("Resource_rik4x"), SubResource("Resource_brpor"), SubResource("Resource_lwmfc"), SubResource("Resource_q8vt6"), SubResource("Resource_i7nq6"), SubResource("Resource_7vv67"), SubResource("Resource_x3t05"), SubResource("Resource_etedb"), SubResource("Resource_jy250"), SubResource("Resource_7ihxd"), SubResource("Resource_3als6")])
+metadata/json_source = {
+"chart_id": "chart_3a323bb6e82964c5",
+"difficulty_id": "normal",
+"difficulty_name": "normal",
+"format": "minghe-chart",
+"format_version": 2.0,
+"ghost_events": [{
+"boss": false,
+"count": 1.0,
+"id": "event_0de8b8457e25652f",
+"tick": 66240.0,
+"tuning_ids": ["event_38c2e7bf599d725d"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_08b1ceb0a08d3b57",
+"tick": 70080.0,
+"tuning_ids": ["event_7a864cb3865a1d9f"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_242a1e04c0ff7561",
+"tick": 73920.0,
+"tuning_ids": ["event_46fcf56dff5716f2"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_cca15ccc3007639a",
+"tick": 77760.0,
+"tuning_ids": ["event_c3f30e3386227c9a"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_bac186dda45f7d9a",
+"tick": 81120.0,
+"tuning_ids": ["event_7e1cfc92b1d68a8b", "event_75ff3e39621d0a5a"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_976ec94b81334b43",
+"tick": 81600.0,
+"tuning_ids": ["event_7e1cfc92b1d68a8b", "event_75ff3e39621d0a5a"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_2577ca1992a7308a",
+"tick": 82080.0,
+"tuning_ids": ["event_7e1cfc92b1d68a8b", "event_75ff3e39621d0a5a"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_a5b642302202c0d3",
+"tick": 84960.0,
+"tuning_ids": ["event_62a1b68b50583c1f", "event_08f26a2da92d21b2"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_e44b7ca517fd4bd4",
+"tick": 85440.0,
+"tuning_ids": ["event_62a1b68b50583c1f", "event_08f26a2da92d21b2"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_51e2ce684cc946d3",
+"tick": 85920.0,
+"tuning_ids": ["event_62a1b68b50583c1f", "event_08f26a2da92d21b2"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_2a2e19f3d8c0a5cb",
+"tick": 88800.0,
+"tuning_ids": ["event_cd3f3b726d65dc66", "event_efd2aef254de54e9"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_c58c027c05ddb810",
+"tick": 89280.0,
+"tuning_ids": ["event_cd3f3b726d65dc66", "event_efd2aef254de54e9"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_69b23e7ccfd7af80",
+"tick": 89760.0,
+"tuning_ids": ["event_cd3f3b726d65dc66", "event_efd2aef254de54e9"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_6ce45953cd062155",
+"tick": 92640.0,
+"tuning_ids": ["event_90483925f7329cc9", "event_74fc1a43e35ecd7f"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_2f5c5801f4bf89d5",
+"tick": 93120.0,
+"tuning_ids": ["event_90483925f7329cc9", "event_74fc1a43e35ecd7f"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_76353cb0002fd0c1",
+"tick": 93600.0,
+"tuning_ids": ["event_90483925f7329cc9", "event_74fc1a43e35ecd7f"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_c2c0c1f534ea3a91",
+"tick": 125760.0,
+"tuning_ids": ["event_22a22d066a9b2335"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_f3314660b7f27cda",
+"tick": 126240.0,
+"tuning_ids": ["event_22a22d066a9b2335"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_324fcada31e659f3",
+"tick": 126720.0,
+"tuning_ids": ["event_22a22d066a9b2335"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_b2a410949840d400",
+"tick": 127680.0,
+"tuning_ids": ["event_5e8e215664e8c8aa"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_99e69a4a17a2c47e",
+"tick": 128160.0,
+"tuning_ids": ["event_5e8e215664e8c8aa"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_2d8c4e6dfbc9fb9d",
+"tick": 129600.0,
+"tuning_ids": ["event_c571114a9d99c6d0"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_a207a259e958e20a",
+"tick": 130080.0,
+"tuning_ids": ["event_c571114a9d99c6d0"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_7b5a65ef7dc96c06",
+"tick": 130560.0,
+"tuning_ids": ["event_c571114a9d99c6d0"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_7e946f63246a853c",
+"tick": 131520.0,
+"tuning_ids": ["event_231d513e7ef19c46"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_9306bedfef023ec2",
+"tick": 132000.0,
+"tuning_ids": ["event_231d513e7ef19c46"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_034e3126e1b9ca4e",
+"tick": 133440.0,
+"tuning_ids": ["event_2b54c343236a006a"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_b3ecde65730e3681",
+"tick": 133920.0,
+"tuning_ids": ["event_2b54c343236a006a"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_c510be2b5d7af41e",
+"tick": 134400.0,
+"tuning_ids": ["event_2b54c343236a006a"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_3a48ed8258bfa77c",
+"tick": 134880.0,
+"tuning_ids": ["event_be0b9e081e1ba318"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_d95f4c589d7327a4",
+"tick": 135360.0,
+"tuning_ids": ["event_be0b9e081e1ba318"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_581d8204e80aac40",
+"tick": 135840.0,
+"tuning_ids": ["event_be0b9e081e1ba318"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_eeee31ac2eccc126",
+"tick": 137280.0,
+"tuning_ids": ["event_a508562c7c42a416"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_36bb40a18486f2df",
+"tick": 137760.0,
+"tuning_ids": ["event_a508562c7c42a416"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_a6627b162a037be3",
+"tick": 138240.0,
+"tuning_ids": ["event_a508562c7c42a416"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_ff2312b2e9dda4b7",
+"tick": 138720.0,
+"tuning_ids": ["event_0e180e6a2db8795d"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_ee35f99ab5f51425",
+"tick": 139200.0,
+"tuning_ids": ["event_0e180e6a2db8795d"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_a13f7a2fb9c82ee8",
+"tick": 139680.0,
+"tuning_ids": ["event_0e180e6a2db8795d"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_c11e8de712ce839f",
+"tick": 188640.0,
+"tuning_ids": ["event_b2222fd8005dd20c", "event_2300534537eb56ce"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_8d5ea2f33c69ebff",
+"tick": 189120.0,
+"tuning_ids": ["event_b2222fd8005dd20c", "event_2300534537eb56ce"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_695fc14e73722ad5",
+"tick": 189600.0,
+"tuning_ids": ["event_b2222fd8005dd20c", "event_2300534537eb56ce"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_202368fc90a3dc2f",
+"tick": 192480.0,
+"tuning_ids": ["event_ef3e5b54c653dcc7", "event_346ee438357949fa"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_7489fc888107f0d1",
+"tick": 192960.0,
+"tuning_ids": ["event_ef3e5b54c653dcc7", "event_346ee438357949fa"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_e23fbf662c136d33",
+"tick": 193440.0,
+"tuning_ids": ["event_ef3e5b54c653dcc7", "event_346ee438357949fa"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_81a192e2be205e69",
+"tick": 196320.0,
+"tuning_ids": ["event_40f2fd335730a091", "event_09d10409a877ad6d"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_fa26199416946f05",
+"tick": 196800.0,
+"tuning_ids": ["event_40f2fd335730a091", "event_09d10409a877ad6d"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_cef51b1d1b1bfece",
+"tick": 197160.0,
+"tuning_ids": ["event_40f2fd335730a091", "event_09d10409a877ad6d"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_2b8f22805a61866e",
+"tick": 200160.0,
+"tuning_ids": ["event_ff014f249e4fd03d", "event_b9a220763d18a4c7"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_49f00158dfb65579",
+"tick": 200640.0,
+"tuning_ids": ["event_ff014f249e4fd03d", "event_b9a220763d18a4c7"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_53a8960adb0dd10e",
+"tick": 201120.0,
+"tuning_ids": ["event_ff014f249e4fd03d", "event_b9a220763d18a4c7"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_ca504e5d5782427e",
+"tick": 203520.0,
+"tuning_ids": ["event_cbf6fb53267531ef", "event_3571217cff69469c"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_de41cc88dd2fd20d",
+"tick": 203760.0,
+"tuning_ids": ["event_cbf6fb53267531ef", "event_3571217cff69469c"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_8afea1d6336725d0",
+"tick": 204000.0,
+"tuning_ids": ["event_cbf6fb53267531ef", "event_3571217cff69469c"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_5a8a1b00a2336d2b",
+"tick": 204480.0,
+"tuning_ids": ["event_cbf6fb53267531ef", "event_3571217cff69469c"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_8687de226fc78794",
+"tick": 204960.0,
+"tuning_ids": ["event_cbf6fb53267531ef", "event_3571217cff69469c"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_9fe0ed393e64e4c8",
+"tick": 207360.0,
+"tuning_ids": ["event_7bcd1f7cef128246", "event_c4554b2c69ce7577"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_459da9182c0e4a1b",
+"tick": 207600.0,
+"tuning_ids": ["event_7bcd1f7cef128246", "event_c4554b2c69ce7577"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_a4dfc1cce0f4145c",
+"tick": 207840.0,
+"tuning_ids": ["event_7bcd1f7cef128246", "event_c4554b2c69ce7577"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_017efe033bb5a53f",
+"tick": 208320.0,
+"tuning_ids": ["event_7bcd1f7cef128246", "event_c4554b2c69ce7577"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_3021d5b3d7a1230c",
+"tick": 208800.0,
+"tuning_ids": ["event_7bcd1f7cef128246", "event_c4554b2c69ce7577"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_9060627e7c5ec1d8",
+"tick": 211200.0,
+"tuning_ids": ["event_f2a3ac440661ba8b", "event_2c54db82321a9f51"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_b3b798533967edc3",
+"tick": 211440.0,
+"tuning_ids": ["event_f2a3ac440661ba8b", "event_2c54db82321a9f51"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_2333cb2f5d871bff",
+"tick": 211680.0,
+"tuning_ids": ["event_f2a3ac440661ba8b", "event_2c54db82321a9f51"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_182992f316ce1bf9",
+"tick": 212160.0,
+"tuning_ids": ["event_f2a3ac440661ba8b", "event_2c54db82321a9f51"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_3a366103a6da26cf",
+"tick": 212640.0,
+"tuning_ids": ["event_f2a3ac440661ba8b", "event_2c54db82321a9f51"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_bafdff4299ca2ee3",
+"tick": 215040.0,
+"tuning_ids": ["event_79c7118c90f2ba53", "event_7e40d54dff80561f"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_a5f3b59d40007b9e",
+"tick": 215280.0,
+"tuning_ids": ["event_79c7118c90f2ba53", "event_7e40d54dff80561f"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_f108c1621fdb4466",
+"tick": 215520.0,
+"tuning_ids": ["event_79c7118c90f2ba53", "event_7e40d54dff80561f"]
+}, {
+"boss": false,
+"count": 1.0,
+"id": "event_108db9282f35ecb1",
+"tick": 216000.0,
+"tuning_ids": ["event_79c7118c90f2ba53", "event_7e40d54dff80561f"]
+}],
+"mapper": "",
+"notes": [{
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 3840.0,
+"id": "event_a7f61357edaf131f",
+"kind": "hold",
+"tick": 0.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 3720.0,
+"id": "event_74c5558a3e426269",
+"kind": "hold",
+"tick": 4020.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 2880.0,
+"id": "event_59d4f347eadbc787",
+"kind": "hold",
+"tick": 8160.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 3840.0,
+"id": "event_886958e2d7318f86",
+"kind": "hold",
+"tick": 10560.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 2400.0,
+"id": "event_6fc06e9261524987",
+"kind": "hold",
+"tick": 14400.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_807a48a81097dadf",
+"kind": "hold",
+"tick": 20640.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 7200.0,
+"id": "event_56c6392bfed0e686",
+"kind": "hold",
+"tick": 25440.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 3600.0,
+"id": "event_e305460adb291811",
+"kind": "hold",
+"tick": 29040.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_7c933dd9a550f117",
+"kind": "tap",
+"tick": 33120.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_78309843275db7ff",
+"kind": "tap",
+"tick": 33120.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_fe88fb62573ab6d5",
+"kind": "tap",
+"tick": 33840.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_16c5a180deffc154",
+"kind": "tap",
+"tick": 34560.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_8de12f197c3ef23f",
+"kind": "tap",
+"tick": 35040.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_75af23a6c8846bb7",
+"kind": "tap",
+"tick": 35760.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_fa626deec196639d",
+"kind": "tap",
+"tick": 36480.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_5fc091be6fd4442c",
+"kind": "tap",
+"tick": 36960.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_6603ff568c76f967",
+"kind": "tap",
+"tick": 37680.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_3f2e787d366591e0",
+"kind": "tap",
+"tick": 38400.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_e2b85583433982ae",
+"kind": "tap",
+"tick": 38880.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_1d47326f0c1f302e",
+"kind": "tap",
+"tick": 39600.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_45d5cb522364c857",
+"kind": "tap",
+"tick": 40320.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_22090b31e2cdeec0",
+"kind": "tap",
+"tick": 40800.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_5f11f9d87ac2f283",
+"kind": "tap",
+"tick": 41520.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_b7d2f8afe6843597",
+"kind": "tap",
+"tick": 42240.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_09a0a5e592a76b5c",
+"kind": "tap",
+"tick": 42720.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_de77a7b3b5f13d5b",
+"kind": "tap",
+"tick": 43440.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_459a308902b94cdf",
+"kind": "tap",
+"tick": 44160.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_5e8e89f44bdcd603",
+"kind": "tap",
+"tick": 44640.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_8309dd24bc90ee1e",
+"kind": "tap",
+"tick": 45360.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_1484d2fdd1876b82",
+"kind": "tap",
+"tick": 46080.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_600286c44c202d57",
+"kind": "tap",
+"tick": 46560.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_edd0b38c7a15c531",
+"kind": "tap",
+"tick": 47280.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_9522a7dbed3641fa",
+"kind": "tap",
+"tick": 48000.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_403035b3db21e01b",
+"kind": "tap",
+"tick": 48480.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_922ab20ecb646343",
+"kind": "tap",
+"tick": 49200.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_87f123147c553a35",
+"kind": "tap",
+"tick": 49920.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_e9ca8738aebf5f3c",
+"kind": "tap",
+"tick": 50400.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_0a845ea7f9864841",
+"kind": "tap",
+"tick": 51120.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_30d871f24eec212f",
+"kind": "tap",
+"tick": 51840.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_853c21cbbab425d7",
+"kind": "tap",
+"tick": 52320.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_87d8971aaa2126a8",
+"kind": "tap",
+"tick": 53040.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_e40342c2f935bbda",
+"kind": "tap",
+"tick": 53760.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_f75d695c41bc26b5",
+"kind": "tap",
+"tick": 54240.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_d21b3bef5d34bf16",
+"kind": "tap",
+"tick": 54960.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_662ee67d37236940",
+"kind": "tap",
+"tick": 55680.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_24de8412a3d1194c",
+"kind": "tap",
+"tick": 56160.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_8343192e97d67b8b",
+"kind": "tap",
+"tick": 56880.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_46c1d7883e68d36e",
+"kind": "tap",
+"tick": 57600.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_e511737e81b50013",
+"kind": "tap",
+"tick": 58080.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_c3a95cd704a3b705",
+"kind": "tap",
+"tick": 58800.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_cdd4d2be7e29343c",
+"kind": "tap",
+"tick": 59520.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_b0dc994a1692cac7",
+"kind": "tap",
+"tick": 60000.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_54b72e994744e997",
+"kind": "tap",
+"tick": 60720.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_48eae32e84bff2e5",
+"kind": "tap",
+"tick": 61440.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_fcee3365a0825be6",
+"kind": "tap",
+"tick": 61920.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_49fe2be35aeb0384",
+"kind": "tap",
+"tick": 62640.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_623cdf019ba8103d",
+"kind": "tap",
+"tick": 63360.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_d41597b5e157bad3",
+"kind": "hold",
+"tick": 63840.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 1920.0,
+"id": "event_e1c782386629c916",
+"kind": "hold",
+"tick": 65280.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_6942b72c82bf40f9",
+"kind": "hold",
+"tick": 67680.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 1920.0,
+"id": "event_8098d25e98fc141e",
+"kind": "hold",
+"tick": 69120.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_cc604789245768e3",
+"kind": "hold",
+"tick": 71520.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 1920.0,
+"id": "event_13ffb182320386a5",
+"kind": "hold",
+"tick": 72960.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_ec3b3fda79420d56",
+"kind": "hold",
+"tick": 75360.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 1920.0,
+"id": "event_3c65a54149dcaf19",
+"kind": "hold",
+"tick": 76800.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_2762d601b8c71423",
+"kind": "hold",
+"tick": 79200.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_3c7188c3d2ae5b63",
+"kind": "hold",
+"tick": 79200.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_be7096527aa8b409",
+"kind": "hold",
+"tick": 83040.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_15a48865df21b52d",
+"kind": "hold",
+"tick": 83040.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_e5f9b6150ab5b2dc",
+"kind": "hold",
+"tick": 86880.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_0866f556f8a22606",
+"kind": "hold",
+"tick": 86880.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_5324c4957ec97acd",
+"kind": "hold",
+"tick": 90720.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_2e845f757d995465",
+"kind": "hold",
+"tick": 90720.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_8d0f05a0c3966556",
+"kind": "tap",
+"tick": 94560.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_56b43508f38c289d",
+"kind": "tap",
+"tick": 95040.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_1acc0a4ee1113e49",
+"kind": "tap",
+"tick": 95280.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_d1ec5d746330a47c",
+"kind": "tap",
+"tick": 96000.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_52201e8e64391607",
+"kind": "tap",
+"tick": 96240.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_a63e1c144f46d887",
+"kind": "tap",
+"tick": 96480.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_c450b24c33c162bb",
+"kind": "tap",
+"tick": 97200.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_442c67f56415493a",
+"kind": "tap",
+"tick": 97920.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_556640c2882e8d31",
+"kind": "tap",
+"tick": 98400.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_e59314c1c5e5a95a",
+"kind": "tap",
+"tick": 98880.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_a1802a99be1019ea",
+"kind": "tap",
+"tick": 99120.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_361c0cc0ae9017cf",
+"kind": "tap",
+"tick": 99840.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_ce811b88ea6f17d1",
+"kind": "tap",
+"tick": 100080.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_68c71bc470475dcb",
+"kind": "tap",
+"tick": 100320.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_f9b362d2f0cb3900",
+"kind": "tap",
+"tick": 101040.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_4e6450cc6ef322d7",
+"kind": "tap",
+"tick": 101760.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_18575676329d3717",
+"kind": "tap",
+"tick": 102240.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_678db6b3bd8530f1",
+"kind": "tap",
+"tick": 102720.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_f2736e8e98bb01d9",
+"kind": "tap",
+"tick": 102960.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_6d53a61834e08175",
+"kind": "tap",
+"tick": 103680.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_e1589794eebb52f7",
+"kind": "tap",
+"tick": 103920.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_49dc38e12a275fc7",
+"kind": "tap",
+"tick": 104160.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_763af21c503cb5ef",
+"kind": "tap",
+"tick": 104880.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_c32ec14a61bd2ccc",
+"kind": "tap",
+"tick": 105600.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_ecca43230fb82231",
+"kind": "tap",
+"tick": 106080.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_6a0142ac00de82bb",
+"kind": "tap",
+"tick": 106560.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_d4b94d5866226505",
+"kind": "tap",
+"tick": 106800.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_fea94732e1eced66",
+"kind": "tap",
+"tick": 107520.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_79bcc0f931497b8a",
+"kind": "tap",
+"tick": 107760.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_5cbaa54320494666",
+"kind": "tap",
+"tick": 108000.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_3d0f17bba3e95789",
+"kind": "tap",
+"tick": 108720.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_c95268aa0990e814",
+"kind": "tap",
+"tick": 109440.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_fc531c31a205ee4c",
+"kind": "tap",
+"tick": 109920.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_9b357f8944902f22",
+"kind": "tap",
+"tick": 110400.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_ef4f780fed86f72d",
+"kind": "tap",
+"tick": 110640.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_f5fe1a1e9d4a2f55",
+"kind": "tap",
+"tick": 111360.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_96f8c3126eb7eaac",
+"kind": "tap",
+"tick": 111600.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_43b3cbe044bec061",
+"kind": "tap",
+"tick": 111840.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_e2e09368dc35c76f",
+"kind": "tap",
+"tick": 112560.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_78c032159726be81",
+"kind": "tap",
+"tick": 113280.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_6f7331a408c68085",
+"kind": "tap",
+"tick": 113760.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_0a03432273878b0f",
+"kind": "tap",
+"tick": 114240.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_b9a975e9a3bd522a",
+"kind": "tap",
+"tick": 114480.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_724ce5274a38292c",
+"kind": "tap",
+"tick": 115200.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_d1cc9fadb0a02adf",
+"kind": "tap",
+"tick": 115440.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_5894c118e87c0ffd",
+"kind": "tap",
+"tick": 115680.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_b0bed66f8e10def5",
+"kind": "tap",
+"tick": 116400.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_c4d0ca2370484f20",
+"kind": "tap",
+"tick": 117120.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_27d17d92695c14cf",
+"kind": "tap",
+"tick": 117600.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_fd7f6985f8df858c",
+"kind": "tap",
+"tick": 118080.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_9e42261a35325479",
+"kind": "tap",
+"tick": 118320.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_100e8baa0871c799",
+"kind": "tap",
+"tick": 119040.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_aa30802b0717825b",
+"kind": "tap",
+"tick": 119280.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_0c56fbdf7a203375",
+"kind": "tap",
+"tick": 119520.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_d7aefdf16a6cd5b7",
+"kind": "tap",
+"tick": 120240.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_4532f5aba3ecdd14",
+"kind": "tap",
+"tick": 120960.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_6a789101a8adbbe0",
+"kind": "tap",
+"tick": 121440.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_6c8978b5295b6fa4",
+"kind": "tap",
+"tick": 121920.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_21c8074bcbfd127b",
+"kind": "tap",
+"tick": 122160.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_398e6ba80a22c9fe",
+"kind": "tap",
+"tick": 122880.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_4f43c8755f83d583",
+"kind": "tap",
+"tick": 123120.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_abeaa2ee49bdd4fc",
+"kind": "tap",
+"tick": 123360.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_43e40c1ea4b283d8",
+"kind": "tap",
+"tick": 124080.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_7a9d80f0a50c2b4a",
+"kind": "tap",
+"tick": 124800.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_997635e2c4516d2c",
+"kind": "hold",
+"tick": 125280.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_8c4cd1578a8f8544",
+"kind": "hold",
+"tick": 125280.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_ef783d4ffc70c046",
+"kind": "hold",
+"tick": 129120.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_fe669f3c3f2bdfcb",
+"kind": "hold",
+"tick": 129120.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_fee88eeeadef9b4a",
+"kind": "hold",
+"tick": 132960.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_69f65784330f90ea",
+"kind": "hold",
+"tick": 132960.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_ae4d652e8abc676d",
+"kind": "hold",
+"tick": 136800.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_0c5dcbe53bc301e3",
+"kind": "hold",
+"tick": 136800.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_1f388eedcdde78b9",
+"kind": "tap",
+"tick": 140640.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_e29429fdc940c73a",
+"kind": "tap",
+"tick": 140640.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_a8cee534ae0b868a",
+"kind": "tap",
+"tick": 142560.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_c66259964bb7ed6d",
+"kind": "tap",
+"tick": 144480.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_24b5a1593705d8ef",
+"kind": "tap",
+"tick": 144960.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_a1e07eac7228540c",
+"kind": "tap",
+"tick": 147360.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_bb7a2f6e6801a00d",
+"kind": "tap",
+"tick": 147360.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_b6578d7f2fdc0a94",
+"kind": "tap",
+"tick": 148320.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_eb1a1509d0bea323",
+"kind": "tap",
+"tick": 150240.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 4800.0,
+"id": "event_d0c294a54415959e",
+"kind": "hold",
+"tick": 151200.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_6396e41bb860a521",
+"kind": "tap",
+"tick": 154080.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_8dd3d3d5cfde189a",
+"kind": "tap",
+"tick": 155040.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_beca3c594fe547d9",
+"kind": "tap",
+"tick": 155520.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_9f5d4b5b20aa18b7",
+"kind": "tap",
+"tick": 156000.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_8f47f052d953335c",
+"kind": "tap",
+"tick": 156960.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": true,
+"duration_ticks": 960.0,
+"id": "event_2f5f209fefdb6b0c",
+"kind": "hold",
+"tick": 156960.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_3997e38974a16ab4",
+"kind": "tap",
+"tick": 157920.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_0c682df2b8a68888",
+"kind": "tap",
+"tick": 158880.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": true,
+"duration_ticks": 960.0,
+"id": "event_1dcc6c49d083731d",
+"kind": "hold",
+"tick": 158880.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_21eaa3a8fb71e071",
+"kind": "tap",
+"tick": 159840.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_1b522ca9bc14228d",
+"kind": "tap",
+"tick": 160800.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": true,
+"duration_ticks": 960.0,
+"id": "event_5816063b5da3c78b",
+"kind": "hold",
+"tick": 160800.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_51abbad551f357f7",
+"kind": "tap",
+"tick": 161760.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_414dfa4870847d71",
+"kind": "tap",
+"tick": 162720.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": true,
+"duration_ticks": 960.0,
+"id": "event_a676797251434b68",
+"kind": "hold",
+"tick": 162720.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_f871b16737dfdc83",
+"kind": "tap",
+"tick": 163680.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_b9aabef86ca2dcd5",
+"kind": "tap",
+"tick": 164160.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_6bffd4ee55af0121",
+"kind": "tap",
+"tick": 164640.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_24c57eba4d1b5deb",
+"kind": "tap",
+"tick": 165120.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_1c10bc10d2331804",
+"kind": "tap",
+"tick": 165600.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_b507dfaee366aaec",
+"kind": "tap",
+"tick": 166080.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_b324dc9e76cb87a6",
+"kind": "tap",
+"tick": 166560.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_12ec94a3a18d6f06",
+"kind": "tap",
+"tick": 167040.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 480.0,
+"id": "event_24d8d4d46d2ded72",
+"kind": "hold",
+"tick": 167520.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 480.0,
+"id": "event_59ab288328cb295a",
+"kind": "hold",
+"tick": 168000.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 480.0,
+"id": "event_78bf3ac9ab160aed",
+"kind": "hold",
+"tick": 168480.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 480.0,
+"id": "event_dcb328d7cbdeb3d7",
+"kind": "hold",
+"tick": 168960.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 480.0,
+"id": "event_d845947dfbd794ee",
+"kind": "hold",
+"tick": 169440.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 480.0,
+"id": "event_1f3d2f1cc56f796f",
+"kind": "hold",
+"tick": 169920.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 480.0,
+"id": "event_3ce7f59e82d832cb",
+"kind": "hold",
+"tick": 170400.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 480.0,
+"id": "event_4771beb4623bdba2",
+"kind": "hold",
+"tick": 170880.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 3840.0,
+"id": "event_38cbb1180537773b",
+"kind": "hold",
+"tick": 171360.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": true,
+"duration_ticks": 0.0,
+"id": "event_771848f595d4df34",
+"kind": "tap",
+"tick": 172080.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": true,
+"duration_ticks": 0.0,
+"id": "event_48cea4a8577f4a66",
+"kind": "tap",
+"tick": 172800.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": true,
+"duration_ticks": 0.0,
+"id": "event_485a290bb9b9e014",
+"kind": "tap",
+"tick": 173040.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": true,
+"duration_ticks": 0.0,
+"id": "event_71f8ba6d63f95c2a",
+"kind": "tap",
+"tick": 173280.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": true,
+"duration_ticks": 0.0,
+"id": "event_a5fbb75be1d5711b",
+"kind": "tap",
+"tick": 174000.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": true,
+"duration_ticks": 0.0,
+"id": "event_4ffe5a7ec53a1fdb",
+"kind": "tap",
+"tick": 174720.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 3840.0,
+"id": "event_daf3853c65674225",
+"kind": "hold",
+"tick": 175200.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": true,
+"duration_ticks": 0.0,
+"id": "event_39fee4bfd87c8b1a",
+"kind": "tap",
+"tick": 175920.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": true,
+"duration_ticks": 0.0,
+"id": "event_e9fd644997f3bba4",
+"kind": "tap",
+"tick": 176640.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": true,
+"duration_ticks": 0.0,
+"id": "event_355735e62bc1b3bf",
+"kind": "tap",
+"tick": 176880.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": true,
+"duration_ticks": 0.0,
+"id": "event_0774199767d9d9dc",
+"kind": "tap",
+"tick": 177120.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": true,
+"duration_ticks": 0.0,
+"id": "event_2e97d3b46215c2b6",
+"kind": "tap",
+"tick": 177840.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": true,
+"duration_ticks": 0.0,
+"id": "event_eaf21a9a63574bfc",
+"kind": "tap",
+"tick": 178560.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 3840.0,
+"id": "event_1ec8884cd151888d",
+"kind": "hold",
+"tick": 179040.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": true,
+"duration_ticks": 0.0,
+"id": "event_0a6d43493912a989",
+"kind": "tap",
+"tick": 179760.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": true,
+"duration_ticks": 0.0,
+"id": "event_ad05ec4677d2a588",
+"kind": "tap",
+"tick": 180480.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": true,
+"duration_ticks": 0.0,
+"id": "event_bcf34de8c3dad31d",
+"kind": "tap",
+"tick": 180720.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": true,
+"duration_ticks": 0.0,
+"id": "event_971d4a04655255d1",
+"kind": "tap",
+"tick": 180960.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": true,
+"duration_ticks": 0.0,
+"id": "event_88c7b2973e6bc633",
+"kind": "tap",
+"tick": 181680.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": true,
+"duration_ticks": 0.0,
+"id": "event_1881da8db3bf8c59",
+"kind": "tap",
+"tick": 182400.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 3840.0,
+"id": "event_78d3c7fa4441deba",
+"kind": "hold",
+"tick": 182880.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": true,
+"duration_ticks": 0.0,
+"id": "event_5ba6830420050676",
+"kind": "tap",
+"tick": 183600.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": true,
+"duration_ticks": 0.0,
+"id": "event_62a11a4325289e55",
+"kind": "tap",
+"tick": 184320.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": true,
+"duration_ticks": 0.0,
+"id": "event_c0597607007b80ae",
+"kind": "tap",
+"tick": 184560.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": true,
+"duration_ticks": 0.0,
+"id": "event_852a3e007ea5fe09",
+"kind": "tap",
+"tick": 184800.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": true,
+"duration_ticks": 0.0,
+"id": "event_01a124cf29f5ce4e",
+"kind": "tap",
+"tick": 185520.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": true,
+"duration_ticks": 0.0,
+"id": "event_f7bb137cbed9dc62",
+"kind": "tap",
+"tick": 186240.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_5bebe98d92ffdd7e",
+"kind": "hold",
+"tick": 186720.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": true,
+"duration_ticks": 1920.0,
+"id": "event_de369d26bd115dd9",
+"kind": "hold",
+"tick": 188160.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_2526f0db8964eb82",
+"kind": "hold",
+"tick": 190560.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": true,
+"duration_ticks": 1920.0,
+"id": "event_0244fa864240599a",
+"kind": "hold",
+"tick": 192000.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_d30cf126e0624f2e",
+"kind": "hold",
+"tick": 194400.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": true,
+"duration_ticks": 1920.0,
+"id": "event_0b0495260cf0b835",
+"kind": "hold",
+"tick": 195840.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_2f3b75362ba3ad13",
+"kind": "hold",
+"tick": 198240.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": true,
+"duration_ticks": 1920.0,
+"id": "event_dbf85d05e29ac03d",
+"kind": "hold",
+"tick": 199680.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_3d3206ab83951cf5",
+"kind": "hold",
+"tick": 202080.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": true,
+"duration_ticks": 1920.0,
+"id": "event_0f0c5fcaf21f3b20",
+"kind": "hold",
+"tick": 203520.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_6b564e460dfafaa0",
+"kind": "hold",
+"tick": 205920.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": true,
+"duration_ticks": 1920.0,
+"id": "event_6e5b181a8cbcb1e8",
+"kind": "hold",
+"tick": 207360.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 3360.0,
+"id": "event_ea9f12348d2c14bd",
+"kind": "hold",
+"tick": 209760.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": true,
+"duration_ticks": 1920.0,
+"id": "event_fe1ca9e636efde46",
+"kind": "hold",
+"tick": 211200.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 2880.0,
+"id": "event_46defd887efcaad4",
+"kind": "hold",
+"tick": 213600.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": true,
+"duration_ticks": 1440.0,
+"id": "event_9154a5dde9012b7c",
+"kind": "hold",
+"tick": 215040.0,
+"visual_variant": "default"
+}, {
+"affinity": "xuan",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_c5d039dc47963ee8",
+"kind": "tap",
+"tick": 216960.0,
+"visual_variant": "default"
+}, {
+"affinity": "zhu",
+"boss": false,
+"duration_ticks": 0.0,
+"id": "event_0bbf7ec6ecf53a01",
+"kind": "tap",
+"tick": 217200.0,
+"visual_variant": "default"
+}],
+"presentation": {
+"scene_id": "s08",
+"use_scene_show": false
+},
+"sections": [],
+"song_id": "song_813ba24df25019f8",
+"timing": {
+"chart_offset_ticks": 0.0,
+"end_tick": 220800.0,
+"first_beat_offset_ms": 1955.7648136372,
+"meter_events": [{
+"denominator": 4.0,
+"numerator": 4.0,
+"tick": 0.0
+}],
+"ppq": 480.0,
+"tempo_events": [{
+"bpm": 143.0,
+"tick": 0.0
+}]
+},
+"tuning_paths": [{
+"affinity": "zhu",
+"hold_id": "event_e1c782386629c916",
+"id": "event_38c2e7bf599d725d",
+"points": [{
+"angle_deg": -90.6422464572087,
+"id": "point_d26a5b5e936ec94c",
+"offset_ticks": 0.0
+}, {
+"angle_deg": -30.6422464572087,
+"id": "point_5df12257fb7996b9",
+"offset_ticks": 1920.0
+}],
+"support_hold_id": "event_d41597b5e157bad3",
+"tick": 65280.0
+}, {
+"affinity": "xuan",
+"hold_id": "event_8098d25e98fc141e",
+"id": "event_7a864cb3865a1d9f",
+"points": [{
+"angle_deg": 89.3577535427913,
+"id": "point_7e47bb46e27a0e1a",
+"offset_ticks": 0.0
+}, {
+"angle_deg": 149.357753542791,
+"id": "point_cf53ca54dc049dce",
+"offset_ticks": 1920.0
+}],
+"support_hold_id": "event_6942b72c82bf40f9",
+"tick": 69120.0
+}, {
+"affinity": "zhu",
+"hold_id": "event_13ffb182320386a5",
+"id": "event_46fcf56dff5716f2",
+"points": [{
+"angle_deg": -90.6422464572087,
+"id": "point_85bc36e4bc690339",
+"offset_ticks": 0.0
+}, {
+"angle_deg": -30.6422464572087,
+"id": "point_4237ba9d57ce9cb7",
+"offset_ticks": 1920.0
+}],
+"support_hold_id": "event_cc604789245768e3",
+"tick": 72960.0
+}, {
+"affinity": "xuan",
+"hold_id": "event_3c65a54149dcaf19",
+"id": "event_c3f30e3386227c9a",
+"points": [{
+"angle_deg": 89.3577535427913,
+"id": "point_129dfbde859fc41a",
+"offset_ticks": 0.0
+}, {
+"angle_deg": 149.357753542791,
+"id": "point_d3a21885b70ef4cd",
+"offset_ticks": 1920.0
+}],
+"support_hold_id": "event_ec3b3fda79420d56",
+"tick": 76800.0
+}, {
+"affinity": "xuan",
+"hold_id": "event_3c7188c3d2ae5b63",
+"id": "event_75ff3e39621d0a5a",
+"points": [{
+"angle_deg": 89.3577535427913,
+"id": "point_a14e5e4c4d8c4a52",
+"offset_ticks": 0.0
+}, {
+"angle_deg": 149.357753542791,
+"id": "point_5698227a0855ea55",
+"offset_ticks": 1920.0
+}],
+"support_hold_id": "event_2762d601b8c71423",
+"tick": 80640.0,
+"visual_radius_px": 350.0
+}, {
+"affinity": "zhu",
+"hold_id": "event_2762d601b8c71423",
+"id": "event_7e1cfc92b1d68a8b",
+"points": [{
+"angle_deg": -90.6422464572087,
+"id": "point_b586f2a0dc60aa55",
+"offset_ticks": 0.0
+}, {
+"angle_deg": -30.6422464572087,
+"id": "point_68893b6d9b4ec477",
+"offset_ticks": 1920.0
+}],
+"support_hold_id": "event_3c7188c3d2ae5b63",
+"tick": 80640.0,
+"visual_radius_px": 350.0
+}, {
+"affinity": "xuan",
+"hold_id": "event_15a48865df21b52d",
+"id": "event_08f26a2da92d21b2",
+"points": [{
+"angle_deg": 89.3577535427913,
+"id": "point_fa41782e529d6341",
+"offset_ticks": 0.0
+}, {
+"angle_deg": 149.357753542791,
+"id": "point_0ecf72944c12443e",
+"offset_ticks": 1920.0
+}],
+"support_hold_id": "event_be7096527aa8b409",
+"tick": 84480.0,
+"visual_radius_px": 350.0
+}, {
+"affinity": "zhu",
+"hold_id": "event_be7096527aa8b409",
+"id": "event_62a1b68b50583c1f",
+"points": [{
+"angle_deg": -90.6422464572087,
+"id": "point_d9f5c60dfb01c396",
+"offset_ticks": 0.0
+}, {
+"angle_deg": -30.6422464572087,
+"id": "point_ebe5a95f60a1d227",
+"offset_ticks": 1920.0
+}],
+"support_hold_id": "event_15a48865df21b52d",
+"tick": 84480.0,
+"visual_radius_px": 350.0
+}, {
+"affinity": "zhu",
+"hold_id": "event_e5f9b6150ab5b2dc",
+"id": "event_cd3f3b726d65dc66",
+"points": [{
+"angle_deg": -90.6422464572087,
+"id": "point_3a5647108fcd2fe2",
+"offset_ticks": 0.0
+}, {
+"angle_deg": -30.6422464572087,
+"id": "point_e1d90a02d832014c",
+"offset_ticks": 1920.0
+}],
+"support_hold_id": "event_0866f556f8a22606",
+"tick": 88320.0,
+"visual_radius_px": 350.0
+}, {
+"affinity": "xuan",
+"hold_id": "event_0866f556f8a22606",
+"id": "event_efd2aef254de54e9",
+"points": [{
+"angle_deg": 89.3577535427913,
+"id": "point_fe448f82ddd1cf72",
+"offset_ticks": 0.0
+}, {
+"angle_deg": 149.357753542791,
+"id": "point_91c9189ca2390059",
+"offset_ticks": 1920.0
+}],
+"support_hold_id": "event_e5f9b6150ab5b2dc",
+"tick": 88320.0,
+"visual_radius_px": 350.0
+}, {
+"affinity": "xuan",
+"hold_id": "event_2e845f757d995465",
+"id": "event_74fc1a43e35ecd7f",
+"points": [{
+"angle_deg": 89.3577535427913,
+"id": "point_eb7388bc283066b2",
+"offset_ticks": 0.0
+}, {
+"angle_deg": 149.357753542791,
+"id": "point_c47c294a4d43489c",
+"offset_ticks": 1920.0
+}],
+"support_hold_id": "event_5324c4957ec97acd",
+"tick": 92160.0,
+"visual_radius_px": 350.0
+}, {
+"affinity": "zhu",
+"hold_id": "event_5324c4957ec97acd",
+"id": "event_90483925f7329cc9",
+"points": [{
+"angle_deg": -90.6422464572087,
+"id": "point_96c056c34f0abe07",
+"offset_ticks": 0.0
+}, {
+"angle_deg": -30.6422464572087,
+"id": "point_17e639c26e5f9f9d",
+"offset_ticks": 1920.0
+}],
+"support_hold_id": "event_2e845f757d995465",
+"tick": 92160.0,
+"visual_radius_px": 350.0
+}, {
+"affinity": "zhu",
+"hold_id": "event_997635e2c4516d2c",
+"id": "event_22a22d066a9b2335",
+"points": [{
+"angle_deg": -90.6422464572087,
+"id": "point_4e7ed009efeaef01",
+"offset_ticks": 0.0
+}, {
+"angle_deg": -0.0428960958272541,
+"id": "point_76786623fc54d52f",
+"offset_ticks": 1800.0
+}],
+"support_hold_id": "event_8c4cd1578a8f8544",
+"tick": 125280.0,
+"visual_radius_px": 475.0
+}, {
+"affinity": "xuan",
+"hold_id": "event_8c4cd1578a8f8544",
+"id": "event_5e8e215664e8c8aa",
+"points": [{
+"angle_deg": 89.3577535427913,
+"id": "point_bd865f3ccd60d22c",
+"offset_ticks": 0.0
+}, {
+"angle_deg": 180.0,
+"id": "point_cf62cf041b1d1ec0",
+"offset_ticks": 1560.0
+}],
+"support_hold_id": "event_997635e2c4516d2c",
+"tick": 127080.0,
+"visual_radius_px": 475.0
+}, {
+"affinity": "zhu",
+"hold_id": "event_ef783d4ffc70c046",
+"id": "event_c571114a9d99c6d0",
+"points": [{
+"angle_deg": -90.6422464572087,
+"id": "point_32e833ddd5b9531a",
+"offset_ticks": 0.0
+}, {
+"angle_deg": -0.0428960958272541,
+"id": "point_1e8240dd9de58368",
+"offset_ticks": 1800.0
+}],
+"support_hold_id": "event_fe669f3c3f2bdfcb",
+"tick": 129120.0,
+"visual_radius_px": 475.0
+}, {
+"affinity": "xuan",
+"hold_id": "event_fe669f3c3f2bdfcb",
+"id": "event_231d513e7ef19c46",
+"points": [{
+"angle_deg": 89.3577535427913,
+"id": "point_c94aeb4f104a55fa",
+"offset_ticks": 0.0
+}, {
+"angle_deg": 180.0,
+"id": "point_d94f91b0fcbc9689",
+"offset_ticks": 1560.0
+}],
+"support_hold_id": "event_ef783d4ffc70c046",
+"tick": 130920.0,
+"visual_radius_px": 475.0
+}, {
+"affinity": "xuan",
+"hold_id": "event_69f65784330f90ea",
+"id": "event_2b54c343236a006a",
+"points": [{
+"angle_deg": 89.3577535427913,
+"id": "point_931405019ad0442a",
+"offset_ticks": 0.0
+}, {
+"angle_deg": 180.0,
+"id": "point_9b23dfd556c289aa",
+"offset_ticks": 1680.0
+}],
+"support_hold_id": "event_fee88eeeadef9b4a",
+"tick": 132960.0,
+"visual_radius_px": 475.0
+}, {
+"affinity": "zhu",
+"hold_id": "event_fee88eeeadef9b4a",
+"id": "event_be0b9e081e1ba318",
+"points": [{
+"angle_deg": -90.6422464572087,
+"id": "point_1d16d678c948841e",
+"offset_ticks": 0.0
+}, {
+"angle_deg": -0.0428960958272541,
+"id": "point_5f72a2c179438f12",
+"offset_ticks": 1680.0
+}],
+"support_hold_id": "event_69f65784330f90ea",
+"tick": 134640.0,
+"visual_radius_px": 475.0
+}, {
+"affinity": "xuan",
+"hold_id": "event_0c5dcbe53bc301e3",
+"id": "event_a508562c7c42a416",
+"points": [{
+"angle_deg": 89.3577535427913,
+"id": "point_5f57ffbb87c5a863",
+"offset_ticks": 0.0
+}, {
+"angle_deg": 180.0,
+"id": "point_e5e562e516290706",
+"offset_ticks": 1680.0
+}],
+"support_hold_id": "event_ae4d652e8abc676d",
+"tick": 136800.0,
+"visual_radius_px": 475.0
+}, {
+"affinity": "zhu",
+"hold_id": "event_ae4d652e8abc676d",
+"id": "event_0e180e6a2db8795d",
+"points": [{
+"angle_deg": -90.6422464572087,
+"id": "point_1d772117939f57df",
+"offset_ticks": 0.0
+}, {
+"angle_deg": -0.0428960958272541,
+"id": "point_c4023c1cdf3c9f5d",
+"offset_ticks": 1680.0
+}],
+"support_hold_id": "event_0c5dcbe53bc301e3",
+"tick": 138480.0,
+"visual_radius_px": 475.0
+}, {
+"affinity": "xuan",
+"hold_id": "event_de369d26bd115dd9",
+"id": "event_2300534537eb56ce",
+"points": [{
+"angle_deg": 60.0,
+"id": "point_e8f06874ba76d270",
+"offset_ticks": 0.0
+}, {
+"angle_deg": 150.0,
+"id": "point_27c614ea768367c2",
+"offset_ticks": 1920.0
+}],
+"support_hold_id": "event_5bebe98d92ffdd7e",
+"tick": 188160.0,
+"visual_radius_px": 450.0
+}, {
+"affinity": "zhu",
+"hold_id": "event_5bebe98d92ffdd7e",
+"id": "event_b2222fd8005dd20c",
+"points": [{
+"angle_deg": -120.0,
+"id": "point_f085b1fc39fa5834",
+"offset_ticks": 0.0
+}, {
+"angle_deg": -30.0,
+"id": "point_2510e420ae8b596c",
+"offset_ticks": 1920.0
+}],
+"support_hold_id": "event_de369d26bd115dd9",
+"tick": 188160.0,
+"visual_radius_px": 450.0
+}, {
+"affinity": "xuan",
+"hold_id": "event_2526f0db8964eb82",
+"id": "event_346ee438357949fa",
+"points": [{
+"angle_deg": 90.0,
+"id": "point_a5a4273f2033acbe",
+"offset_ticks": 0.0
+}, {
+"angle_deg": 180.0,
+"id": "point_b795b1fb30b7aecd",
+"offset_ticks": 1920.0
+}],
+"support_hold_id": "event_0244fa864240599a",
+"tick": 192000.0,
+"visual_radius_px": 450.0
+}, {
+"affinity": "zhu",
+"hold_id": "event_0244fa864240599a",
+"id": "event_ef3e5b54c653dcc7",
+"points": [{
+"angle_deg": -90.0,
+"id": "point_71ca5969fb8fb942",
+"offset_ticks": 0.0
+}, {
+"angle_deg": 0.0,
+"id": "point_340ab73abc616e0d",
+"offset_ticks": 1920.0
+}],
+"support_hold_id": "event_2526f0db8964eb82",
+"tick": 192000.0,
+"visual_radius_px": 450.0
+}, {
+"affinity": "xuan",
+"hold_id": "event_0b0495260cf0b835",
+"id": "event_09d10409a877ad6d",
+"points": [{
+"angle_deg": 60.0,
+"id": "point_f88c5e81052f5dbb",
+"offset_ticks": 0.0
+}, {
+"angle_deg": 150.0,
+"id": "point_5baf168f75fcc9e7",
+"offset_ticks": 1920.0
+}],
+"support_hold_id": "event_d30cf126e0624f2e",
+"tick": 195840.0,
+"visual_radius_px": 450.0
+}, {
+"affinity": "zhu",
+"hold_id": "event_d30cf126e0624f2e",
+"id": "event_40f2fd335730a091",
+"points": [{
+"angle_deg": -120.0,
+"id": "point_7e284387711e093f",
+"offset_ticks": 0.0
+}, {
+"angle_deg": -30.0,
+"id": "point_99dd3e263d05e9bc",
+"offset_ticks": 1920.0
+}],
+"support_hold_id": "event_0b0495260cf0b835",
+"tick": 195840.0,
+"visual_radius_px": 450.0
+}, {
+"affinity": "xuan",
+"hold_id": "event_2f3b75362ba3ad13",
+"id": "event_b9a220763d18a4c7",
+"points": [{
+"angle_deg": 90.0,
+"id": "point_4ac3ee1374f60b4a",
+"offset_ticks": 0.0
+}, {
+"angle_deg": 180.0,
+"id": "point_a39f2403a297bfba",
+"offset_ticks": 1920.0
+}],
+"support_hold_id": "event_dbf85d05e29ac03d",
+"tick": 199680.0,
+"visual_radius_px": 450.0
+}, {
+"affinity": "zhu",
+"hold_id": "event_dbf85d05e29ac03d",
+"id": "event_ff014f249e4fd03d",
+"points": [{
+"angle_deg": -90.0,
+"id": "point_a9c42991e75b1826",
+"offset_ticks": 0.0
+}, {
+"angle_deg": 0.0,
+"id": "point_c6b267cb8ccb8041",
+"offset_ticks": 1920.0
+}],
+"support_hold_id": "event_2f3b75362ba3ad13",
+"tick": 199680.0,
+"visual_radius_px": 450.0
+}, {
+"affinity": "xuan",
+"hold_id": "event_0f0c5fcaf21f3b20",
+"id": "event_3571217cff69469c",
+"points": [{
+"angle_deg": 90.0,
+"id": "point_816ee525dc94ee44",
+"offset_ticks": 0.0
+}, {
+"angle_deg": 180.0,
+"id": "point_16e0df8d6f1cc7d6",
+"offset_ticks": 1920.0
+}],
+"support_hold_id": "event_3d3206ab83951cf5",
+"tick": 203520.0,
+"visual_radius_px": 450.0
+}, {
+"affinity": "zhu",
+"hold_id": "event_3d3206ab83951cf5",
+"id": "event_cbf6fb53267531ef",
+"points": [{
+"angle_deg": -30.0,
+"id": "point_ed31360a3615f5c2",
+"offset_ticks": 0.0
+}, {
+"angle_deg": -120.0,
+"id": "point_b207937b1340f6a5",
+"offset_ticks": 1920.0
+}],
+"support_hold_id": "event_0f0c5fcaf21f3b20",
+"tick": 203520.0,
+"visual_radius_px": 450.0
+}, {
+"affinity": "zhu",
+"hold_id": "event_6e5b181a8cbcb1e8",
+"id": "event_7bcd1f7cef128246",
+"points": [{
+"angle_deg": -30.0,
+"id": "point_2188908b7b8df1c4",
+"offset_ticks": 0.0
+}, {
+"angle_deg": -120.0,
+"id": "point_7b0bcc3ff18315d7",
+"offset_ticks": 1920.0
+}],
+"support_hold_id": "event_6b564e460dfafaa0",
+"tick": 207360.0,
+"visual_radius_px": 450.0
+}, {
+"affinity": "xuan",
+"hold_id": "event_6b564e460dfafaa0",
+"id": "event_c4554b2c69ce7577",
+"points": [{
+"angle_deg": 90.0,
+"id": "point_445bf3f551d2705b",
+"offset_ticks": 0.0
+}, {
+"angle_deg": 180.0,
+"id": "point_b5b6277c559e056b",
+"offset_ticks": 1920.0
+}],
+"support_hold_id": "event_6e5b181a8cbcb1e8",
+"tick": 207360.0,
+"visual_radius_px": 450.0
+}, {
+"affinity": "xuan",
+"hold_id": "event_fe1ca9e636efde46",
+"id": "event_2c54db82321a9f51",
+"points": [{
+"angle_deg": 150.0,
+"id": "point_30256e7e91c7767d",
+"offset_ticks": 0.0
+}, {
+"angle_deg": 60.0,
+"id": "point_f50bb59042231f62",
+"offset_ticks": 1920.0
+}],
+"support_hold_id": "event_ea9f12348d2c14bd",
+"tick": 211200.0,
+"visual_radius_px": 450.0
+}, {
+"affinity": "zhu",
+"hold_id": "event_ea9f12348d2c14bd",
+"id": "event_f2a3ac440661ba8b",
+"points": [{
+"angle_deg": -90.0,
+"id": "point_ab2d165c631b0ffa",
+"offset_ticks": 0.0
+}, {
+"angle_deg": 0.0,
+"id": "point_d85c52327c4e05d7",
+"offset_ticks": 1920.0
+}],
+"support_hold_id": "event_fe1ca9e636efde46",
+"tick": 211200.0,
+"visual_radius_px": 450.0
+}, {
+"affinity": "zhu",
+"hold_id": "event_9154a5dde9012b7c",
+"id": "event_79c7118c90f2ba53",
+"points": [{
+"angle_deg": -90.0,
+"id": "point_6c4a1bf9edf81b9d",
+"offset_ticks": 0.0
+}, {
+"angle_deg": 0.0,
+"id": "point_465bdb020cbc6f7a",
+"offset_ticks": 1440.0
+}],
+"support_hold_id": "event_46defd887efcaad4",
+"tick": 215040.0,
+"visual_radius_px": 450.0
+}, {
+"affinity": "xuan",
+"hold_id": "event_46defd887efcaad4",
+"id": "event_7e40d54dff80561f",
+"points": [{
+"angle_deg": 150.0,
+"id": "point_f6a2b5ec0a8cb528",
+"offset_ticks": 0.0
+}, {
+"angle_deg": 60.0,
+"id": "point_1204ae8f4dc906a7",
+"offset_ticks": 1440.0
+}],
+"support_hold_id": "event_9154a5dde9012b7c",
+"tick": 215040.0,
+"visual_radius_px": 450.0
+}]
+}
+metadata/unknown_notes = []

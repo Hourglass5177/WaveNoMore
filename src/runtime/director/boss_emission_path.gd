@@ -22,10 +22,11 @@ static func sample(path: Dictionary, elapsed_us: int) -> Dictionary:
 	var distance := lerpf(path.lengths[lower], path.lengths[mini(lower + 1, path.lengths.size() - 1)], index - lower)
 	return {"position": position, "velocity": derivative / (float(path.duration_us) / 1000000.0), "distance": distance}
 
-## 末端在原路径内部衔接，不经过固定出生点。时间参数与空间弧长分开。
-static func scatter(origin: Vector2, profile: Dictionary, approach_sec: float, early_sec: float, seed_text: String, speed: float, spread_deg: float) -> Dictionary:
-	var lead := minf(approach_sec*0.8,maxf(0.35,early_sec+0.35))
-	var join_ratio := 1.0-lead/approach_sec
+## 末端在原路径出生端附近衔接，保留正常读谱距离。时间参数与空间弧长分开。
+static func scatter(origin: Vector2, profile: Dictionary, approach_sec: float, early_sec: float, seed_text: String, speed: float, spread_deg: float, launch_ratio := 2.0, route_join_ratio := 0.05) -> Dictionary:
+	var join_ratio := clampf(route_join_ratio, 0.0, 0.2)
+	# 接近普通出生端衔接，保留足够长的正常接近过程供玩家读谱。
+	var lead := approach_sec * (1.0 - join_ratio)
 	var target := NoteApproachPath.point_at_ratio(profile,join_ratio)
 	var tangent := NoteApproachPath.tangent_at_ratio(profile,join_ratio)
 	var terminal_speed := NoteApproachPath.length(profile)/approach_sec
@@ -50,9 +51,9 @@ static func scatter(origin: Vector2, profile: Dictionary, approach_sec: float, e
 	var length := maxf(0.001,lengths[-1])
 	var duration := maxf(approach_sec+1.0-lead,length/maxf(1.0,speed))
 	var ramp := minf(0.3,minf(duration*0.2,length/maxf(terminal_speed,1.0)))
-	var cruise := (length-terminal_speed*ramp*0.5)/(duration-ramp)
+	var cruise := (length-terminal_speed*ramp*0.5)/(duration+(launch_ratio-2.0)*ramp*0.5)
 	var arc := {"controls":controls,"cumulative_lengths":lengths,"segment_count":96,"length_px":length}
-	return {"side_center":center,"side_normal":side_normal,"controls":controls,"lengths":lengths,"arc_profile":arc,"duration_us":roundi(duration*1000000),"join_lead_us":roundi(lead*1000000),"terminal_speed":terminal_speed,"cruise":cruise,"ramp":ramp}
+	return {"launch_ratio":launch_ratio,"side_center":center,"side_normal":side_normal,"controls":controls,"lengths":lengths,"arc_profile":arc,"duration_us":roundi(duration*1000000),"join_lead_us":roundi(lead*1000000),"terminal_speed":terminal_speed,"cruise":cruise,"ramp":ramp}
 
 static func _sample_scatter(path: Dictionary, elapsed_us: int) -> Dictionary:
 	var revision: int=path.origin_revision.call() if path.has("origin_revision") else -1
@@ -70,19 +71,22 @@ static func _sample_scatter(path: Dictionary, elapsed_us: int) -> Dictionary:
 				var point:=controls[0].bezier_interpolate(controls[1],controls[2],controls[3],float(i)/96)
 				lengths.append(lengths[-1]+previous.distance_to(point));previous=point
 			path.controls=controls;path.lengths=lengths;path.arc_profile.controls=controls;path.arc_profile.cumulative_lengths=lengths;path.arc_profile.length_px=lengths[-1]
-			path.cruise=(float(lengths[-1])-float(path.terminal_speed)*float(path.ramp)*0.5)/(float(path.duration_us)/1000000-float(path.ramp))
+			path.cruise=(float(lengths[-1])-float(path.terminal_speed)*float(path.ramp)*0.5)/(float(path.duration_us)/1000000+(float(path.get("launch_ratio",2.0))-2.0)*float(path.ramp)*0.5)
 	var duration := float(path.duration_us)/1000000
 	var t := clampf(float(elapsed_us)/1000000,0,duration)
 	var ramp := float(path.ramp);var cruise := float(path.cruise)
+	var launch := float(path.get("launch_ratio",2.0))
 	var distance := 0.0;var speed := 0.0
+	# 起步以两倍巡航速度平滑回落，迅速离开 BOSS；积分总路程及末端速度不变。
 	if t < ramp:
 		var u := t/ramp
-		distance=cruise*ramp*(u*u*u-0.5*u*u*u*u);speed=cruise*smoothstep(0,1,u)
+		distance=cruise*ramp*(launch*u+(1.0-launch)*(u*u*u-0.5*u*u*u*u));speed=cruise*lerpf(launch,1.0,smoothstep(0,1,u))
 	elif t <= duration-ramp:
-		distance=cruise*(t-ramp*0.5);speed=cruise
+		distance=cruise*(t+(launch-1.0)*ramp*0.5);speed=cruise
 	else:
 		var u := (t-duration+ramp)/ramp
-		distance=cruise*(duration-1.5*ramp)+cruise*ramp*u+(float(path.terminal_speed)-cruise)*ramp*(u*u*u-0.5*u*u*u*u)
+		distance=cruise*(duration+(launch-3.0)*ramp*0.5)+cruise*ramp*u+(float(path.terminal_speed)-cruise)*ramp*(u*u*u-0.5*u*u*u*u)
 		speed=lerpf(cruise,float(path.terminal_speed),smoothstep(0,1,u))
 	var ratio := clampf(distance/float(path.arc_profile.length_px),0,1)
 	return {"position":NoteApproachPath.point_at_ratio(path.arc_profile,ratio),"velocity":NoteApproachPath.tangent_at_ratio(path.arc_profile,ratio)*speed,"distance":distance}
+

@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="SongDefinition" format=3]
+
+[ext_resource type="AudioStream" path="res://content/stage_project/level_3/song/audio/level 4.wav" id="1_bdegs"]
+[ext_resource type="Script" path="res://src/content/resources/song_definition.gd" id="2_sojqr"]
+
+[resource]
+script = ExtResource("2_sojqr")
+song_id = "song_21ab5f63a41712e7"
+title = "第三关"
+artist = "1 "
+audio_stream = ExtResource("1_bdegs")
+first_beat_offset_sec = 1.3325927734375
+metadata/json_source = {
+"artist": "1 ",
+"audio": "audio/level 4.wav",
+"charts": [{
+"chart_id": "chart_79d1d1807300a553",
+"difficulty_id": "normal",
+"path": "charts/normal.json"
+}],
+"format": "minghe-song",
+"format_version": 1.0,
+"song_id": "song_21ab5f63a41712e7",
+"title": "第三关"
+}

@@ -28,10 +28,11 @@ func _new_visual() -> MeshInstance2D:
 
 func burst(key: String, source: Dictionary, at_sec: float, direction: Vector2, kind: StringName = &"tap") -> void:
 	if not enabled or not STYLE.enabled or _active.has(key): return
+	var ghost := kind == &"ghost"
 	var hold := kind == &"hold"
 	var dust := kind == &"dust"
 	var hit := kind == &"hit"
-	var duration := STYLE.hit_sec if hit else (STYLE.hold_finish_sec if hold else STYLE.dust_sec)
+	var duration := 0.65 if ghost else (STYLE.hit_sec if hit else (STYLE.hold_finish_sec if hold else STYLE.dust_sec))
 	if clock_sec - at_sec >= duration: return
 	var item: MeshInstance2D = _pool.pop_back() if not _pool.is_empty() else _new_visual()
 	var size: Vector2 = source.get("size", Vector2(96, 96))
@@ -43,6 +44,10 @@ func burst(key: String, source: Dictionary, at_sec: float, direction: Vector2, k
 	item.visible = true
 	var surface := item.material as ShaderMaterial
 	STYLE.apply_to(surface, int(source["affinity"]))
+	if ghost:
+		# Ghost 使用骨白裂片，与生死音符的漆色区分。
+		for parameter in ["lacquer_base", "lacquer_highlight", "surface_color"]:
+			surface.set_shader_parameter(parameter, STYLE.white_color)
 	surface.set_shader_parameter(&"source_size", size)
 	surface.set_shader_parameter(&"has_texture", item.texture != null)
 	surface.set_shader_parameter(&"has_eye", source.has("eye"))
@@ -55,10 +60,10 @@ func burst(key: String, source: Dictionary, at_sec: float, direction: Vector2, k
 		surface.set_shader_parameter(&"eye_offset_uv", source.eye_offset)
 	surface.set_shader_parameter(&"shake_sec", STYLE.fracture_shake_sec)
 	surface.set_shader_parameter(&"shake_px", STYLE.fracture_shake_px if kind == &"tap" else 0.0)
-	surface.set_shader_parameter(&"crack_sec", 0.0 if dust or hit else STYLE.crack_sec)
-	surface.set_shader_parameter(&"shard_sec", STYLE.hold_finish_sec if hold else STYLE.shard_sec)
+	surface.set_shader_parameter(&"crack_sec", 0.0 if dust or hit or ghost else STYLE.crack_sec)
+	surface.set_shader_parameter(&"shard_sec", 0.5 if ghost else (STYLE.hold_finish_sec if hold else STYLE.shard_sec))
 	surface.set_shader_parameter(&"dust_sec", duration)
-	surface.set_shader_parameter(&"spread_px", 18.0 if hit or dust else STYLE.spread_px * (0.65 if hold else 1.0))
+	surface.set_shader_parameter(&"spread_px", 18.0 if hit or dust else STYLE.spread_px * (1.8 if ghost else (0.65 if hold else 1.0)))
 	surface.set_shader_parameter(&"impact_direction", direction.normalized())
 	surface.set_shader_parameter(&"variation", float(absi(key.hash()) % 4096) / 4096.0 * TAU)
 	surface.set_shader_parameter(&"age", maxf(0.0, clock_sec - at_sec))

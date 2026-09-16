@@ -68,4 +68,10 @@ Tuning、Ghost 使用当前游戏的真实实现。多节点 Tuning 的分段适
 
 不带 `-WithGame` 仍只导出写谱器，包清单不会因为运行目录残留游戏而自动把它收入。已有识别器不需重建时，可以分别执行两个 Godot export preset，再运行 `builds/rhythm-venv/Scripts/python.exe tools/rhythm_analyzer/package.py --with-game`。游戏使用 `Windows x86_64 Release`，写谱器使用 `Chart Studio Windows`。
 
-新增 `run_local_chart_tests`、`run_trial_launcher_tests` 和 `run_trial_flow_tests` 已接入 `tests/editor/run.ps1`。流程测试自行建立隔离包和库，使用 CLI 临时入口跳过正式玩家存档；不导入用户测试项目作为发行示例。当前验证范围和待实机补验内容见 [验证记录](local-chart-validation.md)。
+新增 `run_local_chart_tests`、`run_trial_launcher_tests` 和 `run_trial_flow_tests` 已接入 `tests/editor/run.ps1`。流程测试自行建立隔离包和库，使用 CLI 临时入口跳过正式玩家存档；不导入用户测试项目作为发行示例。当前验证范围和待实机补验内容见 [验证记录](local-chart-playtest.md)。
+
+## 后台试玩休眠
+
+专用试玩仍运行、整个写谱器失焦且试听暂停时，冻结内嵌预览纹理和场景处理，将后台工具限制为至多 15 FPS。自动保存与进程监测继续；进行中的分批定位暂停，回到前台或试玩退出后恢复，不重新装谱。应用内弹窗不视为离开应用。
+
+试玩进程状态约每 250 ms 查询一次，首次启动立即检查；这一周期只用于进程生命周期监测，不改变游戏输入、声音和判定更新频率。

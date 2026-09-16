@@ -77,9 +77,9 @@ Hold 在一次身体推进后共用脊线及宽度采样。顶点、UV、索引�
 
 三轮预览合计平均帧耗时降低约 **39%**；超 16.67 ms 从 682 帧降为 47 帧。GPU 平均仍约 4 ms，主要收益来自 CPU 链路。整曲记录没有出现随历史判定增长而持续变慢的趋势；此结论仅覆盖本次实际谱面长度。
 
-![重负载帧耗时](../builds/gameplay-performance/frame-time-comparison.png)
+重负载帧耗时（历史产物已清理）
 
-![整曲帧耗时](../builds/gameplay-performance/full-song-frame-time.png)
+整曲帧耗时（历史产物已清理）
 
 ### 当前热点与首次显示
 
@@ -139,8 +139,14 @@ $godotExe = 'F:/godot 4.7.2/Godot_v4.7.2-stable_win64_console.exe'
 
 输出目录为 `builds/gameplay-performance/`（Git 忽略）：
 
-- 原始采样：[优化前预览](../builds/gameplay-performance/before-preview.json)、[优化后预览](../builds/gameplay-performance/optimized-preview.json)、[正式运行](../builds/gameplay-performance/foreground-session.json)、[整曲预览](../builds/gameplay-performance/full-song-preview.json)。包含逐帧数据，早期中间轮次也保留。
-- [调频演示，60 fps](../builds/gameplay-performance/tuning-demo-60fps.mp4)：10 秒、1280×720 输出，来源为 2K 玩法画面，以固定 60 fps Movie Maker 录制并配回对应音乐。按歌曲正常速度播放；录制与编码过程不作为性能证据。
-- [正式背景第 60 帧](../builds/gameplay-performance/gameplay-060.png)、[第 180 帧](../builds/gameplay-performance/gameplay-180.png)、[第 360 帧](../builds/gameplay-performance/gameplay-360.png)：2560×1440 原始截图，含双侧滑条、Hold 消耗和 Ghost。
+- 原始采样：优化前预览（历史产物已清理）、优化后预览（历史产物已清理）、正式运行（历史产物已清理）、整曲预览（历史产物已清理）。包含逐帧数据，早期中间轮次也保留。
+- 调频演示，60 fps（历史产物已清理）：10 秒、1280×720 输出，来源为 2K 玩法画面，以固定 60 fps Movie Maker 录制并配回对应音乐。按歌曲正常速度播放；录制与编码过程不作为性能证据。
+- 正式背景第 60 帧（历史产物已清理）、第 180 帧（历史产物已清理）、第 360 帧（历史产物已清理）：2560×1440 原始截图，含双侧滑条、Hold 消耗和 Ghost。
 
 相关参数说明：[音符效果](note-effects.md)、[调频轨道](tuning-visual-style.md)、[计时提示](timing-cue-style.md)。
+
+## Ghost 候选查询维护约定
+
+查询按发射时间及完整批次处理波历史，结合波源到生成矩形的半径范围、对侧可相交半径区间排除无关圆对；足量预读在最早完整批次停止。小候选池直接检查间距，较大候选池用邻格缩小检查范围，但不改变排序、随机抽样及不足量处理。
+
+无新载波时复用同一事件的候选结果，定位、配置变化和清场使缓存失效。保留 `tests/unit/domain/ghost_query_reference.gd` 的直接算法供坐标与顺序对照。单次函数测量不能替代整曲帧耗时；详细逐点日志仅用于诊断，避免同步输出造成长帧。

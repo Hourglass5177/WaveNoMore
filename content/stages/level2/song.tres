@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="SongDefinition" format=3]
+
+[ext_resource type="AudioStream" path="res://content/stage_project/level_2/song/audio/level 3_v2.wav" id="1_yo3ud"]
+[ext_resource type="Script" path="res://src/content/resources/song_definition.gd" id="2_0chyi"]
+
+[resource]
+script = ExtResource("2_0chyi")
+song_id = "song_813ba24df25019f8"
+title = "第二关"
+audio_stream = ExtResource("1_yo3ud")
+first_beat_offset_sec = 1.9557648136372
+metadata/json_source = {
+"artist": "",
+"audio": "audio/level 3_v2.wav",
+"charts": [{
+"chart_id": "chart_3a323bb6e82964c5",
+"difficulty_id": "normal",
+"path": "charts/normal.json"
+}],
+"format": "minghe-song",
+"format_version": 1.0,
+"song_id": "song_813ba24df25019f8",
+"title": "第二关"
+}

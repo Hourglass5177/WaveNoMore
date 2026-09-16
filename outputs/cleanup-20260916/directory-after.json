@@ -1,0 +1,50 @@
+{
+  ".gitattributes": {
+    "files": 1,
+    "GiB": 0.0
+  },
+  ".gitignore": {
+    "files": 1,
+    "GiB": 0.0
+  },
+  "AGENTS.md": {
+    "files": 1,
+    "GiB": 0.0
+  },
+  "Assets": {
+    "files": 948,
+    "GiB": 1.438
+  },
+  "AudioLab": {
+    "files": 264,
+    "GiB": 0.007
+  },
+  "Charts": {
+    "files": 3044,
+    "GiB": 2.113
+  },
+  "Docs": {
+    "files": 13,
+    "GiB": 0.012
+  },
+  "Game": {
+    "files": 12595,
+    "GiB": 5.021
+  },
+  "Levels": {
+    "files": 129,
+    "GiB": 9.221
+  },
+  "output": {
+    "files": 288,
+    "GiB": 0.002
+  },
+  "Prototype": {
+    "files": 207,
+    "GiB": 0.02
+  },
+  "VisualEffects": {
+    "files": 7,
+    "GiB": 0.0
+  }
+}

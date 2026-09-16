@@ -164,6 +164,9 @@ func _sample(section: String, time_us: int, silent: bool, preserve_audio := fals
 			else: feedbacks.erase(object_data.id)
 		wrapper.z_index = 1000 if _root_layer(object_data) == "hud" else clampi(int(object_data.get("depth", 0)), -999, 999)
 		var occlusion := _effective_occlusion(object_data)
+		# BOSS 始终位于玩法音符所在的深度零 Canvas 之前，内部骨骼层也不能越过。
+		if not object_data.get("boss", {}).is_empty() or (boss_battle != null and boss_battle.states.has(object_data.id)):
+			occlusion = [0, "back"]
 		if is_instance_valid(environment_controller) and not occlusion.is_empty() and object_data.layer != "hud":
 			environment_controller.set_object_occlusion(wrapper, int(occlusion[0]), str(occlusion[1]),object_render_order(object_data))
 			wrapper.z_index=0

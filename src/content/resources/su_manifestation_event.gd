@@ -10,7 +10,7 @@ extends Resource
 ## 可选双侧调频组；空字符串表示独立素音，不读取任何调频组成绩。
 @export var group_id: String = ""
 ## 运行时适配生成的关联单程 ID；新版 JSON 仍保存原有 Tuning 路径 ID。
-@export var tuning_ids: PackedStringArray = []
+@export var tuning_ids: PackedStringArray = PackedStringArray()
 ## 关联路径最早起点；-1 的旧谱沿用目标拍预读。
 @export var preparation_tick: int = -1
 

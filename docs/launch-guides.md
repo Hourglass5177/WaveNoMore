@@ -35,9 +35,13 @@ PV 期间菜单环境音沿路由淡出，视频原声使用 Music 总线。视�
 
 ## 素材与复现
 
-- 图样：`assets/ui/art/boot/guides/headphones.png`、`controller.png`。均为内置图像生成工具生成的独立素材，图像提示词见 [生成记录](launch-guides-prompts.md)。
+- 图样：`assets/ui/art/boot/guides/headphones.png`、`controller.png`。均为内置图像生成工具生成的独立素材，图像提示词见 [生成记录](launch-guides.md)。
 - 排版：1920×1080 设计画布，窗口等比居中，非 16:9 留黑边。
 - 完整黑底图片：`outputs/launch-guides/headphones-3840.png`、`controller-3840.png`，另有 1920 与 1280 宽度版本。此目录用 `.gdignore` 隔离，游戏只加载两张源图样和排版脚本。
 - 重新采样：`tools/ui/run_ui_review.ps1 -Suites launch-guides`，使用正式 Compatibility 渲染与字体，不导出应用。
 - 启动／设置输入回归：`tools/ui/run_ui_review.ps1 -Suites title,app-flow,art`。截图在 `builds/title-review`。
 - 时长配置与表格同步见 [开屏引导参数](planning/12-开屏引导.md)。
+
+## 素材来源
+
+耳机与控制器线稿由 OpenAI image_gen 生成；耳机使用用户选定的第一版。正式图位于 `assets/ui/art/boot/guides/headphones.png` 和 `controller.png`。中文、按键字母、引线与页面底色由 Godot 排版，审看大图不参与运行。

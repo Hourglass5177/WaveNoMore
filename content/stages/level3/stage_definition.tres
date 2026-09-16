@@ -1,0 +1,160 @@
+[gd_resource type="Resource" script_class="StageDefinition" format=3]
+
+[ext_resource type="Resource" path="res://content/stages/level3/source_chart.tres" id="1_ry7da"]
+[ext_resource type="Script" path="res://src/content/resources/stage_definition.gd" id="2_lftjt"]
+
+[resource]
+script = ExtResource("2_lftjt")
+stage_id = "level3"
+display_name = "牲"
+order_index = 3
+song_title = "牲"
+song_resource_path = "res://content/stages/level3/song.tres"
+chart_resource_path = "res://content/stages/level3/chart.tres"
+stage_show_resource_path = "res://content/stages/level3/stage_show.tres"
+visual_theme_resource_path = "res://content/stages/level3/visual_theme.tres"
+background_resource_path = "res://content/stages/level3/background.tres"
+reward_resource_path = "res://content/stages/level3/reward.tres"
+rule_set_resource_path = "res://content/rules/default_gameplay_rules.tres"
+metadata/planning_source_chart = ExtResource("1_ry7da")
+metadata/level = {
+"ap_grants_advanced_pet": true,
+"author": "",
+"cover": "",
+"description": "",
+"fc_grants_base_pet": true,
+"format": "minghe-level",
+"format_version": 1.0,
+"initial_background": "level_3_background_1",
+"intro_us": 0.0,
+"level_id": "fallback_level_3",
+"next_stage_id": "",
+"order_index": 3.0,
+"outro_us": 0.0,
+"packs": [{
+"manifest": "res://content/backgrounds/level_3.tres",
+"name": "牲 · 第三关环境",
+"path": "packs/level_3.pck"
+}],
+"pet_id": "",
+"rule_path": "res://content/rules/default_gameplay_rules.tres",
+"scene_id": "s08",
+"show": {
+"bindings": [{
+"action": "attack_start",
+"action_duration_us": 1000000.0,
+"action_mode": "auto",
+"death_anchor": "death",
+"difficulty": "normal",
+"id": "fallback_boss_3_attack",
+"life_anchor": "life",
+"note_ids": ["event_c9c42244b3f09bfd", "event_28e68fb9d0a2fcf9", "event_64f0f1f5f1ffc3ea", "event_edff5276c43f4bef", "event_500f0f8806b4a32c", "event_cfd89c8e7f46c64b", "event_8585d9eef35d1b00", "event_1bee8f9c11d7449f", "event_a9e20c6eb318d3ef", "event_be219dc4e55a5144", "event_476010e729fd2656", "event_6ccf40c2feaee71f", "event_5b4e5fe47f8356ed", "event_acff66fbbfc5576e", "event_a61878b48579254e", "event_0f6d7e6c80fd953f", "event_d49693881574851f", "event_24a20c2f97ef4681", "event_e0e23f106d1209c2", "event_676c1a4e797daf9f", "event_365561ea8952c36d", "event_bb47c344da2e000c", "event_7b3619be4ff7ae86", "event_03e7475d9053aff0", "event_826b593897cc09b3", "event_95e3f8ef63cbc84d", "event_622beb1d3c1b5f5e", "event_0bd96587955a37ba", "event_0e0534782a25eeaf", "event_46ef10cd0fde4f62", "event_3cc7f7334c64f341", "event_1e9c00bd7005b5ae", "event_0bea2521535fa843", "event_941c7020ef53bc8b", "event_d9163bd98d03ee29", "event_1ba8ad09703cec2e"],
+"object_id": "fallback_boss_3",
+"path_mode": "auto",
+"rate": 1.0,
+"release_sec": 0.45,
+"return_us": 1000000.0
+}],
+"format": "minghe-show",
+"format_version": 1.0,
+"objects": [{
+"animation": "",
+"asset": "",
+"boss": {
+"flight_speed": 600.0,
+"health_ratio": 0.592592592592593,
+"spread_deg": 30.0,
+"visual": "goat"
+},
+"depth": 0.0,
+"fields": {
+"color": "ffffffff",
+"opacity": 1.0,
+"position": [960.0, 250.0],
+"rotation": 0.0,
+"scale": [1.2, 1.2],
+"size": [560.0, 100.0],
+"visible": true
+},
+"hidden": false,
+"id": "fallback_boss_3",
+"layer": "world",
+"locked": false,
+"name": "羊头 BOSS",
+"occlusion_depth": 0.0,
+"occlusion_order": "none",
+"parent_id": "",
+"type": "actor"
+}],
+"scene_cues": [],
+"sequences": [],
+"tracks": [{
+"clips": [],
+"difficulties": [],
+"id": "fallback_boss_3_position",
+"keys": [{
+"id": "fallback_boss_3_position_0",
+"in_handle": [0.666667, 0.666667],
+"interpolation": "linear",
+"out_handle": [0.333333, 0.333333],
+"time_us": 0.0,
+"value": [960.0, -340.0]
+}, {
+"id": "fallback_boss_3_position_1",
+"in_handle": [0.666667, 0.666667],
+"interpolation": "linear",
+"out_handle": [0.333333, 0.333333],
+"time_us": 65803181.0,
+"value": [960.0, -340.0]
+}, {
+"id": "fallback_boss_3_position_2",
+"in_handle": [0.666667, 0.666667],
+"interpolation": "linear",
+"out_handle": [0.333333, 0.333333],
+"time_us": 67203181.0,
+"value": [960.0, 250.0]
+}],
+"locked": false,
+"muted": false,
+"object_id": "fallback_boss_3",
+"property": "position",
+"section": "song",
+"type": "property"
+}, {
+"clips": [],
+"difficulties": [],
+"id": "fallback_boss_3_opacity",
+"keys": [{
+"id": "fallback_boss_3_opacity_0",
+"in_handle": [0.666667, 0.666667],
+"interpolation": "linear",
+"out_handle": [0.333333, 0.333333],
+"time_us": 0.0,
+"value": 0.0
+}, {
+"id": "fallback_boss_3_opacity_1",
+"in_handle": [0.666667, 0.666667],
+"interpolation": "linear",
+"out_handle": [0.333333, 0.333333],
+"time_us": 65803181.0,
+"value": 0.0
+}, {
+"id": "fallback_boss_3_opacity_2",
+"in_handle": [0.666667, 0.666667],
+"interpolation": "linear",
+"out_handle": [0.333333, 0.333333],
+"time_us": 67003181.0,
+"value": 1.0
+}],
+"locked": false,
+"muted": false,
+"object_id": "fallback_boss_3",
+"property": "opacity",
+"section": "song",
+"type": "property"
+}]
+},
+"show_path": "show.json",
+"song_path": "song/song.json",
+"title": "牲"
+}

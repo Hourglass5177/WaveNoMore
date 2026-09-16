@@ -20,10 +20,10 @@
 
 ## 审看与复现
 
-- [新版三条技能动图](../build/pet-skill-upgrade/three-triggers.gif)
-- [修改前后对照](../build/pet-skill-upgrade/before-after.gif)：各动作从零同时开始，旧短动作结束后保持基准，不循环冒充一次长技能。
-- [修正后的羊眼关键帧](../build/pet-skill-upgrade/sheep-eyes-corrected.png)、[双侧眼部近景](../build/pet-skill-upgrade/eyes-aligned-both-worlds.png)
-- [关内双侧动图](../build/pet-runtime/companions-in-game.gif)，完整 1920×1080 实拍逐帧图保留在 `build/pet-runtime/{pet_id}/`。
+- 新版三条技能动图（历史产物已清理）
+- 修改前后对照（历史产物已清理）：各动作从零同时开始，旧短动作结束后保持基准，不循环冒充一次长技能。
+- 修正后的羊眼关键帧（历史产物已清理）、双侧眼部近景（历史产物已清理）
+- 关内双侧动图（历史产物已清理），完整 1920×1080 实拍逐帧图保留在 `build/pet-runtime/{pet_id}/`。
 - 同目录 `{pet_id}-1280-trigger.png` 为 1280×720 的释放姿态；`*-1280.png` 为常态。
 - 三只各自的 `trigger_sheet.png` 和 `frames.tres` 已更新为 30 fps，分别 36 / 42 / 36 帧；常态与死亡图集内容不变。
 

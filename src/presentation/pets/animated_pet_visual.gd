@@ -201,3 +201,9 @@ func sample_clip(clip: String, time: float) -> void:
 	skeleton.update_skeleton(0.0)
 	_sample_trigger_vfx(time if clip=="trigger" else -1.0)
 	_update_ashes(time if clip == "death" else -1.0)
+
+## 菜单锁定预览固定在首帧，额外粒子和发光不进入黑色剪影。
+func set_locked_preview(locked: bool) -> void:
+	_surface.set_shader_parameter("locked_preview", locked)
+	if breath != null: breath.visible = not locked
+	if trigger_lights != null: trigger_lights.visible = not locked

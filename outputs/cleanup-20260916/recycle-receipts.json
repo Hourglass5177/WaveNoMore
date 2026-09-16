@@ -1,0 +1,2887 @@
+[
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\AudioLab\\runtime\\unused-packages.txt",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IKQ7G1H.txt",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RKQ7G1H.txt"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\AudioLab\\models",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IA8QJJB",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RA8QJJB"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\AudioLab\\__pycache__",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IBWALVQ",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RBWALVQ"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Charts\\releases",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IWB0EAW",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RWB0EAW"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Charts\\archive\\旧发行包",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IK27556",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RK27556"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\releases",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I7YWIU2",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R7YWIU2"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\tmp",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IN7PIRN",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RN7PIRN"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\.playwright-cli",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IF0T30Z.playwright-cli",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RF0T30Z.playwright-cli"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\output\\playwright",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I227QQX",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R227QQX"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\output\\冥河-Web原型2.4.1-异拍拍频.zip",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I1T6VVH.zip",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R1T6VVH.zip"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\output\\冥河-Web原型3.0.3-相纹调频.zip",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IOFTYJA.zip",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ROFTYJA.zip"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\outputs\\boss-animation",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IYE7Y0Q",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RYE7Y0Q"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\outputs\\ui-flame",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IWEHW9K",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RWEHW9K"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\outputs\\launch-guides",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IRGA8O5",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RRGA8O5"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\animation-release",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IRDEIW0",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RRDEIW0"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\attack-two-release",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I86VPEB",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R86VPEB"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\audio-review",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IVHDR80",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RVHDR80"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\background-editor-validation",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IZ50VAT",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RZ50VAT"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\background-export-before.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IGV5OE5.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RGV5OE5.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\background-failing-regression.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IPF06RA.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RPF06RA.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\background-fix",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IVSRFOK",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RVSRFOK"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\background-source-before.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IJCJSNU.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RJCJSNU.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\bat-grid.png",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I27XJTK.png",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R27XJTK.png"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\bell-attack-tests.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I14ND1B.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R14ND1B.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\bell-final-import.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IWSURWW.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RWSURWW.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\bell-final-state.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I0UEE32.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R0UEE32.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\bell-import.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IMC2CJX.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RMC2CJX.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\bell-planning-tests.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IUC0YV8.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RUC0YV8.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\bell-review",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ITS15K5",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RTS15K5"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\bell-review-2.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I6EQ9E6.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R6EQ9E6.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\bell-review-final.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IUCA8TZ.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RUCA8TZ.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\bell-review.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I8WAGA4.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R8WAGA4.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\bell-state-tests.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ISQE361.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RSQE361.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\center-circle",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IYUOQT5",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RYUOQT5"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\chart-editor-015-start.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IO38M38.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RO38M38.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\chart-package-20260913",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IA6ZI14",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RA6ZI14"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\chart-studio",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IPRKZK5",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RPRKZK5"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\charts-migration",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I1MUOM8",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R1MUOM8"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\clear-mark",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IXKUGQ9",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RXKUGQ9"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\controller-review",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IQ7V4PR",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RQ7V4PR"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\create_background_uid.gd",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IO2EYVH.gd",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RO2EYVH.gd"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\credits-review",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I85N5JT",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R85N5JT"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\default-scene-0.1.5-tests.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IHA3YNU.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RHA3YNU.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\default-scene-game-headless-status.json",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I1IPEA6.json",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R1IPEA6.json"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\default-scene-game-headless.error.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IAX764O.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RAX764O.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\default-scene-game-headless.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$INGVSNT.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RNGVSNT.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\default-scene-game-render-status.json",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IATOE34.json",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RATOE34.json"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\default-scene-game-render.error.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I2E7EHI.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R2E7EHI.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\default-scene-game-render.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IL6X1RX.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RL6X1RX.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\default-scene-studio-headless.error.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IBHPFSV.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RBHPFSV.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\default-scene-studio-headless.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I1W1E62.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R1W1E62.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\default-scene-studio-render.error.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IXS8KGG.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RXS8KGG.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\default-scene-studio-render.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I6YHK4X.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R6YHK4X.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\develop-sync-import.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I8FJ1BU.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R8FJ1BU.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\develop-sync-test-0.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IR0C0RB.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RR0C0RB.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\develop-sync-test-1.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I3N67WO.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R3N67WO.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\export-game-0.1.3.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IV4TIHH.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RV4TIHH.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\export-game-0.1.4.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ILKVNDS.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RLKVNDS.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\export-game-0.1.5.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IZVG7BQ.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RZVG7BQ.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\export-probe.gd",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IGNN17M.gd",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RGNN17M.gd"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\export-probe.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I69D6U9.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R69D6U9.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\export-studio-0.1.3.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IN7I32U.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RN7I32U.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\export-studio-0.1.4.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IC4IMLF.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RC4IMLF.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\export-studio-0.1.5.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IYJWGFG.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RYJWGFG.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\feedback-release",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I1EFK8W",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R1EFK8W"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\feedback-review",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IUVCHT5",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RUVCHT5"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\game-015-planning.json",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I7ZIHVW.json",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R7ZIHVW.json"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\gameplay-performance",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I01XI9B",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R01XI9B"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\ghost-review",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I6ELQLQ",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R6ELQLQ"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\git-commit-editor.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I8X6VGK.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R8X6VGK.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\git-stage-editor.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I86BHXN.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R86BHXN.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\health-bar-review",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I2B06AS",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R2B06AS"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\health-review-errors.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I1SP3HU.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R1SP3HU.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\health-review.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I5EYR0G.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R5EYR0G.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\judgment-review",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I7ZATKD",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R7ZATKD"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\launch-guide-import.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IRYZQUH.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RRYZQUH.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\level-carousel",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IC94W6H",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RC94W6H"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\lingjun-states-release",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IQXNDNE",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RQXNDNE"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\lingjun-walk\\package_review.py",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I9O9IHA.py",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R9O9IHA.py"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\lingjun-walk\\run_lingjun_state_tests.gd.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IN0ILR3.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RN0ILR3.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\lingjun-walk\\run_lingjun_walk_tests.gd.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$INUANVE.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RNUANVE.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\lingjun-walk\\run_planning_parameters_tests.gd.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IYFPAXN.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RYFPAXN.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\lingjun-walk\\run_scene_binding_tests.gd.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IJXBG9S.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RJXBG9S.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\lingjun-walk\\sizes.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$II3VMU2.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RI3VMU2.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\lingjun-walk\\skirt-final.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IE0U2P5.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RE0U2P5.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\lingjun-walk\\sync_workbook.mjs",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$II73AWL.mjs",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RI73AWL.mjs"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\lingjun-walk\\walk-final.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IDHPE8K.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RDHPE8K.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\lingjun-walk\\workbook.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IT1ER85.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RT1ER85.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\load-review",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I3DFN5A",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R3DFN5A"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\merge-editor-develop",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IB9E657",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RB9E657"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\merge-import.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I7YJNOR.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R7YJNOR.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\merge-note-wave",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IJ9TEFT",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RJ9TEFT"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\merge-scripts.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IW8N6YX.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RW8N6YX.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\mixed-double-review",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IBPJFPN",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RBPJFPN"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\note-effects-comparison-final.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IP35QWJ.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RP35QWJ.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\note-effects-comparison.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I6DY0OW.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R6DY0OW.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\note-effects-density.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IB1KKJE.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RB1KKJE.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\note-effects-edge.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IGXNVMV.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RGXNVMV.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\note-effects-eye.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IR5BTRM.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RR5BTRM.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\note-effects-final-import.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I04F5TL.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R04F5TL.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\note-effects-glow-gpu.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IM6W92P.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RM6W92P.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\note-effects-glow.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I5PJOPT.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R5PJOPT.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\note-effects-import.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IHTMWZ7.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RHTMWZ7.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\note-effects-performance-off.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IAPHNUR.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RAPHNUR.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\note-effects-performance-on.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IEKAPTQ.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$REKAPTQ.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\note-effects-preview.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IR6G1IL.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RR6G1IL.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\note-effects-release",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I69UBLU",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R69UBLU"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\note-effects-stage.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IKIXTWY.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RKIXTWY.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\note-effects-style.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I872XZG.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R872XZG.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\note-effects-tap.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I7M48S9.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R7M48S9.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\note-recolor-final-import.console",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IBF60BG.console",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RBF60BG.console"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\note-recolor-final-import.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IZ8KJ5K.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RZ8KJ5K.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\note-recolor-import.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I3KFNG4.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R3KFNG4.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\note-recolor-test.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I8OD5C0.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R8OD5C0.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\note-wave-release",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IZ1V2VJ",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RZ1V2VJ"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\parameter-snapshot-probe.gd",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IAQM7JC.gd",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RAQM7JC.gd"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\performance-release",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IW0XKQM",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RW0XKQM"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\pet-animation-baseline.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I00LABK.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R00LABK.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\pet-animation-demo.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I1Z4C8C.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R1Z4C8C.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\pet-animation-import.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IB6EQ2C.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RB6EQ2C.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\pet-animation-render-snake.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ILG3FHA.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RLG3FHA.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\pet-animation-render.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ISUI54T.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RSUI54T.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\pet-animation-stage.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IMEFW3O.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RMEFW3O.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\pet-animation-tests-final.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I2RBV7U.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R2RBV7U.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\pet-animation-tests.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I558R8I.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R558R8I.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\pet-animation-ui.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IGTN7M7.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RGTN7M7.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\pet-death-bake.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IG77DVL.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RG77DVL.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\pet-key-poses.png",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ICZFO7E.png",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RCZFO7E.png"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\pet-originals-inspection.png",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I2F0P6V.png",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R2F0P6V.png"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\pet-poses.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I6PPUR0.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R6PPUR0.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\pet-review",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IKJRQAD",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RKJRQAD"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\pet-review-startup.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I6QWYXI.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R6QWYXI.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\pet-runtime-capture-final.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I1BTQJD.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R1BTQJD.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\pet-runtime-capture-rest.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IDNI6JR.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RDNI6JR.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\pet-runtime-capture.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I8WULHJ.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R8WULHJ.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\pet-runtime-import-final.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IGE78FI.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RGE78FI.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\pet-runtime-import.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IHCU8JG.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RHCU8JG.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\pet-runtime-layout.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IW0SIQ4.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RW0SIQ4.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\pet-runtime-tests-final.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IJI1ZEV.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RJI1ZEV.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\pet-runtime-tests.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IZJ6BTD.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RZJ6BTD.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\pet-runtime-verbose.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IZ38Z7K.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RZ38Z7K.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\01 判定与容错-updated.png",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I26LFU2.png",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R26LFU2.png"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\01 判定与容错.png",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IHH2359.png",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RHH2359.png"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\02 魂火与惩罚-updated.png",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IRVEPEU.png",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RRVEPEU.png"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\02 魂火与惩罚.png",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IGKEH8S.png",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RGKEH8S.png"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\03 调频-updated.png",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I9KUE9P.png",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R9KUE9P.png"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\03 调频.png",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I9MPQQP.png",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R9MPQQP.png"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\04 计分-updated.png",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IV33TRR.png",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RV33TRR.png"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\04 计分.png",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IIC80VZ.png",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RIC80VZ.png"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\05 读谱与声波-updated.png",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IR2WJAV.png",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RR2WJAV.png"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\05 读谱与声波.png",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I6IVOBW.png",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R6IVOBW.png"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\06 随从.png",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IHILPYL.png",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RHILPYL.png"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\07 分界线表现-updated.png",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I5VVZPJ.png",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R5VVZPJ.png"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\07-before.png",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IO7VAZS.png",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RO7VAZS.png"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\08 角色移动-updated.png",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IXBGRGA.png",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RXBGRGA.png"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\09 BOSS 表现-updated.png",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I2I28HY.png",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R2I28HY.png"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\10 UI 火框-updated.png",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IBSP4K5.png",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RBSP4K5.png"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\11 关卡奖励-updated.png",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I9UTDVI.png",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R9UTDVI.png"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\12 开屏引导-updated.png",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I6X310T.png",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R6X310T.png"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\13 判定表现-updated.png",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IPLTVDZ.png",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RPLTVDZ.png"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\bad.xlsx",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I9XOTJY.xlsx",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R9XOTJY.xlsx"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\balance-before.json",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IQOA9RV.json",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RQOA9RV.json"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\balance-summary.png",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$INVUGRK.png",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RNVUGRK.png"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\baseline-domain.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IB4OZNW.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RB4OZNW.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\baseline_core.gd",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I61YZJX.gd",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R61YZJX.gd"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\baseline_simulation.gd",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I4ISJP7.gd",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R4ISJP7.gd"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\before-flow-boost.xlsx",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I1KDNFS.xlsx",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R1KDNFS.xlsx"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\before-vortex.xlsx",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I6TLIG3.xlsx",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R6TLIG3.xlsx"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\before-water-flow.xlsx",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IWERTJ0.xlsx",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RWERTJ0.xlsx"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\bell-after.png",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IEEBJL1.png",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$REEBJL1.png"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\bell-before.png",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IYWHEA3.png",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RYWHEA3.png"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\bell-catalog.py",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IXTRBC1.py",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RXTRBC1.py"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\build_workbook.mjs",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I4Q311V.mjs",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R4Q311V.mjs"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\domain-damage.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I4LWMJF.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R4LWMJF.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\edited.xlsx",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ID5JZ12.xlsx",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RD5JZ12.xlsx"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\ghost-damage.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IF7Q2NF.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RF7Q2NF.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\ghost-delivery.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IOX8VJP.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ROX8VJP.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\ghost-prediction.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I3GGHBN.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R3GGHBN.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\ghost-revision.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I7QJ7GP.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R7QJ7GP.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\import-damage.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I3DM52X.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R3DM52X.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\import-ghost.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IHETNAA.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RHETNAA.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\import.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IJBRIVO.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RJBRIVO.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\inspect_boundary.mjs",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IHHP7XJ.mjs",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RHHP7XJ.mjs"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\note-feedback.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ID9ECWW.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RD9ECWW.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\parameters-delivery.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IOHFUGQ.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ROHFUGQ.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\parameters-revision.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IXVZ19W.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RXVZ19W.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\pets-damage.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ILOJR58.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RLOJR58.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\pets-render-final.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IKY8HGY.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RKY8HGY.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\planning-damage.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IBVDC5U.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RBVDC5U.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\prediction-final.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I9W2722.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R9W2722.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\preview-damage.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IRTVI9J.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RRTVI9J.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\preview-final.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ICM6O6Q.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RCM6O6Q.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\preview-revision.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ISTC262.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RSTC262.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\query-final.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IHE1ACY.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RHE1ACY.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\result-sync.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I7VBYFH.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R7VBYFH.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\run_baseline.gd",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IDPU4ZE.gd",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RDPU4ZE.gd"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\segment-delivery.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I26BA2V.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R26BA2V.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\segment-revision.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IHDQQU8.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RHDQQU8.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\segment-tests.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IBPNKJR.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RBPNKJR.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\selection-final.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IYWIU6T.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RYWIU6T.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\stage_changes.py",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IW85VXQ.py",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RW85VXQ.py"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\sync-preservation.xlsx",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IEC5TCV.xlsx",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$REC5TCV.xlsx"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\sync-preservation.xlsx.inspect.ndjson",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IVU44J0.ndjson",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RVU44J0.ndjson"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\sync_judgment.mjs",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IRC0G60.mjs",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RRC0G60.mjs"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\sync_launch_guides.mjs",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IXOY3ZD.mjs",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RXOY3ZD.mjs"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\sync_workbook.mjs",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IU1E1P9.mjs",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RU1E1P9.mjs"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\test_sync_workbook.mjs",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IG854ZD.mjs",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RG854ZD.mjs"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\timing-cue-revision.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I2PPGUH.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R2PPGUH.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\tuning-completion.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IAUVR3N.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RAUVR3N.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\tuning-lifecycle-work\\before-01 判定与容错.png",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I2RDJ2E.png",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R2RDJ2E.png"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\tuning-lifecycle-work\\before-03 调频.png",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IRXUUR9.png",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RRXUUR9.png"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\tuning-lifecycle-work\\bell-inspect.mjs",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IB0ZFP1.mjs",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RB0ZFP1.mjs"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\tuning-lifecycle-work\\inspect.mjs",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IERM27U.mjs",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RERM27U.mjs"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\tuning-lifecycle-work\\sync_workbook.mjs",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I9XS10Z.mjs",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R9XS10Z.mjs"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\tuning-render-delivery.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I98AZ3H.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R98AZ3H.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\tuning-ring-damage.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IDIM6S0.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RDIM6S0.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\vortex-stream-before.xlsx",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I7P266T.xlsx",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R7P266T.xlsx"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\workbook-inspect.ndjson",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IWBKVHB.ndjson",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RWBKVHB.ndjson"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\workbook-inspection.ndjson",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ISJ5W9S.ndjson",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RSJ5W9S.ndjson"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\使用与量级-updated.png",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I39HPX9.png",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R39HPX9.png"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\使用与量级.png",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IHLDSYA.png",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RHLDSYA.png"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\preview-config-probe.gd",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I8MDU3V.gd",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R8MDU3V.gd"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\preview-export-final.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ITKA3Q1.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RTKA3Q1.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\preview-export-smoke.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IMCFJ2U.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RMCFJ2U.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\preview-export-start.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IQEYISI.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RQEYISI.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\preview-pack-config-probe.gd",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I2JS5WO.gd",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R2JS5WO.gd"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\preview-planning-export.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IW6A3LZ.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RW6A3LZ.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\preview-planning-game-export.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IE3EKR2.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RE3EKR2.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\preview-restore-actual.json",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ILI3IKX.json",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RLI3IKX.json"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\preview-restore-actual.json.bak",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$INTQ64D.bak",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RNTQ64D.bak"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\preview-restore-baseline.bin",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IT05A1I.bin",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RT05A1I.bin"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\preview-restore-dense.json",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IO0ZG56.json",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RO0ZG56.json"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\preview-restore-export.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I97FYDF.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R97FYDF.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\preview-restore-fixture.json",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IW0WPAY.json",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RW0WPAY.json"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\preview-restore-release",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IQLWNNQ",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RQLWNNQ"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\preview-restore-second.json",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IQT5P0V.json",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RQT5P0V.json"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\recolor-feedback.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IN98CIP.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RN98CIP.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\recolor-final-gallery.console",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I786A02.console",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R786A02.console"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\recolor-final-gallery.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IHGMAT9.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RHGMAT9.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\recolor-run_level_boss_tests.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I3KKGPN.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R3KKGPN.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\recolor-run_level_boss_tests.log.console",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IKKEPJS.console",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RKKEPJS.console"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\recolor-run_note_edge_glow_tests.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IHQKGO0.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RHQKGO0.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\recolor-run_note_edge_glow_tests.log.console",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IO9023B.console",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RO9023B.console"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\recolor-run_note_effect_style_tests.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IUVWT1X.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RUVWT1X.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\recolor-run_note_effect_style_tests.log.console",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IC6961U.console",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RC6961U.console"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\recolor-run_note_glow_tests.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IOKJIVV.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ROKJIVV.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\recolor-run_note_glow_tests.log.console",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IEUVNQ3.console",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$REUVNQ3.console"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\recolor-run_preview_frame_tests.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IBCV85F.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RBCV85F.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\recolor-run_preview_frame_tests.log.console",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IY55G13.console",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RY55G13.console"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\recolor-run_tap_eye_tests.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IHHM5OH.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RHHM5OH.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\recolor-run_tap_eye_tests.log.console",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IAXN0WS.console",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RAXN0WS.console"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\recolor-run_tap_feedback_tests.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I9VUS2R.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R9VUS2R.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\recolor-run_tap_feedback_tests.log.console",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IE8MTIL.console",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RE8MTIL.console"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\recolor-run_wave_distortion_tests.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ICE684N.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RCE684N.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\recolor-run_wave_distortion_tests.log.console",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IYOM73P.console",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RYOM73P.console"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\release-0.1.3-check",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IY4XGUE.3-check",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RY4XGUE.3-check"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\release-0.1.3-probe.gd",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IYCIOUO.gd",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RYCIOUO.gd"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\release-0.1.4-game-render-status.json",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IG6PZ81.json",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RG6PZ81.json"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\release-0.1.4-game-render.error.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I4KLJNR.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R4KLJNR.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\release-0.1.4-game-render.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ITQN68T.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RTQN68T.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\release-0.1.4-game-status.json",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IK8CZSR.json",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RK8CZSR.json"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\release-0.1.4-game.error.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I2FNJJR.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R2FNJJR.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\release-0.1.4-game.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ICBED0F.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RCBED0F.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\release-0.1.4-studio-render.error.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IDLBOYW.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RDLBOYW.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\release-0.1.4-studio-render.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IZKYE5V.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RZKYE5V.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\release-0.1.4-studio.error.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IEB97HM.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$REB97HM.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\release-0.1.4-studio.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IXSUOK1.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RXSUOK1.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\release-0.1.4-verification.json",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IVHPONS.json",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RVHPONS.json"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\release-0.1.5-game-render-status.json",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ICCIDYO.json",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RCCIDYO.json"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\release-0.1.5-game-render.error.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IS34T4W.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RS34T4W.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\release-0.1.5-game-render.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IHYUH3Q.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RHYUH3Q.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\release-0.1.5-studio-headless.error.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IMRWL26.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RMRWL26.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\release-0.1.5-studio-headless.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I2I1WEL.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R2I1WEL.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\release-0.1.5-studio-render.error.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I854FUZ.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R854FUZ.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\release-0.1.5-studio-render.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IWMN6YB.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RWMN6YB.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\result-review",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IQH2GL5",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RQH2GL5"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\run_preview_frame_tests-final.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IG6XWCO.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RG6XWCO.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\scene-adaptation-import.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IEF2UUO.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$REF2UUO.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\scene-binding-tests.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ILAAA6Q.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RLAAA6Q.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\scene-binding-visual.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I6SJT6G.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R6SJT6G.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\scene-import-after-sync.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IN86ZH8.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RN86ZH8.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\scene-lingjun-attack-tests.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IB8ERI6.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RB8ERI6.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\scene-local-chart-tests.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ITP4FV0.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RTP4FV0.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\scene-note-glow-tests.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I2WROY4.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R2WROY4.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\scene-parallax-tests.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I3OU8K9.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R3OU8K9.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\scene-preview-frame-tests.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IPSR77K.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RPSR77K.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\scene-spine-api.gd",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IGKS6Q3.gd",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RGKS6Q3.gd"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\scene-spine-constants.gd",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IOTO0GH.gd",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ROTO0GH.gd"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\scene-studio-tests.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IK1LJIG.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RK1LJIG.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\scene-trial-flow-tests.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IL3NMJW.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RL3NMJW.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\scene-trial-flow-verbose.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IILHDP6.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RILHDP6.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\script-audit",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IF0BPUN",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RF0BPUN"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\sheep-grid.png",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IGGDO1C.png",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RGGDO1C.png"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\side-stick-glow",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IW74QCJ",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RW74QCJ"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\snake-grid.png",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IH5I1NM.png",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RH5I1NM.png"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\source-015-planning.json",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I5BD5O5.json",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R5BD5O5.json"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\splash-import",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IZAMNY2",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RZAMNY2"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\sync-editor.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IJ1J0CI.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RJ1J0CI.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tap-eye",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IIQSYKT",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RIQSYKT"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tap-feedback-gpu-errors.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IZOI5BK.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RZOI5BK.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tap-feedback-gpu.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IUI4NA6.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RUI4NA6.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tap-feedback-tests.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IIZURK9.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RIZURK9.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tap-radius-authoring.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IEWO444.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$REWO444.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tap-radius-baseline",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IHPPUT8",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RHPPUT8"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tap-radius-baseline-import.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I3T4TQJ.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R3T4TQJ.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tap-radius-baseline-tests.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IWDEDUT.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RWDEDUT.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tap-radius-baseline.zip",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IYDJARS.zip",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RYDJARS.zip"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tap-radius-final-0.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IL5STWB.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RL5STWB.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tap-radius-final-1.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I24HDOD.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R24HDOD.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tap-radius-final-2.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IE0EQZN.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RE0EQZN.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tap-radius-glow.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IOZ7GWY.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ROZ7GWY.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tap-radius-import.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IU9XHNP.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RU9XHNP.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tap-radius-regression-0.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IAGV8Z0.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RAGV8Z0.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tap-radius-regression-1.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ILIKI4F.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RLIKI4F.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tap-radius-regression-2.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IY93AJZ.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RY93AJZ.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tap-radius-regression-3.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ISRURQH.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RSRURQH.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\timing-cue-review",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I1SBTN5",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R1SBTN5"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\title-import.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I0SGW39.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R0SGW39.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\title-review",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I2WI5QC",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R2WI5QC"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\trial-015-planning.json",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I2X2PH9.json",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R2X2PH9.json"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\trial-015-status.json",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IMF7V2D.json",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RMF7V2D.json"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\trial-015.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ILNI7BD.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RLNI7BD.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\trial-flow-input.zip",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IFSTDRU.zip",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RFSTDRU.zip"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tuning-radius-check.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IIVN7XM.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RIVN7XM.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tuning-radius-gpu-errors.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I6I41HC.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R6I41HC.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tuning-radius-gpu.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IM7EJ45.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RM7EJ45.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tuning-radius-tests.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I9X6EEM.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R9X6EEM.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tuning-release",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IW7ZS2Y",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RW7ZS2Y"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tuning-review",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IMN989L",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RMN989L"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tuning-strength-release",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IWWY3HW",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RWWY3HW"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\ui-refresh-20260914-side",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IZ346TD",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RZ346TD"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\ui-review",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ITNKWG6",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RTNKWG6"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\ui-sync-import.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IWXH4C1.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RWXH4C1.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\ui_font_metrics.gd",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IIPXGOJ.gd",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RIPXGOJ.gd"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\ui_planning_check.gd",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IBX3ESB.gd",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RBX3ESB.gd"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\update_judgment_catalog.py",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IROP4T5.py",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RROP4T5.py"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\verify-release-0.1.4.py",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IG74UPN.py",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RG74UPN.py"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\visual-review\\note-edge-glow",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IOMBIWK",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ROMBIWK"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\visual-review\\note-effects",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I2408Y8",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R2408Y8"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\visual-review\\note-glow",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IAY2TJK",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RAY2TJK"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\visual-review\\scene-binding",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I33N5DZ",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R33N5DZ"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\visual-review\\tap-radius",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I1TITWF",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R1TITWF"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\visual-review\\tools",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IHLNITJ",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RHLNITJ"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\visual-review\\tuning-lifecycle",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IAD6BWQ",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RAD6BWQ"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\visual-review\\tuning-style",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IXVOIBU",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RXVOIBU"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\visual-review\\tuning-style-import.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I0112EH.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R0112EH.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\visual-review\\tuning-style-radius.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IRQE2TC.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RRQE2TC.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\visual-review\\tuning-style-test.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I0J4OT8.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R0J4OT8.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\visual-review\\wave-distortion",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I4UFA5V",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R4UFA5V"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\visual-review\\wave-distortion-focus",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I4LYWYE",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R4LYWYE"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\visual-review\\wave-distortion-local",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IAZ31CM",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RAZ31CM"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\visual-review\\wave-distortion-sweep",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IABWX6O",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RABWX6O"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\visual-review\\wave-focus-capture.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IBASY9I.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RBASY9I.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\visual-review\\wave-focus-test.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IK3F86F.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RK3F86F.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\visual-review\\wave-local-capture-off.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IS2R8RV.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RS2R8RV.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\visual-review\\wave-local-capture-pair.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IGBZK5E.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RGBZK5E.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\visual-review\\wave-local-capture.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I5FELQT.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R5FELQT.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\visual-review\\wave-local-performance.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IS5N1T9.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RS5N1T9.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\visual-review\\wave-local-test.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IUTQ90U.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RUTQ90U.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\visual-review\\wave-sweep-capture-off.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IVHD8B5.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RVHD8B5.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\visual-review\\wave-sweep-capture.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I0ERDXC.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R0ERDXC.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\visual-review\\wave-sweep-center.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ITOS3VB.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RTOS3VB.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\visual-review\\wave-sweep-hold.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I22C7I9.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R22C7I9.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\visual-review\\wave-sweep-import.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IK8RCVT.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RK8RCVT.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\visual-review\\wave-sweep-perf-fixed.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IOYQN46.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ROYQN46.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\visual-review\\wave-sweep-preview.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IKN2U6P.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RKN2U6P.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\visual-review\\wave-sweep-tap.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IJ5JE0N.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RJ5JE0N.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\visual-review\\wave-sweep-test.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I4S3GQC.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R4S3GQC.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\wave-distortion-capture-final.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IRNK6V7.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RRNK6V7.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\wave-distortion-capture.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IZSFY4R.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RZSFY4R.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\wave-distortion-fixed.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IU8WACR.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RU8WACR.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\wave-distortion-performance.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IBA95DC.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RBA95DC.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\wave-distortion-test.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I7WCNO7.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R7WCNO7.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\02 魂火与惩罚-updated.png",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ILYRLTT.png",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RLYRLTT.png"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\03 调频-updated.png",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I64QD1U.png",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R64QD1U.png"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\07 分界线表现-updated.png",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I79APKA.png",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R79APKA.png"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\08 角色移动-updated.png",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IKAVXAR.png",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RKAVXAR.png"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\11 关卡奖励-updated.png",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IJHNDK2.png",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RJHNDK2.png"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\asset-packs",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IRHOKJY",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RRHOKJY"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-actions-final.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I6T6QTD.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R6T6QTD.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-actions-user-fix.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IUJL022.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RUJL022.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-actions.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IHDIXAD.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RHDIXAD.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-baseline",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IDEOBJK",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RDEOBJK"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-battle-final.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IBRICRG.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RBRICRG.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-battle.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IJUDFPH.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RJUDFPH.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-combat-import.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IG6YIFQ.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RG6YIFQ.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-delivery-exe.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$INJD6I3.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RNJD6I3.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-delivery-qa",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IOVC14A",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ROVC14A"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-domain-baseline.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IKJ70SQ.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RKJ70SQ.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-domain-regression.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I61471G.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R61471G.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-final-import.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IV153VC.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RV153VC.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-fix-export-editor-console.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I70EV5D.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R70EV5D.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-fix-export-editor.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IF84IO3.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RF84IO3.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-fix-export-game-console.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$II5RC4M.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RI5RC4M.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-fix-export-game.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I9SEUCQ.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R9SEUCQ.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-fix-release",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IS1HALV",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RS1HALV"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-fix-release-smoke.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I5BOSEQ.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R5BOSEQ.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-fix-release-start.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ICDGVNS.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RCDGVNS.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-gameplay-final.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IFWJIAY.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RFWJIAY.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-gameplay.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I48I1YS.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R48I1YS.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-import-fix-export-console.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$INGPC7S.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RNGPC7S.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-import-fix-export.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ISNSSBF.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RSNSSBF.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-import-fix-game-console.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IOPGELR.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ROPGELR.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-import-fix-game.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IMQWJ5A.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RMQWJ5A.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-integration.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IH3OTGD.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RH3OTGD.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-native-game-status.json",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IYV2ET6.json",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RYV2ET6.json"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-native-probe-build.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I530S3L.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R530S3L.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-native-release.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IM3COU2.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RM3COU2.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-options",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IIBBHCC",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RIBBHCC"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-options-final.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I8P8BOP.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R8P8BOP.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-options-user-fix.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I6G45KV.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R6G45KV.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-options.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IJ6PI6W.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RJ6PI6W.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-overview",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I9BJYNT",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R9BJYNT"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-overview-import.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IT8DXIL.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RT8DXIL.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-overview-parse.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IGSMH8K.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RGSMH8K.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-overview-reliability.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ID1226M.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RD1226M.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-overview-tests.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ICNFLQ0.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RCNFLQ0.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-path-final.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I3B3A8F.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R3B3A8F.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-path.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ICUZD9X.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RCUZD9X.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-planning\\09 BOSS 表现-updated.png",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IZXB71X.png",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RZXB71X.png"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-planning\\sync_workbook.mjs",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IJB2M0Z.mjs",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RJB2M0Z.mjs"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-probe-build.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IGOMS06.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RGOMS06.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-runtime",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I1UVRVZ",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R1UVRVZ"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-runtime-final.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IV2NF2I.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RV2NF2I.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-runtime-visual.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IQ072EE.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RQ072EE.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-segment-regression.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I2DN41H.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R2DN41H.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-spine-regression.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IATOAJE.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RATOAJE.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-tuning-regression.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IMRI8KH.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RMRI8KH.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-user-repro",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IJEO2LO",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RJEO2LO"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-user-repro.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I4RK3HQ.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R4RK3HQ.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\build-all-20260915",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I7ZHZUD",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R7ZHZUD"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\collection-chart-console.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IXNWB80.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RXNWB80.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\collection-chart.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I8XQBP6.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R8XQBP6.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\collection-game-console.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ILH7FTO.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RLH7FTO.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\collection-game.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IGYKYC8.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RGYKYC8.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\collection-level-console.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I2VNU7K.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R2VNU7K.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\collection-level.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ITH7LR7.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RTH7LR7.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\delivery-0916-build-console.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ISM1PEZ.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RSM1PEZ.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\delivery-0916-build.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IEPEXLE.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$REPEXLE.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\delivery-five-check.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ICVXK5X.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RCVXK5X.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\editor-audit-20260913",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IN1LL1D",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RN1LL1D"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\editor-build-20260913",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ICF9TI6",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RCF9TI6"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\editor-fixes",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IM19R2Z",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RM19R2Z"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\entrypoints",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I0PT1JT",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R0PT1JT"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\entrypoints-after.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IY6M0ZP.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RY6M0ZP.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\entrypoints-animation.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IHFQLGD.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RHFQLGD.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\entrypoints-before.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IC4Z5ZQ.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RC4Z5ZQ.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\entrypoints-environment.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IQWLDYS.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RQWLDYS.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\entrypoints-gpu.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IA1V0HH.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RA1V0HH.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\entrypoints-reliability.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IGC00F7.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RGC00F7.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\entrypoints-spriteframes.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IZ7161A.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RZ7161A.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\environment",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IIISM19",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RIISM19"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\environment-decoration",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IAJCC8T",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RAJCC8T"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\environment-decoration-after.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IKEUQFO.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RKEUQFO.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\environment-decoration-before.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I6GSPQX.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R6GSPQX.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\environment-decoration-entry.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I6T8MGC.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R6T8MGC.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\environment-decoration-import.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IY2OMDR.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RY2OMDR.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\environment-decoration-runtime.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IQ0T9AQ.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RQ0T9AQ.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\export-cache-before-ghost-fix",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IOUOWJE",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ROUOWJE"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\fallback-boss-levels.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ISRCO2U.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RSRCO2U.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\final-build-tools\\check_release.gd",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I67EDPJ.gd",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R67EDPJ.gd"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\final-build-tools\\diagnose_ghost.gd",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IRQCZ9L.gd",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RRQCZ9L.gd"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\final-build-tools\\resave_ghost.gd",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IPOUZHP.gd",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RPOUZHP.gd"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\final-build-tools\\sync_workbook.mjs",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IBVV9C8.mjs",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RBVV9C8.mjs"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\final-game-build.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IZ3ROSR.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RZ3ROSR.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\final-progression.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IOQMI4D.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ROQMI4D.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\five-changes-build-console.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I86JTWO.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R86JTWO.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\five-changes-build.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I4FHC8I.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R4FHC8I.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\ghost-fixed-build-console.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I7EEOC2.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R7EEOC2.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\ghost-fixed-build.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I1WYNMI.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R1WYNMI.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\ghost-fixed-packed-check.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IVAV7RO.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RVAV7RO.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\ghost-packed.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ISWHKSO.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RSWHKSO.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\ghost-readability-check.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IKPCTUC.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RKPCTUC.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\ghost-release.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IS8TU7S.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RS8TU7S.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\ghost-resave-fixed.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I9RIUYB.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R9RIUYB.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\ghost-resave.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I9VV8QQ.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R9VV8QQ.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\ghost-resave.res",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IWI6QGC.res",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RWI6QGC.res"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\ghost-result-check.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ICIC86W.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RCIC86W.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\import-latest-fire.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IFUA33L.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RFUA33L.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\import-latest-zhong.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IT7C0V8.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RT7C0V8.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\import-third-final.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I2B58DI.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R2B58DI.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\import-third.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I036CJ9.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R036CJ9.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\imported-authored-levels.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I6A07JI.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R6A07JI.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\level-3-phase.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I7YBKTZ.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R7YBKTZ.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\loading-parse-console.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I5IMMJ4.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R5IMMJ4.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\loading-parse.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IGMPEK8.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RGMPEK8.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\locked-preview.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I9CZ5EY.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R9CZ5EY.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\locked-silhouette-build-console.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I5U7NR0.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R5U7NR0.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\locked-silhouette-build.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I5HZOH0.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R5HZOH0.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\pack-fix-export-editor-console.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I1KWL3Z.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R1KWL3Z.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\pack-fix-export-editor.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IV5EYB4.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RV5EYB4.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\pack-fix-export-game-console.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IXMKD70.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RXMKD70.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\pack-fix-export-game.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IX9R6RQ.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RX9R6RQ.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\pack-repeat-test",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I14R1XU",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R14R1XU"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\pack-repeat-test.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I4S89HI.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R4S89HI.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\pet-unlock-build-console.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IIBXYVU.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RIBXYVU.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\pet-unlock-build.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IJ3KQ2L.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RJ3KQ2L.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\pet-unlock-fix.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IHJFPOY.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RHJFPOY.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\readability-build-console.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IKCL2R8.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RKCL2R8.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\readability-build.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I83A6ZH.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R83A6ZH.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\release-qa",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IL1FI2R",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RL1FI2R"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\release-reports",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IPPYGVD",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RPPYGVD"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\reliability",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ISCW0IO",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RSCW0IO"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\restore-third.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IVFZVRN.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RVFZVRN.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\result-build-console.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IBXJT8F.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RBXJT8F.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\result-build.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IS0EWYX.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RS0EWYX.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\spine-animation-regression.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IJTTOTR.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RJTTOTR.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\spine-final-parse-console.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IGSAB4H.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RGSAB4H.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\spine-final-parse.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I86ON28.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R86ON28.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\spine-import",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IPGRI33",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RPGRI33"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\spine-import-gpu.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IU8JD0Q.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RU8JD0Q.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\spine-import-parse-console.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IOFZRFS.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ROFZRFS.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\spine-import-parse.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IQPL4OB.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RQPL4OB.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\spine-import-tests.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I87Y2JZ.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R87Y2JZ.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\spine-playback-after.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IREIE8N.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RREIE8N.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\spine-playback-before.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I1QSMUW.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R1QSMUW.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\spine-reliability.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I6X4VM3.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R6X4VM3.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\third-pack.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I81KPKY.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R81KPKY.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\third-resource-import.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IQ4EC7U.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RQ4EC7U.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\third-restored-visual.log",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IQSZFHJ.log",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RQSZFHJ.log"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\ui",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I83SQ11",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R83SQ11"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\unlock-check.bak",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IWYE292.bak",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RWYE292.bak"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\unlock-check.json",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IYMK6V0.json",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RYMK6V0.json"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\ux",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IQ8HWKM",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RQ8HWKM"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\使用与量级-updated.png",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IWAJ39D.png",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RWAJ39D.png"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\关卡编辑器-BOSS修复版-fcf4e16.zip",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IAN4LL8.zip",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RAN4LL8.zip"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\关卡编辑器-BOSS本体修复-d323b4d.zip",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IFOOXE2.zip",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RFOOXE2.zip"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\关卡编辑器-素材包修复版-f591332.zip",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I7QWPRF.zip",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R7QWPRF.zip"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\冥河-五项调整版",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I3XQ5RM",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R3XQ5RM"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\冥河-正式三关修复版",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IWRBE2R",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RWRBE2R"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\冥河-正式三关修复版.zip",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ILLJ1ZD.zip",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RLLJ1ZD.zip"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\冥河-正式三关最终版",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I125FMH",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R125FMH"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\冥河-正式交付版-0916",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IB3HCO4",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RB3HCO4"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\冥河-结算与诗句修正版",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IY30K2Z",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RY30K2Z"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\冥河-读谱与加载修正版",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IUT6N4S",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RUT6N4S"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\冥河-锁定剪影版",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IOAPK9W",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ROAPK9W"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\冥河-随从解锁修正版",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I13QFT4",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R13QFT4"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\冥河，冥河！",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$INBI8OM",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RNBI8OM"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\冥河，冥河！（带开发工具版）",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I37GF69",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R37GF69"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\开发工具合集",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ILE5RGW",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RLE5RGW"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\background-preview-fix.md",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IYRDZ3X.md",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RYRDZ3X.md"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\boundary-waves-validation.md",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ILQ6PWV.md",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RLQ6PWV.md"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\branch-sync-2026-09-14.md",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IGNOQZT.md",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RGNOQZT.md"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\chart-editor-open-dialog-fix.md",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IGNFHMC.md",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RGNFHMC.md"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\chart-editor-preview-performance-2026-09-14.md",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I5RN9KZ.md",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R5RN9KZ.md"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\chart-editor-progress.md",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IM9CUKX.md",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RM9CUKX.md"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\chart-editor-trial-performance-2026-09-09.md",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ITPPR4S.md",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RTPPR4S.md"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\chart-editor-tuning-validation.md",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$INHAYGR.md",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RNHAYGR.md"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\chart-editor-ui-review.md",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IVU1Y3S.md",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RVU1Y3S.md"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\chart-studio-v0.1.3.md",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I1EO9GC.md",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R1EO9GC.md"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\chart-studio-v0.1.4.md",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I81RE3H.md",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R81RE3H.md"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\develop-merge-review-2026-09-08.md",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I24SZQ6.md",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R24SZQ6.md"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\editor-branch-audit-2026-09-13.md",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IX0IXRO.md",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RX0IXRO.md"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\ghost-export-fix.md",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I3ATT9B.md",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R3ATT9B.md"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\ghost-icon-prompts.md",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IPQXBL4.md",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RPQXBL4.md"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\launch-guides-prompts.md",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IGNLA1L.md",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RGNLA1L.md"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\level-editor-boss-combat-validation-2026-09-15.md",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I1E1QY4.md",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R1E1QY4.md"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\level-editor-boss-overview-playback-validation-2026-09-15.md",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IZ1PE8G.md",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RZ1PE8G.md"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\level-editor-entrypoint-audit-2026-09-15.md",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IDQ52NB.md",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RDQ52NB.md"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\level-editor-fixes-validation-2026-09-13.md",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IFH862U.md",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RFH862U.md"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\level-editor-initial-environment-validation-2026-09-15.md",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IW2KX5P.md",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RW2KX5P.md"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\level-editor-reliability-validation-2026-09-14.md",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IXCIODQ.md",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RXCIODQ.md"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\level-editor-spine-validation-2026-09-15.md",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I6PPECF.md",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R6PPECF.md"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\level-editor-validation.md",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IC3F59K.md",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RC3F59K.md"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\local-chart-validation.md",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IZBSBY6.md",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RZBSBY6.md"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\note-effects-performance-2026-09.md",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IT00HWO.md",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RT00HWO.md"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\note-effects-validation.md",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IPJR4SH.md",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RPJR4SH.md"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\note-glow-2026-09.md",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I0IQ0CW.md",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R0IQ0CW.md"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\note-wave-effects-validation.md",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I3QRK5I.md",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R3QRK5I.md"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\pet-runtime-validation.md",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IG2ULUH.md",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RG2ULUH.md"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\pet-validation.md",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I19O1LB.md",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R19O1LB.md"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\tuning-su-game-editor-handoff-2026-09-08.md",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IW008WJ.md",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RW008WJ.md"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Docs\\Design\\Web原型测试策划案与报告",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$ILOVLHE",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RLOVLHE"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Docs\\Program\\《冥河，冥河！》Godot 4.6开发规划.md",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IQNWQQM.md",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RQNWQQM.md"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\AudioLab\\RESULTS.md",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I3GTAPJ.md",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R3GTAPJ.md"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\Prototype\\VALIDATION.md",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$IYKZGT5.md",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$RYKZGT5.md"
+  },
+  {
+    "original": "E:\\大学\\MEMO\\编钟音游\\.git-relocated-empty-20260903",
+    "metadata": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$I6PBKWM.git-relocated-empty-20260903",
+    "payload": "E:\\$Recycle.Bin\\S-1-5-21-1942464140-2856953516-1393776520-1001\\$R6PBKWM.git-relocated-empty-20260903"
+  }
+]

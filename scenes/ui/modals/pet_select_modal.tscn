@@ -330,3 +330,17 @@ offset_bottom = 52.0
 mouse_filter = 2
 script = ExtResource("shortcut")
 action = &"ui_cancel"
+
+[node name="UnknownName" type="Label" parent="Design"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 0
+offset_left = 800.0
+offset_top = 94.0
+offset_right = 1120.0
+offset_bottom = 194.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 54
+text = "？？？"
+horizontal_alignment = 1
+vertical_alignment = 1

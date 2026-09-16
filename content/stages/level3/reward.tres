@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="RewardDefinition" format=3]
+
+[ext_resource type="Resource" path="res://content/pets/pet_gui_jin_yang.tres" id="1_p5mnc"]
+[ext_resource type="Script" path="res://src/content/resources/reward_definition.gd" id="2_sphyl"]
+
+[resource]
+script = ExtResource("2_sphyl")
+reward_id = "reward_s08"
+pet = ExtResource("1_p5mnc")

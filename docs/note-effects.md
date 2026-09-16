@@ -88,7 +88,7 @@ ArtLab 的 `note_zhu`、`note_xuan`、`note_hold` 条目接入 `note_effect_prev
 
 截图与原始测量输出位于 `builds/visual-review/note-effects/`，本轮不导出应用。
 
-换色、眼睛与折射结果见 [验证记录](note-wave-effects-validation.md)。早期光效结果保留在 [历史验证记录](note-effects-validation.md)。
+换色、眼睛与折射结果见 [验证记录](note-effects.md)。早期光效结果保留在 [历史验证记录](note-effects.md)。
 
 调频滑条的半透明配色、起点预填与骨白／阵营柔光见 [调频滑条表现](tuning-visual-style.md)。
 

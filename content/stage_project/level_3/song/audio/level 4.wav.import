@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://douok0jx85r4v"
+path="res://.godot/imported/level 4.wav-1e93b1ed7ca9934e72cb6907d4bdd183.sample"
+
+[deps]
+
+source_file="res://content/stage_project/level_3/song/audio/level 4.wav"
+dest_files=["res://.godot/imported/level 4.wav-1e93b1ed7ca9934e72cb6907d4bdd183.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

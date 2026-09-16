@@ -5,6 +5,7 @@ extends Node
 ## 存档加载、迁移或创建完成后发出；参数是当前数据的深拷贝。
 signal save_loaded(data: Dictionary)
 ## 一次存档通过临时文件校验并成功提交后发出。
+signal developer_mode_changed
 signal save_written
 ## 加载保护或写入任一步骤失败时发出。
 signal save_failed(message: String)
@@ -22,6 +23,9 @@ const BACKUP_PATH := "user://player_save.backup.json"
 var data: Dictionary = {}
 ## 开发测试形态不写入存档，不降低已经获得的进阶状态。
 var debug_pet_tiers: Dictionary = {}
+var developer_unlocked := false
+var developer_run := false
+var _before_developer := {}
 ## 实际使用的正式存档路径，可由隔离测试在 `_ready()` 前替换。
 var _save_path: String = SAVE_PATH
 ## 实际使用的临时存档路径。
@@ -51,6 +55,8 @@ func default_data() -> Dictionary:
 		"stage_results": {},
 		"pets": {},
 		"equipped_pet_id": "",
+		"pet_reward_revision": 1,
+		"seen_boss_stages": [],
 		"tutorial_flags": {},
 	}
 
@@ -75,6 +81,7 @@ func load_or_create() -> void:
 
 
 func save_now() -> bool:
+	if developer_unlocked: return true # 测试过程只保留在内存，禁止成绩、装备或奖励落盘。
 	if writes_blocked_by_future_version:
 		save_failed.emit("检测到未来版本存档，已阻止写入。")
 		return false
@@ -134,16 +141,38 @@ func _migrate_and_normalize(source: Dictionary) -> Dictionary:
 		if source.has(key):
 			normalized[key] = source[key]
 	normalized["schema_version"] = CURRENT_SCHEMA_VERSION
+	if int(source.get("pet_reward_revision", 0)) < 1:
+		_migrate_legacy_pet_rewards(normalized)
 	return normalized
+
+
+func _migrate_legacy_pet_rewards(saved: Dictionary) -> void:
+	# 旧开发按钮把授予写进正式存档；仅首次迁移按正式关卡成绩恢复三只随从。
+	# 此后奖励保持永久获得，不随策划开关调整而撤回。
+	var pets: Dictionary = saved.get("pets", {}).duplicate(true)
+	for stage: StageDefinition in ContentCatalog.data.stages:
+		var reward := stage.reward
+		if reward == null and not stage.reward_resource_path.is_empty():
+			reward = load(stage.reward_resource_path) as RewardDefinition
+		if reward == null or reward.pet == null: continue
+		var result: Dictionary = saved.get("stage_results", {}).get(stage.stage_id, {})
+		var cleared := bool(result.get("cleared", false))
+		var advanced := cleared and bool(result.get("all_perfect", false))
+		var owned := advanced or (cleared and bool(result.get("full_combo", false)))
+		pets[reward.pet.pet_id] = {"owned": owned, "advanced": advanced}
+	saved.pets = pets
+	if not bool(pets.get(str(saved.get("equipped_pet_id", "")), {}).get("owned", false)):
+		saved.equipped_pet_id = ""
+
 
 
 func is_stage_unlocked(stage: StageDefinition) -> bool:
 	if stage == null:
 		return false
-	if stage.unlocked_by_default:
+	if developer_unlocked or stage.unlocked_by_default:
 		return true
 	var unlock_id := str(stage.get_meta("level", {}).get("level_id", stage.stage_id))
-	return unlock_id in data.get("unlocked_stages", [])
+	return stage.stage_id in data.get("unlocked_stages", []) or unlock_id in data.get("unlocked_stages", [])
 
 
 func unlock_stage(stage_id: String) -> void:
@@ -175,6 +204,7 @@ func record_stage_result(stage: StageDefinition, result: Dictionary) -> Dictiona
 		"play_count": int(previous.get("play_count", 0)) + 1,
 		"last_result": result.duplicate(true),
 	}
+	if developer_run: return merged # 退出临时模式后，本轮用过开发能力的成绩也不落盘。
 	stage_results[stage.stage_id] = merged
 	data["stage_results"] = stage_results
 	if bool(result.get("cleared", false)) and stage.reward != null:
@@ -202,7 +232,7 @@ func equip_pet(pet_id: String) -> bool:
 	if pet_id.is_empty():
 		data["equipped_pet_id"] = ""
 		return save_now()
-	var state: Dictionary = (data.get("pets", {}) as Dictionary).get(pet_id, {})
+	var state: Dictionary = pet_state(pet_id)
 	if ContentCatalog.get_pet(pet_id) == null or not bool(state.get("owned", false)):
 		return false
 	data["equipped_pet_id"] = pet_id
@@ -215,6 +245,7 @@ func equipped_pet_id() -> String:
 
 
 func pet_state(pet_id: String) -> Dictionary:
+	if developer_unlocked and ContentCatalog.get_pet(pet_id) != null: return {"owned":true,"advanced":true}
 	return ((data.get("pets", {}) as Dictionary).get(pet_id, {}) as Dictionary).duplicate(true)
 
 
@@ -232,14 +263,34 @@ func _fail(message: String) -> bool:
 
 func equipped_pet_advanced() -> bool:
 	var id := equipped_pet_id()
-	if OS.is_debug_build() and debug_pet_tiers.has(id): return bool(debug_pet_tiers[id])
 	return bool(pet_state(id).get("advanced", false))
 
-func debug_grant_pet(id: String, advanced: bool) -> bool:
-	if not OS.is_debug_build() or ContentCatalog.get_pet(id) == null: return false
-	var state := pet_state(id)
-	state.owned = true
-	state.advanced = advanced or bool(state.get("advanced", false))
-	data.pets[id] = state
-	debug_pet_tiers[id] = advanced
-	return equip_pet(id)
+func debug_grant_pet(_id: String, _advanced: bool) -> bool:
+	# 正式制作阶段关闭开发授予，随从只能通过关卡成绩获得。
+	return false
+
+## 快捷键在应用层之前接收，焦点在按钮上也可切换；编辑器不启用游戏作弊。
+func _input(event: InputEvent) -> void:
+	if StudioLaunch.is_active(): return
+	if event is InputEventKey and event.pressed and not event.echo and event.ctrl_pressed and event.shift_pressed and event.keycode == KEY_D:
+		toggle_developer_unlock()
+		get_viewport().set_input_as_handled()
+
+func toggle_developer_unlock() -> void:
+	if developer_unlocked:
+		data = _before_developer
+		_before_developer = {}
+		developer_unlocked = false
+	else:
+		_before_developer = data.duplicate(true)
+		developer_run = true
+		developer_unlocked = true
+	developer_mode_changed.emit()
+
+func has_seen_boss(stage_id: String) -> bool:
+	return developer_unlocked or stage_id in data.get("seen_boss_stages", [])
+
+func mark_boss_seen(stage_id: String) -> void:
+	if developer_run or has_seen_boss(stage_id): return
+	data.seen_boss_stages.append(stage_id)
+	save_now()

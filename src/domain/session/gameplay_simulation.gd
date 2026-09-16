@@ -574,10 +574,16 @@ func drain_note_arrivals() -> Array[Dictionary]:
 	return result
 
 
+func _expected_ghost_count() -> int:
+	var total := 0
+	for event: Dictionary in compiled.su_manifestations: total += int(event.count)
+	return total
+
+
 func result_summary() -> ResultSummary:
 	# 最后一条 Hold 可以先取得 Pass，再抵达角色；伤害未结清时不能宣布通关。
 	return ResultEvaluator.evaluate(judgments, strays, score_engine, health_engine,
-		compiled.theoretical_unit_count, wave_engine.next_arrival_us() == 9223372036854775807 and _hold_damage_cursor == _hold_body_damages.size() and _su_cursor == compiled.su_manifestations.size())
+		compiled.theoretical_unit_count, wave_engine.next_arrival_us() == 9223372036854775807 and _hold_damage_cursor == _hold_body_damages.size() and _su_cursor == compiled.su_manifestations.size(), _su_manifestations, _expected_ghost_count())
 
 
 func input_owner() -> int:
@@ -635,7 +641,8 @@ func snapshot() -> Dictionary:
 	if _su_targets_snapshot.size() != _su_prepared.size():
 		_su_targets_snapshot = _su_prepared.values().duplicate(true)
 	var cleared := not health_engine.failed and judgments.size() == compiled.theoretical_unit_count and wave_engine.next_arrival_us() == 9223372036854775807 and _hold_damage_cursor == _hold_body_damages.size() and _su_cursor == compiled.su_manifestations.size()
-	var full_combo := cleared and _summary_misses == 0 and _summary_stray_breaks == 0
+	var ghost_counts := ResultEvaluator.ghost_counts(_su_manifestations)
+	var full_combo := cleared and _summary_misses == 0 and _summary_stray_breaks == 0 and int(ghost_counts.MISS) == 0
 	var result := motion_snapshot().duplicate(false)
 	result.merge({
 		"score": score_engine.total_score(),
@@ -656,7 +663,9 @@ func snapshot() -> Dictionary:
 		"paused_for_rearm": _paused_for_rearm,
 		"cleared": cleared,
 		"fc": full_combo,
-		"ap": full_combo and not judgments.is_empty() and _summary_nonperfect == 0,
+		"ap": full_combo and not judgments.is_empty() and _summary_nonperfect == 0 and int(ghost_counts.GOOD) == 0,
+		"ghost_counts": ghost_counts,
+		"expected_ghost_count": _expected_ghost_count(),
 		"miss_count": _summary_misses,
 		"expected_judgment_count": compiled.theoretical_unit_count,
 		"content_hash": compiled.content_hash,
@@ -796,6 +805,7 @@ func _process_su_manifestations(time_us: int, inclusive: bool) -> void:
 		result["miss_count"] = int(event.count) - int(result.hit_count)
 		result["success"] = int(result["miss_count"]) == 0
 		result["failure_reason"] = &"" if result["success"] else &"tuning_incomplete"
+		if not result["success"]: score_engine.combo = 0
 		for index: int in range(int(result["hit_count"]), int(event["count"])):
 			var damage_id := "%s:ghost:%d" % [event_id, index]
 			_apply_damage(DamageRecord.create(damage_id, damage_id, event_us, rules.ghost_miss_damage))

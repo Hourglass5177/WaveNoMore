@@ -1,0 +1,3842 @@
+{
+  "root": "E:\\大学\\MEMO\\编钟音游",
+  "entries": [
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-animation",
+      "files": 5210,
+      "bytes": 1167990460,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-api.gd",
+      "files": 1,
+      "bytes": 235,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\bat-base-0.png",
+      "files": 1,
+      "bytes": 136065,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\bat-base-1.png",
+      "files": 1,
+      "bytes": 151395,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\bat-base-1000.png",
+      "files": 1,
+      "bytes": 150802,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\bat-base-1500.png",
+      "files": 1,
+      "bytes": 145123,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\bat-base-2.png",
+      "files": 1,
+      "bytes": 138009,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\bat-base-2000.png",
+      "files": 1,
+      "bytes": 137317,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\bat-base-3.png",
+      "files": 1,
+      "bytes": 150498,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\bat-base-3000.png",
+      "files": 1,
+      "bytes": 149911,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\bat-base-3999.png",
+      "files": 1,
+      "bytes": 136335,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\bat-base-500.png",
+      "files": 1,
+      "bytes": 144952,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\bat-bones.json",
+      "files": 1,
+      "bytes": 3271,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\bat-parts.png",
+      "files": 1,
+      "bytes": 86294,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\bat-rig.png",
+      "files": 1,
+      "bytes": 147654,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\bat-sampled-bones.json",
+      "files": 1,
+      "bytes": 30065,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\death-eyes-check.png",
+      "files": 1,
+      "bytes": 148732,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\delivery.json",
+      "files": 1,
+      "bytes": 716,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\frame-checks.json",
+      "files": 1,
+      "bytes": 1172,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat-base-0.png",
+      "files": 1,
+      "bytes": 219039,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat-base-1.png",
+      "files": 1,
+      "bytes": 217946,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat-base-1000.png",
+      "files": 1,
+      "bytes": 217355,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat-base-1500.png",
+      "files": 1,
+      "bytes": 217500,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat-base-2.png",
+      "files": 1,
+      "bytes": 218424,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat-base-2000.png",
+      "files": 1,
+      "bytes": 217905,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat-base-3.png",
+      "files": 1,
+      "bytes": 218157,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat-base-3000.png",
+      "files": 1,
+      "bytes": 217707,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat-base-3999.png",
+      "files": 1,
+      "bytes": 219017,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat-base-500.png",
+      "files": 1,
+      "bytes": 218530,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat-bones.json",
+      "files": 1,
+      "bytes": 2387,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat-handoff-fragments.png",
+      "files": 1,
+      "bytes": 225173,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat-handoff-skeleton.png",
+      "files": 1,
+      "bytes": 225189,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat-parts.png",
+      "files": 1,
+      "bytes": 232252,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat-rig.png",
+      "files": 1,
+      "bytes": 230682,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat-sampled-bones.json",
+      "files": 1,
+      "bytes": 26707,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat_eye-base-0.png",
+      "files": 1,
+      "bytes": 223899,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat_eye-base-1.png",
+      "files": 1,
+      "bytes": 223241,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat_eye-base-1000.png",
+      "files": 1,
+      "bytes": 222719,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat_eye-base-1500.png",
+      "files": 1,
+      "bytes": 222573,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat_eye-base-2.png",
+      "files": 1,
+      "bytes": 223183,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat_eye-base-2000.png",
+      "files": 1,
+      "bytes": 222602,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat_eye-base-3.png",
+      "files": 1,
+      "bytes": 222857,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat_eye-base-3000.png",
+      "files": 1,
+      "bytes": 222384,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat_eye-base-3999.png",
+      "files": 1,
+      "bytes": 223937,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat_eye-base-500.png",
+      "files": 1,
+      "bytes": 223700,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat_eye-bones.json",
+      "files": 1,
+      "bytes": 2387,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat_eye-parts.png",
+      "files": 1,
+      "bytes": 259663,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\goat_eye-sampled-bones.json",
+      "files": 1,
+      "bytes": 26707,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\new-poses.png",
+      "files": 1,
+      "bytes": 450084,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\planning-before-boss.xlsx",
+      "files": 1,
+      "bytes": 24301,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\planning-before-goat.xlsx",
+      "files": 1,
+      "bytes": 26163,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\SkeletonJson.cpp",
+      "files": 1,
+      "bytes": 66549,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\snake-base-0.png",
+      "files": 1,
+      "bytes": 193715,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\snake-base-1.png",
+      "files": 1,
+      "bytes": 195640,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\snake-base-1000.png",
+      "files": 1,
+      "bytes": 194881,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\snake-base-1500.png",
+      "files": 1,
+      "bytes": 195382,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\snake-base-2.png",
+      "files": 1,
+      "bytes": 195965,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\snake-base-2000.png",
+      "files": 1,
+      "bytes": 195214,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\snake-base-3.png",
+      "files": 1,
+      "bytes": 199800,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\snake-base-3000.png",
+      "files": 1,
+      "bytes": 198646,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\snake-base-3999.png",
+      "files": 1,
+      "bytes": 193571,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\snake-base-500.png",
+      "files": 1,
+      "bytes": 195157,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\snake-bones.json",
+      "files": 1,
+      "bytes": 4029,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\snake-parts.png",
+      "files": 1,
+      "bytes": 144491,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\snake-rig.png",
+      "files": 1,
+      "bytes": 205554,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\snake-sampled-bones.json",
+      "files": 1,
+      "bytes": 36797,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\source-poses.png",
+      "files": 1,
+      "bytes": 456113,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\sync_workbook.mjs",
+      "files": 1,
+      "bytes": 9625,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-phase-check.png",
+      "files": 1,
+      "bytes": 527362,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boundary-animation",
+      "files": 9003,
+      "bytes": 4651827336,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\goat-eye-inspection.png",
+      "files": 1,
+      "bytes": 227850,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\lingjun",
+      "files": 2766,
+      "bytes": 797872191,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\pet-animation",
+      "files": 1746,
+      "bytes": 97422413,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\pet-runtime",
+      "files": 532,
+      "bytes": 979219977,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\pet-skill-upgrade",
+      "files": 144,
+      "bytes": 8345928,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\ui-flame",
+      "files": 2463,
+      "bytes": 1452807924,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\AudioLab\\runtime\\bootstrap",
+      "files": 3657,
+      "bytes": 137234419,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\AudioLab\\runtime\\python\\.gitignore",
+      "files": 1,
+      "bytes": 1,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\AudioLab\\runtime\\python\\.lock",
+      "files": 1,
+      "bytes": 0,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\AudioLab\\runtime\\python\\.temp",
+      "files": 0,
+      "bytes": 0,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\AudioLab\\runtime\\python\\cpython-3.10.21-windows-x86_64-none",
+      "files": 3964,
+      "bytes": 60890841,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\AudioLab\\runtime\\toucan",
+      "files": 19059,
+      "bytes": 4915521989,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\AudioLab\\runtime\\unused-packages.txt",
+      "files": 1,
+      "bytes": 309,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\AudioLab\\cache",
+      "files": 23233,
+      "bytes": 5108805794,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\AudioLab\\models",
+      "files": 9,
+      "bytes": 325560155,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\AudioLab\\__pycache__",
+      "files": 6,
+      "bytes": 36798,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Charts\\releases",
+      "files": 3,
+      "bytes": 2874995315,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Charts\\archive\\旧发行包",
+      "files": 2,
+      "bytes": 694679670,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\releases",
+      "files": 2,
+      "bytes": 1054231119,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\tmp",
+      "files": 361,
+      "bytes": 157106914,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\.playwright-cli",
+      "files": 127,
+      "bytes": 10229109,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\output\\playwright",
+      "files": 389,
+      "bytes": 77190104,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\output\\冥河-Web原型2.4.1-异拍拍频.zip",
+      "files": 1,
+      "bytes": 3012758,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\output\\冥河-Web原型3.0.3-相纹调频.zip",
+      "files": 1,
+      "bytes": 2983226,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\outputs\\boss-animation",
+      "files": 141,
+      "bytes": 210603882,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\outputs\\ui-flame",
+      "files": 43,
+      "bytes": 64751504,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\outputs\\launch-guides",
+      "files": 7,
+      "bytes": 4879924,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\animation-release",
+      "files": 9,
+      "bytes": 278233,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\attack-two-release",
+      "files": 10,
+      "bytes": 299337,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\audio-review",
+      "files": 127,
+      "bytes": 27204472,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\background-editor-validation",
+      "files": 5,
+      "bytes": 74021,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\background-export-before.log",
+      "files": 1,
+      "bytes": 1927,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\background-failing-regression.log",
+      "files": 1,
+      "bytes": 1682,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\background-fix",
+      "files": 34,
+      "bytes": 10829281,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\background-source-before.log",
+      "files": 1,
+      "bytes": 1947,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\bat-grid.png",
+      "files": 1,
+      "bytes": 55784,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\bell-attack-tests.log",
+      "files": 1,
+      "bytes": 114,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\bell-final-import.log",
+      "files": 1,
+      "bytes": 3589,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\bell-final-state.log",
+      "files": 1,
+      "bytes": 111,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\bell-import.log",
+      "files": 1,
+      "bytes": 3836,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\bell-planning-tests.log",
+      "files": 1,
+      "bytes": 119,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\bell-review",
+      "files": 6,
+      "bytes": 10840908,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\bell-review-2.log",
+      "files": 1,
+      "bytes": 494,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\bell-review-final.log",
+      "files": 1,
+      "bytes": 219,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\bell-review.log",
+      "files": 1,
+      "bytes": 1203,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\bell-state-tests.log",
+      "files": 1,
+      "bytes": 114,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\center-circle",
+      "files": 2,
+      "bytes": 59646,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\chart-editor-015-start.log",
+      "files": 1,
+      "bytes": 73,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\chart-package-20260913",
+      "files": 2,
+      "bytes": 3189,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\chart-studio",
+      "files": 0,
+      "bytes": 0,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\charts-migration",
+      "files": 36,
+      "bytes": 698401,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\clear-mark",
+      "files": 108,
+      "bytes": 232444464,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\controller-review",
+      "files": 171,
+      "bytes": 120815140,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\create_background_uid.gd",
+      "files": 1,
+      "bytes": 111,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\credits-review",
+      "files": 5,
+      "bytes": 15257095,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\default-scene-0.1.5-tests.log",
+      "files": 1,
+      "bytes": 3058,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\default-scene-game-headless-status.json",
+      "files": 1,
+      "bytes": 179,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\default-scene-game-headless.error.log",
+      "files": 1,
+      "bytes": 0,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\default-scene-game-headless.log",
+      "files": 1,
+      "bytes": 75,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\default-scene-game-render-status.json",
+      "files": 1,
+      "bytes": 177,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\default-scene-game-render.error.log",
+      "files": 1,
+      "bytes": 0,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\default-scene-game-render.log",
+      "files": 1,
+      "bytes": 183,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\default-scene-studio-headless.error.log",
+      "files": 1,
+      "bytes": 249,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\default-scene-studio-headless.log",
+      "files": 1,
+      "bytes": 75,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\default-scene-studio-render.error.log",
+      "files": 1,
+      "bytes": 249,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\default-scene-studio-render.log",
+      "files": 1,
+      "bytes": 183,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\develop-sync-import.log",
+      "files": 1,
+      "bytes": 9206,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\develop-sync-test-0.log",
+      "files": 1,
+      "bytes": 5848,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\develop-sync-test-1.log",
+      "files": 1,
+      "bytes": 138,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\export-game-0.1.3.log",
+      "files": 1,
+      "bytes": 54073,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\export-game-0.1.4.log",
+      "files": 1,
+      "bytes": 65457,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\export-game-0.1.5.log",
+      "files": 1,
+      "bytes": 65457,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\export-probe.gd",
+      "files": 1,
+      "bytes": 194,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\export-probe.log",
+      "files": 1,
+      "bytes": 0,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\export-studio-0.1.3.log",
+      "files": 1,
+      "bytes": 64533,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\export-studio-0.1.4.log",
+      "files": 1,
+      "bytes": 75917,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\export-studio-0.1.5.log",
+      "files": 1,
+      "bytes": 76211,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\feedback-release",
+      "files": 16,
+      "bytes": 524871832,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\feedback-review",
+      "files": 2,
+      "bytes": 60219,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\game-015-planning.json",
+      "files": 1,
+      "bytes": 1760,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\gameplay-performance",
+      "files": 3476,
+      "bytes": 309123194,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\ghost-review",
+      "files": 13,
+      "bytes": 5721263,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\git-commit-editor.log",
+      "files": 1,
+      "bytes": 0,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\git-stage-editor.log",
+      "files": 1,
+      "bytes": 13477,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\health-bar-review",
+      "files": 12,
+      "bytes": 15859708,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\health-review-errors.log",
+      "files": 1,
+      "bytes": 0,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\health-review.log",
+      "files": 1,
+      "bytes": 218,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\judgment-review",
+      "files": 2,
+      "bytes": 830222,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\launch-guide-import.log",
+      "files": 1,
+      "bytes": 3122,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\level-carousel",
+      "files": 10,
+      "bytes": 16652613,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\lingjun-states-release",
+      "files": 13,
+      "bytes": 310718,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\lingjun-walk\\package_review.py",
+      "files": 1,
+      "bytes": 1275,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\lingjun-walk\\run_lingjun_state_tests.gd.log",
+      "files": 1,
+      "bytes": 114,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\lingjun-walk\\run_lingjun_walk_tests.gd.log",
+      "files": 1,
+      "bytes": 112,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\lingjun-walk\\run_planning_parameters_tests.gd.log",
+      "files": 1,
+      "bytes": 119,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\lingjun-walk\\run_scene_binding_tests.gd.log",
+      "files": 1,
+      "bytes": 3067,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\lingjun-walk\\sizes.log",
+      "files": 1,
+      "bytes": 183,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\lingjun-walk\\skirt-final.log",
+      "files": 1,
+      "bytes": 122,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\lingjun-walk\\sync_workbook.mjs",
+      "files": 1,
+      "bytes": 8083,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\lingjun-walk\\walk-final.log",
+      "files": 1,
+      "bytes": 112,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\lingjun-walk\\workbook.log",
+      "files": 1,
+      "bytes": 296,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\load-review",
+      "files": 16,
+      "bytes": 144747,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\merge-editor-develop",
+      "files": 12,
+      "bytes": 29737,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\merge-import.log",
+      "files": 1,
+      "bytes": 10833,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\merge-note-wave",
+      "files": 8,
+      "bytes": 2058537,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\merge-scripts.log",
+      "files": 1,
+      "bytes": 112,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\mixed-double-review",
+      "files": 30,
+      "bytes": 10333241,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\note-effects-comparison-final.log",
+      "files": 1,
+      "bytes": 3286,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\note-effects-comparison.log",
+      "files": 1,
+      "bytes": 6343,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\note-effects-density.log",
+      "files": 1,
+      "bytes": 1018,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\note-effects-edge.log",
+      "files": 1,
+      "bytes": 100,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\note-effects-eye.log",
+      "files": 1,
+      "bytes": 204,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\note-effects-final-import.log",
+      "files": 1,
+      "bytes": 63070,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\note-effects-glow-gpu.log",
+      "files": 1,
+      "bytes": 2755,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\note-effects-glow.log",
+      "files": 1,
+      "bytes": 2569,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\note-effects-import.log",
+      "files": 1,
+      "bytes": 3773,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\note-effects-performance-off.log",
+      "files": 1,
+      "bytes": 926,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\note-effects-performance-on.log",
+      "files": 1,
+      "bytes": 1170,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\note-effects-preview.log",
+      "files": 1,
+      "bytes": 890,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\note-effects-release",
+      "files": 12,
+      "bytes": 450776,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\note-effects-stage.log",
+      "files": 1,
+      "bytes": 227,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\note-effects-style.log",
+      "files": 1,
+      "bytes": 1267,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\note-effects-tap.log",
+      "files": 1,
+      "bytes": 5920,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\note-recolor-final-import.console",
+      "files": 1,
+      "bytes": 3367,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\note-recolor-final-import.log",
+      "files": 1,
+      "bytes": 2327,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\note-recolor-import.log",
+      "files": 1,
+      "bytes": 7207,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\note-recolor-test.log",
+      "files": 1,
+      "bytes": 1260,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\note-wave-release",
+      "files": 37,
+      "bytes": 6689796,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\parameter-snapshot-probe.gd",
+      "files": 1,
+      "bytes": 390,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\performance-release",
+      "files": 34,
+      "bytes": 837141,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\pet-animation-baseline.log",
+      "files": 1,
+      "bytes": 221,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\pet-animation-demo.log",
+      "files": 1,
+      "bytes": 221,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\pet-animation-import.log",
+      "files": 1,
+      "bytes": 73092,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\pet-animation-render-snake.log",
+      "files": 1,
+      "bytes": 199,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\pet-animation-render.log",
+      "files": 1,
+      "bytes": 229,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\pet-animation-stage.log",
+      "files": 1,
+      "bytes": 240,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\pet-animation-tests-final.log",
+      "files": 1,
+      "bytes": 121,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\pet-animation-tests.log",
+      "files": 1,
+      "bytes": 121,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\pet-animation-ui.log",
+      "files": 1,
+      "bytes": 218,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\pet-death-bake.log",
+      "files": 1,
+      "bytes": 229,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\pet-key-poses.png",
+      "files": 1,
+      "bytes": 469147,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\pet-originals-inspection.png",
+      "files": 1,
+      "bytes": 201250,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\pet-poses.log",
+      "files": 1,
+      "bytes": 286,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\pet-review",
+      "files": 6,
+      "bytes": 9129777,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\pet-review-startup.log",
+      "files": 1,
+      "bytes": 75,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\pet-runtime-capture-final.log",
+      "files": 1,
+      "bytes": 226,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\pet-runtime-capture-rest.log",
+      "files": 1,
+      "bytes": 183,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\pet-runtime-capture.log",
+      "files": 1,
+      "bytes": 183,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\pet-runtime-import-final.log",
+      "files": 1,
+      "bytes": 2036,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\pet-runtime-import.log",
+      "files": 1,
+      "bytes": 3839,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\pet-runtime-layout.log",
+      "files": 1,
+      "bytes": 226,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\pet-runtime-tests-final.log",
+      "files": 1,
+      "bytes": 112,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\pet-runtime-tests.log",
+      "files": 1,
+      "bytes": 112,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\pet-runtime-verbose.log",
+      "files": 1,
+      "bytes": 127990,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\01 判定与容错-updated.png",
+      "files": 1,
+      "bytes": 77831,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\01 判定与容错.png",
+      "files": 1,
+      "bytes": 75318,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\02 魂火与惩罚-updated.png",
+      "files": 1,
+      "bytes": 113697,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\02 魂火与惩罚.png",
+      "files": 1,
+      "bytes": 61525,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\03 调频-updated.png",
+      "files": 1,
+      "bytes": 168420,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\03 调频.png",
+      "files": 1,
+      "bytes": 130716,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\04 计分-updated.png",
+      "files": 1,
+      "bytes": 81365,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\04 计分.png",
+      "files": 1,
+      "bytes": 79842,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\05 读谱与声波-updated.png",
+      "files": 1,
+      "bytes": 70477,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\05 读谱与声波.png",
+      "files": 1,
+      "bytes": 48999,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\06 随从.png",
+      "files": 1,
+      "bytes": 125130,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\07 分界线表现-updated.png",
+      "files": 1,
+      "bytes": 285800,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\07-before.png",
+      "files": 1,
+      "bytes": 223555,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\08 角色移动-updated.png",
+      "files": 1,
+      "bytes": 144089,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\09 BOSS 表现-updated.png",
+      "files": 1,
+      "bytes": 64496,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\10 UI 火框-updated.png",
+      "files": 1,
+      "bytes": 73450,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\11 关卡奖励-updated.png",
+      "files": 1,
+      "bytes": 134494,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\12 开屏引导-updated.png",
+      "files": 1,
+      "bytes": 71759,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\13 判定表现-updated.png",
+      "files": 1,
+      "bytes": 148203,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\bad.xlsx",
+      "files": 1,
+      "bytes": 29097,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\balance-before.json",
+      "files": 1,
+      "bytes": 3538,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\balance-summary.png",
+      "files": 1,
+      "bytes": 62504,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\baseline-domain.log",
+      "files": 1,
+      "bytes": 923,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\baseline_core.gd",
+      "files": 1,
+      "bytes": 43490,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\baseline_simulation.gd",
+      "files": 1,
+      "bytes": 38242,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\before-flow-boost.xlsx",
+      "files": 1,
+      "bytes": 23669,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\before-vortex.xlsx",
+      "files": 1,
+      "bytes": 23675,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\before-water-flow.xlsx",
+      "files": 1,
+      "bytes": 21198,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\bell-after.png",
+      "files": 1,
+      "bytes": 168938,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\bell-before.png",
+      "files": 1,
+      "bytes": 93306,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\bell-catalog.py",
+      "files": 1,
+      "bytes": 1829,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\build_workbook.mjs",
+      "files": 1,
+      "bytes": 6415,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\domain-damage.log",
+      "files": 1,
+      "bytes": 2926,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\edited.xlsx",
+      "files": 1,
+      "bytes": 29098,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\ghost-damage.log",
+      "files": 1,
+      "bytes": 2419,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\ghost-delivery.log",
+      "files": 1,
+      "bytes": 164,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\ghost-prediction.log",
+      "files": 1,
+      "bytes": 431,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\ghost-revision.log",
+      "files": 1,
+      "bytes": 159,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\import-damage.log",
+      "files": 1,
+      "bytes": 6133,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\import-ghost.log",
+      "files": 1,
+      "bytes": 4455,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\import.log",
+      "files": 1,
+      "bytes": 3062,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\inspect_boundary.mjs",
+      "files": 1,
+      "bytes": 571,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\note-feedback.log",
+      "files": 1,
+      "bytes": 213,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\parameters-delivery.log",
+      "files": 1,
+      "bytes": 119,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\parameters-revision.log",
+      "files": 1,
+      "bytes": 116,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\pets-damage.log",
+      "files": 1,
+      "bytes": 110,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\pets-render-final.log",
+      "files": 1,
+      "bytes": 218,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\planning-damage.log",
+      "files": 1,
+      "bytes": 119,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\prediction-final.log",
+      "files": 1,
+      "bytes": 164,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\preview-damage.log",
+      "files": 1,
+      "bytes": 782,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\preview-final.log",
+      "files": 1,
+      "bytes": 782,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\preview-revision.log",
+      "files": 1,
+      "bytes": 765,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\query-final.log",
+      "files": 1,
+      "bytes": 687,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\result-sync.log",
+      "files": 1,
+      "bytes": 320,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\run_baseline.gd",
+      "files": 1,
+      "bytes": 173,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\segment-delivery.log",
+      "files": 1,
+      "bytes": 114,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\segment-revision.log",
+      "files": 1,
+      "bytes": 111,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\segment-tests.log",
+      "files": 1,
+      "bytes": 114,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\selection-final.log",
+      "files": 1,
+      "bytes": 2055,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\stage_changes.py",
+      "files": 1,
+      "bytes": 5356,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\sync-preservation.xlsx",
+      "files": 1,
+      "bytes": 20535,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\sync-preservation.xlsx.inspect.ndjson",
+      "files": 1,
+      "bytes": 261496,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\sync_judgment.mjs",
+      "files": 1,
+      "bytes": 10564,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\sync_launch_guides.mjs",
+      "files": 1,
+      "bytes": 10448,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\sync_workbook.mjs",
+      "files": 1,
+      "bytes": 10445,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\test_sync_workbook.mjs",
+      "files": 1,
+      "bytes": 1270,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\timing-cue-revision.log",
+      "files": 1,
+      "bytes": 3470,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\tuning-completion.log",
+      "files": 1,
+      "bytes": 107,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\tuning-lifecycle-work\\before-01 判定与容错.png",
+      "files": 1,
+      "bytes": 64161,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\tuning-lifecycle-work\\before-03 调频.png",
+      "files": 1,
+      "bytes": 103252,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\tuning-lifecycle-work\\bell-inspect.mjs",
+      "files": 1,
+      "bytes": 602,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\tuning-lifecycle-work\\inspect.mjs",
+      "files": 1,
+      "bytes": 696,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\tuning-lifecycle-work\\sync_workbook.mjs",
+      "files": 1,
+      "bytes": 9625,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\tuning-render-delivery.log",
+      "files": 1,
+      "bytes": 2308,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\tuning-ring-damage.log",
+      "files": 1,
+      "bytes": 2308,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\vortex-stream-before.xlsx",
+      "files": 1,
+      "bytes": 25911,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\workbook-inspect.ndjson",
+      "files": 1,
+      "bytes": 261493,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\workbook-inspection.ndjson",
+      "files": 1,
+      "bytes": 218660,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\使用与量级-updated.png",
+      "files": 1,
+      "bytes": 155730,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\使用与量级.png",
+      "files": 1,
+      "bytes": 129742,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\preview-config-probe.gd",
+      "files": 1,
+      "bytes": 443,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\preview-export-final.log",
+      "files": 1,
+      "bytes": 73,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\preview-export-smoke.log",
+      "files": 1,
+      "bytes": 0,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\preview-export-start.log",
+      "files": 1,
+      "bytes": 73,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\preview-pack-config-probe.gd",
+      "files": 1,
+      "bytes": 109,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\preview-planning-export.log",
+      "files": 1,
+      "bytes": 140018,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\preview-planning-game-export.log",
+      "files": 1,
+      "bytes": 120648,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\preview-restore-actual.json",
+      "files": 1,
+      "bytes": 173,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\preview-restore-actual.json.bak",
+      "files": 1,
+      "bytes": 172,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\preview-restore-baseline.bin",
+      "files": 1,
+      "bytes": 54276,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\preview-restore-dense.json",
+      "files": 1,
+      "bytes": 3540,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\preview-restore-export.log",
+      "files": 1,
+      "bytes": 140775,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\preview-restore-fixture.json",
+      "files": 1,
+      "bytes": 217,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\preview-restore-release",
+      "files": 6,
+      "bytes": 537904352,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\preview-restore-second.json",
+      "files": 1,
+      "bytes": 4296,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\recolor-feedback.log",
+      "files": 1,
+      "bytes": 5887,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\recolor-final-gallery.console",
+      "files": 1,
+      "bytes": 1454,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\recolor-final-gallery.log",
+      "files": 1,
+      "bytes": 1423,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\recolor-run_level_boss_tests.log",
+      "files": 1,
+      "bytes": 212,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\recolor-run_level_boss_tests.log.console",
+      "files": 1,
+      "bytes": 216,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\recolor-run_note_edge_glow_tests.log",
+      "files": 1,
+      "bytes": 204,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\recolor-run_note_edge_glow_tests.log.console",
+      "files": 1,
+      "bytes": 208,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\recolor-run_note_effect_style_tests.log",
+      "files": 1,
+      "bytes": 1423,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\recolor-run_note_effect_style_tests.log.console",
+      "files": 1,
+      "bytes": 1454,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\recolor-run_note_glow_tests.log",
+      "files": 1,
+      "bytes": 2695,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\recolor-run_note_glow_tests.log.console",
+      "files": 1,
+      "bytes": 2755,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\recolor-run_preview_frame_tests.log",
+      "files": 1,
+      "bytes": 872,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\recolor-run_preview_frame_tests.log.console",
+      "files": 1,
+      "bytes": 890,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\recolor-run_tap_eye_tests.log",
+      "files": 1,
+      "bytes": 200,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\recolor-run_tap_eye_tests.log.console",
+      "files": 1,
+      "bytes": 204,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\recolor-run_tap_feedback_tests.log",
+      "files": 1,
+      "bytes": 8011,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\recolor-run_tap_feedback_tests.log.console",
+      "files": 1,
+      "bytes": 8200,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\recolor-run_wave_distortion_tests.log",
+      "files": 1,
+      "bytes": 1111,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\recolor-run_wave_distortion_tests.log.console",
+      "files": 1,
+      "bytes": 1137,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\release-0.1.3-check",
+      "files": 20,
+      "bytes": 115835734,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\release-0.1.3-probe.gd",
+      "files": 1,
+      "bytes": 1793,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\release-0.1.4-game-render-status.json",
+      "files": 1,
+      "bytes": 187,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\release-0.1.4-game-render.error.log",
+      "files": 1,
+      "bytes": 0,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\release-0.1.4-game-render.log",
+      "files": 1,
+      "bytes": 183,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\release-0.1.4-game-status.json",
+      "files": 1,
+      "bytes": 180,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\release-0.1.4-game.error.log",
+      "files": 1,
+      "bytes": 133,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\release-0.1.4-game.log",
+      "files": 1,
+      "bytes": 75,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\release-0.1.4-studio-render.error.log",
+      "files": 1,
+      "bytes": 249,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\release-0.1.4-studio-render.log",
+      "files": 1,
+      "bytes": 183,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\release-0.1.4-studio.error.log",
+      "files": 1,
+      "bytes": 249,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\release-0.1.4-studio.log",
+      "files": 1,
+      "bytes": 75,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\release-0.1.4-verification.json",
+      "files": 1,
+      "bytes": 549,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\release-0.1.5-game-render-status.json",
+      "files": 1,
+      "bytes": 180,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\release-0.1.5-game-render.error.log",
+      "files": 1,
+      "bytes": 0,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\release-0.1.5-game-render.log",
+      "files": 1,
+      "bytes": 183,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\release-0.1.5-studio-headless.error.log",
+      "files": 1,
+      "bytes": 249,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\release-0.1.5-studio-headless.log",
+      "files": 1,
+      "bytes": 75,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\release-0.1.5-studio-render.error.log",
+      "files": 1,
+      "bytes": 249,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\release-0.1.5-studio-render.log",
+      "files": 1,
+      "bytes": 183,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\result-review",
+      "files": 11,
+      "bytes": 21266219,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\run_preview_frame_tests-final.log",
+      "files": 1,
+      "bytes": 782,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\scene-adaptation-import.log",
+      "files": 1,
+      "bytes": 4766,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\scene-binding-tests.log",
+      "files": 1,
+      "bytes": 3038,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\scene-binding-visual.log",
+      "files": 1,
+      "bytes": 3146,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\scene-import-after-sync.log",
+      "files": 1,
+      "bytes": 2017,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\scene-lingjun-attack-tests.log",
+      "files": 1,
+      "bytes": 166,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\scene-local-chart-tests.log",
+      "files": 1,
+      "bytes": 882,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\scene-note-glow-tests.log",
+      "files": 1,
+      "bytes": 1855,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\scene-parallax-tests.log",
+      "files": 1,
+      "bytes": 138,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\scene-preview-frame-tests.log",
+      "files": 1,
+      "bytes": 782,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\scene-spine-api.gd",
+      "files": 1,
+      "bytes": 537,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\scene-spine-constants.gd",
+      "files": 1,
+      "bytes": 497,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\scene-studio-tests.log",
+      "files": 1,
+      "bytes": 1745,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\scene-trial-flow-tests.log",
+      "files": 1,
+      "bytes": 1559,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\scene-trial-flow-verbose.log",
+      "files": 1,
+      "bytes": 37290,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\script-audit",
+      "files": 13,
+      "bytes": 18123,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\sheep-grid.png",
+      "files": 1,
+      "bytes": 129792,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\side-stick-glow",
+      "files": 131,
+      "bytes": 46798538,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\snake-grid.png",
+      "files": 1,
+      "bytes": 144316,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\source-015-planning.json",
+      "files": 1,
+      "bytes": 1712,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\splash-import",
+      "files": 53,
+      "bytes": 11320713,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\sync-editor.log",
+      "files": 1,
+      "bytes": 71317,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tap-eye",
+      "files": 5,
+      "bytes": 592781,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tap-feedback-gpu-errors.log",
+      "files": 1,
+      "bytes": 0,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tap-feedback-gpu.log",
+      "files": 1,
+      "bytes": 5879,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tap-feedback-tests.log",
+      "files": 1,
+      "bytes": 5848,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tap-radius-authoring.log",
+      "files": 1,
+      "bytes": 105,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tap-radius-baseline",
+      "files": 693,
+      "bytes": 57571691,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tap-radius-baseline-import.log",
+      "files": 1,
+      "bytes": 20026,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tap-radius-baseline-tests.log",
+      "files": 1,
+      "bytes": 5386,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tap-radius-baseline.zip",
+      "files": 1,
+      "bytes": 18408255,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tap-radius-final-0.log",
+      "files": 1,
+      "bytes": 2926,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tap-radius-final-1.log",
+      "files": 1,
+      "bytes": 761,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tap-radius-final-2.log",
+      "files": 1,
+      "bytes": 105,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tap-radius-glow.log",
+      "files": 1,
+      "bytes": 1855,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tap-radius-import.log",
+      "files": 1,
+      "bytes": 2602,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tap-radius-regression-0.log",
+      "files": 1,
+      "bytes": 313,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tap-radius-regression-1.log",
+      "files": 1,
+      "bytes": 1198,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tap-radius-regression-2.log",
+      "files": 1,
+      "bytes": 1745,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tap-radius-regression-3.log",
+      "files": 1,
+      "bytes": 1855,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\timing-cue-review",
+      "files": 37,
+      "bytes": 24490953,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\title-import.log",
+      "files": 1,
+      "bytes": 31451,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\title-review",
+      "files": 20,
+      "bytes": 144445886,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\trial-015-planning.json",
+      "files": 1,
+      "bytes": 1760,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\trial-015-status.json",
+      "files": 1,
+      "bytes": 181,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\trial-015.log",
+      "files": 1,
+      "bytes": 73,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\trial-flow-input.zip",
+      "files": 1,
+      "bytes": 91749,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tuning-radius-check.log",
+      "files": 1,
+      "bytes": 432,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tuning-radius-gpu-errors.log",
+      "files": 1,
+      "bytes": 0,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tuning-radius-gpu.log",
+      "files": 1,
+      "bytes": 1871,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tuning-radius-tests.log",
+      "files": 1,
+      "bytes": 1668,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tuning-release",
+      "files": 34,
+      "bytes": 707723,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tuning-review",
+      "files": 1,
+      "bytes": 364504,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\tuning-strength-release",
+      "files": 28,
+      "bytes": 181478467,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\ui-refresh-20260914-side",
+      "files": 94,
+      "bytes": 1212666305,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\ui-review",
+      "files": 55,
+      "bytes": 22490286,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\ui-sync-import.log",
+      "files": 1,
+      "bytes": 4214,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\ui_font_metrics.gd",
+      "files": 1,
+      "bytes": 222,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\ui_planning_check.gd",
+      "files": 1,
+      "bytes": 99,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\update_judgment_catalog.py",
+      "files": 1,
+      "bytes": 1747,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\verify-release-0.1.4.py",
+      "files": 1,
+      "bytes": 2634,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\visual-review",
+      "files": 2939,
+      "bytes": 2227856528,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\wave-distortion-capture-final.log",
+      "files": 1,
+      "bytes": 515,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\wave-distortion-capture.log",
+      "files": 1,
+      "bytes": 180,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\wave-distortion-fixed.log",
+      "files": 1,
+      "bytes": 1492,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\wave-distortion-performance.log",
+      "files": 1,
+      "bytes": 1149,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\wave-distortion-test.log",
+      "files": 1,
+      "bytes": 929,
+      "reason": "旧构建或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\02 魂火与惩罚-updated.png",
+      "files": 1,
+      "bytes": 118829,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\03 调频-updated.png",
+      "files": 1,
+      "bytes": 168420,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\07 分界线表现-updated.png",
+      "files": 1,
+      "bytes": 285800,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\08 角色移动-updated.png",
+      "files": 1,
+      "bytes": 144089,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\11 关卡奖励-updated.png",
+      "files": 1,
+      "bytes": 156334,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\asset-packs",
+      "files": 2,
+      "bytes": 22878410,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-actions-final.log",
+      "files": 1,
+      "bytes": 97,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-actions-user-fix.log",
+      "files": 1,
+      "bytes": 97,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-actions.log",
+      "files": 1,
+      "bytes": 97,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-baseline",
+      "files": 5,
+      "bytes": 130778,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-battle-final.log",
+      "files": 1,
+      "bytes": 96,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-battle.log",
+      "files": 1,
+      "bytes": 96,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-combat-import.log",
+      "files": 1,
+      "bytes": 1537,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-delivery-exe.log",
+      "files": 1,
+      "bytes": 180,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-delivery-qa",
+      "files": 16,
+      "bytes": 59258689,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-domain-baseline.log",
+      "files": 1,
+      "bytes": 2887,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-domain-regression.log",
+      "files": 1,
+      "bytes": 2887,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-final-import.log",
+      "files": 1,
+      "bytes": 2164,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-fix-export-editor-console.log",
+      "files": 1,
+      "bytes": 291994,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-fix-export-editor.log",
+      "files": 1,
+      "bytes": 236376,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-fix-export-game-console.log",
+      "files": 1,
+      "bytes": 271692,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-fix-export-game.log",
+      "files": 1,
+      "bytes": 221070,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-fix-release",
+      "files": 20,
+      "bytes": 1636697813,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-fix-release-smoke.log",
+      "files": 1,
+      "bytes": 0,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-fix-release-start.log",
+      "files": 1,
+      "bytes": 73,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-gameplay-final.log",
+      "files": 1,
+      "bytes": 98,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-gameplay.log",
+      "files": 1,
+      "bytes": 98,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-import-fix-export-console.log",
+      "files": 1,
+      "bytes": 289413,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-import-fix-export.log",
+      "files": 1,
+      "bytes": 235600,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-import-fix-game-console.log",
+      "files": 1,
+      "bytes": 270263,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-import-fix-game.log",
+      "files": 1,
+      "bytes": 220121,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-integration.log",
+      "files": 1,
+      "bytes": 205,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-native-game-status.json",
+      "files": 1,
+      "bytes": 175,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-native-probe-build.log",
+      "files": 1,
+      "bytes": 73,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-native-release.log",
+      "files": 1,
+      "bytes": 180,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-options",
+      "files": 20,
+      "bytes": 2388054,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-options-final.log",
+      "files": 1,
+      "bytes": 204,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-options-user-fix.log",
+      "files": 1,
+      "bytes": 204,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-options.log",
+      "files": 1,
+      "bytes": 204,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-overview",
+      "files": 19,
+      "bytes": 1738898,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-overview-import.log",
+      "files": 1,
+      "bytes": 1741,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-overview-parse.log",
+      "files": 1,
+      "bytes": 103,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-overview-reliability.log",
+      "files": 1,
+      "bytes": 102,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-overview-tests.log",
+      "files": 1,
+      "bytes": 205,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-path-final.log",
+      "files": 1,
+      "bytes": 94,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-path.log",
+      "files": 1,
+      "bytes": 94,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-planning\\09 BOSS 表现-updated.png",
+      "files": 1,
+      "bytes": 110714,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-planning\\sync_workbook.mjs",
+      "files": 1,
+      "bytes": 10441,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-probe-build.log",
+      "files": 1,
+      "bytes": 73,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-runtime",
+      "files": 4,
+      "bytes": 378948,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-runtime-final.log",
+      "files": 1,
+      "bytes": 211,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-runtime-visual.log",
+      "files": 1,
+      "bytes": 211,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-segment-regression.log",
+      "files": 1,
+      "bytes": 111,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-spine-regression.log",
+      "files": 1,
+      "bytes": 210,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-tuning-regression.log",
+      "files": 1,
+      "bytes": 107,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-user-repro",
+      "files": 15,
+      "bytes": 58841443,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-user-repro.log",
+      "files": 1,
+      "bytes": 213,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\build-all-20260915",
+      "files": 58,
+      "bytes": 2322602776,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\collection-chart-console.log",
+      "files": 1,
+      "bytes": 296313,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\collection-chart.log",
+      "files": 1,
+      "bytes": 241252,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\collection-game-console.log",
+      "files": 1,
+      "bytes": 275823,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\collection-game.log",
+      "files": 1,
+      "bytes": 224722,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\collection-level-console.log",
+      "files": 1,
+      "bytes": 295253,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\collection-level.log",
+      "files": 1,
+      "bytes": 240384,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\delivery-0916-build-console.log",
+      "files": 1,
+      "bytes": 275823,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\delivery-0916-build.log",
+      "files": 1,
+      "bytes": 224722,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\delivery-five-check.log",
+      "files": 1,
+      "bytes": 198,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\editor-audit-20260913",
+      "files": 15,
+      "bytes": 416791,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\editor-build-20260913",
+      "files": 52,
+      "bytes": 479615552,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\editor-fixes",
+      "files": 480,
+      "bytes": 244807387,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\entrypoints",
+      "files": 40,
+      "bytes": 15446,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\entrypoints-after.log",
+      "files": 1,
+      "bytes": 102,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\entrypoints-animation.log",
+      "files": 1,
+      "bytes": 109,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\entrypoints-before.log",
+      "files": 1,
+      "bytes": 3548,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\entrypoints-environment.log",
+      "files": 1,
+      "bytes": 110,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\entrypoints-gpu.log",
+      "files": 1,
+      "bytes": 209,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\entrypoints-reliability.log",
+      "files": 1,
+      "bytes": 102,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\entrypoints-spriteframes.log",
+      "files": 1,
+      "bytes": 108,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\environment",
+      "files": 68,
+      "bytes": 3329749,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\environment-decoration",
+      "files": 1,
+      "bytes": 10595,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\environment-decoration-after.log",
+      "files": 1,
+      "bytes": 214,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\environment-decoration-before.log",
+      "files": 1,
+      "bytes": 275,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\environment-decoration-entry.log",
+      "files": 1,
+      "bytes": 217,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\environment-decoration-import.log",
+      "files": 1,
+      "bytes": 1982,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\environment-decoration-runtime.log",
+      "files": 1,
+      "bytes": 104,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\export-cache-before-ghost-fix",
+      "files": 203,
+      "bytes": 1754645,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\fallback-boss-levels.log",
+      "files": 1,
+      "bytes": 242,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\final-build-tools\\check_release.gd",
+      "files": 1,
+      "bytes": 1563,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\final-build-tools\\diagnose_ghost.gd",
+      "files": 1,
+      "bytes": 508,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\final-build-tools\\resave_ghost.gd",
+      "files": 1,
+      "bytes": 258,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\final-build-tools\\sync_workbook.mjs",
+      "files": 1,
+      "bytes": 10648,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\final-game-build.log",
+      "files": 1,
+      "bytes": 225170,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\final-progression.log",
+      "files": 1,
+      "bytes": 223,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\five-changes-build-console.log",
+      "files": 1,
+      "bytes": 275823,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\five-changes-build.log",
+      "files": 1,
+      "bytes": 224722,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\ghost-fixed-build-console.log",
+      "files": 1,
+      "bytes": 275823,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\ghost-fixed-build.log",
+      "files": 1,
+      "bytes": 224722,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\ghost-fixed-packed-check.log",
+      "files": 1,
+      "bytes": 689,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\ghost-packed.log",
+      "files": 1,
+      "bytes": 333,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\ghost-readability-check.log",
+      "files": 1,
+      "bytes": 198,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\ghost-release.log",
+      "files": 1,
+      "bytes": 328,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\ghost-resave-fixed.log",
+      "files": 1,
+      "bytes": 2031,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\ghost-resave.log",
+      "files": 1,
+      "bytes": 678,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\ghost-resave.res",
+      "files": 1,
+      "bytes": 113693,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\ghost-result-check.log",
+      "files": 1,
+      "bytes": 215,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\import-latest-fire.log",
+      "files": 1,
+      "bytes": 125,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\import-latest-zhong.log",
+      "files": 1,
+      "bytes": 1439,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\import-third-final.log",
+      "files": 1,
+      "bytes": 128,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\import-third.log",
+      "files": 1,
+      "bytes": 128,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\imported-authored-levels.log",
+      "files": 1,
+      "bytes": 263,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\level-3-phase.log",
+      "files": 1,
+      "bytes": 180,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\loading-parse-console.log",
+      "files": 1,
+      "bytes": 2390,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\loading-parse.log",
+      "files": 1,
+      "bytes": 1689,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\locked-preview.log",
+      "files": 1,
+      "bytes": 93,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\locked-silhouette-build-console.log",
+      "files": 1,
+      "bytes": 276221,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\locked-silhouette-build.log",
+      "files": 1,
+      "bytes": 224975,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\pack-fix-export-editor-console.log",
+      "files": 1,
+      "bytes": 289887,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\pack-fix-export-editor.log",
+      "files": 1,
+      "bytes": 235905,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\pack-fix-export-game-console.log",
+      "files": 1,
+      "bytes": 269983,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\pack-fix-export-game.log",
+      "files": 1,
+      "bytes": 219938,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\pack-repeat-test",
+      "files": 3,
+      "bytes": 118,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\pack-repeat-test.log",
+      "files": 1,
+      "bytes": 97,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\pet-unlock-build-console.log",
+      "files": 1,
+      "bytes": 275823,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\pet-unlock-build.log",
+      "files": 1,
+      "bytes": 224722,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\pet-unlock-fix.log",
+      "files": 1,
+      "bytes": 182,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\readability-build-console.log",
+      "files": 1,
+      "bytes": 275823,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\readability-build.log",
+      "files": 1,
+      "bytes": 224722,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\release-qa",
+      "files": 27,
+      "bytes": 1276356,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\release-reports",
+      "files": 5,
+      "bytes": 178,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\reliability",
+      "files": 204,
+      "bytes": 22243277,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\restore-third.log",
+      "files": 1,
+      "bytes": 110,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\result-build-console.log",
+      "files": 1,
+      "bytes": 276385,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\result-build.log",
+      "files": 1,
+      "bytes": 225091,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\spine-animation-regression.log",
+      "files": 1,
+      "bytes": 109,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\spine-final-parse-console.log",
+      "files": 1,
+      "bytes": 1448,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\spine-final-parse.log",
+      "files": 1,
+      "bytes": 1060,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\spine-import",
+      "files": 126,
+      "bytes": 107520532,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\spine-import-gpu.log",
+      "files": 1,
+      "bytes": 210,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\spine-import-parse-console.log",
+      "files": 1,
+      "bytes": 2030,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\spine-import-parse.log",
+      "files": 1,
+      "bytes": 1449,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\spine-import-tests.log",
+      "files": 1,
+      "bytes": 426,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\spine-playback-after.log",
+      "files": 1,
+      "bytes": 210,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\spine-playback-before.log",
+      "files": 1,
+      "bytes": 256,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\spine-reliability.log",
+      "files": 1,
+      "bytes": 102,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\third-pack.log",
+      "files": 1,
+      "bytes": 535,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\third-resource-import.log",
+      "files": 1,
+      "bytes": 2125,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\third-restored-visual.log",
+      "files": 1,
+      "bytes": 209,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\ui",
+      "files": 3,
+      "bytes": 3074762,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\unlock-check.bak",
+      "files": 1,
+      "bytes": 382,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\unlock-check.json",
+      "files": 1,
+      "bytes": 630,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\ux",
+      "files": 2,
+      "bytes": 570417,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\使用与量级-updated.png",
+      "files": 1,
+      "bytes": 155833,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\关卡编辑器-BOSS修复版-fcf4e16.zip",
+      "files": 1,
+      "bytes": 1438552315,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\关卡编辑器-BOSS本体修复-d323b4d.zip",
+      "files": 1,
+      "bytes": 1438551884,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\关卡编辑器-素材包修复版-f591332.zip",
+      "files": 1,
+      "bytes": 1383255151,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\冥河-五项调整版",
+      "files": 3,
+      "bytes": 1582191504,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\冥河-正式三关修复版",
+      "files": 4,
+      "bytes": 1582187515,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\冥河-正式三关修复版.zip",
+      "files": 1,
+      "bytes": 1582188277,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\冥河-正式三关最终版",
+      "files": 5,
+      "bytes": 1582178780,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\冥河-正式交付版-0916",
+      "files": 4,
+      "bytes": 1582186987,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\冥河-结算与诗句修正版",
+      "files": 3,
+      "bytes": 1582195168,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\冥河-读谱与加载修正版",
+      "files": 3,
+      "bytes": 1582193712,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\冥河-锁定剪影版",
+      "files": 3,
+      "bytes": 1582188480,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\冥河-随从解锁修正版",
+      "files": 3,
+      "bytes": 1582187296,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\冥河，冥河！",
+      "files": 3,
+      "bytes": 1582195168,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\冥河，冥河！（带开发工具版）",
+      "files": 2925,
+      "bytes": 5307864854,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\开发工具合集",
+      "files": 2924,
+      "bytes": 5307864766,
+      "reason": "旧交付包、已核对的展开副本或测试产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\background-preview-fix.md",
+      "files": 1,
+      "bytes": 3082,
+      "reason": "阶段记录；现行内容并入 build-output.md"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\boundary-waves-validation.md",
+      "files": 1,
+      "bytes": 17714,
+      "reason": "阶段记录；现行内容并入 boundary-motion.md"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\branch-sync-2026-09-14.md",
+      "files": 1,
+      "bytes": 3378,
+      "reason": "阶段记录；现行内容并入 build-output.md"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\chart-editor-open-dialog-fix.md",
+      "files": 1,
+      "bytes": 1048,
+      "reason": "阶段记录；现行内容并入 chart-editor-interfaces.md"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\chart-editor-preview-performance-2026-09-14.md",
+      "files": 1,
+      "bytes": 5990,
+      "reason": "阶段记录；现行内容并入 chart-editor-interfaces.md"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\chart-editor-progress.md",
+      "files": 1,
+      "bytes": 17271,
+      "reason": "阶段记录；现行内容并入 chart-editor-guide.md"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\chart-editor-trial-performance-2026-09-09.md",
+      "files": 1,
+      "bytes": 4345,
+      "reason": "阶段记录；现行内容并入 local-chart-playtest.md"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\chart-editor-tuning-validation.md",
+      "files": 1,
+      "bytes": 12073,
+      "reason": "阶段记录；现行内容并入 chart-editor-tuning.md"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\chart-editor-ui-review.md",
+      "files": 1,
+      "bytes": 3054,
+      "reason": "阶段记录；现行内容并入 chart-editor-guide.md"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\chart-studio-v0.1.3.md",
+      "files": 1,
+      "bytes": 1033,
+      "reason": "阶段记录；现行内容并入 chart-editor-release-notes.md"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\chart-studio-v0.1.4.md",
+      "files": 1,
+      "bytes": 1475,
+      "reason": "阶段记录；现行内容并入 chart-editor-release-notes.md"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\develop-merge-review-2026-09-08.md",
+      "files": 1,
+      "bytes": 8759,
+      "reason": "阶段记录；现行内容并入 chart-editor-tuning.md"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\editor-branch-audit-2026-09-13.md",
+      "files": 1,
+      "bytes": 15019,
+      "reason": "阶段记录；现行内容并入 level-editor-interfaces.md"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\ghost-export-fix.md",
+      "files": 1,
+      "bytes": 564,
+      "reason": "阶段记录；现行内容并入 level-editor-interfaces.md"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\ghost-icon-prompts.md",
+      "files": 1,
+      "bytes": 2791,
+      "reason": "阶段记录；现行内容并入 ghost-effects.md"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\launch-guides-prompts.md",
+      "files": 1,
+      "bytes": 3093,
+      "reason": "阶段记录；现行内容并入 launch-guides.md"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\level-editor-boss-combat-validation-2026-09-15.md",
+      "files": 1,
+      "bytes": 4928,
+      "reason": "阶段记录；现行内容并入 level-editor-interfaces.md"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\level-editor-boss-overview-playback-validation-2026-09-15.md",
+      "files": 1,
+      "bytes": 2561,
+      "reason": "阶段记录；现行内容并入 level-editor-guide.md"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\level-editor-entrypoint-audit-2026-09-15.md",
+      "files": 1,
+      "bytes": 3322,
+      "reason": "阶段记录；现行内容并入 level-editor-interfaces.md"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\level-editor-fixes-validation-2026-09-13.md",
+      "files": 1,
+      "bytes": 6680,
+      "reason": "阶段记录；现行内容并入 level-editor-interfaces.md"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\level-editor-initial-environment-validation-2026-09-15.md",
+      "files": 1,
+      "bytes": 2128,
+      "reason": "阶段记录；现行内容并入 level-editor-interfaces.md"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\level-editor-reliability-validation-2026-09-14.md",
+      "files": 1,
+      "bytes": 8174,
+      "reason": "阶段记录；现行内容并入 level-editor-interfaces.md"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\level-editor-spine-validation-2026-09-15.md",
+      "files": 1,
+      "bytes": 1144,
+      "reason": "阶段记录；现行内容并入 level-editor-interfaces.md"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\level-editor-validation.md",
+      "files": 1,
+      "bytes": 12661,
+      "reason": "阶段记录；现行内容并入 level-editor-guide.md"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\local-chart-validation.md",
+      "files": 1,
+      "bytes": 7404,
+      "reason": "阶段记录；现行内容并入 local-chart-playtest.md"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\note-effects-performance-2026-09.md",
+      "files": 1,
+      "bytes": 5241,
+      "reason": "阶段记录；现行内容并入 performance-and-resolution.md"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\note-effects-validation.md",
+      "files": 1,
+      "bytes": 3535,
+      "reason": "阶段记录；现行内容并入 note-effects.md"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\note-glow-2026-09.md",
+      "files": 1,
+      "bytes": 5082,
+      "reason": "阶段记录；现行内容并入 note-effects.md"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\note-wave-effects-validation.md",
+      "files": 1,
+      "bytes": 10785,
+      "reason": "阶段记录；现行内容并入 note-effects.md"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\pet-runtime-validation.md",
+      "files": 1,
+      "bytes": 3751,
+      "reason": "阶段记录；现行内容并入 pet-system.md"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\pet-validation.md",
+      "files": 1,
+      "bytes": 4018,
+      "reason": "阶段记录；现行内容并入 pet-system.md"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\docs\\tuning-su-game-editor-handoff-2026-09-08.md",
+      "files": 1,
+      "bytes": 14371,
+      "reason": "阶段记录；现行内容并入 chart-editor-tuning.md"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Docs\\Design\\Web原型测试策划案与报告",
+      "files": 14,
+      "bytes": 502533,
+      "reason": "已完成阶段的开发规划或验收报告；创作源文件保留"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Docs\\Program\\《冥河，冥河！》Godot 4.6开发规划.md",
+      "files": 1,
+      "bytes": 35097,
+      "reason": "已完成阶段的开发规划或验收报告；创作源文件保留"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\AudioLab\\RESULTS.md",
+      "files": 1,
+      "bytes": 3096,
+      "reason": "已完成阶段的开发规划或验收报告；创作源文件保留"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Prototype\\VALIDATION.md",
+      "files": 1,
+      "bytes": 26496,
+      "reason": "已完成阶段的开发规划或验收报告；创作源文件保留"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\.git-relocated-empty-20260903",
+      "files": 0,
+      "bytes": 0,
+      "reason": "已核对的空遗留目录"
+    }
+  ],
+  "excluded_links": [
+    "E:\\大学\\MEMO\\编钟音游\\Game\\build\\boss-audit\\node_modules",
+    "E:\\大学\\MEMO\\编钟音游\\AudioLab\\runtime\\python\\cpython-3.10-windows-x86_64-none",
+    "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\lingjun-walk\\node_modules",
+    "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\node_modules",
+    "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\planning\\tuning-lifecycle-work\\node_modules",
+    "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\boss-planning\\node_modules",
+    "E:\\大学\\MEMO\\编钟音游\\Levels\\output\\final-build-tools\\node_modules"
+  ],
+  "document_redirects": {
+    "background-preview-fix.md": "build-output.md",
+    "boundary-waves-validation.md": "boundary-motion.md",
+    "branch-sync-2026-09-14.md": "build-output.md",
+    "chart-editor-open-dialog-fix.md": "chart-editor-interfaces.md",
+    "chart-editor-preview-performance-2026-09-14.md": "chart-editor-interfaces.md",
+    "chart-editor-progress.md": "chart-editor-guide.md",
+    "chart-editor-trial-performance-2026-09-09.md": "local-chart-playtest.md",
+    "chart-editor-tuning-validation.md": "chart-editor-tuning.md",
+    "chart-editor-ui-review.md": "chart-editor-guide.md",
+    "chart-studio-v0.1.3.md": "chart-editor-release-notes.md",
+    "chart-studio-v0.1.4.md": "chart-editor-release-notes.md",
+    "develop-merge-review-2026-09-08.md": "chart-editor-tuning.md",
+    "editor-branch-audit-2026-09-13.md": "level-editor-interfaces.md",
+    "ghost-export-fix.md": "level-editor-interfaces.md",
+    "ghost-icon-prompts.md": "ghost-effects.md",
+    "launch-guides-prompts.md": "launch-guides.md",
+    "level-editor-boss-combat-validation-2026-09-15.md": "level-editor-interfaces.md",
+    "level-editor-boss-overview-playback-validation-2026-09-15.md": "level-editor-guide.md",
+    "level-editor-entrypoint-audit-2026-09-15.md": "level-editor-interfaces.md",
+    "level-editor-fixes-validation-2026-09-13.md": "level-editor-interfaces.md",
+    "level-editor-initial-environment-validation-2026-09-15.md": "level-editor-interfaces.md",
+    "level-editor-reliability-validation-2026-09-14.md": "level-editor-interfaces.md",
+    "level-editor-spine-validation-2026-09-15.md": "level-editor-interfaces.md",
+    "level-editor-validation.md": "level-editor-guide.md",
+    "local-chart-validation.md": "local-chart-playtest.md",
+    "note-effects-performance-2026-09.md": "performance-and-resolution.md",
+    "note-effects-validation.md": "note-effects.md",
+    "note-glow-2026-09.md": "note-effects.md",
+    "note-wave-effects-validation.md": "note-effects.md",
+    "pet-runtime-validation.md": "pet-system.md",
+    "pet-validation.md": "pet-system.md",
+    "tuning-su-game-editor-handoff-2026-09-08.md": "chart-editor-tuning.md"
+  },
+  "retained_ignore_markers": [
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\build\\.gdignore",
+      "files": 1,
+      "bytes": 0,
+      "reason": "计划确认的旧发行包、实验依赖或审看中间产物"
+    },
+    {
+      "path": "E:\\大学\\MEMO\\编钟音游\\Game\\builds\\.gdignore",
+      "files": 1,
+      "bytes": 0,
+      "reason": "旧构建或测试产物"
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "format": "minghe-level",
+  "format_version": 1.0,
+  "level_id": "fallback_level_3",
+  "title": "牲",
+  "author": "",
+  "description": "",
+  "cover": "",
+  "order_index": 3.0,
+  "scene_id": "s08",
+  "song_path": "song/song.json",
+  "intro_us": 0.0,
+  "outro_us": 0.0,
+  "rule_path": "res://content/rules/default_gameplay_rules.tres",
+  "next_stage_id": "",
+  "pet_id": "",
+  "fc_grants_base_pet": true,
+  "ap_grants_advanced_pet": true,
+  "packs": [
+    {
+      "path": "packs/level_3.pck",
+      "manifest": "res://content/backgrounds/level_3.tres",
+      "name": "牲 · 第三关环境"
+    }
+  ],
+  "show_path": "show.json",
+  "initial_background": "level_3_background_1"
+}
