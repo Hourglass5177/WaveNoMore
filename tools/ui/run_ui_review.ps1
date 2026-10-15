@@ -27,6 +27,7 @@ config/custom_user_dir_name="WaveNoMore-UIReview"
         @{name='stick-ingame';script='res://tests/visual/capture_stick_ingame.gd';args=' -- --planning-values=res://builds/ui-review/default-planning.json'},
         @{name='stick-motion';script='res://tests/visual/capture_stick_gesture.gd';args=' -- --chart-editor --planning-values=res://builds/ui-review/default-planning.json'},
         @{name='title-video';script='res://tests/visual/capture_title_transition.gd';args=' --write-movie builds/title-review/title-transition.avi --fixed-fps 60 --resolution 1280x720'},
+        @{name='settings-ux';script='res://tests/ui/run_settings_ux_tests.gd';args=' -- --planning-values=res://builds/ui-review/default-planning.json'},
         @{name='controller';script='res://tests/ui/run_controller_ui_tests.gd';args=' -- --planning-values=res://builds/ui-review/default-planning.json'},
         @{name='app-flow';script='res://tests/integration/app_flow/run_app_flow_smoke.gd';args=' -- --planning-values=res://builds/ui-review/default-planning.json'},
         @{name='title';script='res://tests/ui/run_title_ui_tests.gd';args=' -- --planning-values=res://builds/ui-review/default-planning.json'},

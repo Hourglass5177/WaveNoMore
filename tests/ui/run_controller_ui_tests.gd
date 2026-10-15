@@ -127,13 +127,13 @@ func _run() -> void:
 	await press(JOY_BUTTON_LEFT_SHOULDER)
 	check(settings._tab_index == 0, "L1 切回声音")
 	await press(JOY_BUTTON_LEFT_SHOULDER)
-	check(settings._tab_index == 2, "设置分类循环")
+	check(settings._tab_index == 3, "设置分类循环")
 	var number: LineEdit = settings.get_node("%CalibrationPage").get_node("%AudioOffset").get_line_edit()
 	number.grab_focus()
 	key(KEY_E)
 	key(KEY_E, false)
 	await frames()
-	check(settings._tab_index == 2, "数值输入 E 不误切分类")
+	check(settings._tab_index == 3, "数值输入 E 不误切分类")
 	check(hints.family == &"keyboard" and hints.glyph_name(&"menu_pets") == "p", "键盘操作同步键帽")
 	await press(JOY_BUTTON_B)
 	await create_timer(0.2).timeout
@@ -293,38 +293,38 @@ func _check_tuning_glyphs(stage: Node, gate: Node2D) -> void:
 		sliders.append(field)
 		for rotation_sign in [-1, 1]:
 			field.prepare({"event_id": "glyph_review", "affinity": side, "start_value": 0.2, "end_value": 0.7, "traversal_count": 2, "traversal_ticks": 960, "duration_ticks": 1920})
-			field.set_slider_state({"required_rotation_sign": rotation_sign, "interaction_open": true, "current_traversal_index": 0})
+			field.set_slider_state({"required_rotation_sign": rotation_sign, "interaction_open": true, "current_traversal_index": 0, "recommended_stick_vector": Vector2(0.5, -0.4) * rotation_sign})
 			field.set_region_progress(0.1)
 			var early: Vector2 = field.visual_state_snapshot()["stick_cue_direction"]
 			field.set_region_progress(0.4)
 			var late: Vector2 = field.visual_state_snapshot()["stick_cue_direction"]
-			check(early.angle_to(late) * rotation_sign > 0.0, "摇杆动画采用权威旋向 %d/%d" % [side,rotation_sign])
+			check(early.is_equal_approx(late) and late.is_equal_approx(Vector2(0.5, -0.4) * rotation_sign), "摇杆读取领域推荐，不按时间自行旋转 %d/%d" % [side,rotation_sign])
 			await frames(2)
 			check(late.is_equal_approx(field.visual_state_snapshot()["stick_cue_direction"]), "时钟不推进时手势冻结")
 			field.set_region_progress(0.1)
 			check(early.is_equal_approx(field.visual_state_snapshot()["stick_cue_direction"]), "定位恢复相同手势姿态")
-		# 长滑条上仍反复演示，不会随总时长变成几乎静止的图标。
+		# 静态预告保留推荐向量；纯表现时间不能改写领域推量。
 		field.prepare({"affinity": side, "start_value": 0.2, "end_value": 0.7, "duration_us": 12_000_000, "traversal_count": 1})
-		field.set_slider_state({"required_rotation_sign": 1, "current_traversal_index": 0})
+		field.set_slider_state({"required_rotation_sign": 1, "current_traversal_index": 0, "recommended_stick_vector": Vector2(0.5, -0.4)})
 		field.set_region_progress(0.2 / 12.0)
 		var first_demo: Vector2 = field._stick_cue_pose()["direction"]
 		field.set_region_progress(1.4 / 12.0)
-		check(first_demo.is_equal_approx(field._stick_cue_pose()["direction"]), "长单程每 1.2 秒循环同向演示")
+		check(first_demo.is_equal_approx(field._stick_cue_pose()["direction"]), "长单程提示不按 1.2 秒循环")
 		field.set_region_progress(1.2 / 12.0)
-		check(is_zero_approx(field._stick_cue_pose()["demo_alpha"]), "演示复位时隐藏帽面，避免误示反向")
+		check(first_demo.is_equal_approx(field._stick_cue_pose()["direction"]), "没有循环复位或额外透明度动画")
 		field.prepare({"affinity": side, "start_value": 0.2, "end_value": 0.7, "traversal_count": 2, "traversal_ticks": 960, "duration_ticks": 1920})
 		var start_center: Vector2 = field._stick_cue_pose()["center"]
 		field.set_slider_state({"interaction_open": true, "endpoint_target_progress": 1.0})
 		check(start_center.is_equal_approx(field._stick_cue_pose()["center"]), "开始交互后摇杆仍固定在起点")
 		field.set_slider_state({"interaction_open": true, "endpoint_target_progress": 0.0, "current_traversal_index": 1})
 		check(start_center.is_equal_approx(field._stick_cue_pose()["center"]), "折返不移动摇杆提示")
-		# 第一程与折返衔接，同一端点没有反向跳位。
+		# 换程推荐方向由领域给出，底座保持原位。
 		var sign_value := 1 if side == GameplayTypes.Affinity.ZHU else -1
-		field.set_slider_state({"required_rotation_sign": sign_value, "current_traversal_index": 0})
+		field.set_slider_state({"required_rotation_sign": sign_value, "current_traversal_index": 0, "recommended_stick_vector": Vector2(0.6, 0.2)})
 		field.set_region_progress(0.5)
 		var endpoint: Vector2 = field.visual_state_snapshot()["stick_cue_direction"]
-		field.set_slider_state({"required_rotation_sign": -sign_value, "current_traversal_index": 1})
-		check(endpoint.is_equal_approx(field.visual_state_snapshot()["stick_cue_direction"]), "折返在同一摇杆端点接续")
+		field.set_slider_state({"required_rotation_sign": -sign_value, "current_traversal_index": 1, "recommended_stick_vector": -endpoint})
+		check((-endpoint).is_equal_approx(field.visual_state_snapshot()["stick_cue_direction"]), "折返立即采用新的领域推荐向量")
 		field.set_preview_presentation(1, 0, 1.0)
 		field.set_tuning_active(true)
 		field.set_slider_state({"required_rotation_sign": sign_value, "current_traversal_index": 0, "player_progress": 0.5})

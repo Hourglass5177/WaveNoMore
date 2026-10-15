@@ -22,6 +22,9 @@ const names=new Set((await wb.inspect({kind:'sheet',include:'id,name'})).ndjson.
 const retiredNames={'boundary/period_sec':'缓流周期','boundary/stream_amplitude_px':'水带起伏','boundary/curl_amplitude_px':'大浪回卷','boundary/beat_enabled':'节拍回应','boundary/beat_amplitude_px':'节拍舒张幅度'};
 Object.assign(retiredNames,{'boundary/wave_height_px':'大浪高度','boundary/advance_px':'浪身推进','boundary/curl_travel_px':'翻卷行程','boundary/foam_strength':'拍落白沫强度'});
 Object.assign(retiredNames,{'boundary/bar_interval':'卷流接替间隔','boundary/vortex_outer_radius_px':'漩涡外半径','boundary/vortex_sweep_degrees':'卷入角度'});
+const retiredTuning={'rules/tuning_speed_tolerance_ms':'每程完成容错','rules/tuning_progress_speed_multiplier':'摇杆推进倍率'};
+retiredNames['rules/tuning_stick_angle_gain']='摇杆角度助推';
+Object.assign(retiredNames,retiredTuning);
 for(const name of groups){
   if(!names.has(name)){
     const sheet=wb.worksheets.add(name);
@@ -45,8 +48,11 @@ for(const name of groups){
     if(String(v[0]||'').startsWith('已停用：')){
       const old=String(v[0]).slice(4);sheet.getRange(`A${i+6}`).values=[['已停用：'+(retiredNames[old]||old)]];
       sheet.getRange(`B${i+6}`).format.fill='#E7E8EA';
+      // 恢复速度累积时复用旧参数行及人工数值，避免同一含义出现两行。
+      const restored=catalog.find(e=>e.section===name&&(e.name===old||e.target+'/'+e.key===old));
+      if(restored){v[7]=restored.target;v[8]=restored.key;sheet.getRange(`B${i+6}`).format.fill='#FFF0C2';}
     }
-    if(v[7]==='rules'||v[7]==='boundary'||v[7]==='actors'||v[7]==='boss'||v[7]==='ui_flame'||v[7]==='ui_guides'||v[7]==='judgment'||String(v[7]||'').startsWith('pet:')||String(v[7]||'').startsWith('reward:')){
+    if(v[7]==='rules'||v[7]==='boundary'||v[7]==='actors'||v[7]==='boss'||v[7]==='ui_flame'||v[7]==='ui_guides'||v[7]==='judgment'||v[7]==='timing_cue'||String(v[7]||'').startsWith('pet:')||String(v[7]||'').startsWith('reward:')){
       const key=v[7]+'/'+v[8]; locations.set(key,{sheet,row:i+6}); previous.set(key,v[1]);
     }
   });
@@ -75,7 +81,7 @@ for(const entry of catalog){
   const {sheet,row}=location;
   const baseline=entry.type==='string'?entry.default:Number(entry.default);
   // 分界线重编排会扩大厚度范围，已有输入格也需要同步其允许范围。
-  if(entry.target==='boundary'||key==='rules/hold_segment_damage') sheet.getRange(`B${row}`).dataValidation={rule:{type:entry.type==='float'?'decimal':'whole',operator:'between',formula1:entry.minimum,formula2:entry.maximum}};
+  if(entry.target==='boundary'||key==='rules/hold_segment_damage'||key==='rules/tuning_progress_speed_multiplier') sheet.getRange(`B${row}`).dataValidation={rule:{type:entry.type==='float'?'decimal':'whole',operator:'between',formula1:entry.minimum,formula2:entry.maximum}};
   sheet.getRange(`A${row}:J${row}`).values=[[entry.name,previous.has(key)&&!adoptDefaults.has(key)?previous.get(key):baseline,baseline,entry.unit,entry.suggested,entry.step,entry.meaning,entry.target,entry.key,entry.source]];
   sheet.getRange(`B${row}:C${row}`).setNumberFormat(entry.type==='string'?'@':entry.unit==='比例'?'0.0%':entry.type==='float'?'0.0000':'0');
   sheet.getRange(`F${row}`).setNumberFormat(entry.unit==='比例'?'0.0%':Number.isInteger(entry.step)?'0':'0.0000');
@@ -87,6 +93,8 @@ for(const [key,{sheet,row}] of locations){
     sheet.getRange(`A${row}`).values=[['已停用：'+(retiredNames[key]||key)]];
     sheet.getRange(`B${row}`).format.fill='#E7E8EA';
     sheet.getRange(`H${row}:I${row}`).values=[['','']];
+    if(retiredTuning[key]) sheet.getRange(`G${row}`).values=[['已改为摇杆角度直接对应圆弧位置；此数值仅保留历史记录，不再生效。']];
+    if(key==='rules/tuning_stick_angle_gain') sheet.getRange(`G${row}`).values=[['已恢复速度累积。旧角度助推不再生效，使用摇杆推进倍率。']];
   }
 }
 if(!onlyTarget){
@@ -119,6 +127,11 @@ if(groups.includes('11 关卡奖励')) {
 if(onlyTarget==='boss')wb.worksheets.getItem('09 BOSS 表现').getRange('A3').values=[['修改黄色当前值，重新装载关卡或 BOSS 审看场景后生效；对象和绑定可覆盖战斗及发射默认值。']];
 if(onlyTarget==='ui_guides')wb.worksheets.getItem('12 开屏引导').getRange('A3').values=[['修改黄色当前值，下次启动正式游戏生效；操作说明由玩家确认后继续。']];
 if(onlyTarget==='ui_flame')wb.worksheets.getItem('10 UI 火框').getRange('A3').values=[['修改黄色当前值，重新打开 UI 火框审看场景后生效；本轮尚未替换正式界面。']];
+// 使用说明与现行速度累积保持一致；帽面外展不参与输入。
+if(!onlyTarget||onlyTarget==='rules'){
+  const intro=wb.worksheets.getItem('使用与量级');
+  intro.getRange('A21:B21').values=[['调频摇杆操作','持续推住持续推进，推量控速，回中停止；帽面两端各外展15°仅供显示。']];
+}
 wb.recalculate();
 for(const entry of catalog){
   const key=entry.target+'/'+entry.key;
@@ -128,7 +141,7 @@ for(const entry of catalog){
   }
 }
 console.log((await wb.inspect({kind:'match',searchTerm:'#REF!|#DIV/0!|#VALUE!|#NAME\\?|#NUM!',options:{useRegex:true,maxResults:10}})).ndjson);
-for(const name of onlyTarget?groups:['02 魂火与惩罚','03 调频','07 分界线表现','08 角色移动','11 关卡奖励','使用与量级']){
+for(const name of onlyTarget?(onlyTarget==='rules'?[...groups,'使用与量级']:groups):['02 魂火与惩罚','03 调频','07 分界线表现','08 角色移动','11 关卡奖励','使用与量级']){
   const preview=await wb.render({sheetName:name,range:name==='使用与量级'?'A1:B32':name==='03 调频'?'A5:G19':name==='07 分界线表现'?'A1:G28':'A1:G14',scale:1,format:'png'});
   await fs.writeFile(path.join(root,`builds/planning/${name}-updated.png`),new Uint8Array(await preview.arrayBuffer()));
 }

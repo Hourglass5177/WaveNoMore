@@ -14,6 +14,10 @@ const CURVE_DENSE_SAMPLE_COUNT: int = 193
 # 本项目谱面固定使用 PPQ 480；这里只用它计算点状引导的轻微拍点呼吸。
 const TICKS_PER_BEAT: float = 480.0
 const GUIDE_DOT_SPACING_PX: float = 28.0
+# 开滑时缩圈并入源泉外沿，短暂余光随歌曲时钟退去，不延迟输入。
+const START_CUE_HANDOFF_SEC: float = 0.08
+# 整组提示预告已压至 64%；其后 70% 仍为原完整预告的 44.8%，保留约一秒收缩。
+const START_CUE_SHRINK_RATIO: float = 0.7
 # 历史布局常量；运行时调频条圆心固定在画布中心，不再使用该分栏间距。
 const CENTER_GUTTER_PX: float = 32.0
 
@@ -57,10 +61,10 @@ const CENTER_GUTTER_PX: float = 32.0
 @export var backing_color: Color = Color("080a10", 0.94)
 
 ## 未填充轨道的透明度；底色不再覆盖一整块骨白描边托底。
-@export_range(0.0, 1.0, 0.01) var rail_opacity: float = 0.34
+@export_range(0.0, 1.0, 0.01) var rail_opacity: float = 0.28
 ## 玩家填充的透明度；贴合时只轻微提亮，仍能看到后方场景。
-@export_range(0.0, 1.0, 0.01) var fill_opacity: float = 0.68
-@export_range(0.0, 1.0, 0.01) var aligned_fill_opacity: float = 0.76
+@export_range(0.0, 1.0, 0.01) var fill_opacity: float = 0.60
+@export_range(0.0, 1.0, 0.01) var aligned_fill_opacity: float = 0.68
 
 ## 起点预填默认近似圆帽，只有 2 px 中心线延伸；只识别阵营，不进入玩家进度。
 @export_range(0.0, 64.0, 1.0) var start_fill_length_px: float = 2.0
@@ -79,12 +83,11 @@ const CENTER_GUTTER_PX: float = 32.0
 ## 疾振外侧倒计时环的半径。
 @export_range(56.0, 170.0, 1.0) var rapid_time_radius: float = 88.0
 
-# 与菜单共用预热的摇杆底图；圆帽姿态由本条已有进度驱动。
+# 底座直接复用源泉；帽面读取领域推荐方向，满推时沿源泉外框转动。
 var _show_rotation_cue: bool = true
-var _stick_glow_texture: Texture2D
-var _stick_base_texture: Texture2D
-var _life_stick_texture: Texture2D
-var _death_stick_texture: Texture2D
+var _recommended_stick_vector := Vector2.ZERO
+var _stick_cap: MeshInstance2D
+var _stick_cap_material: ShaderMaterial
 # 当前谱面对象的稳定 ID；用于从 active_tuning_sliders 中找到本条滑条。
 var event_id: String = ""
 # 当前滑条所属调频场 ID；用来确认全局活动场确实包含本滑条。
@@ -189,15 +192,11 @@ var _cue_segments: Array = []
 
 func configure_timing_style(style: TimingCueStyle) -> void:
 	cue_style = style
+	_sync_stick_palette()
 	queue_redraw()
 
 func _ready() -> void:
 	if field_kind != 0: return
-	var hints := get_node("/root/UiInputHints")
-	_stick_base_texture = hints.texture_for(&"stick_base")
-	_stick_glow_texture = hints.texture_for(&"stick_glow")
-	_life_stick_texture = hints.texture_for(&"stick_life")
-	_death_stick_texture = hints.texture_for(&"stick_death")
 	_cue_glow = TimingCueGlow.new()
 	_cue_glow.name = "TimingCueGlow"
 	add_child(_cue_glow)
@@ -219,6 +218,19 @@ func _ready() -> void:
 	_rail_material.shader = preload("res://shaders/fields/tuning_rail.gdshader")
 	_rail_renderer.material = _rail_material
 	add_child(_rail_renderer)
+	# 小帽面共用局部 shader 和固定四边形，每帧只更新推荐向量。
+	_stick_cap = MeshInstance2D.new()
+	_stick_cap.name = "StickCap"
+	_stick_cap.show_behind_parent = true
+	var cap_quad := QuadMesh.new()
+	cap_quad.size = Vector2.ONE * (tuning_rail_width + 16.0)
+	_stick_cap.mesh = cap_quad
+	_stick_cap_material = ShaderMaterial.new()
+	_stick_cap_material.shader = preload("res://shaders/fields/tuning_stick_cap.gdshader")
+	_stick_cap.material = _stick_cap_material
+	_stick_cap.visible = false
+	add_child(_stick_cap)
+	_sync_stick_palette()
 
 
 
@@ -245,6 +257,7 @@ func prepare(view_model: Dictionary) -> void:
 	field_id = str(view_model.get("field_id", ""))
 	group_id = str(view_model.get("group_id", view_model.get("unit_id", event_id)))
 	affinity = int(view_model.get("affinity", GameplayTypes.Affinity.ZHU))
+	_sync_stick_palette()
 	region_progress = 0.0
 	rapid_ratio = 0.0
 	judgment_grade = -1
@@ -258,6 +271,7 @@ func prepare(view_model: Dictionary) -> void:
 	_has_authoritative_rotation_sign = false
 	_clear_endpoint_state()
 	_alignment_strength = 0.0
+	_recommended_stick_vector = Vector2.ZERO
 	_approach_progress = 0.0
 	_cue_elapsed_sec = 0.0
 	_preview_order_number = 0
@@ -353,6 +367,9 @@ func set_gameplay_snapshot(snapshot: Dictionary) -> void:
 	if not slider_state.is_empty():
 		set_slider_state(slider_state)
 	else:
+		# 领域在尾点结算后移除快照，退场期间保持最终杆向，不弹回底座中心。
+		if region_progress >= 1.0 or judgment_grade >= 0:
+			_recommended_stick_vector = _stick_direction_at_progress(1.0 if _traversal_count % 2 == 1 else 0.0)
 		_interaction_open = false
 		_turnaround_pending = false
 		_has_authoritative_rotation_sign = false
@@ -373,6 +390,7 @@ func set_gameplay_snapshot(snapshot: Dictionary) -> void:
 
 func set_slider_state(state: Dictionary) -> void:
 	## 供预览器或 StageSession 直接推送单条滑条状态。
+	_recommended_stick_vector = state.get("recommended_stick_vector", Vector2.ZERO)
 	_interaction_open = bool(state.get("interaction_open", true))
 	_authoritative_traversal_index = maxi(0, int(state.get(
 		"current_traversal_index",
@@ -446,10 +464,12 @@ func play_miss() -> void:
 func reset_for_pool() -> void:
 	if _cue_glow != null: _cue_glow.clear()
 	if _tuning_glow != null: _tuning_glow.visible = false
+	if _stick_cap != null: _stick_cap.visible = false
 	visible = false
 	position = Vector2.ZERO
 	rotation = 0.0
 	scale = Vector2.ONE
+	_recommended_stick_vector = Vector2.ZERO
 	_approach_progress = 0.0
 	_cue_elapsed_sec = 0.0
 	_has_authoritative_guide_range = false
@@ -552,7 +572,7 @@ func _draw_tuning_slider() -> void:
 
 	_ensure_rail_geometry()
 	# 只在真实外边界画描边，半透明主体下面不铺骨白实心带。
-	var outline_color := Color(bone_color, (0.78 if not missed else 0.32) * presentation_alpha)
+	var outline_color := Color(bone_color, (0.70 if not missed else 0.32) * presentation_alpha)
 	var rail_color := Color(side_color.darkened(0.25), rail_opacity * (1.0 if _field_active else 0.75) * presentation_alpha)
 	_rail_material.set_shader_parameter(&"rail_color", rail_color)
 	_rail_material.set_shader_parameter(&"outline_color", outline_color)
@@ -582,8 +602,8 @@ func _draw_order_number(start_point: Vector2) -> void:
 	var font: Font = MingheUiStyle.ui_font()
 	var font_size: int = 24
 	var text_size: Vector2 = font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
+	# 序号固定居中于起始圈；按文字宽度居中，多位编号也不向旁侧偏移。
 	var baseline := start_point + Vector2(-text_size.x * 0.5, text_size.y * 0.34)
-	# 序号压在起点圆帽中央，仅帮助读取先后，不再增加一层独立徽章。
 	var cue_alpha: float = _start_cue_alpha() if not _interaction_open else 1.0
 	draw_string(
 		font,
@@ -625,6 +645,8 @@ func _draw_guide_dots() -> void:
 	var guide_distance: float = clampf(_guide_progress, 0.0, 1.0) * _slider_length_px
 	for index: int in range(dot_count):
 		var distance: float = minf(float(index) * GUIDE_DOT_SPACING_PX, guide_distance)
+		# 源泉已由摇杆头指路，时间点列从圆帽外开始，避免点列压住透视帽面。
+		if distance < tuning_rail_width * 0.5: continue
 		var progress: float = distance / maxf(_slider_length_px, 0.001)
 		var point: Vector2 = _point_on_slider(progress)
 		# 深色托底保证虚线经过明亮场景时仍然清楚，白点本身仍保持单层、简洁。
@@ -633,79 +655,33 @@ func _draw_guide_dots() -> void:
 
 
 func _stick_cue_pose() -> Dictionary:
-	# 始终固定在整条滑条的起点旁；交互开始和折返只改变演示方向。
-	var anchor := _slider_start_point()
-	# 靠画面中心留出间距，避开起点圆帽、填充与缩圈。
-	var inward := (canvas_size * 0.5 - anchor).normalized()
-	var center := anchor + inward * (tuning_rail_width * 0.5 + 40.0)
-	var angles := _rotation_cue_angles()
-	# 这是操作演示，不是玩家摇杆的回显。长单程也反复演示同一旋向。
-	# 时基仍来自宿主；收尾淡出后复位，不能画出反向回程误导玩家。
-	var elapsed := _cue_elapsed_sec
-	if _interaction_open:
-		elapsed = region_progress * _duration_sec - _current_traversal_index() * _traversal_duration_sec
-	var phase := fposmod(elapsed, 1.2) / 1.2
-	var progress := smoothstep(0.08, 0.8, phase)
-	var alpha := smoothstep(0.0, 0.08, phase) * (1.0 - smoothstep(0.85, 1.0, phase))
-	return {"center": center, "direction": Vector2.from_angle(lerpf(angles.x, angles.y, progress)), "demo_alpha": alpha, "demo_progress": progress}
+	# 领域已返回与真实输入一致的杆向，表现层不再额外放大一次。
+	return {"center": _slider_start_point(), "direction": _recommended_stick_vector}
+
+
+func _stick_direction_at_progress(progress: float) -> Vector2:
+	return TUNING_ARC_GEOMETRY.stick_direction(progress, affinity, _start_value,
+		_end_value, _slider_sweep_rad, _arc_rotation_rad)
 
 
 func _draw_rotation_cue() -> void:
-	var rotation_sign: int = _effective_rotation_sign()
-	if not _show_rotation_cue or rotation_sign == 0 or missed or _preview_phase == 2:
+	_stick_cap.visible = _show_rotation_cue and not missed and _preview_phase != 2
+	if not _stick_cap.visible:
 		return
-	var pose := _stick_cue_pose()
-	var center: Vector2 = pose["center"]
-	# 围绕提示中心统一放大，帽面、拨动行程与方向弧保持相同比例。
-	draw_set_transform(center * (1.0 - 1.15), 0.0, Vector2(1.15, 1.15))
-	var cue_angles := _rotation_cue_angles()
-	var cue_color := Color("e6ddc9", 0.75)
-	if not _interaction_open: cue_color.a *= _start_cue_alpha()
-	var waiting_for_reentry := (
-		_endpoint_has_state and _endpoint_inside and _endpoint_captured
-		and _endpoint_grade == GameplayTypes.JudgmentGrade.MISS
-	)
-	if waiting_for_reentry: cue_color.a *= 0.65
-	var texture := _life_stick_texture if affinity == GameplayTypes.Affinity.ZHU else _death_stick_texture
-	var tint := Color(1, 1, 1, cue_color.a)
-	_draw_stick_soft_glow(center + Vector2(0, 3.75), Vector2(19.5, 9.2), cue_color.a * 0.65)
-	draw_texture_rect(_stick_base_texture, Rect2(center + Vector2(-26, -19), Vector2(52, 43.33)), false, tint)
-	# 帽与底座贴合，轻微相对位移表达拨动；省去杆身和厚侧壁。
-	var cap: Vector2 = center + pose["direction"] * Vector2(12, 9)
-	_draw_stick_soft_glow(cap, Vector2(12.4, 6.75), cue_color.a * float(pose["demo_alpha"]))
-	draw_texture_rect(texture, Rect2(cap - Vector2(18, 12), Vector2(36, 30)), false, Color(1, 1, 1, cue_color.a * float(pose["demo_alpha"])))
-	# 外侧保留细方向弧，与平涂图标保持相近视觉重量。
-	var points := PackedVector2Array()
-	for index in 19:
-		points.append(center + Vector2.from_angle(lerpf(cue_angles.x, cue_angles.y, index / 18.0)) * 27.0)
-	draw_polyline(points, Color("26212e", cue_color.a), 3.5, true)
-	draw_polyline(points, Color(cue_color, cue_color.a * 0.42), 1.5, true)
-	# 短亮段和帽面同步，较小角行程也能清楚看见旋向。
-	var sweep: float = cue_angles.y - cue_angles.x
-	var progress: float = pose["demo_progress"]
-	var motion_arc := PackedVector2Array()
-	for index in 9:
-		var t := lerpf(maxf(0.0, progress - 0.24), progress, index / 8.0)
-		motion_arc.append(center + Vector2.from_angle(cue_angles.x + sweep * t) * 27.0)
-	if progress > 0.001:
-		var glow_alpha := cue_color.a * float(pose["demo_alpha"])
-		draw_polyline(motion_arc, Color(cue_color, glow_alpha * 0.08), 7.0, true)
-		draw_polyline(motion_arc, Color(cue_color, glow_alpha * 0.12), 4.5, true)
-		draw_polyline(motion_arc, Color(cue_color, cue_color.a * float(pose["demo_alpha"])), 2.7, true)
-	var tangent := Vector2.from_angle(cue_angles.y + PI * 0.5) * rotation_sign
-	var normal := tangent.orthogonal()
-	var tip: Vector2 = points[-1]
-	draw_polyline(PackedVector2Array([tip - tangent * 5.0 + normal * 3.0, tip, tip - tangent * 5.0 - normal * 3.0]), cue_color, 1.5, true)
-	draw_set_transform(Vector2.ZERO)
+	var center := _slider_start_point()
+	var alpha := _start_cue_alpha() if not _interaction_open else 1.0
+	_stick_cap.position = center
+	_stick_cap.modulate.a = alpha
+	_stick_cap_material.set_shader_parameter("recommendation", _stick_cue_pose()["direction"])
+	_stick_cap_material.set_shader_parameter("base_radius", tuning_rail_width * 0.5)
 
 
-func _draw_stick_soft_glow(center: Vector2, radius: Vector2, alpha: float) -> void:
-	# 缓存的柔边遮罩同时提供阵营外晕和骨白近边，强度低于条身。
-	var side_color := life_color if affinity == GameplayTypes.Affinity.ZHU else death_color
-	var outer_size := (radius + Vector2(9, 7)) * 2.0
-	draw_texture_rect(_stick_glow_texture, Rect2(center - outer_size * 0.5, outer_size), false, Color(side_color, alpha * 0.34))
-	var edge_size := radius * (2.0 / 0.68)
-	draw_texture_rect(_stick_glow_texture, Rect2(center - edge_size * 0.5, edge_size), false, Color(bone_color, alpha * 0.24))
+func _sync_stick_palette() -> void:
+	# 色板只在装配或复用换阵营时上传。
+	if _stick_cap_material == null: return
+	_stick_cap_material.set_shader_parameter("body_color", cue_style.note_style.base(affinity))
+	_stick_cap_material.set_shader_parameter("light_color", cue_style.note_style.rim(affinity))
+	_stick_cap_material.set_shader_parameter("bone_color", bone_color)
 
 
 func _draw_turnaround_hint() -> void:
@@ -767,34 +743,35 @@ func _draw_turnaround_hint() -> void:
 
 
 func _draw_start_progress_ring(start_point: Vector2) -> void:
-	# 一条往返滑槽只有事件开始前出现一次缩圈；折返点只使用回转箭头。
+	# 一条滑槽仅起手缩圈，开滑后保留极短余光；折返点只使用回转箭头。
 	if not _start_cue_visible():
 		_cue_glow.clear()
 		return
 	var cue_radius: float = _start_cue_radius_px()
-	var cue_alpha: float = _start_cue_alpha()
-	var key := [start_point, cue_radius, _approach_progress]
+	var cue_alpha: float = _start_cue_alpha() * _start_cue_handoff_alpha()
+	var cue_progress := _approach_progress
+	var key := [start_point, cue_radius, cue_progress]
 	if _cue_segments_key != key:
 		_cue_segments_key = key
-		_cue_segments = [[TimingCueGlow.arc(start_point, cue_radius, 0.0, TAU)], [TimingCueGlow.arc(start_point, cue_radius, -PI * 0.5, -PI * 0.5 + TAU * _approach_progress)]]
+		_cue_segments = [[TimingCueGlow.arc(start_point, cue_radius, 0.0, TAU)], [TimingCueGlow.arc(start_point, cue_radius, -PI * 0.5, -PI * 0.5 + TAU * cue_progress)]]
 	# 起手缩圈是时机提示，完整绘制在条身之上；端帽自身仍不绘制内侧圆轮廓。
 	_draw_cue_segments(0, Color(backing_color, 0.70 * cue_alpha), 7.0)
-	var line := cue_style.line_color(affinity)
-	var alpha := cue_style.approach_alpha(_approach_progress) * cue_alpha
+	var line := cue_style.tuning_line_color(affinity)
+	var alpha := cue_style.tuning_approach_alpha(cue_progress) * cue_alpha
 	_draw_cue_segments(0, Color(line, alpha), cue_style.approach_width)
 	_draw_cue_segments(1, Color(line, 0.94 * cue_alpha), 4.0)
 	if not cue_style.glow_enabled or missed:
 		_cue_glow.clear()
 		return
 	# 主线、托底与柔光共用完整弧段。
-	if _cue_glow.begin([start_point, cue_radius, _approach_progress, cue_alpha, alpha, cue_style.halo_color(affinity), _event_curve_points, cue_style.approach_width, cue_style.approach_glow_width, cue_style.progress_glow_width, cue_style.approach_glow_strength, cue_style.progress_glow_strength]):
-		var halo := cue_style.halo_color(affinity)
+	if _cue_glow.begin([start_point, cue_radius, cue_progress, cue_alpha, alpha, cue_style.note_style.halo(affinity), _event_curve_points, cue_style.approach_width, cue_style.approach_glow_width, cue_style.progress_glow_width, cue_style.tuning_approach_glow_strength, cue_style.progress_glow_strength]):
+		var halo := cue_style.note_style.halo(affinity)
 		for part: int in 2:
 			var from := 0.0 if part == 0 else -PI * 0.5
-			var to := TAU if part == 0 else from + TAU * _approach_progress
+			var to := TAU if part == 0 else from + TAU * cue_progress
 			if is_equal_approx(from, to): continue
 			var width := cue_style.approach_glow_width + cue_style.approach_width * 0.5 if part == 0 else cue_style.progress_glow_width + 2.0
-			var strength := cue_style.approach_glow_strength * alpha if part == 0 else cue_style.progress_glow_strength * cue_alpha
+			var strength := cue_style.tuning_approach_glow_strength * alpha if part == 0 else cue_style.progress_glow_strength * cue_alpha
 			for segment: PackedVector2Array in _cue_segments[part]:
 				_cue_glow.add_strip(segment, width, Color(halo, strength), segment.size() > 2 and segment[0].is_equal_approx(segment[-1]))
 		_cue_glow.finish()
@@ -809,21 +786,41 @@ func _preview_content_alpha() -> float:
 	## 当前条完全显示；未来与收尾条只压暗轨道，不连带压暗起手提示。
 	if _interaction_open or _preview_phase == 0:
 		return 1.0
-	return _preview_alpha
+	# 末尾与缩圈收束一起提亮，到开滑时恰好达到完整亮度。
+	return lerpf(_preview_alpha, 1.0, smoothstep(-START_CUE_HANDOFF_SEC, 0.0, _cue_elapsed_sec))
 
 
 func _start_cue_visible() -> bool:
-	return not _interaction_open and judgment_grade < 0
+	# 随滑条实例同步出现；局部动画时钟只控制运动，不能延后大圈的显示。
+	return judgment_grade < 0 and (not _interaction_open or (_cue_elapsed_sec >= 0.0 and _cue_elapsed_sec < START_CUE_HANDOFF_SEC))
+
+
+func _start_cue_handoff_alpha() -> float:
+	# 使用绝对起手时间，暂停、Seek 和低帧率不需要独立 Tween 状态。
+	return 1.0 - smoothstep(0.0, START_CUE_HANDOFF_SEC, maxf(_cue_elapsed_sec, 0.0)) if _interaction_open else 1.0
 
 
 func _start_cue_radius_px() -> float:
-	# 104px 宽轨道的端帽半径为52px；终点缩到其内部，收束动作会比旧24px幅度明显得多。
-	return lerpf(106.0, 38.0, smoothstep(0.0, 1.0, _approach_progress))
+	# 整组出现后约 430 ms 就转入收缩，不再提前撑开后长时间贴近最高点。
+	var p := _approach_progress
+	var travel := cue_style.tuning_start_radius - tuning_rail_width * 0.5
+	var lift := travel * 0.09
+	var lift_end := 1.0 - START_CUE_SHRINK_RATIO
+	if p < lift_end:
+		var lift_progress := p / lift_end
+		return cue_style.tuning_start_radius + lift * (1.0 - pow(1.0 - lift_progress, 2.0))
+	var fall := (p - lift_end) / START_CUE_SHRINK_RATIO
+	# 减弱后半程加速，避免临近开滑时猛收；起止时刻仍与歌曲时间对齐。
+	var contraction := pow(fall, 1.2)
+	# 仅柔化最高点之后的一小段位移，轻微延长滞留感；随后平滑接回原曲线。
+	contraction *= lerpf(0.65, 1.0, smoothstep(0.0, 0.22, fall))
+	return cue_style.tuning_start_radius + lift - (travel + lift) * contraction
 
 
 func _start_cue_alpha() -> float:
 	# 最近未来条约0.95，更远条约0.70；轨道仍保持Host给出的0.70/0.45层级。
-	return clampf(_preview_alpha + 0.25, 0.62, 1.0)
+	var preview_alpha := clampf(_preview_alpha + 0.25, 0.62, 1.0)
+	return lerpf(preview_alpha, 1.0, smoothstep(-START_CUE_HANDOFF_SEC, 0.0, _cue_elapsed_sec))
 
 
 func _find_slider_state(value: Variant) -> Dictionary:
@@ -932,6 +929,7 @@ func update_hold_control(visual: GrayboxHoldVisual, control_center: Vector2, rad
 
 func restore_motion_control(state: Dictionary) -> void:
 	## 历史身体只用实际游标方向，不更新引导文字、端点标记或提交圆弧重绘。
+	_recommended_stick_vector = state.get("recommended_stick_vector", Vector2.ZERO)
 	_interaction_open = bool(state.get("interaction_open", true))
 	if state.has("player_progress"): _player_progress = float(state.player_progress)
 	elif state.has("player_value"): _player_progress = _progress_from_frequency_value(float(state.player_value))

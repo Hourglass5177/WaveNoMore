@@ -6,6 +6,9 @@ const CENTER_CIRCLE_SHADER: Shader = preload("res://shaders/materials/center_cir
 const CENTER_CIRCLE_DISPLAY_REFERENCE_PX: float = 328.0
 # 指数响应率（s⁻¹），约 0.1 秒完成 97% 的变化。
 const CIRCLE_RESPONSE: float = 35.0
+@export var timing_cue_style: TimingCueStyle = preload("res://content/presentation/timing_cue_style.tres")
+var _life_input_glow: Texture2D
+var _death_input_glow: Texture2D
 var _center_circle: Sprite2D
 var _circle_material: ShaderMaterial
 var _edge_distances := Vector2.ONE
@@ -334,18 +337,22 @@ func _draw_route_scaffold() -> void:
 func _refresh_input_glyphs() -> void:
 	_life_input_texture = _input_hints.texture_for(&"bell_life")
 	_death_input_texture = _input_hints.texture_for(&"bell_death")
+	_life_input_glow = _input_hints.glow_for(&"bell_life", timing_cue_style.gate_glyph_glow_radius)
+	_death_input_glow = _input_hints.glow_for(&"bell_death", timing_cue_style.gate_glyph_glow_radius)
 	queue_redraw()
 
 
 func _draw_shared_gate(center: Vector2) -> void:
 	# 图标沿用原有生侧右上、死侧左下位置，独立于中央圈的形变。
-	_draw_input_glyph(_life_input_texture, center + Vector2(116.0, -72.0))
-	_draw_input_glyph(_death_input_texture, center + Vector2(-116.0, 72.0))
+	_draw_input_glyph(_life_input_texture, _life_input_glow, center + Vector2(116.0, -72.0), GameplayTypes.Affinity.ZHU)
+	_draw_input_glyph(_death_input_texture, _death_input_glow, center + Vector2(-116.0, 72.0), GameplayTypes.Affinity.XUAN)
 
 
-func _draw_input_glyph(texture: Texture2D, center: Vector2) -> void:
+func _draw_input_glyph(texture: Texture2D, glow: Texture2D, center: Vector2, side: int) -> void:
 	var extent := texture.get_size() * (36.0 / texture.get_height())
-	draw_texture_rect(texture, Rect2(center - extent * 0.5, extent), false, Color(1.0, 1.0, 1.0, 0.65))
+	var glow_extent := extent + Vector2.ONE * timing_cue_style.gate_glyph_glow_radius * 2.0
+	draw_texture_rect(glow, Rect2(center - glow_extent * 0.5, glow_extent), false, Color(timing_cue_style.note_style.halo(side), timing_cue_style.gate_glyph_glow_strength))
+	draw_texture_rect(texture, Rect2(center - extent * 0.5, extent), false, Color(timing_cue_style.tuning_line_color(side), timing_cue_style.gate_glyph_opacity))
 
 
 func _draw_curve_scaffold(profile: Dictionary, color: Color) -> void:

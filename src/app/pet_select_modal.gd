@@ -13,6 +13,8 @@ var _stick_direction := 0
 func _ready() -> void:
 	super._ready()
 	if Engine.is_editor_hint(): return
+	# 描述可滚动阅读，但不是手柄可操作项；包括 ScrollContainer 的内置滚动条。
+	%Description.focus_behavior_recursive = Control.FOCUS_BEHAVIOR_DISABLED
 	SaveService.developer_mode_changed.connect(_show_pet)
 	for name in ["Left","Right","Preview"]:
 		var button: Button = get_node("%"+name)

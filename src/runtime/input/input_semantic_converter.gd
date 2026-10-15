@@ -22,7 +22,7 @@ enum GameplayEvent {
 enum StickSide { LEFT, RIGHT }
 
 static func to_tuning_control(event: PhysicalInputEvent, deadzone: float = 0.2) -> Dictionary:
-	## 设计画布方向的无量纲速度控制；使用本局规则的径向死区，不保存设备状态。
+	## 设计画布方向的速度控制向量；死区外推量线性控制速度，回中停速。
 	if event == null or event.kind not in [
 		GameplayTypes.PhysicalInputKind.GAMEPAD_LEFT_STICK_MOVED,
 		GameplayTypes.PhysicalInputKind.GAMEPAD_RIGHT_STICK_MOVED

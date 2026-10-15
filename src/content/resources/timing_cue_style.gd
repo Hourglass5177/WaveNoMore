@@ -31,3 +31,20 @@ func _shift(color: Color, side: int) -> Color:
 
 func approach_alpha(progress: float) -> float:
 	return lerpf(approach_alpha_start, approach_alpha_end, smoothstep(0.0, 1.0, progress))
+
+
+@export_group("调频起手与键位")
+## 独立于 Tap/Hold 圆环；缩圈更醒目，键位保持低调。
+@export var tuning_start_radius: float = 136.0
+@export var tuning_approach_alpha_start: float = 0.65
+@export var tuning_approach_alpha_end: float = 0.90
+@export var tuning_approach_glow_strength: float = 0.55
+@export var gate_glyph_opacity: float = 0.58
+@export var gate_glyph_glow_radius: int = 6
+@export var gate_glyph_glow_strength: float = 0.28
+
+func tuning_line_color(side: int) -> Color:
+	return note_style.rim(side).lerp(note_style.white_color, white_mix)
+
+func tuning_approach_alpha(progress: float) -> float:
+	return lerpf(tuning_approach_alpha_start, tuning_approach_alpha_end, smoothstep(0.0, 1.0, progress))

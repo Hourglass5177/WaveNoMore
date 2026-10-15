@@ -54,7 +54,7 @@ intro.getRange('A4:B12').values=[
  ['发布程序','旧 build 尚不支持本表。下一次构建后，可放 EXE 旁 planning/策划参数.xlsx。'],
  ];
 intro.getRange('A15:B15').values=[['随当前值计算','结果']];
-intro.getRange('A16:A21').values=[['无随从：耗尽魂火所需伤害组'],['Perfect 完整窗口（ms）'],['Good / Perfect 基础分比例'],['最高 Combo 倍率开始的连击数'],['鬼金羊基础：每次受伤（点）'],['调频一程 1 s：满幅理想耗时（s）']];
+intro.getRange('A16:A21').values=[['无随从：耗尽魂火所需伤害组'],['Perfect 完整窗口（ms）'],['Good / Perfect 基础分比例'],['最高 Combo 倍率开始的连击数'],['鬼金羊基础：每次受伤（点）'],['调频摇杆操作']];
 const r=k=>refs['rules/'+k];
 intro.getRange('B16:B21').formulas=[
  [`=IF(${r('tap_miss_damage')}=0,"不扣血",ROUNDUP(${r('max_soul_fire')}/${r('tap_miss_damage')},0))`],
@@ -62,7 +62,7 @@ intro.getRange('B16:B21').formulas=[
  [`=IF(${r('perfect_score')}=0,"无基准",${r('good_score')}/${r('perfect_score')})`],
  [`=${r('combo_steps_to_max')}+1`],
  [`=ROUND(${r('tap_miss_damage')}*(1-${refs['pet:gui_jin_yang:base/damage_reduction']}),0)`],
- [`=MAX(1-${r('tuning_speed_tolerance_ms')}/1000,0.001)`],
+ ['="持续推住持续推进，推量控速，回中停止；帽面两端各外展15°仅供显示。"'],
  ];
 intro.getRange('A23').values=[['改变频率范围、每 Hz 尺度后，原有 Tuning 角度可能超出可编排范围，需要复查谱面。']];
 intro.getRange('A25').values=[['详细语义、停用字段及逐关配置入口见 docs/planning/README.md。']];

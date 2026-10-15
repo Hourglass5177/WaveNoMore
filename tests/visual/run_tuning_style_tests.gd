@@ -17,11 +17,14 @@ func run() -> void:
 	viewport.transparent_bg = true; viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 	root.add_child(viewport)
 	var field := GrayboxFieldVisual.new(); viewport.add_child(field); field.set_process(false); field.tuning_glow_enabled = false
+	test_start_handoff(field)
+	# 本段单独测轨道透明接合，避免起点新摇杆帽面影响圆帽中心像素。
 	for side: int in 2:
-		field.prepare({"event_id": "style", "affinity": side, "start_value": 0.2, "end_value": 0.8, "traversal_count": 2})
+		field.prepare({"event_id": "style", "affinity": side, "start_value": 0.2, "end_value": 0.8, "traversal_count": 2, "show_rotation_cue": false})
 		# 一段直轨隔离透明叠画问题，避开引导点和方向箭头的像素。
 		field._event_curve_points = PackedVector2Array([Vector2(150, 200), Vector2(550, 200)])
 		field._slider_length_px = 400.0; field._cached_rail_width = -1.0
+		field.set_approach_timing(-0.5, 2.25) # 隔离起手后的主体像素，避开 80 ms 余光。
 		field._interaction_open = true; field._field_active = true
 		field._player_progress = 0.5; field._guide_progress = 0.0
 		field._has_authoritative_rotation_sign = true; field._required_rotation_sign = 0
@@ -29,7 +32,7 @@ func run() -> void:
 		var frame := await snap(viewport)
 		var cap := frame.get_pixel(120, 200); var join := frame.get_pixel(170, 200); var body := frame.get_pixel(270, 200)
 		check(absf(cap.a - body.a) < 0.02 and absf(join.a - body.a) < 0.02, "圆帽与条身接合处透明度一致 %s" % side)
-		check(body.a > 0.75 and body.a < 0.85, "已填充部分仍半透明，实际 alpha %.3f" % body.a)
+		check(body.a > 0.69 and body.a < 0.74, "已填充部分仍半透明，实际 alpha %.3f" % body.a)
 		check(frame.get_pixel(450, 200).a < 0.4, "未填充轨道不被实心描边托底覆盖")
 		check(body.b > body.r if side == 0 else body.r > body.b, "生侧灰青、死侧赭红 %s" % side)
 		check(frame.get_pixel(170, 160).a < 0.85, "接合区没有完整圆帽的内部亮轮廓")
@@ -40,7 +43,7 @@ func run() -> void:
 		field._interaction_open = false; field._approach_progress = 1.0
 		field.queue_redraw(); frame = await snap(viewport)
 		check(field._cue_segments[0].size() == 1 and field._cue_segments[0][0][0].is_equal_approx(field._cue_segments[0][0][-1]), "起手缩圈完整闭合，不再裁掉条身内半圈")
-		var overlap := frame.get_pixel(188, 200)
+		var overlap := frame.get_pixel(202, 200)
 		check(overlap.a > 0.8 and maxf(overlap.r, overlap.b) > 0.55, "缩圈内侧真实像素位于条身上方")
 		frame.save_png(OUTPUT + "/start-ring-%d.png" % side)
 		field._approach_progress = 0.0
@@ -69,6 +72,7 @@ func test_glow() -> void:
 	for side: int in 2:
 		field.prepare({"event_id": "glow", "affinity": side, "start_value": 0.2, "end_value": 0.8, "visual_radius_px": 300.0, "traversal_count": 2})
 		field.scale = Vector2.ONE * 0.5
+		field.set_approach_timing(-0.5, 2.25) # 隔离起手后的主体像素，避开 80 ms 余光。
 		field._interaction_open = true; field._field_active = true; field._player_progress = 0.5
 		field._guide_progress = 0.0; field._has_authoritative_rotation_sign = true; field._required_rotation_sign = 0
 		field.tuning_glow_enabled = false; field.queue_redraw(); var off := await snap(viewport)
@@ -104,3 +108,39 @@ func capture_preview() -> void:
 		await preview.seek_preview(time_us)
 		(await snap(viewport)).save_png(OUTPUT + "/preview-%d.png" % time_us)
 	preview.free(); viewport.free()
+
+
+func test_start_handoff(field: GrayboxFieldVisual) -> void:
+	## 以歌曲绝对时刻检查收束与开滑边界，避免暂停和定位重启缓动。
+	field.prepare({"event_id": "handoff", "affinity": 0, "start_value": 0.2, "end_value": 0.8})
+	field.set_preview_presentation(1, 1, 0.7)
+	field.set_approach_timing(1.44, 1.44)
+	check(field._start_cue_visible() and is_equal_approx(field._start_cue_radius_px(), field.cue_style.tuning_start_radius), "大圈与滑条同步出现")
+	field.set_approach_timing(1.34, 1.44)
+	check(field._start_cue_visible() and field._start_cue_radius_px() > field.cue_style.tuning_start_radius + 1.0, "出现后100毫秒已明显外扩，没有等待段")
+	var radii: Array[float] = []
+	for progress: float in [0.0, 0.25, 0.5, 0.75, 1.0]:
+		field.set_approach_timing((1.0 - progress) * 1.44, 1.44)
+		radii.append(field._start_cue_radius_px())
+	check(radii[1] > radii[0] and radii[1] - radii[0] < 8.0, "出现后先小幅外扩")
+	field.set_approach_timing(1.44 * 0.7, 1.44)
+	var apex := field._start_cue_radius_px()
+	check(apex > radii[2] and apex > radii[0], "连续外扩至原定最高点，随后约一秒收完")
+	for i in range(1, 4):
+		check(radii[i] - radii[i + 1] > radii[i - 1] - radii[i], "向外减速后转向，向内收束持续加速")
+	check(is_equal_approx(radii[-1], field.tuning_rail_width * 0.5), "收束终点并入源泉外框")
+	field.set_approach_timing(0.04, 1.44)
+	check(field._preview_content_alpha() > 0.7 and field._preview_content_alpha() < 1.0, "开滑前轨道连续提亮")
+	field.set_approach_timing(0.0, 1.44)
+	var before_radius := field._start_cue_radius_px(); var before_alpha := field._preview_content_alpha()
+	field._interaction_open = true
+	check(is_equal_approx(before_radius, field._start_cue_radius_px()) and is_equal_approx(before_alpha, field._preview_content_alpha()), "开滑边界半径和亮度连续")
+	check(field._start_cue_visible() and field._start_cue_handoff_alpha() == 1.0, "开滑与缩圈余光重叠，无等待")
+	field.set_approach_timing(-0.04, 1.44)
+	var middle := field._start_cue_handoff_alpha()
+	check(middle > 0.0 and middle < 1.0, "余光在80毫秒内淡出")
+	check(field._start_cue_handoff_alpha() == middle, "冻结时钟不会继续退光")
+	field.set_approach_timing(-0.08, 1.44)
+	check(not field._start_cue_visible(), "80毫秒后缩圈彻底退出")
+	field.set_approach_timing(-0.04, 1.44)
+	check(is_equal_approx(field._start_cue_handoff_alpha(), middle), "定位重演恢复同一余光状态")

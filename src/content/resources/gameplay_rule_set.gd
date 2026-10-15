@@ -28,8 +28,10 @@ extends Resource
 @export_range(0.0, 0.9, 0.01) var tuning_stick_deadzone: float = 0.2
 ## 调频每程为达到完整弧长预留的统一容错时间，单位毫秒；不属于谱面字段。
 @export_range(0, 2000, 1) var tuning_speed_tolerance_ms: int = 500
-## 摇杆满幅沿游标切线拨动时的最大设计画布速度，单位 px/s；零值停止速度推进。
+## 原速度积分的兼容开关数值，单位 px/s；零值停止速度推进。
 @export_range(0.0, 3000.0, 1.0, "or_greater") var tuning_stick_max_speed_px_sec: float = 600.0
+## 在原版每程速度上小幅提高，1.02 表示相同推量下快 2%，不改变控制方式。
+@export_range(1.0, 1.1, 0.01) var tuning_progress_speed_multiplier: float = 1.02
 ## 理想 Replay 生成调频位移的采样间隔，单位 tick；不参与玩家评分。
 @export_range(1, 240, 1) var tuning_sample_interval_ticks: int = 30
 ## 点状时间引导前后展开的时间余量，单位毫秒；只影响视觉提示。
@@ -48,7 +50,7 @@ extends Resource
 @export_range(0.0, 1.0, 0.001) var tuning_perfect_completion: float = 0.97
 ## Good 最低完成比例；应不高于 Perfect。
 @export_range(0.0, 1.0, 0.001) var tuning_good_completion: float = 0.90
-## Pass 最低完成比例；低于此值或未按住对应钟均为 Miss。
+## Pass 最低完成比例，也是Ghost击碎底线；中途允许落后整程的1−此值。
 @export_range(0.0, 1.0, 0.001) var tuning_pass_completion: float = 0.80
 ## 已弃用：调频现为“原定时刻前完成即成功”，仅为兼容旧规则资源保留。
 @export_range(1, 1000, 1) var tuning_endpoint_perfect_ms: int = 150

@@ -4,14 +4,14 @@ extends RefCounted
 ## 双钟独立调频滑条的确定性判定器。
 ##
 ## 调频段只决定“什么时候允许改变频率”；滑条不负责开启波源。
-## 摇杆控制二维速度在游标切线上的分量，指针仍使用位移；点状引导只提示节奏。
+## 摇杆控制二维速度在游标切线上的分量，指针仍使用位移；引导仅供显示。
 
 const NEVER_TIME_US: int = -9_000_000_000_000_000
 const TUNING_ARC_GEOMETRY: GDScript = preload("res://src/domain/tuning/tuning_arc_geometry.gd")
 ## Replay 的双路输入会量化为 Q15；连续位移累加后可能留下万分位误差。
 ## 这里只放宽边界比较，不钳制玩家位置，以免越过滑条端点也被误算为命中。
 const TRACKING_EPSILON: float = 0.001
-## 整数微秒子步严格不超过 1/240 秒；边界处使用剩余时长，不丢时间。
+## 沿歌曲绝对时间切分积分，单步不超过 1/240 秒。
 const STICK_MAX_STEP_US: int = 4166
 
 ## 时间窗外没有输入时，端点判定使用这个哨兵值表示“尚未到达”。
@@ -44,7 +44,7 @@ var _pointer_drags: Dictionary[int, Dictionary] = {}
 var _paused_for_rearm: bool = false
 var _life_tuning_engaged: bool = false
 var _death_tuning_engaged: bool = false
-## 最新标准化向量跨帧保存；没有新事件不等于停速，只有回中或中断才清零。
+## 最新速度向量跨帧保存；持续推住继续累积，回中停速并保持进度。
 var _life_stick_control: Vector2 = Vector2.ZERO
 var _death_stick_control: Vector2 = Vector2.ZERO
 var _life_drag_state_index: int = -1
@@ -168,7 +168,7 @@ func handle_input(sample: SemanticInputSample, life_held: bool, death_held: bool
 	return true
 
 
-## 设置该侧最新速度控制目标；回中只停速，已接合状态与进度保持。
+## 设置该侧最新速度控制；输入事件本身不跳位置，回中只停速。
 ## 调用方必须先 advance_to(timestamp_us, false)，不能把新向量应用于过去时间。
 func set_stick_control(affinity: int, control_vector: Vector2, timestamp_us: int) -> void:
 	if _paused_for_rearm or timestamp_us < _current_time_us:
@@ -266,7 +266,7 @@ func _advance_stick_motion_to(time_us: int) -> void:
 
 
 func _integrate_stick_side(affinity: int, delta_sec: float, timestamp_us: int, speed: float) -> bool:
-	## p 属于 start_value → end_value；真实圆弧单位切线只投影一次，不乘往返方向。
+	## 保留原版切线投影及往返程换算；引导帽面方向不参与输入计算。
 	var life: bool = affinity == GameplayTypes.Affinity.ZHU
 	var control: Vector2 = _life_stick_control if life else _death_stick_control
 	if control == Vector2.ZERO:
@@ -281,7 +281,7 @@ func _integrate_stick_side(affinity: int, delta_sec: float, timestamp_us: int, s
 	var leg_end_us: int = _compiled.tempo_map.tick_to_us(int(slider["tick"]) + (traversal_index + 1) * ticks)
 	var duration_sec: float = float(leg_end_us - leg_start_us) / 1000000.0
 	var tolerance_sec: float = float(_rule_int(&"tuning_speed_tolerance_ms", 500)) / 1000.0
-	speed = length_px / maxf(duration_sec - tolerance_sec, 0.001)
+	speed = length_px / maxf(duration_sec - tolerance_sec, 0.001) * _rules.tuning_progress_speed_multiplier
 	var global_progress: float = clampf(_value_to_slider_progress(slider, _value_for_affinity(affinity)), 0.0, 1.0)
 	var progress: float = global_progress if traversal_index % 2 == 0 else 1.0 - global_progress
 	var velocity: Vector2 = control * speed
@@ -303,10 +303,18 @@ func _integrate_stick_side(affinity: int, delta_sec: float, timestamp_us: int, s
 	return _set_stick_side_value(affinity, next_value, timestamp_us)
 
 
+func _recommended_stick(state: Dictionary, guide_progress: float) -> Vector2:
+	## 仅供显示的谱面杆向，不参与实际输入的切线投影。
+	var slider: Dictionary = state.slider
+	return TUNING_ARC_GEOMETRY.stick_direction(
+		guide_progress, int(slider.affinity), float(slider.start_value), float(slider.end_value),
+		float(state.sweep_rad), float(state.rotation_rad))
+
+
 func _set_stick_side_value(affinity: int, next_value: float, timestamp_us: int) -> bool:
 	## 只提交真实频率位置和端点观察，不锁存成绩、不读取视觉磁吸进度。
 	var previous_value: float = _value_for_affinity(affinity)
-	# 低速积分不能每步用近似相等截掉，否则刚离开死区时永远不积累位移。
+	# 低速积分不能被近似相等截断，否则刚过死区的轻推无法累积。
 	if previous_value == next_value:
 		return false
 	if affinity == GameplayTypes.Affinity.ZHU:
@@ -452,7 +460,7 @@ func death_frequency_hz() -> float:
 
 
 func _visible_slider_indices(time_us: int) -> Array[int]:
-	# 输入子步和表现查询共用时间窗口，保留原编译索引的同侧优先级。
+	# 输入和表现查询共用时间窗口，保留原编译索引的同侧优先级。
 	if time_us == _preview_time: return _preview_active
 	var preview_lead_us := roundi(maxf(_rule_float(&"approach_duration_sec", 2.25), 0.0) * 1000000.0)
 	if time_us < _preview_time:
@@ -513,6 +521,7 @@ func active_slider_snapshots() -> Array[Dictionary]:
 		snapshot["guide_band_max"] = band.y
 		snapshot["player_progress"] = player_progress
 		snapshot["raw_player_progress"] = player_progress
+		snapshot["recommended_stick_vector"] = _recommended_stick(state, guide_progress)
 		snapshot["player_value"] = player_value
 		snapshot["held"] = _last_life_held if int(slider["affinity"]) == GameplayTypes.Affinity.ZHU else _last_death_held
 		snapshot["required_rotation_sign"] = _required_rotation_sign(
@@ -999,37 +1008,37 @@ func _try_finalize_group(group_key: String, finalized_at_us: int) -> void:
 
 
 func ghost_grade(slider_ids: PackedStringArray, time_us: int) -> int:
-	## Ghost 检查所属单程截至此刻应完成的行程；位置预测不构成第二道碰撞门槛。
+	## Ghost 达到 Pass 即击碎；保留真实评级，预测位置不构成第二道碰撞门槛。
 	if slider_ids.is_empty(): return GameplayTypes.JudgmentGrade.MISS
 	var grade := GameplayTypes.JudgmentGrade.PERFECT
 	for id: String in slider_ids:
 		if not _slider_by_id.has(id): return GameplayTypes.JudgmentGrade.MISS
 		var state: Dictionary = _slider_states[_slider_by_id[id]]
 		var slider: Dictionary = state.slider
-		if bool(state.finished):
-			if int(state.grade) not in [GameplayTypes.JudgmentGrade.PERFECT, GameplayTypes.JudgmentGrade.GOOD]: return GameplayTypes.JudgmentGrade.MISS
-			if int(state.grade) == GameplayTypes.JudgmentGrade.GOOD: grade = GameplayTypes.JudgmentGrade.GOOD
-			continue
-		# 恰好折返点使用已完成端点评价，避免下一程初始化覆盖同刻结果。
+		# 节点和尾点均先读该程成绩。尾点同刻条已结束，不能先拿整条最差成绩覆盖末程。
 		var endpoint_at_time := false
 		for endpoint: Dictionary in state.endpoint_states:
 			if int(endpoint.target_us) == time_us and bool(endpoint.finalized):
-				if int(endpoint.grade) not in [GameplayTypes.JudgmentGrade.PERFECT, GameplayTypes.JudgmentGrade.GOOD]: return GameplayTypes.JudgmentGrade.MISS
-				if int(endpoint.grade) == GameplayTypes.JudgmentGrade.GOOD: grade = GameplayTypes.JudgmentGrade.GOOD
+				if int(endpoint.grade) == GameplayTypes.JudgmentGrade.MISS: return GameplayTypes.JudgmentGrade.MISS
+				grade = maxi(grade, int(endpoint.grade))
 				endpoint_at_time = true; break
 		if endpoint_at_time: continue
+		if bool(state.finished):
+			if int(state.grade) == GameplayTypes.JudgmentGrade.MISS: return GameplayTypes.JudgmentGrade.MISS
+			grade = maxi(grade, int(state.grade))
+			continue
 		var held := _last_life_held if int(slider.affinity) == 0 else _last_death_held
 		if not _dual_holding_notes or not held or not bool(state.started): return GameplayTypes.JudgmentGrade.MISS
 		var current := _value_to_slider_progress(slider,_value_for_affinity(int(slider.affinity)))
 		var expected := _guide_progress(slider,time_us)
-		# 当前单程已走距离达到截至此刻应走距离的 Good 比例即可击破。
+		# 用整程行程衡量落后量；Pass默认允许落后20%，提前完成仍有效。
 		var reverse := int(state.traversal_index) % 2 == 1
 		var required := 1.0 - expected if reverse else expected
 		var traveled := 1.0 - current if reverse else current
-		var completion := clampf(traveled / required, 0.0, 1.0) if required > TRACKING_EPSILON else 1.0
+		var completion := clampf(1.0 - maxf(required - traveled, 0.0), 0.0, 1.0)
 		var current_grade := completion_grade(completion)
-		if current_grade not in [GameplayTypes.JudgmentGrade.PERFECT, GameplayTypes.JudgmentGrade.GOOD]: return GameplayTypes.JudgmentGrade.MISS
-		if current_grade == GameplayTypes.JudgmentGrade.GOOD: grade = current_grade
+		if current_grade == GameplayTypes.JudgmentGrade.MISS: return GameplayTypes.JudgmentGrade.MISS
+		grade = maxi(grade, current_grade)
 	return grade
 
 
@@ -1267,7 +1276,7 @@ func _rule_float(property_name: StringName, fallback: float) -> float:
 func _rule_property(property_name: StringName, fallback: Variant) -> Variant:
 	if _rules == null:
 		return fallback
-	# 规则属性直接读取，不为每次子步查询构造整份属性元数据。
+	# 规则属性直接读取，不为每次查询构造整份属性元数据。
 	var value: Variant = _rules.get(property_name)
 	return fallback if value == null else value
 

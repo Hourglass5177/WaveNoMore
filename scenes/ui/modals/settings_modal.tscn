@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" path="res://src/app/ui/shortcut_glyph.gd" id="shortcut"]
 [ext_resource type="Script" path="res://src/app/settings_modal.gd" id="1"]
+[ext_resource type="Script" path="res://src/app/controller_settings_page.gd" id="controller_page"]
 [ext_resource type="Theme" path="res://content/ui/game_theme.tres" id="2"]
 [ext_resource type="Texture2D" path="res://assets/ui/art/设置页面/底图.png" id="3"]
 [ext_resource type="Script" path="res://src/app/ui/fire_frame.gd" id="4"]
@@ -80,17 +81,17 @@ theme_override_font_sizes/font_size = 42
 [node name="Tabs" type="VBoxContainer" parent="Design"]
 layout_mode = 0
 offset_left = 410.0
-offset_top = 385.0
+offset_top = 378.0
 offset_right = 630.0
-offset_bottom = 620.0
-theme_override_constants/separation = 24
+offset_bottom = 642.0
+theme_override_constants/separation = 12
 
 
 [node name="Sound" type="Button" parent="Design/Tabs"]
 unique_name_in_owner = true
 text = "声音"
 script = ExtResource("5")
-custom_minimum_size = Vector2(220,60)
+custom_minimum_size = Vector2(220,56)
 theme_override_font_sizes/font_size = 32
 toggle_mode = true
 
@@ -99,16 +100,24 @@ toggle_mode = true
 unique_name_in_owner = true
 text = "画面"
 script = ExtResource("6")
-custom_minimum_size = Vector2(220,60)
+custom_minimum_size = Vector2(220,56)
 theme_override_font_sizes/font_size = 32
 toggle_mode = true
 
+
+[node name="Controller" type="Button" parent="Design/Tabs"]
+unique_name_in_owner = true
+text = "手柄"
+script = ExtResource("7")
+custom_minimum_size = Vector2(220,56)
+theme_override_font_sizes/font_size = 32
+toggle_mode = true
 
 [node name="Calibration" type="Button" parent="Design/Tabs"]
 unique_name_in_owner = true
 text = "校准"
 script = ExtResource("7")
-custom_minimum_size = Vector2(220,60)
+custom_minimum_size = Vector2(220,56)
 theme_override_font_sizes/font_size = 32
 toggle_mode = true
 
@@ -130,7 +139,7 @@ layout_mode = 0
 offset_left = 665.0
 offset_top = 375.0
 offset_right = 1435.0
-offset_bottom = 745.0
+offset_bottom = 725.0
 follow_focus = true
 horizontal_scroll_mode = 0
 
@@ -349,6 +358,59 @@ layout_mode = 2
 text = "显示调试 HUD"
 
 
+[node name="ControllerPage" type="VBoxContainer" parent="Design/Scroll/Pages"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 18
+script = ExtResource("controller_page")
+
+[node name="HapticsRow" type="HBoxContainer" parent="Design/Scroll/Pages/ControllerPage"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="Caption" type="Label" parent="Design/Scroll/Pages/ControllerPage/HapticsRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(225,46)
+text = "震动强度"
+
+[node name="Haptics" type="HSlider" parent="Design/Scroll/Pages/ControllerPage/HapticsRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(250,40)
+min_value = 0.0
+max_value = 2.0
+step = 0.1
+
+[node name="HapticsValue" type="Label" parent="Design/Scroll/Pages/ControllerPage/HapticsRow"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(85,0)
+horizontal_alignment = 2
+
+[node name="HapticsDevice" type="Label" parent="Design/Scroll/Pages/ControllerPage"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "正在检测手柄…"
+theme_override_font_sizes/font_size = 24
+autowrap_mode = 2
+
+[node name="TestHaptics" type="Button" parent="Design/Scroll/Pages/ControllerPage"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 0
+custom_minimum_size = Vector2(240,52)
+text = "测试震动"
+script = ExtResource("9")
+
+[node name="HapticsResult" type="Label" parent="Design/Scroll/Pages/ControllerPage"]
+unique_name_in_owner = true
+layout_mode = 2
+text = ""
+theme_override_font_sizes/font_size = 24
+autowrap_mode = 2
+
 [node name="CalibrationPage" parent="Design/Scroll/Pages" instance=ExtResource("8")]
 unique_name_in_owner = true
 layout_mode = 2
@@ -363,6 +425,16 @@ offset_bottom = 773.0
 text = ""
 theme_override_font_sizes/font_size = 24
 
+
+[node name="Defaults" type="Button" parent="Design"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 665.0
+offset_top = 775.0
+offset_right = 920.0
+offset_bottom = 832.0
+text = "恢复本页默认"
+script = ExtResource("9")
 
 [node name="Save" type="Button" parent="Design"]
 unique_name_in_owner = true

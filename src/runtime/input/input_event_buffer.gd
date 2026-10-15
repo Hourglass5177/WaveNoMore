@@ -107,7 +107,6 @@ var _life_tuning_preview_blocked: bool = false
 var _death_tuning_preview_blocked: bool = false
 
 var _mouse_captured_by_router: bool = false
-var _previous_mouse_mode: Input.MouseMode = Input.MOUSE_MODE_VISIBLE
 
 
 func _ready() -> void:
@@ -1061,11 +1060,10 @@ func _bell_kind(event: InputEvent, pressed: bool) -> int:
 
 
 func _update_mouse_capture() -> void:
-	# 只有实际游玩时才捕获鼠标。调频场仍在但暂停菜单打开时，光标必须可见且可点击。
+	# 只有实际游玩才捕获鼠标；暂停后由当前设备决定显示，鼠标操作仍可恢复光标。
 	var should_capture: bool = _tuning_capture_requested and mode == InputMode.GAMEPLAY
 	if should_capture and not _mouse_captured_by_router:
-		_previous_mouse_mode = Input.mouse_mode
-		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+		get_node("/root/UiInputHints").set_gameplay_mouse_capture(true)
 		_mouse_captured_by_router = true
 	elif not should_capture:
 		_restore_mouse_mode()
@@ -1074,8 +1072,8 @@ func _update_mouse_capture() -> void:
 func _restore_mouse_mode() -> void:
 	if not _mouse_captured_by_router:
 		return
-	Input.mouse_mode = _previous_mouse_mode
 	_mouse_captured_by_router = false
+	get_node("/root/UiInputHints").set_gameplay_mouse_capture(false)
 
 
 func _on_joy_connection_changed(device: int, connected: bool) -> void:

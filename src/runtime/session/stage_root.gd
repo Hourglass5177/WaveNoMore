@@ -86,6 +86,8 @@ var audio_feedback: AudioFeedbackDirector
 var note_haptics_feedback: NoteHapticsFeedback
 ## 供其他模块申请句柄或单次震动的关卡共享节点。
 var controller_haptics: ControllerHaptics
+## 保存场景原始倍率，避免反复保存设置时将玩家倍率重复相乘。
+var _haptics_base_strength: float = 1.0
 ## 最近一次录制完成的 Replay，供开发工具或外部调用读取。
 var last_replay: ReplayData
 ## 装配时复制技能参数；表现持有定义资源，只读美术配置。
@@ -160,6 +162,9 @@ func _ready() -> void:
 	note_haptics_feedback = get_node(note_haptics_feedback_path) as NoteHapticsFeedback
 	controller_haptics = get_node(controller_haptics_path) as ControllerHaptics
 	controller_haptics.set_output_enabled(false)
+	_haptics_base_strength = controller_haptics.strength_multiplier
+	SettingsService.settings_changed.connect(_apply_haptics_settings)
+	_apply_haptics_settings()
 
 	stage_session.bind_components(
 		song_player,
@@ -243,6 +248,11 @@ func load_stage(stage: StageDefinition, start_after_prepare: bool = true, prepar
 	if not stage_session.prepare(prepared_chart):
 		stage_load_failed.emit("Stage validation or compilation failed.")
 		return false
+	# 键位提示使用本关样式副本，策划表只在装载时应用，不污染共享资源。
+	var gate := presentation.get_node(presentation.twin_gate_cue_visual_path) as TwinGateCueVisual
+	gate.timing_cue_style = gate.timing_cue_style.duplicate(false) as TimingCueStyle
+	PlanningParameters.apply_values(gate.timing_cue_style, "timing_cue", planning)
+	gate.queue_redraw()
 	_setup_pet_views()
 	get_parallax_controller().configure_boundary(stage.chart, stage.song.first_beat_offset_sec, planning)
 	stage_show_director.call("configure", stage.stage_show, stage_session.compiled_chart.tempo_map)
@@ -347,6 +357,11 @@ func teardown() -> void:
 
 func set_debug_visible(value: bool) -> void:
 	debug_hud.set_debug_visible(value)
+
+
+func _apply_haptics_settings() -> void:
+	if is_instance_valid(controller_haptics):
+		controller_haptics.strength_multiplier = _haptics_base_strength * SettingsService.controller_haptics_scale
 
 
 func get_controller_haptics() -> ControllerHaptics:

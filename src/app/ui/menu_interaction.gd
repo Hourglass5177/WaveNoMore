@@ -27,6 +27,7 @@ static func attach(control: Control) -> MenuInteraction:
 
 func _ready() -> void:
 	_control = get_parent() as Control
+	get_node("/root/UiInputHints").changed.connect(refresh)
 	get_node("/root/MenuAudioService").bind_control(_control)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	focus_mode = Control.FOCUS_NONE
@@ -41,17 +42,21 @@ func _ready() -> void:
 	elif _control is HSlider:
 		_control.value_changed.connect(func(_value: float):
 			queue_redraw()
-			if _control.has_focus() or _control.get_global_rect().has_point(_control.get_global_mouse_position()): acknowledge())
+			if _control.has_focus() or _mouse_over(): acknowledge())
 	elif _control is LineEdit:
 		_control.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
 		_control.text_submitted.connect(func(_text: String): acknowledge())
 
 func refresh() -> void:
-	var active := _control.has_focus() or (not focus_only and _control.get_global_rect().has_point(_control.get_global_mouse_position()))
+	if not is_inside_tree(): return # 退场移除控件时仍可能收到 focus_exited。
+	var active := _control.has_focus() or (not focus_only and _mouse_over())
 	if _control is BaseButton and _control.disabled: active = false
 	if _focus_motion: _focus_motion.kill()
 	_focus_motion = create_tween()
 	_focus_motion.tween_property(self,"amount",1.0 if active else 0.0,0.16).set_trans(Tween.TRANS_SINE)
+
+func _mouse_over() -> bool:
+	return get_node("/root/UiInputHints").mouse_hover_enabled() and _control.get_global_rect().has_point(_control.get_global_mouse_position())
 
 func acknowledge() -> void:
 	if _pulse_motion: _pulse_motion.kill()

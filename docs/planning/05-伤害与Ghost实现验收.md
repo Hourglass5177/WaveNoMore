@@ -12,7 +12,7 @@
 - `NoteJudgeEngine` 记录失败 Hold 的未消耗起始时间；`GameplaySimulation` 按 TempoMap 生成剩余段的微秒结算点。每段伤害为 `hold_segment_damage`，单位拍长为 `hold_damage_segment_beats`。身体不足整段按累计比例取整。
 - Hold 头部抵达不单独扣血，失败当刻也不扣整条。离圈曲线保留实际姿态，抵达和剩余身体裁短读取同一领域时间线。Tap 与 Hold 的伤害组分开，同组 Hold 按段去重。
 - `GhostWaveForecast` 在装载时准备理想持有和调频采样事件。到关联路径预告时刻，复制真实可见波与源相位，只在副本中重演未来区间并求交。预测只执行一次，后续输入不移动目标。
-- `TuningEngine.ghost_grade` 按关联单程当前应完成行程或端点结果判断；双方关联取共同成功。复用端点捕获余量，当前为 Perfect／Miss。位置不参与判定。失败按已编排枚数乘 `ghost_miss_damage` 逐枚结算。
+- `TuningEngine.ghost_grade` 按关联单程当前应完成行程或端点结果判断；双方关联取共同成功。当前规则见 [调频分档](06-调频分档与命中反馈.md)：中途复用整段 Pass 余量（默认20%），节点／尾点达到 Pass 即击碎、不扣血。位置不参与判定。失败按已编排枚数乘 `ghost_miss_damage` 逐枚结算。
 - `ChartPathAdapter` 保留新版 Ghost 的路径关联，映射到目标拍覆盖的单程；JSON 不增加字段。关联 ID 进入编译内容摘要，新规则参数进入规则摘要。
 - 起手缩圈取消与条身相交部分的裁切，完整画在轨道上层；轨道端帽本身仍只有外轮廓，不重复叠圆。
 

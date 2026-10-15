@@ -35,6 +35,8 @@ var screen_shake_scale: float = 1.0
 var flash_scale: float = 1.0
 ## 相纹视觉强度；只调整透明度和辉光，不改变载波数量、频率或传播速度。
 var tuning_wave_intensity: float = DEFAULT_TUNING_WAVE_INTENSITY
+## 玩家手柄震动倍率0～2；界面50%对应原倍率1，保留旧配置的实际震感。
+var controller_haptics_scale: float = 1.0
 ## 是否显示仅供开发使用的关卡调试 HUD。
 var debug_hud_enabled: bool = false
 ## 是否使用独占全屏窗口模式。
@@ -63,6 +65,7 @@ func load_settings() -> void:
 	debug_hud_enabled = bool(config.get_value("development", "debug_hud_enabled", debug_hud_enabled))
 	fullscreen = bool(config.get_value("display", "fullscreen", fullscreen))
 	resolution = read_resolution(config)
+	controller_haptics_scale = clampf(float(config.get_value("controller", "controller_haptics_scale", 1.0)), 0.0, 2.0)
 
 
 func save_settings() -> bool:
@@ -84,6 +87,7 @@ func save_settings() -> bool:
 	config.set_value("development", "debug_hud_enabled", debug_hud_enabled)
 	config.set_value("display", "fullscreen", fullscreen)
 	config.set_value("display", "resolution", resolution)
+	config.set_value("controller", "controller_haptics_scale", controller_haptics_scale)
 	var error := config.save(SETTINGS_PATH)
 	if error != OK:
 		push_error("无法保存设置：%s" % error_string(error))
@@ -110,6 +114,14 @@ func read_resolution(config: ConfigFile) -> Vector2i:
 
 func apply_display_settings() -> void:
 	var window := get_tree().root
+	if OS.has_feature("web"):
+		# 浏览器拥有画布尺寸；原生窗口的手动渲染目标会使 Web 留边与输入位置错位。
+		window.content_scale_size = DESIGN_SIZE
+		window.content_scale_aspect = Window.CONTENT_SCALE_ASPECT_KEEP
+		window.content_scale_mode = Window.CONTENT_SCALE_MODE_CANVAS_ITEMS
+		window.content_scale_factor = 1.0
+		window.set_meta(&"render_pixel_scale", Vector2.ONE)
+		return
 	# Window 保留设计坐标和输入换算；底层渲染目标独立设置实际像素。
 	window.content_scale_size = DESIGN_SIZE
 	window.content_scale_aspect = Window.CONTENT_SCALE_ASPECT_KEEP

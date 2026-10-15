@@ -7,6 +7,9 @@ extends RefCounted
 
 const LIFE_CENTER_ANGLE_RAD: float = -PI * 0.5
 const DEATH_CENTER_ANGLE_RAD: float = PI * 0.5
+## 引导帽面在圆弧两端各外展 15°，仅供显示，不改变输入。
+const STICK_EXTRA_ANGLE_RAD: float = PI / 12.0
+
 
 # 1920 宽设计画布上约为 420 px。按画布宽度取比例，换分辨率时曲率不会变形。
 const DEFAULT_CENTER_DISTANCE_RATIO: float = 0.21875
@@ -18,6 +21,15 @@ const DEFAULT_MAX_SWEEP_RAD: float = PI * 100.0 / 180.0
 const DEFAULT_START_WINDOW_EARLY_RAD: float = PI * 15.0 / 180.0
 const DEFAULT_START_WINDOW_LATE_RAD: float = PI * 15.0 / 180.0
 const GEOMETRY_EPSILON: float = 0.000001
+
+
+static func stick_direction(progress: float, affinity: int, start_value: float,
+		end_value: float, sweep: float, rotation_rad: float) -> Vector2:
+	## 杆向指向圆弧上的位置：上弧左上→正上→右上；折返沿同一弧返回，不翻到下半圈。
+	if sweep <= 0.0: return Vector2.ZERO
+	var direction_sign: int = signf(end_value - start_value) * (-1 if affinity == GameplayTypes.Affinity.XUAN else 1)
+	return Vector2.from_angle(angle_at_progress(progress, affinity, direction_sign,
+		sweep + 2.0 * STICK_EXTRA_ANGLE_RAD, rotation_rad))
 
 
 static func center_angle_rad(affinity: int, rotation_offset_rad: float = 0.0) -> float:

@@ -496,9 +496,8 @@ func _update_tuning_preview_presentation() -> void:
 		var data: Dictionary = entry["data"]
 		var state: Dictionary = _active_tuning_slider_state(event_id)
 		var start_us: int = _start_usec(data)
-		var group_key: String = str(data.get("group_id", ""))
-		if group_key.is_empty():
-			group_key = event_id
+		# 数字只表达实际起手批次；同刻不同侧/不同组共号，不同刻同组仍分号。
+		var group_key: String = str(start_us)
 		var phase: int = 2 # 0：当前；1：未来；2：已结束但仍在播放收尾。
 		if _scheduler.tuning_visual_end_sec(event_id, data) <= _judge_visual_time:
 			phase = 2
@@ -611,7 +610,7 @@ func _update_visual(event_id: String, active_entry: Dictionary) -> void:
 		# 不再叠加以画布中心为值的 approach_origin，避免中心被平移到右下角。
 		visual.position = Vector2.ZERO
 		if visual.has_method("set_approach_timing"):
-			visual.call("set_approach_timing", time_to_hit_sec, approach_duration_sec)
+			visual.call("set_approach_timing", time_to_hit_sec, _scheduler.tuning_approach_duration_sec())
 		if visual.has_method("set_region_progress"):
 			visual.call("set_region_progress", region_progress)
 		# 每个视觉实例只从 active_tuning_sliders 中取自己的权威填充、引导和端点状态。

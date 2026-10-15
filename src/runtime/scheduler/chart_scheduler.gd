@@ -34,6 +34,8 @@ const USEC_PER_SEC: float = 1_000_000.0
 ## 整条轨道、起手提示与柔光一起平滑显隐，使用判定时钟而非独立 Tween。
 const TUNING_FADE_IN_SEC: float = 0.12
 const TUNING_FADE_OUT_SEC: float = 0.12
+# 调频整组提示使用更短的预告，避免大圈扩完后等待；普通音符仍沿用完整接近时间。
+const TUNING_APPROACH_RATIO: float = 0.64
 
 ## 事件在命中时刻前多少秒进入画面。数值越大，音符出现越早、飞行越慢。
 @export_range(0.1, 10.0, 0.01) var approach_duration_sec: float = 2.25
@@ -92,7 +94,13 @@ func configure_boss_emissions(emissions: Dictionary) -> void:
 func _spawn_time_usec(kind: StringName, entry: Dictionary) -> int:
 	var event_id := _event_id(entry, kind, 0)
 	if kind == KIND_NOTE and boss_emissions.has(event_id): return int(boss_emissions[event_id].release_us)
-	return _event_start_usec(entry) - roundi(approach_duration_sec * USEC_PER_SEC)
+	var lead := tuning_approach_duration_sec() if kind == KIND_TUNING else approach_duration_sec
+	return _event_start_usec(entry) - roundi(lead * USEC_PER_SEC)
+
+
+func tuning_approach_duration_sec() -> float:
+	# 生成、整组淡入和缩圈运动共用同一提前量，保持所有部件同步出现。
+	return approach_duration_sec * TUNING_APPROACH_RATIO
 
 
 func reset() -> void:
@@ -280,7 +288,7 @@ func tuning_visual_end_sec(event_id: String, data: Dictionary) -> float:
 
 func tuning_visibility(event_id: String, data: Dictionary, time_sec: float) -> float:
 	var end_sec := tuning_visual_end_sec(event_id, data)
-	var spawn_sec := float(_event_start_usec(data)) / USEC_PER_SEC - approach_duration_sec
+	var spawn_sec := float(_event_start_usec(data)) / USEC_PER_SEC - tuning_approach_duration_sec()
 	# 在淡入中途失败时，从当时的亮度退出，不因淡入继续推进而先变亮。
 	var appear := smoothstep(0.0, TUNING_FADE_IN_SEC, minf(time_sec, end_sec) - spawn_sec)
 	return appear * (1.0 - smoothstep(0.0, TUNING_FADE_OUT_SEC, time_sec - end_sec))

@@ -30,7 +30,7 @@ static func evaluate(
 		if stray.breaks_combo:
 			result.stray_break_count += 1
 	result.cleared = damage_settled and not result.failed and judgments.size() == expected_judgment_count
-	# Ghost 不重复授予音符基础分，但漏击必须影响 FC；Good 击破也不能算 AP。
+	# Ghost 不重复授予音符基础分；Good/Pass击破均保留FC，但不能算AP。
 	result.ghost_counts = ghost_counts(ghost_results)
 	result.expected_ghost_count = expected_ghost_count
 	result.full_combo = result.cleared and result.miss_count == 0 and result.stray_break_count == 0 and int(result.ghost_counts.MISS) == 0 and int(result.ghost_counts.PERFECT) + int(result.ghost_counts.GOOD) == expected_ghost_count
@@ -47,6 +47,7 @@ static func evaluate(
 
 
 static func ghost_counts(results: Array[Dictionary]) -> Dictionary:
+	# 沿用现有三类汇总：GOOD包含所有非Perfect的成功击破，单枚结果保留Pass原评级。
 	var counts := {"PERFECT": 0, "GOOD": 0, "MISS": 0}
 	for event: Dictionary in results:
 		var key := "PERFECT" if int(event.get("grade", GameplayTypes.JudgmentGrade.PERFECT)) == GameplayTypes.JudgmentGrade.PERFECT else "GOOD"

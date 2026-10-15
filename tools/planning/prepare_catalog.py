@@ -27,16 +27,17 @@ rule('02 魂火与惩罚','max_soul_fire','开局与最大魂火','点','80～15
 rule('02 魂火与惩罚','tap_miss_damage','Tap 漏击伤害','点','10～25',1,'抵达角色时扣血；同一 Tap 伤害组只扣一次。',0,1000)
 rule('02 魂火与惩罚','hold_segment_damage','Hold 每段身体伤害','点/段','1～4',0.1,'未消耗身体抵达角色后按拍逐段扣血；支持小数并按漏失拍长累计取整，无额外头部或整条失败伤害。',0,1000)
 rule('02 魂火与惩罚','hold_damage_segment_beats','Hold 伤害单位拍长','拍/段','1/8～1/2',0.0625,'1 拍为四分音符；默认 0.25 拍，变 BPM 改变间隔而不改变总伤害。',0.0625,4)
-rule('02 魂火与惩罚','ghost_miss_damage','Ghost 漏击伤害','点/枚','5～15',1,'按关联调频完成情况判定；失败逐枚扣血。预测位置只作引导，不额外判相纹碰撞。',0,1000)
+rule('02 魂火与惩罚','ghost_miss_damage','Ghost 漏击伤害','点/枚','0～6',1,'关联调频达到 Pass 即可击破且不扣血；失败逐枚扣血并中断 Combo、FC/AP。Ghost 独立统计并计入整关命中率，不追加基础分。',0,1000)
 rule('02 魂火与惩罚','stray_input_damage','空按伤害','点/次','5～20',1,'仅开启空按扣魂火时使用，独立于三类音符伤害。',0,1000)
 rule('02 魂火与惩罚','stray_input_breaks_combo','空按中断 Combo','开关','通常关闭',1,'开启后没有机制消费的按下会断连；与扣血开关独立。',0,1)
 rule('02 魂火与惩罚','stray_input_damages','空按扣魂火','开关','通常关闭',1,'开启后按独立的空按伤害扣血；不会自动打开断连。',0,1)
-rule('03 调频','tuning_speed_tolerance_ms','每程完成容错','ms','100～500',25,'摇杆推进速度=弧长/max(该程秒数−容错秒数,0.001)；增大更易提前完成，不延长尾点。',0,2000)
-rule('03 调频','tuning_stick_deadzone','摇杆径向死区','比例','15%～25%',0.01,'死区外按 (幅度−死区)/(1−死区) 线性映射速度；越大越抗漂移。',0,0.9)
-rule('03 调频','tuning_endpoint_capture_ratio','端点捕获比例','比例','1%～6%',0.005,'端点吸附与视觉捕获区，另用于 Ghost 区间内引导进度的容差；Tuning 终点评分读取完成度阈值。',0.001,0.25)
+rule('03 调频','tuning_stick_deadzone','摇杆径向死区','比例','15%～25%',0.01,'死区内停止累积；死区外推量线性控速，沿原版游标切线投影，持续推住持续推进。引导帽面两端各外展15°仅供显示，不参与输入。',0,0.9)
+rule('03 调频','tuning_speed_tolerance_ms','每程完成容错','ms','100～500',25,'沿用原版速度基线：单程弧长除以（单程秒数−此余量）。它只调整推进速度，成绩仍在谱面尾点结算；短于余量的程会很快填满。',0,2000)
+rule('03 调频','tuning_progress_speed_multiplier','摇杆推进倍率','倍','1.00～1.05',0.01,'在原版速度公式上乘此倍率；1.02仅快2%。持续推住随时间累积，推量控制速度，回中停止。与角度对应位置无关。',1.0,1.1)
+rule('03 调频','tuning_endpoint_capture_ratio','端点捕获比例','比例','1%～6%',0.005,'端点视觉吸附与观察区，不参与 Ghost Pass 容错；Tuning 终点评分读取完成度阈值。',0.001,0.25)
 rule('03 调频','tuning_perfect_completion','Tuning Perfect 完成度','比例','95%～100%',0.01,'每程规定终点时刻最低完成比例；须按住对应钟，允许提前完成。',0,1)
-rule('03 调频','tuning_good_completion','Tuning Good 完成度','比例','85%～95%',0.01,'不足 Perfect 时达到此比例记 Good；不增加晚到窗口。',0,1)
-rule('03 调频','tuning_pass_completion','Tuning Pass 完成度','比例','70%～85%',0.01,'最低成功比例；低于此值或松开记 Miss。关联 Hold 失败后滑条淡出，仍按原时刻结算；仅 Ghost 扣血。',0,1)
+rule('03 调频','tuning_good_completion','Tuning Good 完成度','比例','85%～95%',0.01,'尾点 Good 最低完成比例；不足 Perfect 时达到此值记 Good，不增加晚到窗口。Ghost 击碎底线使用 Pass 完成度。',0,1)
+rule('03 调频','tuning_pass_completion','Tuning Pass 完成度','比例','70%～85%',0.01,'尾点 Pass 与 Ghost 击碎底线；中途允许落后整程的1−此值，提前有效。仍须持有；仅 Ghost 漏击扣血，关联 Hold 失败后滑条淡出。',0,1)
 rule('03 调频','tuning_base_frequency_hz','基准载波频率','Hz','2～4',0.25,'普通段及调频段起始基频；影响载波疏密和 Ghost 候选。',0.1,30)
 rule('03 调频','tuning_min_frequency_hz','最低载波频率','Hz','0.5～2',0.25,'应低于最高频率，并且不高于基频。',0.1,30)
 rule('03 调频','tuning_max_frequency_hz','最高载波频率','Hz','5～9',0.25,'提高会增加波纹密度，并改变角度到频率的映射；需复查整谱。',0.1,30)
@@ -49,7 +50,7 @@ rule('04 计分','pass_score','Pass 基础分','分','Perfect 的 30%～50%',50,
 rule('04 计分','miss_score','Miss 基础分','分','通常为 0',1,'Miss 会清零 Combo；不乘 Combo 倍率。',0,100000)
 rule('04 计分','max_combo_multiplier','最高 Combo 倍率','倍','1～2',0.1,'从 1 倍线性爬升；高连击影响总分权重。',0,10)
 rule('04 计分','combo_steps_to_max','倍率爬升步数','次','50～150',10,'倍率按 (Combo−1)/步数计算；默认第 101 连达到上限。',1,500)
-rule('05 读谱与声波','approach_duration_sec','音符接近时间','s','1.5～3',0.1,'生成至判定点的时间；增大能更早看见音符，且改变速度与接触几何。',0.1,10)
+rule('05 读谱与声波','approach_duration_sec','音符接近时间','s','1.5～3',0.1,'普通音符从生成到判定点的时间；调频整组预告取其64%（默认1.44秒），大圈与滑条同步出现。',0.1,10)
 rule('05 读谱与声波','ghost_preview_extra_sec','Ghost 额外预告','s','0.2～0.8',0.05,'在普通接近时间前额外显示闭眼 Ghost；同步提前固定预测位置的取样边界，不改变结算时刻、调频评分或伤害。',0,2)
 rule('05 读谱与声波','wave_speed_px_sec','声波传播速度','设计 px/s','1800～3000',100,'影响实际接触、载波间距与 Ghost 选点；不改变按键时间窗。',10,4000)
 
@@ -86,7 +87,7 @@ for key,name,value,unit,suggested,step,low,high,meaning in [
 out=ROOT/'content/rules/planning_parameters.json'
 # 角色移动的表现目录单独维护，重建玩法基线时保留这些字段。
 if out.exists():
-    rows.extend(r for r in json.loads(out.read_text(encoding='utf-8')) if r['target'] in ['actors','boss','ui_flame','ui_guides','judgment'] or r['target'].startswith('reward:'))
+    rows.extend(r for r in json.loads(out.read_text(encoding='utf-8')) if r['target'] in ['actors','boss','ui_flame','ui_guides','judgment','timing_cue'] or r['target'].startswith('reward:'))
 out.write_text(json.dumps(rows,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
 print(f'{len(rows)} 个可编辑参数')
 
@@ -97,7 +98,7 @@ def display(value, unit):
 directory=ROOT/'docs/planning'
 directory.mkdir(parents=True,exist_ok=True)
 for pet_page, filename, title in [(False,'01-全局数值.md','全局手感与数值'),(True,'02-随从数值.md','随从技能数值')]:
-    selected=[r for r in rows if r['target'] not in ['boundary','actors','boss','ui_flame','ui_guides','judgment'] and r['target'].startswith('pet:')==pet_page]
+    selected=[r for r in rows if r['target'] not in ['boundary','actors','boss','ui_flame','ui_guides','judgment','timing_cue'] and r['target'].startswith('pet:')==pet_page]
     lines=[f'# {title}', '', '基线：2026-09-14。表格 B 列可直接修改；下列区间是试调建议，允许输入范围另列。实际值以工作簿当前值为准。', '']
     if pet_page:
         lines+=['随从中性配置的所有加成默认均为 0。下表是三只正式随从的两阶资源覆盖；只有已装备的形态生效，进阶不与基础叠加。技能描述原文未改动。', '',
