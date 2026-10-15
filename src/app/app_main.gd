@@ -48,6 +48,10 @@ var _jobs := ChartReadJobs.new()
 var _load_request := -1
 var _local_selection := {}
 var _load_message: Label
+## 独立于 ScreenHost，保证关卡释放与结算首帧之间始终有白场覆盖。
+var _result_white_layer: CanvasLayer
+var _result_white: ColorRect
+var _result_white_tween: Tween
 
 
 
@@ -74,6 +78,7 @@ func _ready() -> void:
 
 
 func _on_route_requested(route: StringName, context: Dictionary) -> void:
+	if route != AppRouter.ROUTE_RESULT: _clear_result_white()
 	# 设置、校准和随从属于覆盖式弹窗：它们不卸载当前页面，也不写入页面返回栈。
 	match route:
 		&"settings":
@@ -248,6 +253,8 @@ func _show_stage(stage: StageDefinition) -> void:
 func _show_result(stage: StageDefinition, result: Dictionary) -> void:
 	var screen := RESULT_SCENE.instantiate()
 	_mount_screen(screen)
+	# 白场已经承担转场，结算自身须立即显现，避免两层淡入叠加露出灰底。
+	if is_instance_valid(_result_white): screen.fade_in(0.0)
 	screen.present(stage, result)
 	if result.has("local_save_error"): screen.show_notice(str(result.local_save_error))
 	if not _run_context.is_empty():
@@ -261,9 +268,46 @@ func _show_result(stage: StageDefinition, result: Dictionary) -> void:
 	screen.next_stage_requested.connect(func(stage_id: String) -> void:
 		AppRouter.navigate(AppRouter.ROUTE_LOADING, {"stage_id": stage_id}, false)
 	)
+	_reveal_result_from_white()
+
+
+func _hold_result_white() -> void:
+	_clear_result_white()
+	_result_white_layer = CanvasLayer.new()
+	_result_white_layer.layer = 110
+	add_child(_result_white_layer)
+	_result_white = ColorRect.new()
+	_result_white.color = Color.WHITE
+	_result_white.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_result_white_layer.add_child(_result_white)
+	_result_white.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+
+
+func _reveal_result_from_white() -> void:
+	if not is_instance_valid(_result_white): return
+	var cover := _result_white
+	# 先让结算页真正绘制一帧，随后才撤去跨页面的遮挡。
+	await RenderingServer.frame_post_draw
+	if not is_instance_valid(cover) or cover != _result_white: return
+	_result_white_tween = create_tween()
+	_result_white_tween.tween_property(cover, "color:a", 0.0, 0.4)
+	_result_white_tween.tween_callback(_clear_result_white)
+
+
+func _clear_result_white() -> void:
+	if _result_white_tween != null:
+		_result_white_tween.kill()
+		_result_white_tween = null
+	if is_instance_valid(_result_white_layer):
+		_result_white_layer.hide()
+		_result_white_layer.queue_free()
+	_result_white_layer = null
+	_result_white = null
 
 
 func _on_stage_finished(result: Variant = {}) -> void:
+	if _current_screen is StageRoot and _current_screen.is_ending_in_white():
+		_hold_result_white()
 	var result_dictionary := result as Dictionary if result is Dictionary else {}
 	if not result_dictionary.has("cleared") and result_dictionary.has("success"):
 		result_dictionary["cleared"] = bool(result_dictionary["success"])

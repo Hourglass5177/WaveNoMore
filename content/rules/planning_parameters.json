@@ -1000,7 +1000,7 @@
     "step": 0.1,
     "minimum": 0,
     "maximum": 2,
-    "meaning": "调整光波、火焰、眼光及羊头裂光和白场。攻击不提亮手部，默认白场保持0.5秒。",
+    "meaning": "调整光波、火焰、眼光、羊头裂光及素材白场。第三关结算白场固定全白停留0.5秒，不受此倍率影响。",
     "type": "float",
     "source": "tools/boss_animation/boss_visual.gd"
   },

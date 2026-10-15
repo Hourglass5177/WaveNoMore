@@ -2,6 +2,9 @@ class_name LevelShowPlayer
 extends Node2D
 ## 正式游玩和工具预览共用，画布使用 1920×1080 设计坐标。
 signal sampled(section: String, time_us: int)
+const BOSS_VISUAL = preload("res://src/presentation/actors/level_boss_visual.gd")
+## 当前采样的全屏白光；由宿主绘制，避免工具预览覆盖编辑器控件。
+var white_flash := 0.0
 var show := {}
 var difficulty := ""
 var assets := LevelAssetLibrary.new()
@@ -132,6 +135,7 @@ func _sample(section: String, time_us: int, silent: bool, preserve_audio := fals
 	if boss_battle != null and not boss_preview_mode.is_empty(): boss_battle.simulate(time_us-boss_offset_us if section=="song" else boss_song_us,boss_preview_mode=="perfect")
 	_sync_render_order()
 	current_section = section; current_us = time_us; states.clear();queue_redraw()
+	white_flash = 0.0
 	var clips := LevelShowSampler.active_clips(show, section, time_us, difficulty)
 	camera_position = Vector2.ZERO; camera_zoom = 1.0
 	for object_data: Dictionary in show.get("objects", []):
@@ -201,6 +205,8 @@ func _sample(section: String, time_us: int, silent: bool, preserve_audio := fals
 			var root: Node = drivers[object_data.id].root
 			if root.has_method("sample_show"):
 				root.sample_show(show.tracks,object_data.id,boss_battle.states.get(object_data.id,{}) if boss_battle != null else {},time_us-boss_offset_us if section=="song" else boss_song_us,boss_offset_us)
+				if root is BOSS_VISUAL and wrapper.is_visible_in_tree():
+					white_flash = maxf(white_flash, root.white_flash * wrapper.modulate.a)
 			else:
 				if object_clips.is_empty() and boss_battle != null and boss_battle.states.has(object_data.id):
 					var idle: String = boss_battle.states[object_data.id].config.actions.idle

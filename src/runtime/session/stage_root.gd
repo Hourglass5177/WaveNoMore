@@ -104,6 +104,25 @@ var _section_elapsed_us := 0.0
 var _pending_level_result := {}
 var _boss_tail_us := 0
 var _boss_finish_origin_us := 0
+## 第三关在爆光后交给结算；死亡年龄沿用 BOSS 时间，不另建演出时钟。
+const GOAT_WHITE_END_US := 5650000
+var _whiteout_death_us := -1
+@onready var _boss_white: ColorRect = $BossFlashLayer/White
+
+func is_ending_in_white() -> bool:
+	return _whiteout_death_us >= 0 and _boss_white.color.a >= 1.0
+
+func _reset_boss_white() -> void:
+	_whiteout_death_us = -1
+	_boss_white.color.a = 0.0
+
+func _update_boss_white(_section: String, _time_us: int) -> void:
+	var amount := level_show_player.white_flash
+	if _whiteout_death_us >= 0:
+		var age := float(level_show_player.boss_song_us - _whiteout_death_us) / 1000000.0
+		# 结算白场必须完全遮住旧场景；局部裂光仍遵守策划的发光倍率。
+		amount = maxf(amount, smoothstep(4.8, 5.15, age))
+	_boss_white.color.a = amount
 
 func set_pet(pet: PetDefinition, advanced: bool = false) -> void:
 	active_pet = pet
@@ -333,6 +352,7 @@ func _reset_parallax(_run_id: int) -> void:
 
 func teardown() -> void:
 	_level_section = "stopped"; _pending_level_result.clear()
+	_reset_boss_white()
 	if is_instance_valid(level_show_player): level_show_player.stop_audio()
 	if is_instance_valid(presentation) and is_instance_valid(presentation.parallax_controller) and presentation.parallax_controller.is_inside_tree():
 		presentation.parallax_controller.clear()
@@ -398,6 +418,8 @@ func _on_stage_result_ready(result: Dictionary) -> void:
 	final.pet_name = active_pet.display_name if active_pet != null else ""
 	final.pet_advanced = pet_advanced
 	_boss_tail_us = 0
+	_whiteout_death_us = -1
+	var whiteout := bool(final.get("success", false)) and stage_session.stage_definition.stage_id == "level3" and not stage_session.external_preview
 	if is_instance_valid(level_show_player) and level_show_player.boss_battle != null:
 		var battle := level_show_player.boss_battle
 		_boss_finish_origin_us = stage_session.gameplay_coordinator.simulation.current_time_us
@@ -406,23 +428,31 @@ func _on_stage_result_ready(result: Dictionary) -> void:
 			if state.maximum == 0: continue
 			if state.finish_us < 0: state.finish_us = maxi(_boss_finish_origin_us,int(state.phase_us)+int(state.config.phase_duration_us))
 			var duration := int(state.config.death_duration_us) if state.hp == 0 else 600000
+			if whiteout and state.hp == 0 and state.config.get("visual", "") in ["goat", "goat_eye"]:
+				duration = GOAT_WHITE_END_US
+				_whiteout_death_us = maxi(_whiteout_death_us, int(state.finish_us))
 			_boss_tail_us = maxi(_boss_tail_us,int(state.finish_us)+duration-_boss_finish_origin_us)
 			final.bosses.append({"object_id":state.config.id,"defeated":state.hp==0,"remaining_health":state.hp})
+	# 死亡可能早于歌曲结束；进入收尾时仍至少留半秒白场供页面交接。
+	if _whiteout_death_us >= 0: _boss_tail_us = maxi(_boss_tail_us, 500000)
 	if bool(final.get("success", false)) and (int(_level.get("outro_us", 0)) > 0 or _boss_tail_us > 0) and not stage_session.external_preview:
 		_pending_level_result = final
 		_level_section = "outro"; _section_elapsed_us = 0.0
+		level_show_player.boss_song_us = _boss_finish_origin_us
 		level_show_player.playing = true; level_show_player.seek("outro", 0)
 		return
 	stage_finished.emit(final)
 
 
 func _configure_level_show(stage: StageDefinition) -> void:
+	_reset_boss_white()
 	if is_instance_valid(level_show_player):
 		remove_child(level_show_player); level_show_player.queue_free(); level_show_player = null
 	_level = stage.get_meta("level", {})
 	_level_section = "song"; _pending_level_result.clear()
 	if stage.stage_show == null or stage.stage_show.level_data.is_empty(): return
 	level_show_player = LevelShowPlayer.new(); add_child(level_show_player)
+	level_show_player.sampled.connect(_update_boss_white)
 	level_show_player.configure(stage.stage_show.level_data, stage.stage_show.asset_directory, stage.stage_show.asset_packs, stage.chart.difficulty_id)
 	var compiled := LevelBossCompiler.compile(stage, stage_session.compiled_chart.tempo_map, level_show_player)
 	level_show_player.show.tracks.append_array(compiled.tracks)
@@ -467,6 +497,7 @@ func _level_state_changed(_previous: int, current: int, _reason: StringName) -> 
 
 func _level_run_started(_run_id: int) -> void:
 	SaveService.developer_run = SaveService.developer_unlocked
+	_reset_boss_white()
 	_level_section = "song"; _pending_level_result.clear()
 	if is_instance_valid(level_show_player): level_show_player.seek("song", 0)
 

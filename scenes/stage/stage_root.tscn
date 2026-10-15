@@ -54,3 +54,15 @@ script = ExtResource("9_audio")
 [node name="PauseLayer" parent="." instance=ExtResource("11_pause")]
 
 [node name="DebugLayer" parent="." instance=ExtResource("12_debug")]
+
+[node name="BossFlashLayer" type="CanvasLayer" parent="."]
+layer = 35
+
+[node name="White" type="ColorRect" parent="BossFlashLayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 1, 1, 0)

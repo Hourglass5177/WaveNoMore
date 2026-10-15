@@ -15,14 +15,15 @@ func _fit() -> void:
 	$Design.scale = Vector2.ONE * factor
 	$Design.position = (size - Vector2(1920,1080)*factor)*0.5
 
-## 关闭期间继续遮挡底层输入，淡出完成后由宿主释放页面并恢复焦点。
-func fade_in() -> void:
+## 默认短淡入；由全屏白场承接时传 0，先把页面完整画在覆盖层下方。
+func fade_in(duration := 0.18) -> void:
 	closing = false
 	if _fade: _fade.kill()
 	modulate.a = 0.0
 	_fade = create_tween()
-	_fade.tween_property(self, "modulate:a", 1.0, 0.18).set_trans(Tween.TRANS_SINE)
+	_fade.tween_property(self, "modulate:a", 1.0, duration).set_trans(Tween.TRANS_SINE)
 
+## 关闭期间继续遮挡底层输入，淡出完成后由宿主释放页面并恢复焦点。
 func fade_out() -> void:
 	closing = true
 	focus_behavior_recursive = Control.FOCUS_BEHAVIOR_DISABLED

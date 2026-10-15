@@ -11,7 +11,7 @@
 python tools/web/package.py
 ```
 
-生成 `builds/冥河，冥河！v1.0.1-Web.zip`，包名读取工程版本。指定发布位置时，使用 `package.py --directory <Web导出目录> --output <ZIP路径>`。主页面必须与 JS、WASM、PCK、Spine WASM 和音频 worklet 一起部署。工程设置及 Windows 预设继续保留；Web 跟随浏览器画布尺寸，保持 1920×1080 设计比例。网页设置的分辨率显示“跟随窗口”；全屏在用户保存设置时请求，不在启动时强制进入。
+生成 `builds/冥河，冥河！v1.0.1-Web.zip`，包名读取工程版本。指定发布位置时，使用 `package.py --directory <Web导出目录> --output <ZIP路径>`。主页面必须与 JS、WASM、PCK、Spine WASM 和音频 worklet 一起部署。Web 使用 `tools/web/shell.html`：顶部独立栏提供“全屏游玩”，点击后仅游戏画布进入全屏，按 Esc 退出。窗口模式为顶部栏留出空间，画布跟随剩余区域及设备像素比调整；游戏继续以 1920×1080 的 KEEP 模式等比居中，比例不同则留边，完整显示画面。网页设置仍显示“跟随窗口”，原有全屏选项也可用。
 
 ## 部署
 

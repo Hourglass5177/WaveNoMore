@@ -6,7 +6,7 @@ func _initialize() -> void:run.call_deferred()
 func settle() -> void:
 	for frame in 4:await process_frame
 func run() -> void:
-	var output:=ProjectSettings.globalize_path("res://../Levels/output/boss-runtime")
+	var output:=ProjectSettings.globalize_path("res://builds/boss-runtime")
 	DirAccess.make_dir_recursive_absolute(output)
 	var viewport:=SubViewport.new();viewport.size=Vector2i(960,540);viewport.size_2d_override=Vector2i(1920,1080);viewport.size_2d_override_stretch=true;viewport.render_target_update_mode=SubViewport.UPDATE_ALWAYS;root.add_child(viewport)
 	var player:=LevelShowPlayer.new();viewport.add_child(player)
@@ -32,8 +32,27 @@ func run() -> void:
 	check(content.form=="goat_eye" and content.mode=="death","最后一波后真眼死亡")
 	viewport.get_texture().get_image().save_png(output.path_join("death.png"))
 	player.seek("song",10500000);await settle();viewport.get_texture().get_image().save_png(output.path_join("fragments.png"))
+	var finish_us: int = player.boss_battle.states.goat.finish_us
+	player.seek("song",finish_us+5150000);await settle()
+	check(is_equal_approx(player.white_flash,1.0),"正式播放器输出爆裂全白")
+	# 双实例重叠不能把半透明白光相加；隐藏对象也不能影响屏幕。
+	var twin: Dictionary = object.duplicate(true); twin.id = "twin"
+	player.update_show({"objects":[object,twin],"tracks":player.show.tracks,"bindings":[binding]},"res://",[],"normal")
+	player.boss_battle.states.twin = player.boss_battle.states.goat.duplicate(true)
+	content.glow_strength = 0.4
+	player.drivers.twin.root.glow_strength = 0.7
+	player.seek("song",finish_us+5150000)
+	check(is_equal_approx(player.white_flash,0.7),"双实例白光取最大值而非累加")
+	player.show.objects[1].fields.visible = false
+	player.seek("song",finish_us+5150000)
+	check(is_equal_approx(player.white_flash,0.4),"隐藏实例不贡献白光")
+	player.update_show({"objects":[object],"tracks":player.show.tracks,"bindings":[binding]},"res://",[],"normal")
+	player.boss_battle.states.erase("twin"); content.glow_strength = 1.0
+	player.seek("song",finish_us+6650000);await settle()
+	check(is_zero_approx(player.white_flash),"普通素材白光按死亡时间退去")
 	player.seek("song",15000000);await settle();check(not player.objects.goat.visible,"死亡播完隐藏主体")
 	player.seek("song",0);await settle();check(viewport.get_texture().get_image().get_data()==initial.get_data(),"回拖恢复相同画面")
+	check(is_zero_approx(player.white_flash),"回拖不能残留全屏白光")
 	# 完整表现与通用素材同样遵守编排速率，出手不被状态机默认时长拖延。
 	for rate in [0.5,1.0,2.0]:
 		var track:=LevelFormat.track("goat","action","song","action");track.binding_id="rate"
